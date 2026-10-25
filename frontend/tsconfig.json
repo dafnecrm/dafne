@@ -19,7 +19,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@backend/auth-options": ["../backend/libs/auth/src/auth.options.ts"]
     }
   },
   "include": [
