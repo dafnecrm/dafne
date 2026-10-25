@@ -1,7 +1,7 @@
-import { formOptions, type ServerFormState } from "@tanstack/react-form-nextjs";
+import { formOptions } from "@tanstack/react-form-nextjs";
 import { z } from "zod";
 
-// Shared by the forms (client validation) and the server actions.
+// Validation for the sign-in and sign-up forms.
 
 const email = z.email({ error: "Enter a valid email address" }).max(255);
 
@@ -14,8 +14,16 @@ export const signInSchema = z.object({
 
 export const signUpSchema = z.object({
   // Max 127 each: the backend stores "first last" in a varchar(255).
-  firstname: z.string().trim().min(1, { error: "Enter your first name" }).max(127),
-  lastname: z.string().trim().min(1, { error: "Enter your last name" }).max(127),
+  firstname: z
+    .string()
+    .trim()
+    .min(1, { error: "Enter your first name" })
+    .max(127),
+  lastname: z
+    .string()
+    .trim()
+    .min(1, { error: "Enter your last name" })
+    .max(127),
   email,
   password: z
     .string()
@@ -34,9 +42,10 @@ export const signInFormOpts = formOptions({
 });
 
 export const signUpFormOpts = formOptions({
-  defaultValues: { firstname: "", lastname: "", email: "", password: "" } as SignUpValues,
+  defaultValues: {
+    firstname: "",
+    lastname: "",
+    email: "",
+    password: "",
+  } as SignUpValues,
 });
-
-/** State returned by the auth actions; `errorMap.onServer` holds server errors. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type AuthFormState = ServerFormState<any, any>;

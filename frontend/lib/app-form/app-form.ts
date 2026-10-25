@@ -1,6 +1,13 @@
-import { CheckboxField, FormErrors, PasswordField, SubmitButton, TextField, UncontrolledField } from "@/components/ui/form"
+import {
+  CheckboxField,
+  FormErrors,
+  PasswordField,
+  SubmitButton,
+  TextField,
+  UncontrolledField,
+} from "@/components/ui/form"
 import { fieldContext, formContext } from "@/lib/app-form/form-context"
-import { createFormHook } from "@tanstack/react-form-nextjs"
+import { createFormHook, type AnyFormApi } from "@tanstack/react-form-nextjs"
 
 const { useAppForm } = createFormHook({
   fieldContext,
@@ -13,21 +20,17 @@ const { useAppForm } = createFormHook({
   },
   formComponents: {
     SubmitButton,
-    FormErrors
+    FormErrors,
   },
 })
 
-export {
-  useAppForm
-}
+export { useAppForm }
 
 /**
- * Prepares a server action's form state for `mergeForm`. mergeForm copies
- * keys that are `undefined` too, so `initialFormState` (values: undefined)
- * would wipe the form's values.
+ * Shows an error from the server (e.g. a Better Auth call) in <FormErrors />.
+ * It's cleared the next time the form validates without errors. TanStack
+ * types `onServer` from a server validator, which these forms don't have.
  */
-export function definedState<T extends object>(state: T): Partial<T> {
-  return Object.fromEntries(
-    Object.entries(state).filter(([, value]) => value !== undefined),
-  ) as Partial<T>
+export function setServerError(formApi: AnyFormApi, message: string) {
+  formApi.setErrorMap({ onServer: message })
 }

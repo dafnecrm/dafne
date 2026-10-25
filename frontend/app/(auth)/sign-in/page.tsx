@@ -17,7 +17,9 @@ export default function SignInPage() {
     <Card>
       <CardHeader>
         <CardTitle className="text-xl">Sign in</CardTitle>
-        <CardDescription>Enter your email and password to continue.</CardDescription>
+        <CardDescription>
+          Enter your email and password to continue.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <SignInForm />
@@ -25,7 +27,10 @@ export default function SignInPage() {
       <CardFooter className="justify-center text-muted-foreground">
         <span>
           No account yet?{" "}
-          <Link href="/sign-up" className="text-foreground underline underline-offset-4">
+          <Link
+            href="/sign-up"
+            className="text-foreground underline underline-offset-4"
+          >
             Sign up
           </Link>
         </span>

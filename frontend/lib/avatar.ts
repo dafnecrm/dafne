@@ -5,12 +5,6 @@ export const AVATAR_ACCEPT = "image/png,image/jpeg,image/webp,image/gif";
 /** Largest file the user can pick; it is shrunk before upload. */
 export const AVATAR_MAX_FILE_BYTES = 10 * 1024 * 1024;
 
-const DATA_URL = /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/;
-
-export function isValidAvatar(value: string) {
-  return value.length <= AVATAR_MAX_LENGTH && DATA_URL.test(value);
-}
-
 /**
  * Center-crops an image file to a square, scales it to AVATAR_SIZE and
  * encodes it as a data URL small enough to store. Browser only.
@@ -39,8 +33,11 @@ export async function fileToAvatar(file: File): Promise<string> {
   for (const quality of [0.85, 0.7, 0.5]) {
     for (const type of ["image/webp", "image/jpeg"]) {
       const url = canvas.toDataURL(type, quality);
-      if (url.startsWith(`data:${type}`) && url.length <= AVATAR_MAX_LENGTH) return url;
+      if (url.startsWith(`data:${type}`) && url.length <= AVATAR_MAX_LENGTH)
+        return url;
     }
   }
-  throw new Error("This image is too detailed to use as an avatar. Try another one.");
+  throw new Error(
+    "This image is too detailed to use as an avatar. Try another one.",
+  );
 }

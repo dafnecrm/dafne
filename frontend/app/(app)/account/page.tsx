@@ -38,7 +38,7 @@ async function Profile() {
     <div className="flex flex-col md:flex-row gap-10">
       <div className="md:order-1">
         <AvatarUpload
-          image={user.image}
+          image={user.image ?? null}
           initials={`${user.firstname[0] ?? ""}${user.lastname[0] ?? ""}`.toUpperCase()}
         />
       </div>

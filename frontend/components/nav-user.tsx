@@ -2,8 +2,8 @@
 
 import { ChevronsUpDownIcon, LogOutIcon, UserIcon } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useTransition } from "react";
-import { signOut } from "@/app/actions/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -21,12 +21,17 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Spinner } from "@/components/ui/spinner";
+import { authClient } from "@/lib/auth-client";
 import type { User } from "@/lib/session";
 
-type NavUserProps = Pick<User, "name" | "firstname" | "lastname" | "email" | "image">;
+type NavUserProps = Pick<
+  User,
+  "name" | "firstname" | "lastname" | "email" | "image"
+>;
 
 function UserAvatar({ user }: { user: NavUserProps }) {
-  const initials = `${user.firstname[0] ?? ""}${user.lastname[0] ?? ""}`.toUpperCase();
+  const initials =
+    `${user.firstname[0] ?? ""}${user.lastname[0] ?? ""}`.toUpperCase();
   return (
     <Avatar>
       {user.image && <AvatarImage src={user.image} alt="" />}
@@ -39,7 +44,9 @@ function UserText({ user }: { user: NavUserProps }) {
   return (
     <div className="grid flex-1 text-left text-sm leading-tight">
       <span className="truncate font-medium">{user.name}</span>
-      <span className="truncate text-xs text-muted-foreground">{user.email}</span>
+      <span className="truncate text-xs text-muted-foreground">
+        {user.email}
+      </span>
     </div>
   );
 }
@@ -48,6 +55,15 @@ function UserText({ user }: { user: NavUserProps }) {
 export function NavUser({ user }: { user: NavUserProps }) {
   const { isMobile, setOpenMobile } = useSidebar();
   const [pending, startTransition] = useTransition();
+  const router = useRouter();
+
+  const signOut = () =>
+    startTransition(async () => {
+      // Ends the session on the backend and clears its cookies.
+      await authClient.signOut();
+      router.replace("/sign-in");
+      router.refresh();
+    });
 
   return (
     <SidebarMenu>
@@ -73,14 +89,18 @@ export function NavUser({ user }: { user: NavUserProps }) {
               </DropdownMenuLabel>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem render={<Link href="/account" onClick={() => setOpenMobile(false)} />}>
+            <DropdownMenuItem
+              render={
+                <Link href="/account" onClick={() => setOpenMobile(false)} />
+              }
+            >
               <UserIcon />
               Account
             </DropdownMenuItem>
             <DropdownMenuItem
               variant="destructive"
               disabled={pending}
-              onClick={() => startTransition(() => signOut())}
+              onClick={signOut}
             >
               {pending ? <Spinner /> : <LogOutIcon />}
               Sign out

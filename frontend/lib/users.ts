@@ -2,13 +2,17 @@ import { backendFetch } from "./backend";
 import type { TableSort } from "./data-table";
 import type { User } from "./session";
 
-/** A user as returned by the admin list (Better Auth admin plugin fields). */
-export interface ListedUser extends User {
-  role: string | null;
-  banned: boolean | null;
-  banReason: string | null;
-  banExpires: string | null;
-}
+type DateFields = "createdAt" | "updatedAt" | "banExpires";
+
+/**
+ * A user from the backend's GET /users/list: the Better Auth user (admin
+ * plugin fields included), with dates still as JSON strings.
+ */
+export type ListedUser = Omit<User, DateFields> & {
+  createdAt: string;
+  updatedAt: string;
+  banExpires?: string | null;
+};
 
 export interface UsersPage {
   users: ListedUser[];

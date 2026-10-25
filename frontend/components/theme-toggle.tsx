@@ -32,9 +32,16 @@ export function ThemeToggle({ className }: { className?: string }) {
         <MoonIcon className="hidden dark:block" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-36">
-        <DropdownMenuRadioGroup value={theme} onValueChange={(value) => setTheme(value as Theme)}>
+        <DropdownMenuRadioGroup
+          value={theme}
+          onValueChange={(value) => setTheme(value as Theme)}
+        >
           {OPTIONS.map((option) => (
-            <DropdownMenuRadioItem key={option.value} value={option.value} closeOnClick>
+            <DropdownMenuRadioItem
+              key={option.value}
+              value={option.value}
+              closeOnClick
+            >
               <option.icon />
               {option.label}
             </DropdownMenuRadioItem>

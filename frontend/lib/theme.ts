@@ -25,7 +25,8 @@ function readTheme(): Theme {
 
 /** Sets the `dark` class (used by the `dark:` variant in globals.css). */
 function applyTheme(theme: Theme) {
-  const dark = theme === "dark" || (theme === "system" && matchMedia(DARK_QUERY).matches);
+  const dark =
+    theme === "dark" || (theme === "system" && matchMedia(DARK_QUERY).matches);
   const root = document.documentElement;
   root.classList.toggle("dark", dark);
   root.style.colorScheme = dark ? "dark" : "light";

@@ -25,7 +25,10 @@ export default function SignUpPage() {
       <CardFooter className="justify-center text-muted-foreground">
         <span>
           Already have an account?{" "}
-          <Link href="/sign-in" className="text-foreground underline underline-offset-4">
+          <Link
+            href="/sign-in"
+            className="text-foreground underline underline-offset-4"
+          >
             Sign in
           </Link>
         </span>

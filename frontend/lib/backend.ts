@@ -1,4 +1,4 @@
-import { cookies, headers } from "next/headers";
+import { headers } from "next/headers";
 
 /** Base URL of the Nest API. */
 export const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:3000";
@@ -53,55 +53,4 @@ export async function backendFetch(path: string, init: RequestInit = {}) {
   }
 
   return res;
-}
-
-/**
- * Copies the backend's Set-Cookie headers (the Better Auth session cookies)
- * onto the response sent to the browser. Only works in Server Actions and
- * Route Handlers.
- */
-export async function applySetCookies(res: Response) {
-  const cookieStore = await cookies();
-
-  for (const header of res.headers.getSetCookie()) {
-    const [pair, ...attributes] = header.split(";").map((part) => part.trim());
-    const separator = pair.indexOf("=");
-    const name = pair.slice(0, separator);
-    // Next encodes the value again when writing it, so store it decoded.
-    const value = decodeURIComponent(pair.slice(separator + 1));
-
-    const options: Parameters<typeof cookieStore.set>[2] = {};
-    for (const attribute of attributes) {
-      const [key, ...rest] = attribute.split("=");
-      const attrValue = rest.join("=");
-      switch (key.toLowerCase()) {
-        case "max-age":
-          options.maxAge = Number(attrValue);
-          break;
-        case "expires":
-          options.expires = new Date(attrValue);
-          break;
-        case "path":
-          options.path = attrValue;
-          break;
-        case "domain":
-          options.domain = attrValue;
-          break;
-        case "secure":
-          options.secure = true;
-          break;
-        case "httponly":
-          options.httpOnly = true;
-          break;
-        case "samesite":
-          options.sameSite = attrValue.toLowerCase() as "lax" | "strict" | "none";
-          break;
-        case "partitioned":
-          options.partitioned = true;
-          break;
-      }
-    }
-
-    cookieStore.set(name, value, options);
-  }
 }

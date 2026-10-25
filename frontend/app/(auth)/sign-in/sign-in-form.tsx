@@ -1,41 +1,46 @@
 "use client";
 
-import {
-  initialFormState,
-  mergeForm,
-  revalidateLogic,
-  useTransform,
-} from "@tanstack/react-form-nextjs";
-import { startTransition, useActionState } from "react";
-import { signIn } from "@/app/actions/auth";
+import { revalidateLogic } from "@tanstack/react-form-nextjs";
+import { useRouter } from "next/navigation";
+import { useTransition } from "react";
 import { FieldGroup } from "@/components/ui/field";
-import { definedState, useAppForm } from "@/lib/app-form/app-form";
+import { setServerError, useAppForm } from "@/lib/app-form/app-form";
+import { authClient, authErrorMessage } from "@/lib/auth-client";
 import { signInFormOpts, signInSchema } from "../schemas";
 
 export function SignInForm() {
-  const [state, action, pending] = useActionState(signIn, initialFormState);
+  const router = useRouter();
+  const [navigating, startTransition] = useTransition();
 
   const form = useAppForm({
     ...signInFormOpts,
     // Validate on submit, then on every change.
     validationLogic: revalidateLogic(),
     validators: { onDynamic: signInSchema },
-    // Shows the values and errors returned by the server action.
-    transform: useTransform((base) => mergeForm(base, definedState(state)), [state]),
-    onSubmitMeta: {} as { formData?: FormData },
-    onSubmit: ({ meta }) => {
-      if (meta.formData) startTransition(() => action(meta.formData!));
+    onSubmit: async ({ value, formApi }) => {
+      const { error } = await authClient.signIn.email({
+        email: value.email,
+        password: value.password,
+        rememberMe: value.rememberMe === true,
+      });
+      if (error) {
+        setServerError(formApi, authErrorMessage(error));
+        return;
+      }
+      // Better Auth set the session cookie; load the app with it.
+      startTransition(() => {
+        router.replace("/");
+        router.refresh();
+      });
     },
   });
 
   return (
     <form
-      action={action}
       noValidate
       onSubmit={(e) => {
-        // Without JavaScript the form posts straight to the action.
         e.preventDefault();
-        form.handleSubmit({ formData: new FormData(e.currentTarget) });
+        form.handleSubmit();
       }}
     >
       <form.AppForm>
@@ -52,12 +57,21 @@ export function SignInForm() {
             )}
           </form.AppField>
           <form.AppField name="password">
-            {(field) => <field.PasswordField label="Password" autoComplete="current-password" />}
+            {(field) => (
+              <field.PasswordField
+                label="Password"
+                autoComplete="current-password"
+              />
+            )}
           </form.AppField>
           <form.AppField name="rememberMe">
             {(field) => <field.CheckboxField label="Remember me" />}
           </form.AppField>
-          <form.SubmitButton label="Sign in" pending={pending} className="w-full" />
+          <form.SubmitButton
+            label="Sign in"
+            pending={navigating}
+            className="w-full"
+          />
         </FieldGroup>
       </form.AppForm>
     </form>

@@ -207,7 +207,8 @@ function Sidebar({
           inert={!openMobile}
           className={cn(
             "fixed inset-y-0 z-50 flex h-svh w-(--sidebar-width) transition-transform duration-200 ease-linear data-[side=left]:left-0 data-[side=right]:right-0",
-            !openMobile && "data-[side=left]:-translate-x-full data-[side=right]:translate-x-full",
+            !openMobile &&
+              "data-[side=left]:-translate-x-full data-[side=right]:translate-x-full",
             variant === "floating" || variant === "inset"
               ? "p-2"
               : "group-data-[side=left]:border-r group-data-[side=right]:border-l",

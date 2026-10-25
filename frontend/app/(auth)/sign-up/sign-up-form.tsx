@@ -1,41 +1,50 @@
 "use client";
 
-import {
-  initialFormState,
-  mergeForm,
-  revalidateLogic,
-  useTransform,
-} from "@tanstack/react-form-nextjs";
-import { startTransition, useActionState } from "react";
-import { signUp } from "@/app/actions/auth";
+import { revalidateLogic } from "@tanstack/react-form-nextjs";
+import { useRouter } from "next/navigation";
+import { useTransition } from "react";
 import { FieldGroup } from "@/components/ui/field";
-import { definedState, useAppForm } from "@/lib/app-form/app-form";
+import { setServerError, useAppForm } from "@/lib/app-form/app-form";
+import { authClient, authErrorMessage } from "@/lib/auth-client";
 import { signUpFormOpts, signUpSchema } from "../schemas";
 
 export function SignUpForm() {
-  const [state, action, pending] = useActionState(signUp, initialFormState);
+  const router = useRouter();
+  const [navigating, startTransition] = useTransition();
 
   const form = useAppForm({
     ...signUpFormOpts,
     // Validate on submit, then on every change.
     validationLogic: revalidateLogic(),
     validators: { onDynamic: signUpSchema },
-    // Shows the values and errors returned by the server action.
-    transform: useTransform((base) => mergeForm(base, definedState(state)), [state]),
-    onSubmitMeta: {} as { formData?: FormData },
-    onSubmit: ({ meta }) => {
-      if (meta.formData) startTransition(() => action(meta.formData!));
+    onSubmit: async ({ value, formApi }) => {
+      const firstname = value.firstname.trim();
+      const lastname = value.lastname.trim();
+      const { error } = await authClient.signUp.email({
+        name: `${firstname} ${lastname}`,
+        firstname,
+        lastname,
+        email: value.email,
+        password: value.password,
+      });
+      if (error) {
+        setServerError(formApi, authErrorMessage(error));
+        return;
+      }
+      // Better Auth signed the new user in; load the app with the session.
+      startTransition(() => {
+        router.replace("/");
+        router.refresh();
+      });
     },
   });
 
   return (
     <form
-      action={action}
       noValidate
       onSubmit={(e) => {
-        // Without JavaScript the form posts straight to the action.
         e.preventDefault();
-        form.handleSubmit({ formData: new FormData(e.currentTarget) });
+        form.handleSubmit();
       }}
     >
       <form.AppForm>
@@ -43,10 +52,14 @@ export function SignUpForm() {
           <form.FormErrors />
           <div className="grid grid-cols-2 gap-3">
             <form.AppField name="firstname">
-              {(field) => <field.TextField label="First name" autoComplete="given-name" />}
+              {(field) => (
+                <field.TextField label="First name" autoComplete="given-name" />
+              )}
             </form.AppField>
             <form.AppField name="lastname">
-              {(field) => <field.TextField label="Last name" autoComplete="family-name" />}
+              {(field) => (
+                <field.TextField label="Last name" autoComplete="family-name" />
+              )}
             </form.AppField>
           </div>
           <form.AppField name="email">
@@ -60,9 +73,18 @@ export function SignUpForm() {
             )}
           </form.AppField>
           <form.AppField name="password">
-            {(field) => <field.PasswordField label="Password" autoComplete="new-password" />}
+            {(field) => (
+              <field.PasswordField
+                label="Password"
+                autoComplete="new-password"
+              />
+            )}
           </form.AppField>
-          <form.SubmitButton label="Create account" pending={pending} className="w-full" />
+          <form.SubmitButton
+            label="Create account"
+            pending={navigating}
+            className="w-full"
+          />
         </FieldGroup>
       </form.AppForm>
     </form>

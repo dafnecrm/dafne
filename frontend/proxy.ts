@@ -12,6 +12,8 @@ const SESSION_EXPIRED_PATH = "/session-expired";
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   if (pathname === SESSION_EXPIRED_PATH) return NextResponse.next();
+  // Better Auth's API, proxied to the backend (next.config.ts).
+  if (pathname.startsWith("/api/auth/")) return NextResponse.next();
 
   const hasSession = SESSION_COOKIES.some((name) => request.cookies.has(name));
   const isPublic = PUBLIC_PATHS.includes(pathname);
