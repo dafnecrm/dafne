@@ -1,6 +1,7 @@
 import { Suspense, type CSSProperties, type ReactNode } from "react";
 import { AppSidebar, PageBreadcrumb } from "@/components/app-sidebar";
 import { NavUser } from "@/components/nav-user";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -30,6 +31,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             className="mr-2 data-vertical:h-4 data-vertical:self-auto"
           />
           <PageBreadcrumb />
+          <ThemeToggle className="ml-auto" />
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>
       </SidebarInset>
