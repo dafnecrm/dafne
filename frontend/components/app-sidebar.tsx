@@ -42,17 +42,28 @@ import { findNavItem, NAV_SECTIONS } from "@/lib/navigation";
 const ACTIVE_CLASSES =
   "data-active:bg-sidebar-primary data-active:font-medium data-active:text-sidebar-primary-foreground data-active:hover:bg-sidebar-primary/90 data-active:hover:text-sidebar-primary-foreground data-active:[&>svg]:text-sidebar-primary-foreground";
 
+/** Sub-menus can't show in the rail, so it lists every page as an icon. */
+function useIsRail() {
+  const { isMobile, state } = useSidebar();
+  return state === "collapsed" && !isMobile;
+}
+
 /**
  * Floating sidebar with sections and their pages (shadcn sidebar-04).
- * Minimizes to an icon rail; `footer` is the signed-in user, rendered on the server.
+ * Minimizes to an icon rail. Rendered on the server: `footer` is the
+ * signed-in user, `adminNav` the admin-only sections (empty for others).
  */
-export function AppSidebar({ footer }: { footer: ReactNode }) {
-  const active = findNavItem(usePathname());
-  const { isMobile, setOpenMobile, state } = useSidebar();
+export function AppSidebar({
+  footer,
+  adminNav,
+}: {
+  footer: ReactNode;
+  adminNav?: ReactNode;
+}) {
+  const { isMobile, setOpenMobile } = useSidebar();
   // On mobile the sidebar floats over the page: close it after picking a page.
   const closeOnMobile = () => isMobile && setOpenMobile(false);
-  // Sub-menus can't show in the rail, so it lists every page as an icon.
-  const isRail = state === "collapsed" && !isMobile;
+  const isRail = useIsRail();
 
   return (
     <Sidebar variant="floating" collapsible="icon">
@@ -78,68 +89,77 @@ export function AppSidebar({ footer }: { footer: ReactNode }) {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          {isRail ? (
-            <SidebarMenu>
-              {NAV_SECTIONS.flatMap((section) => section.items).map((item) => (
-                <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton
-                    isActive={item === active?.item}
-                    tooltip={item.title}
-                    className={ACTIVE_CLASSES}
-                    render={<Link href={item.href} />}
-                  >
-                    <item.icon />
-                    <span>{item.title}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          ) : (
-            <SidebarMenu className="gap-2">
-              {NAV_SECTIONS.map((section) => (
-                <Collapsible
-                  key={section.title}
-                  defaultOpen
-                  render={<SidebarMenuItem />}
-                >
-                  <CollapsibleTrigger
-                    render={<SidebarMenuButton className="font-medium" />}
-                  >
-                    {section.title}
-                    <ChevronRightIcon className="ml-auto transition-transform duration-200 group-data-panel-open/menu-button:rotate-90" />
-                  </CollapsibleTrigger>
-                  {section.items.length ? (
-                    <CollapsibleContent className="h-(--collapsible-panel-height) overflow-hidden transition-[height] duration-200 ease-out data-ending-style:h-0 data-starting-style:h-0">
-                      <SidebarMenuSub className="ml-0 border-l-0 px-1.5">
-                        {section.items.map((item) => (
-                          <SidebarMenuSubItem key={item.href}>
-                            <SidebarMenuSubButton
-                              isActive={item === active?.item}
-                              className={ACTIVE_CLASSES}
-                              render={
-                                <Link
-                                  href={item.href}
-                                  onClick={closeOnMobile}
-                                />
-                              }
-                            >
-                              <item.icon />
-                              <span>{item.title}</span>
-                            </SidebarMenuSubButton>
-                          </SidebarMenuSubItem>
-                        ))}
-                      </SidebarMenuSub>
-                    </CollapsibleContent>
-                  ) : null}
-                </Collapsible>
-              ))}
-            </SidebarMenu>
-          )}
+          <SidebarMenu className={isRail ? undefined : "gap-2"}>
+            {NAV_SECTIONS.filter((section) => !section.adminOnly).map(
+              (section) => (
+                <NavSectionItems key={section.title} title={section.title} />
+              ),
+            )}
+            {adminNav}
+          </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>{footer}</SidebarFooter>
       <SidebarRail />
     </Sidebar>
+  );
+}
+
+/**
+ * One sidebar section, by title (a server component can render it: icons
+ * can't be passed as props). A collapsible group of pages, or icons in the rail.
+ */
+export function NavSectionItems({ title }: { title: string }) {
+  const section = NAV_SECTIONS.find((s) => s.title === title);
+  const active = findNavItem(usePathname());
+  const { isMobile, setOpenMobile } = useSidebar();
+  const closeOnMobile = () => isMobile && setOpenMobile(false);
+  const isRail = useIsRail();
+  if (!section) return null;
+
+  if (isRail) {
+    return section.items.map((item) => (
+      <SidebarMenuItem key={item.href}>
+        <SidebarMenuButton
+          isActive={item === active?.item}
+          tooltip={item.title}
+          className={ACTIVE_CLASSES}
+          render={<Link href={item.href} />}
+        >
+          <item.icon />
+          <span>{item.title}</span>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    ));
+  }
+
+  return (
+    <Collapsible defaultOpen render={<SidebarMenuItem />}>
+      <CollapsibleTrigger
+        render={<SidebarMenuButton className="font-medium" />}
+      >
+        {section.title}
+        <ChevronRightIcon className="ml-auto transition-transform duration-200 group-data-panel-open/menu-button:rotate-90" />
+      </CollapsibleTrigger>
+      {section.items.length ? (
+        <CollapsibleContent className="h-(--collapsible-panel-height) overflow-hidden transition-[height] duration-200 ease-out data-ending-style:h-0 data-starting-style:h-0">
+          <SidebarMenuSub className="ml-0 border-l-0 px-1.5">
+            {section.items.map((item) => (
+              <SidebarMenuSubItem key={item.href}>
+                <SidebarMenuSubButton
+                  isActive={item === active?.item}
+                  className={ACTIVE_CLASSES}
+                  render={<Link href={item.href} onClick={closeOnMobile} />}
+                >
+                  <item.icon />
+                  <span>{item.title}</span>
+                </SidebarMenuSubButton>
+              </SidebarMenuSubItem>
+            ))}
+          </SidebarMenuSub>
+        </CollapsibleContent>
+      ) : null}
+    </Collapsible>
   );
 }
 

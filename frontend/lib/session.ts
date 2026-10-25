@@ -11,6 +11,8 @@ export interface User {
   emailVerified: boolean;
   image: string | null;
   createdAt: string;
+  /** Set by Better Auth's admin plugin: "user" or "admin". */
+  role?: string | null;
 }
 
 interface SessionResponse {
@@ -27,6 +29,8 @@ export const getCurrentUser = cache(async (): Promise<User | null> => {
   const data = (await res.json()) as SessionResponse | null;
   return data?.user ?? null;
 });
+
+export const isAdmin = (user: User | null) => user?.role === "admin";
 
 /**
  * Returns the signed-in user. Otherwise clears the (invalid) session cookie

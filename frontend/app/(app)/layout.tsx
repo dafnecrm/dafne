@@ -1,5 +1,9 @@
 import { Suspense, type CSSProperties, type ReactNode } from "react";
-import { AppSidebar, PageBreadcrumb } from "@/components/app-sidebar";
+import {
+  AppSidebar,
+  NavSectionItems,
+  PageBreadcrumb,
+} from "@/components/app-sidebar";
 import { NavUser } from "@/components/nav-user";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Separator } from "@/components/ui/separator";
@@ -9,13 +13,19 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { requireUser } from "@/lib/session";
+import { NAV_SECTIONS } from "@/lib/navigation";
+import { getCurrentUser, isAdmin, requireUser } from "@/lib/session";
 
 /** Layout for pages that need a signed-in user. */
 export default function AppLayout({ children }: { children: ReactNode }) {
   return (
     <SidebarProvider style={{ "--sidebar-width": "19rem" } as CSSProperties}>
       <AppSidebar
+        adminNav={
+          <Suspense fallback={null}>
+            <AdminNav />
+          </Suspense>
+        }
         footer={
           // The session is read per request, so the user streams in behind a boundary.
           <Suspense fallback={<UserSkeleton />}>
@@ -50,6 +60,14 @@ function UserSkeleton() {
       </div>
     </div>
   );
+}
+
+/** Admin-only sidebar sections; nothing for other users. */
+async function AdminNav() {
+  if (!isAdmin(await getCurrentUser())) return null;
+  return NAV_SECTIONS.filter((section) => section.adminOnly).map((section) => (
+    <NavSectionItems key={section.title} title={section.title} />
+  ));
 }
 
 async function SidebarUser() {

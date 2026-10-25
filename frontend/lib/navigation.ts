@@ -1,4 +1,4 @@
-import { HouseIcon, UserIcon, type LucideIcon } from "lucide-react";
+import { HouseIcon, UserIcon, UsersIcon, type LucideIcon } from "lucide-react";
 
 export interface NavItem {
   title: string;
@@ -12,6 +12,8 @@ export interface NavSection {
   /** Where the section title links to (usually its first page). */
   href: string;
   items: NavItem[];
+  /** Only shown to users with the `admin` role. */
+  adminOnly?: boolean;
 }
 
 /** Sidebar navigation: sections with their pages. */
@@ -20,6 +22,12 @@ export const NAV_SECTIONS: NavSection[] = [
     title: "Home",
     href: "/",
     items: [{ title: "Dashboard", href: "/", icon: HouseIcon }],
+  },
+  {
+    title: "Admin",
+    href: "/users",
+    adminOnly: true,
+    items: [{ title: "Users", href: "/users", icon: UsersIcon }],
   },
   {
     title: "Settings",
