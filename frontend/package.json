@@ -13,6 +13,7 @@
     "@base-ui/react": "^1.9.0",
     "@tanstack/react-form": "^1.33.5",
     "@tanstack/react-form-nextjs": "^1.33.5",
+    "@tanstack/react-table": "^9.3.1",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.5.0",
     "lucide-react": "^1.61.0",
