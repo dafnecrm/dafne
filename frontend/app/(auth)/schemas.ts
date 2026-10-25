@@ -13,8 +13,9 @@ export const signInSchema = z.object({
 });
 
 export const signUpSchema = z.object({
-  firstname: z.string().trim().min(1, { error: "Enter your first name" }).max(255),
-  lastname: z.string().trim().min(1, { error: "Enter your last name" }).max(255),
+  // Max 127 each: the backend stores "first last" in a varchar(255).
+  firstname: z.string().trim().min(1, { error: "Enter your first name" }).max(127),
+  lastname: z.string().trim().min(1, { error: "Enter your last name" }).max(127),
   email,
   password: z
     .string()

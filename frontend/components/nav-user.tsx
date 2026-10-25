@@ -28,9 +28,9 @@ type NavUserProps = Pick<User, "name" | "firstname" | "lastname" | "email" | "im
 function UserAvatar({ user }: { user: NavUserProps }) {
   const initials = `${user.firstname[0] ?? ""}${user.lastname[0] ?? ""}`.toUpperCase();
   return (
-    <Avatar className="rounded-lg after:rounded-lg">
-      {user.image && <AvatarImage src={user.image} alt="" className="rounded-lg" />}
-      <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
+    <Avatar>
+      {user.image && <AvatarImage src={user.image} alt="" />}
+      <AvatarFallback>{initials}</AvatarFallback>
     </Avatar>
   );
 }

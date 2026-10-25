@@ -58,7 +58,7 @@ export function AppSidebar({ footer }: { footer: ReactNode }) {
               <div className="flex flex-col gap-0.5 leading-none">
                 <span className="font-medium">Tiny CRM</span>
                 <span className="text-xs text-muted-foreground">
-                  Customer relationships
+                  A tiny CRM
                 </span>
               </div>
             </SidebarMenuButton>

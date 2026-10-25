@@ -2,6 +2,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import { SESSION_COOKIES } from "@/lib/auth-cookies";
 
 const PUBLIC_PATHS = ["/sign-in", "/sign-up"];
+/** Clears an invalid session cookie; must run with or without a cookie. */
+const SESSION_EXPIRED_PATH = "/session-expired";
 
 /**
  * Quick redirect based on whether a session cookie exists. The session is
@@ -9,6 +11,8 @@ const PUBLIC_PATHS = ["/sign-in", "/sign-up"];
  */
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  if (pathname === SESSION_EXPIRED_PATH) return NextResponse.next();
+
   const hasSession = SESSION_COOKIES.some((name) => request.cookies.has(name));
   const isPublic = PUBLIC_PATHS.includes(pathname);
 

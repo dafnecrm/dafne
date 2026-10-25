@@ -28,9 +28,12 @@ export const getCurrentUser = cache(async (): Promise<User | null> => {
   return data?.user ?? null;
 });
 
-/** Returns the signed-in user, or redirects to the sign-in page. */
+/**
+ * Returns the signed-in user. Otherwise clears the (invalid) session cookie
+ * and redirects to the sign-in page, via /session-expired.
+ */
 export async function requireUser(): Promise<User> {
   const user = await getCurrentUser();
-  if (!user) redirect("/sign-in");
+  if (!user) redirect("/session-expired");
   return user;
 }
