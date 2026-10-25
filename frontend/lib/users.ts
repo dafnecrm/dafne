@@ -1,5 +1,5 @@
 import { backendFetch } from "./backend";
-import type { TableSort } from "./data-table";
+import type { TableFilters, TableSort } from "./data-table";
 import type { User } from "./session";
 
 type DateFields = "createdAt" | "updatedAt" | "banExpires";
@@ -30,6 +30,14 @@ export const USER_SORT_FIELDS = [
   "createdAt",
 ] as const;
 
+/**
+ * Fields the backend can filter users by (see the backend's
+ * ListUsersQueryDto). They combine with AND, and the backend picks each
+ * operator: email and name match text they contain, role and banned match
+ * exactly.
+ */
+export const USER_FILTER_FIELDS = ["email", "name", "role", "banned"] as const;
+
 /** Newest first. */
 export const DEFAULT_USER_SORT: TableSort = { id: "name", desc: false };
 
@@ -40,19 +48,19 @@ export const DEFAULT_USER_SORT: TableSort = { id: "name", desc: false };
 export async function listUsers({
   limit,
   offset,
-  search,
+  filters = {},
   sort = DEFAULT_USER_SORT,
 }: {
   limit: number;
   offset: number;
-  search?: string;
+  filters?: TableFilters;
   sort?: TableSort;
 }): Promise<UsersPage> {
   const query = new URLSearchParams({
     limit: String(limit),
     offset: String(offset),
   });
-  if (search) query.set("search", search);
+  for (const [field, value] of Object.entries(filters)) query.set(field, value);
   query.set("sortBy", sort.id);
   query.set("sortDirection", sort.desc ? "desc" : "asc");
   const res = await backendFetch(`/users/list?${query}`);

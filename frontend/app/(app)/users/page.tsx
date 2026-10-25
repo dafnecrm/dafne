@@ -19,7 +19,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { BackendError } from "@/lib/backend";
 import { getTableParams } from "@/lib/data-table";
 import { isAdmin, requireUser } from "@/lib/session";
-import { DEFAULT_USER_SORT, listUsers, USER_SORT_FIELDS } from "@/lib/users";
+import {
+  DEFAULT_USER_SORT,
+  listUsers,
+  USER_FILTER_FIELDS,
+  USER_SORT_FIELDS,
+} from "@/lib/users";
 import { UsersTable } from "./users-table";
 
 export const metadata: Metadata = { title: "Users · Tiny CRM" };
@@ -30,7 +35,8 @@ export default function UsersPage({ searchParams }: PageProps<"/users">) {
       <CardHeader>
         <CardTitle className="text-xl">Users</CardTitle>
         <CardDescription>
-          Everyone with an account. Click a column to sort.
+          Everyone with an account. Filter by a field, or click a column to
+          sort.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -51,6 +57,7 @@ async function UsersList({
 
   const params = getTableParams(await searchParams, {
     sortable: USER_SORT_FIELDS,
+    filterable: USER_FILTER_FIELDS,
     defaultSort: DEFAULT_USER_SORT,
   });
   let data;
@@ -58,7 +65,7 @@ async function UsersList({
     data = await listUsers({
       limit: params.pageSize,
       offset: params.offset,
-      search: params.search,
+      filters: params.filters,
       sort: params.sort,
     });
   } catch (error) {

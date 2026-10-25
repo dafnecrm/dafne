@@ -14,12 +14,12 @@ import {
   ArrowDownIcon,
   ArrowUpDownIcon,
   ArrowUpIcon,
+  FilterIcon,
   InboxIcon,
-  SearchIcon,
+  XIcon,
 } from "lucide-react";
-import Form from "next/form";
 import { useRouter } from "next/navigation";
-import { useMemo, useTransition, type ReactNode } from "react";
+import { useMemo, useState, useTransition, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -29,6 +29,13 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import {
   Table,
@@ -38,11 +45,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { tableHref, type TableParams } from "@/lib/data-table";
+import {
+  tableHref,
+  type TableFilters,
+  type TableParams,
+} from "@/lib/data-table";
 
 /*
  * Generic data table on TanStack Table v9, for server-paginated lists.
- * The server fetches one sorted page; search (?q=), page (?page=) and sort
+ * The server fetches one sorted page; filters (?email=…), page (?page=) and sort
  * (?sort=&dir=) live in the URL (see lib/data-table.ts), and the table
  * navigates when they change. Columns are sortable by default; set
  * `enableSorting: false` on columns the backend can't sort by.
@@ -82,6 +93,38 @@ export function createDataTableColumnHelper<TData extends RowData>() {
   return createColumnHelper<DataTableFeatures, TData>();
 }
 
+/**
+ * A field the table can be filtered by. With `options` the value is picked
+ * from a list (the backend matches it exactly); without, it's typed in.
+ */
+export interface DataTableFilterDef {
+  /** Backend filter field, e.g. "email". */
+  field: string;
+  label: string;
+  placeholder?: string;
+  options?: readonly { value: string; label: string }[];
+}
+
+/**
+ * Human-readable filters, e.g. `Email contains “ada” and Role is “Admin”`.
+ * Empty when no filter is active.
+ */
+export function describeFilters(
+  active: TableFilters,
+  filters: readonly DataTableFilterDef[],
+) {
+  return filters
+    .flatMap((def) => {
+      const value = active[def.field];
+      if (!value) return [];
+      const option = def.options?.find((o) => o.value === value);
+      return option
+        ? `${def.label} is “${option.label}”`
+        : `${def.label} contains “${value}”`;
+    })
+    .join(" and ");
+}
+
 export interface DataTableProps<TData extends RowData> {
   /** Keep stable (module scope or useMemo). */
   columns: DataTableColumnDef<TData>[];
@@ -89,13 +132,13 @@ export interface DataTableProps<TData extends RowData> {
   data: TData[];
   /** Row key; defaults to the row index. */
   getRowId?: (row: TData, index: number) => string;
-  /** Page path, used for search and paging URLs. */
+  /** Page path, used for filter, sort and paging URLs. */
   path: string;
   params: TableParams;
   /** Total rows across all pages. */
   total: number;
-  /** Shows the search box when set. */
-  searchPlaceholder?: string;
+  /** Fields to filter by; shows the filter bar when not empty. Keep stable. */
+  filters?: readonly DataTableFilterDef[];
   /** Shown instead of the table when there are no rows. */
   empty?: ReactNode;
   /** Unit for the count, e.g. "users" ("1–20 of 42 users"). */
@@ -109,7 +152,7 @@ export function DataTable<TData extends RowData>({
   path,
   params,
   total,
-  searchPlaceholder,
+  filters,
   empty,
   noun,
 }: DataTableProps<TData>) {
@@ -161,16 +204,28 @@ export function DataTable<TData extends RowData>({
 
   return (
     <div className="flex flex-col gap-4">
-      {searchPlaceholder && (
-        <DataTableSearch
-          path={path}
-          params={params}
-          placeholder={searchPlaceholder}
+      {filters && filters.length > 0 && (
+        <DataTableFilters
+          // Reset the inputs when the URL's filters change (e.g. Back).
+          key={JSON.stringify(params.filters)}
+          filters={filters}
+          active={params.filters}
+          disabled={navigating}
+          onChange={(next) =>
+            // New filters start again from page 1.
+            navigate(tableHref(path, { ...params, filters: next, page: 1 }))
+          }
         />
       )}
 
       {rows.length === 0 ? (
-        (empty ?? <DataTableEmpty search={params.search} />)
+        (empty ?? (
+          <DataTableEmpty
+            filter={
+              filters ? describeFilters(params.filters, filters) : undefined
+            }
+          />
+        ))
       ) : (
         <Table aria-busy={navigating}>
           <TableHeader>
@@ -267,46 +322,97 @@ export function DataTable<TData extends RowData>({
 }
 
 /**
- * GET form: the search ends up in the URL (?q=) and resets to page 1.
- * Keeps the current sort.
+ * Filter bar: one control per filter (a text box, or a list when the filter
+ * has `options`). They combine with AND. Applying or clearing calls
+ * `onChange`; the table puts the filters in the URL.
  */
-export function DataTableSearch({
-  path,
-  params,
-  placeholder,
+export function DataTableFilters({
+  filters,
+  active,
+  disabled,
+  onChange,
 }: {
-  path: string;
-  params: TableParams;
-  placeholder: string;
+  filters: readonly DataTableFilterDef[];
+  active: TableFilters;
+  disabled?: boolean;
+  onChange: (filters: TableFilters) => void;
 }) {
-  const { search, sort, defaultSort } = params;
-  const customSort =
-    sort.id !== defaultSort.id || sort.desc !== defaultSort.desc;
+  const [values, setValues] = useState<TableFilters>(active);
+  const set = (field: string, value: string) =>
+    setValues((current) => ({ ...current, [field]: value }));
+
   return (
-    <Form action={path} className="flex max-w-sm gap-2">
-      {customSort && (
-        <>
-          <input type="hidden" name="sort" value={sort.id} />
-          <input type="hidden" name="dir" value={sort.desc ? "desc" : "asc"} />
-        </>
+    <form
+      className="flex flex-wrap items-center gap-2"
+      onSubmit={(event) => {
+        event.preventDefault();
+        onChange(values);
+      }}
+    >
+      {filters.map((def) =>
+        def.options ? (
+          <Select
+            key={def.field}
+            // The null item clears the filter and labels the empty state.
+            items={[
+              {
+                value: null,
+                label: def.placeholder ?? `Any ${def.label.toLowerCase()}`,
+              },
+              ...def.options,
+            ]}
+            value={values[def.field] || null}
+            onValueChange={(next) => set(def.field, next ?? "")}
+          >
+            <SelectTrigger aria-label={def.label} className="w-36">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={null}>
+                {def.placeholder ?? `Any ${def.label.toLowerCase()}`}
+              </SelectItem>
+              {def.options.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          <Input
+            key={def.field}
+            type="search"
+            className="w-52"
+            value={values[def.field] ?? ""}
+            onChange={(event) => set(def.field, event.target.value)}
+            placeholder={def.placeholder ?? def.label}
+            aria-label={def.label}
+          />
+        ),
       )}
-      <Input
-        name="q"
-        type="search"
-        defaultValue={search}
-        placeholder={placeholder}
-        aria-label={placeholder}
-      />
-      <Button type="submit" variant="outline">
-        <SearchIcon data-icon="inline-start" />
-        Search
+
+      <Button type="submit" variant="outline" disabled={disabled}>
+        <FilterIcon data-icon="inline-start" />
+        Filter
       </Button>
-    </Form>
+      {Object.keys(active).length > 0 && (
+        <Button
+          type="button"
+          variant="ghost"
+          disabled={disabled}
+          onClick={() => onChange({})}
+        >
+          <XIcon data-icon="inline-start" />
+          Clear
+        </Button>
+      )}
+    </form>
   );
 }
 
 /** Default empty state. */
-export function DataTableEmpty({ search }: { search?: string }) {
+/** `filter` describes the active filters (see describeFilters). */
+export function DataTableEmpty({ filter }: { filter?: string }) {
   return (
     <Empty>
       <EmptyHeader>
@@ -315,9 +421,7 @@ export function DataTableEmpty({ search }: { search?: string }) {
         </EmptyMedia>
         <EmptyTitle>No results</EmptyTitle>
         <EmptyDescription>
-          {search
-            ? `Nothing matches “${search}”.`
-            : "There's nothing here yet."}
+          {filter ? `Nothing where ${filter}.` : "There's nothing here yet."}
         </EmptyDescription>
       </EmptyHeader>
     </Empty>
