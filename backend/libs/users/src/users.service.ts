@@ -1,43 +1,62 @@
-import { Auth } from '@app/auth';
-import { HttpException, Injectable } from '@nestjs/common';
-import { AuthService as BetterAuthService } from '@thallesp/nestjs-better-auth';
-import { isAPIError } from 'better-auth/api';
-import { ListUsersQueryDto } from './dto/list-users-query.dto.js';
+import { DatabaseService, schema } from '@app/database';
+import { Injectable } from '@nestjs/common';
+import { and, asc, desc, eq, like, type SQL } from 'drizzle-orm';
+import {
+  ListUsersQueryDto,
+  USER_FILTER_FIELDS,
+  UserFilterField,
+} from './dto/list-users-query.dto.js';
 
 export const DEFAULT_PAGE_SIZE = 20;
 
+const { user } = schema;
+
+/** Escapes LIKE wildcards so the value is matched literally. */
+const escapeLike = (value: string) => value.replace(/[\\%_]/g, '\\$&');
+
+const contains =
+  (column: typeof user.email | typeof user.name) => (value: string) =>
+    like(column, `%${escapeLike(value)}%`);
+
+/** The condition each filter field uses: the backend picks the operator. */
+const USER_FILTERS: Record<UserFilterField, (value: string) => SQL> = {
+  email: contains(user.email),
+  name: contains(user.name),
+  role: (value) => eq(user.role, value),
+  banned: (value) => eq(user.banned, value === 'true'),
+};
+
 @Injectable()
 export class UsersService {
-  constructor(private readonly betterAuth: BetterAuthService<Auth>) {}
+  constructor(private readonly database: DatabaseService) {}
 
-  /**
-   * Lists users with Better Auth's admin API. `headers` must carry the
-   * caller's session: Better Auth only allows admins to list users.
-   */
-  async getUsersList(
-    headers: Headers,
-    { limit, offset, search, sortBy, sortDirection }: ListUsersQueryDto = {},
-  ) {
-    try {
-      return await this.betterAuth.api.listUsers({
-        headers,
-        query: {
-          limit: limit ?? DEFAULT_PAGE_SIZE,
-          offset: offset ?? 0,
-          sortBy: sortBy ?? 'createdAt',
-          sortDirection: sortDirection ?? 'desc',
-          ...(search && {
-            searchField: 'email',
-            searchOperator: 'contains',
-            searchValue: search,
-          }),
-        },
-      });
-    } catch (error) {
-      // e.g. 401 without a session, 403 for non-admins
-      if (isAPIError(error))
-        throw new HttpException(error.body ?? error.message, error.statusCode);
-      throw error;
-    }
+  /** Lists users, paged and sorted, filtered by every field given (AND). */
+  async getUsersList(query: ListUsersQueryDto = {}) {
+    const {
+      limit = DEFAULT_PAGE_SIZE,
+      offset = 0,
+      sortBy = 'createdAt',
+      sortDirection = 'desc',
+    } = query;
+    const { db } = this.database;
+    const conditions = USER_FILTER_FIELDS.flatMap((field) => {
+      const value = query[field];
+      return value ? [USER_FILTERS[field](value)] : [];
+    });
+    const where = conditions.length ? and(...conditions) : undefined;
+    const order = sortDirection === 'asc' ? asc : desc;
+
+    const [users, total] = await Promise.all([
+      db
+        .select()
+        .from(user)
+        .where(where)
+        .orderBy(order(user[sortBy]), asc(user.id))
+        .limit(limit)
+        .offset(offset),
+      db.$count(user, where),
+    ]);
+
+    return { users, total, limit, offset };
   }
 }

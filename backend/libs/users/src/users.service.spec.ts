@@ -1,86 +1,112 @@
-import { HttpException } from '@nestjs/common';
+import { DatabaseService, schema } from '@app/database';
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthService as BetterAuthService } from '@thallesp/nestjs-better-auth';
-import { APIError } from 'better-auth/api';
+import { and, asc, desc, eq, like } from 'drizzle-orm';
 import { UsersService } from './users.service.js';
 
 describe('UsersService', () => {
   let service: UsersService;
-  const api = { listUsers: vi.fn() };
+  const rows = [{ id: '1', email: 'ada@example.com' }];
+  // Chainable stand-in for db.select().from().where().orderBy().limit().offset()
+  const query = {
+    from: vi.fn(),
+    where: vi.fn(),
+    orderBy: vi.fn(),
+    limit: vi.fn(),
+    offset: vi.fn(),
+  };
+  const db = { select: vi.fn(), $count: vi.fn() };
 
   beforeEach(async () => {
     vi.resetAllMocks();
+    db.select.mockReturnValue(query);
+    query.from.mockReturnValue(query);
+    query.where.mockReturnValue(query);
+    query.orderBy.mockReturnValue(query);
+    query.limit.mockReturnValue(query);
+    query.offset.mockResolvedValue(rows);
+    db.$count.mockResolvedValue(42);
+
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        UsersService,
-        { provide: BetterAuthService, useValue: { api } },
-      ],
+      providers: [UsersService, { provide: DatabaseService, useValue: { db } }],
     }).compile();
 
     service = module.get<UsersService>(UsersService);
   });
 
-  it('lists users with the caller headers and default paging', async () => {
-    const result = { users: [], total: 0 };
-    api.listUsers.mockResolvedValue(result);
-    const headers = new Headers({ cookie: 'session' });
-
-    await expect(service.getUsersList(headers)).resolves.toBe(result);
-    expect(api.listUsers).toHaveBeenCalledWith({
-      headers,
-      query: {
-        limit: 20,
-        offset: 0,
-        sortBy: 'createdAt',
-        sortDirection: 'desc',
-      },
+  it('lists users with default paging and sorting', async () => {
+    await expect(service.getUsersList()).resolves.toEqual({
+      users: rows,
+      total: 42,
+      limit: 20,
+      offset: 0,
     });
-  });
-
-  it('passes paging and an email search', async () => {
-    api.listUsers.mockResolvedValue({ users: [], total: 0 });
-
-    await service.getUsersList(new Headers(), {
-      limit: 5,
-      offset: 10,
-      search: 'ada',
-    });
-
-    expect(api.listUsers.mock.calls[0][0].query).toEqual({
-      limit: 5,
-      offset: 10,
-      sortBy: 'createdAt',
-      sortDirection: 'desc',
-      searchField: 'email',
-      searchOperator: 'contains',
-      searchValue: 'ada',
-    });
-  });
-
-  it('passes the sort field and direction', async () => {
-    api.listUsers.mockResolvedValue({ users: [], total: 0 });
-
-    await service.getUsersList(new Headers(), {
-      sortBy: 'email',
-      sortDirection: 'asc',
-    });
-
-    expect(api.listUsers.mock.calls[0][0].query).toMatchObject({
-      sortBy: 'email',
-      sortDirection: 'asc',
-    });
-  });
-
-  it('maps Better Auth errors to HTTP errors', async () => {
-    api.listUsers.mockRejectedValue(
-      new APIError('FORBIDDEN', { message: 'Not allowed' }),
+    expect(query.from).toHaveBeenCalledWith(schema.user);
+    expect(query.where).toHaveBeenCalledWith(undefined);
+    expect(query.orderBy).toHaveBeenCalledWith(
+      desc(schema.user.createdAt),
+      asc(schema.user.id),
     );
+    expect(query.limit).toHaveBeenCalledWith(20);
+    expect(query.offset).toHaveBeenCalledWith(0);
+    expect(db.$count).toHaveBeenCalledWith(schema.user, undefined);
+  });
 
-    const error = await service
-      .getUsersList(new Headers())
-      .catch((e: unknown) => e);
+  it('passes paging and filters email with contains', async () => {
+    await service.getUsersList({ limit: 5, offset: 10, email: 'ada' });
 
-    expect(error).toBeInstanceOf(HttpException);
-    expect((error as HttpException).getStatus()).toBe(403);
+    const where = and(like(schema.user.email, '%ada%'));
+    expect(query.where).toHaveBeenCalledWith(where);
+    expect(db.$count).toHaveBeenCalledWith(schema.user, where);
+    expect(query.limit).toHaveBeenCalledWith(5);
+    expect(query.offset).toHaveBeenCalledWith(10);
+  });
+
+  it('filters name with contains and escapes LIKE wildcards', async () => {
+    await service.getUsersList({ name: '50%_a' });
+
+    expect(query.where).toHaveBeenCalledWith(
+      and(like(schema.user.name, '%50\\%\\_a%')),
+    );
+  });
+
+  it('filters role and banned with equals', async () => {
+    await service.getUsersList({ role: 'admin', banned: 'false' });
+
+    expect(query.where).toHaveBeenCalledWith(
+      and(eq(schema.user.role, 'admin'), eq(schema.user.banned, false)),
+    );
+  });
+
+  it('combines every filter with AND', async () => {
+    await service.getUsersList({
+      email: 'ada',
+      name: 'Ada',
+      role: 'user',
+      banned: 'true',
+    });
+
+    expect(query.where).toHaveBeenCalledWith(
+      and(
+        like(schema.user.email, '%ada%'),
+        like(schema.user.name, '%Ada%'),
+        eq(schema.user.role, 'user'),
+        eq(schema.user.banned, true),
+      ),
+    );
+  });
+
+  it('ignores empty filter values', async () => {
+    await service.getUsersList({ email: '', role: '' });
+
+    expect(query.where).toHaveBeenCalledWith(undefined);
+  });
+
+  it('sorts by the given field and direction', async () => {
+    await service.getUsersList({ sortBy: 'email', sortDirection: 'asc' });
+
+    expect(query.orderBy).toHaveBeenCalledWith(
+      asc(schema.user.email),
+      asc(schema.user.id),
+    );
   });
 });
