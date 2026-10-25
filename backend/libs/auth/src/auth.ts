@@ -1,18 +1,26 @@
 import { drizzleAdapter } from '@better-auth/drizzle-adapter/relations-v2';
 import { betterAuth } from 'better-auth';
+import { admin } from 'better-auth/plugins';
 import { z } from 'zod';
 import { schema, type Database } from '@app/database';
 
-/** Validates a name field on sign-up (column is varchar(255)). */
+/**
+ * First/last name field. `sortable` makes the CLI generate varchar(255).
+ * Max 127 so Better Auth's `name` ("first last", varchar(255)) always fits.
+ */
+const NAME_MAX = 127;
 const nameField = (label: string) => ({
   type: 'string' as const,
   required: true,
+  sortable: true,
   validator: {
     input: z
       .string({ error: `${label} is required` })
       .trim()
       .min(1, { error: `${label} is required` })
-      .max(255, { error: `${label} must be at most 255 characters` }),
+      .max(NAME_MAX, {
+        error: `${label} must be at most ${NAME_MAX} characters`,
+      }),
   },
 });
 
@@ -27,6 +35,7 @@ export function createAuth(db: Database, options: CreateAuthOptions) {
     secret: options.secret,
     baseURL: options.baseURL,
     trustedOrigins: options.trustedOrigins,
+    plugins: [admin()],
     database: drizzleAdapter(db, {
       provider: 'mysql',
       schema,
@@ -35,7 +44,7 @@ export function createAuth(db: Database, options: CreateAuthOptions) {
       database: {
         joins: true,
       },
-      cookiePrefix: 'tiny-crm'
+      cookiePrefix: 'tiny-crm',
     },
     emailAndPassword: {
       enabled: true,

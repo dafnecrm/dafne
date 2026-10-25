@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "mysql",
-  "id": "117c566f-78e6-437f-b403-6cc02c5c926e",
+  "id": "44d2c2d1-21ba-45e1-9b78-1dc244f149b4",
   "prevIds": [
     "00000000-0000-0000-0000-000000000000"
   ],
@@ -196,7 +196,7 @@
       "type": "timestamp(3)",
       "notNull": true,
       "autoIncrement": false,
-      "default": "(now())",
+      "default": null,
       "onUpdateNow": false,
       "onUpdateNowFsp": null,
       "charSet": null,
@@ -236,6 +236,34 @@
       "table": "session",
       "name": "token",
       "type": "varchar(255)",
+      "notNull": true,
+      "autoIncrement": false,
+      "default": null,
+      "onUpdateNow": false,
+      "onUpdateNowFsp": null,
+      "charSet": null,
+      "collation": null,
+      "generated": null,
+      "entityType": "columns"
+    },
+    {
+      "table": "session",
+      "name": "created_at",
+      "type": "timestamp(3)",
+      "notNull": true,
+      "autoIncrement": false,
+      "default": "(now())",
+      "onUpdateNow": false,
+      "onUpdateNowFsp": null,
+      "charSet": null,
+      "collation": null,
+      "generated": null,
+      "entityType": "columns"
+    },
+    {
+      "table": "session",
+      "name": "updated_at",
+      "type": "timestamp(3)",
       "notNull": true,
       "autoIncrement": false,
       "default": null,
@@ -290,25 +318,11 @@
     },
     {
       "table": "session",
-      "name": "created_at",
-      "type": "timestamp(3)",
-      "notNull": true,
+      "name": "impersonated_by",
+      "type": "text",
+      "notNull": false,
       "autoIncrement": false,
-      "default": "(now())",
-      "onUpdateNow": false,
-      "onUpdateNowFsp": null,
-      "charSet": null,
-      "collation": null,
-      "generated": null,
-      "entityType": "columns"
-    },
-    {
-      "table": "session",
-      "name": "updated_at",
-      "type": "timestamp(3)",
-      "notNull": true,
-      "autoIncrement": false,
-      "default": "(now())",
+      "default": null,
       "onUpdateNow": false,
       "onUpdateNowFsp": null,
       "charSet": null,
@@ -333,34 +347,6 @@
     {
       "table": "user",
       "name": "name",
-      "type": "text",
-      "notNull": true,
-      "autoIncrement": false,
-      "default": null,
-      "onUpdateNow": false,
-      "onUpdateNowFsp": null,
-      "charSet": null,
-      "collation": null,
-      "generated": null,
-      "entityType": "columns"
-    },
-    {
-      "table": "user",
-      "name": "firstname",
-      "type": "varchar(255)",
-      "notNull": true,
-      "autoIncrement": false,
-      "default": null,
-      "onUpdateNow": false,
-      "onUpdateNowFsp": null,
-      "charSet": null,
-      "collation": null,
-      "generated": null,
-      "entityType": "columns"
-    },
-    {
-      "table": "user",
-      "name": "lastname",
       "type": "varchar(255)",
       "notNull": true,
       "autoIncrement": false,
@@ -435,6 +421,90 @@
       "notNull": true,
       "autoIncrement": false,
       "default": "(now())",
+      "onUpdateNow": false,
+      "onUpdateNowFsp": null,
+      "charSet": null,
+      "collation": null,
+      "generated": null,
+      "entityType": "columns"
+    },
+    {
+      "table": "user",
+      "name": "role",
+      "type": "text",
+      "notNull": false,
+      "autoIncrement": false,
+      "default": null,
+      "onUpdateNow": false,
+      "onUpdateNowFsp": null,
+      "charSet": null,
+      "collation": null,
+      "generated": null,
+      "entityType": "columns"
+    },
+    {
+      "table": "user",
+      "name": "banned",
+      "type": "boolean",
+      "notNull": false,
+      "autoIncrement": false,
+      "default": "false",
+      "onUpdateNow": false,
+      "onUpdateNowFsp": null,
+      "charSet": null,
+      "collation": null,
+      "generated": null,
+      "entityType": "columns"
+    },
+    {
+      "table": "user",
+      "name": "ban_reason",
+      "type": "text",
+      "notNull": false,
+      "autoIncrement": false,
+      "default": null,
+      "onUpdateNow": false,
+      "onUpdateNowFsp": null,
+      "charSet": null,
+      "collation": null,
+      "generated": null,
+      "entityType": "columns"
+    },
+    {
+      "table": "user",
+      "name": "ban_expires",
+      "type": "timestamp(3)",
+      "notNull": false,
+      "autoIncrement": false,
+      "default": null,
+      "onUpdateNow": false,
+      "onUpdateNowFsp": null,
+      "charSet": null,
+      "collation": null,
+      "generated": null,
+      "entityType": "columns"
+    },
+    {
+      "table": "user",
+      "name": "firstname",
+      "type": "varchar(255)",
+      "notNull": true,
+      "autoIncrement": false,
+      "default": null,
+      "onUpdateNow": false,
+      "onUpdateNowFsp": null,
+      "charSet": null,
+      "collation": null,
+      "generated": null,
+      "entityType": "columns"
+    },
+    {
+      "table": "user",
+      "name": "lastname",
+      "type": "varchar(255)",
+      "notNull": true,
+      "autoIncrement": false,
+      "default": null,
       "onUpdateNow": false,
       "onUpdateNowFsp": null,
       "charSet": null,
@@ -618,6 +688,54 @@
       "algorithm": null,
       "lock": null,
       "nameExplicit": false,
+      "entityType": "indexes"
+    },
+    {
+      "table": "account",
+      "name": "account_userId_idx",
+      "columns": [
+        {
+          "value": "user_id",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "using": null,
+      "algorithm": null,
+      "lock": null,
+      "nameExplicit": true,
+      "entityType": "indexes"
+    },
+    {
+      "table": "session",
+      "name": "session_userId_idx",
+      "columns": [
+        {
+          "value": "user_id",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "using": null,
+      "algorithm": null,
+      "lock": null,
+      "nameExplicit": true,
+      "entityType": "indexes"
+    },
+    {
+      "table": "verification",
+      "name": "verification_identifier_idx",
+      "columns": [
+        {
+          "value": "identifier",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "using": null,
+      "algorithm": null,
+      "lock": null,
+      "nameExplicit": true,
       "entityType": "indexes"
     }
   ],
