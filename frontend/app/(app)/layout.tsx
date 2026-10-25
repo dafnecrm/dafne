@@ -1,28 +1,56 @@
-import Link from "next/link";
-import { Suspense, type ReactNode } from "react";
-import { UserMenu } from "@/components/user-menu";
+import { Suspense, type CSSProperties, type ReactNode } from "react";
+import { AppSidebar, PageBreadcrumb } from "@/components/app-sidebar";
+import { NavUser } from "@/components/nav-user";
+import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 import { requireUser } from "@/lib/session";
 
 /** Layout for pages that need a signed-in user. */
 export default function AppLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex flex-1 flex-col bg-muted">
-      <header className="flex h-14 items-center justify-between border-b bg-background px-6">
-        <Link href="/" className="font-heading text-base font-semibold">
-          Tiny CRM
-        </Link>
-        {/* The session is read per request, so the user streams in behind a boundary. */}
-        <Suspense fallback={<Skeleton className="size-8 rounded-full" />}>
-          <HeaderUser />
-        </Suspense>
-      </header>
-      <main className="mx-auto w-full max-w-3xl px-6 py-10">{children}</main>
+    <SidebarProvider style={{ "--sidebar-width": "19rem" } as CSSProperties}>
+      <AppSidebar
+        footer={
+          // The session is read per request, so the user streams in behind a boundary.
+          <Suspense fallback={<UserSkeleton />}>
+            <SidebarUser />
+          </Suspense>
+        }
+      />
+      <SidebarInset>
+        <header className="flex h-16 shrink-0 items-center gap-2 px-4">
+          <SidebarTrigger className="-ml-1" />
+          <Separator
+            orientation="vertical"
+            className="mr-2 data-vertical:h-4 data-vertical:self-auto"
+          />
+          <PageBreadcrumb />
+        </header>
+        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>
+      </SidebarInset>
+    </SidebarProvider>
+  );
+}
+
+// Not SidebarMenuSkeleton: its random width breaks prerendering.
+function UserSkeleton() {
+  return (
+    <div className="flex h-12 items-center gap-2 p-2">
+      <Skeleton className="size-8 shrink-0 rounded-lg" />
+      <div className="grid flex-1 gap-1.5">
+        <Skeleton className="h-3.5 w-24" />
+        <Skeleton className="h-3 w-32" />
+      </div>
     </div>
   );
 }
 
-async function HeaderUser() {
+async function SidebarUser() {
   const { name, firstname, lastname, email, image } = await requireUser();
-  return <UserMenu user={{ name, firstname, lastname, email, image }} />;
+  return <NavUser user={{ name, firstname, lastname, email, image }} />;
 }
