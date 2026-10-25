@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { AuthModule as BetterAuthModule } from '@thallesp/nestjs-better-auth';
 import { DatabaseModule, DatabaseService } from '@app/database';
 import { createAuth } from './auth.js';
+import { AuthService } from './auth.service.js';
 
 @Module({
   imports: [
@@ -19,5 +20,7 @@ import { createAuth } from './auth.js';
       }),
     }),
   ],
+  providers: [AuthService],
+  exports: [AuthService],
 })
 export class AuthModule {}
