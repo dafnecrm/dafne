@@ -1,9 +1,10 @@
 "use client";
 
-import { LogOutIcon } from "lucide-react";
+import { LogOutIcon, UserIcon } from "lucide-react";
+import Link from "next/link";
 import { useTransition } from "react";
 import { signOut } from "@/app/actions/auth";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -17,7 +18,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import type { User } from "@/lib/session";
 
-type MenuUser = Pick<User, "name" | "firstname" | "lastname" | "email">;
+type MenuUser = Pick<User, "name" | "firstname" | "lastname" | "email" | "image">;
 
 export function UserMenu({ user }: { user: MenuUser }) {
   const [pending, startTransition] = useTransition();
@@ -30,6 +31,7 @@ export function UserMenu({ user }: { user: MenuUser }) {
         aria-label="Account menu"
       >
         <Avatar>
+          {user.image && <AvatarImage src={user.image} alt="" />}
           <AvatarFallback>{initials}</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
@@ -41,6 +43,10 @@ export function UserMenu({ user }: { user: MenuUser }) {
           </DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
+        <DropdownMenuItem render={<Link href="/account" />}>
+          <UserIcon />
+          Account
+        </DropdownMenuItem>
         <DropdownMenuItem
           variant="destructive"
           disabled={pending}

@@ -62,7 +62,8 @@ export async function signIn(_prev: AuthFormState, formData: FormData): Promise<
   const { values } = result;
 
   try {
-    const res = await backendFetch("/auth/sign-in", {
+    // Better Auth's email sign-in endpoint.
+    const res = await backendFetch("/api/auth/sign-in/email", {
       method: "POST",
       body: JSON.stringify({
         email: values.email,
@@ -84,11 +85,15 @@ export async function signUp(_prev: AuthFormState, formData: FormData): Promise<
   const { values } = result;
 
   try {
-    const res = await backendFetch("/auth/sign-up", {
+    const firstname = values.firstname.trim();
+    const lastname = values.lastname.trim();
+    // Better Auth's email sign-up endpoint; firstname/lastname are additional user fields.
+    const res = await backendFetch("/api/auth/sign-up/email", {
       method: "POST",
       body: JSON.stringify({
-        firstname: values.firstname.trim(),
-        lastname: values.lastname.trim(),
+        name: `${firstname} ${lastname}`,
+        firstname,
+        lastname,
         email: values.email,
         password: values.password,
       }),
