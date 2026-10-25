@@ -28,14 +28,15 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "@/components/ui/combobox";
+import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import {
   Table,
@@ -322,8 +323,8 @@ export function DataTable<TData extends RowData>({
 }
 
 /**
- * Filter bar: one control per filter (a text box, or a list when the filter
- * has `options`). They combine with AND. Applying or clearing calls
+ * Filter bar: one control per filter (a text box, or a combobox when the
+ * filter has `options`). They combine with AND. Applying or clearing calls
  * `onChange`; the table puts the filters in the URL.
  */
 export function DataTableFilters({
@@ -351,33 +352,32 @@ export function DataTableFilters({
     >
       {filters.map((def) =>
         def.options ? (
-          <Select
+          <Combobox
             key={def.field}
-            // The null item clears the filter and labels the empty state.
-            items={[
-              {
-                value: null,
-                label: def.placeholder ?? `Any ${def.label.toLowerCase()}`,
-              },
-              ...def.options,
-            ]}
-            value={values[def.field] || null}
-            onValueChange={(next) => set(def.field, next ?? "")}
+            items={def.options}
+            // Items are { value, label }, so the input shows the label.
+            value={
+              def.options.find((o) => o.value === values[def.field]) ?? null
+            }
+            onValueChange={(option) => set(def.field, option?.value ?? "")}
           >
-            <SelectTrigger aria-label={def.label} className="w-36">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={null}>
-                {def.placeholder ?? `Any ${def.label.toLowerCase()}`}
-              </SelectItem>
-              {def.options.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            <ComboboxInput
+              className="w-40"
+              placeholder={def.placeholder ?? `Any ${def.label.toLowerCase()}`}
+              aria-label={def.label}
+              showClear={Boolean(values[def.field])}
+            />
+            <ComboboxContent>
+              <ComboboxEmpty>No matches</ComboboxEmpty>
+              <ComboboxList>
+                {(option: { value: string; label: string }) => (
+                  <ComboboxItem key={option.value} value={option}>
+                    {option.label}
+                  </ComboboxItem>
+                )}
+              </ComboboxList>
+            </ComboboxContent>
+          </Combobox>
         ) : (
           <Input
             key={def.field}
@@ -391,14 +391,14 @@ export function DataTableFilters({
         ),
       )}
 
-      <Button type="submit" variant="outline" disabled={disabled}>
+      <Button type="submit" variant="default" disabled={disabled}>
         <FilterIcon data-icon="inline-start" />
         Filter
       </Button>
       {Object.keys(active).length > 0 && (
         <Button
           type="button"
-          variant="ghost"
+          variant="outline"
           disabled={disabled}
           onClick={() => onChange({})}
         >
