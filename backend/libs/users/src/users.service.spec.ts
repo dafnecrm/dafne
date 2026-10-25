@@ -57,6 +57,20 @@ describe('UsersService', () => {
     });
   });
 
+  it('passes the sort field and direction', async () => {
+    api.listUsers.mockResolvedValue({ users: [], total: 0 });
+
+    await service.getUsersList(new Headers(), {
+      sortBy: 'email',
+      sortDirection: 'asc',
+    });
+
+    expect(api.listUsers.mock.calls[0][0].query).toMatchObject({
+      sortBy: 'email',
+      sortDirection: 'asc',
+    });
+  });
+
   it('maps Better Auth errors to HTTP errors', async () => {
     api.listUsers.mockRejectedValue(
       new APIError('FORBIDDEN', { message: 'Not allowed' }),

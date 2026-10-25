@@ -16,7 +16,7 @@ export class UsersService {
    */
   async getUsersList(
     headers: Headers,
-    { limit, offset, search }: ListUsersQueryDto = {},
+    { limit, offset, search, sortBy, sortDirection }: ListUsersQueryDto = {},
   ) {
     try {
       return await this.betterAuth.api.listUsers({
@@ -24,8 +24,8 @@ export class UsersService {
         query: {
           limit: limit ?? DEFAULT_PAGE_SIZE,
           offset: offset ?? 0,
-          sortBy: 'createdAt',
-          sortDirection: 'desc',
+          sortBy: sortBy ?? 'createdAt',
+          sortDirection: sortDirection ?? 'desc',
           ...(search && {
             searchField: 'email',
             searchOperator: 'contains',
