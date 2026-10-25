@@ -37,6 +37,13 @@ import {
   ComboboxList,
 } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import {
   Table,
@@ -47,15 +54,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  describeFilters,
   tableHref,
+  type DataTableConfig,
+  type TableFilterDef,
   type TableFilters,
   type TableParams,
 } from "@/lib/data-table";
 
 /*
  * Generic data table on TanStack Table v9, for server-paginated lists.
- * The server fetches one sorted page; filters (?email=…), page (?page=) and sort
- * (?sort=&dir=) live in the URL (see lib/data-table.ts), and the table
+ * Each table has a config (defineDataTable in lib/data-table.ts: path, page
+ * sizes, sort and filter fields). The server fetches one sorted page;
+ * filters, page, page size and sort live in the URL, and the table
  * navigates when they change. Columns are sortable by default; set
  * `enableSorting: false` on columns the backend can't sort by.
  *
@@ -94,38 +105,6 @@ export function createDataTableColumnHelper<TData extends RowData>() {
   return createColumnHelper<DataTableFeatures, TData>();
 }
 
-/**
- * A field the table can be filtered by. With `options` the value is picked
- * from a list (the backend matches it exactly); without, it's typed in.
- */
-export interface DataTableFilterDef {
-  /** Backend filter field, e.g. "email". */
-  field: string;
-  label: string;
-  placeholder?: string;
-  options?: readonly { value: string; label: string }[];
-}
-
-/**
- * Human-readable filters, e.g. `Email contains “ada” and Role is “Admin”`.
- * Empty when no filter is active.
- */
-export function describeFilters(
-  active: TableFilters,
-  filters: readonly DataTableFilterDef[],
-) {
-  return filters
-    .flatMap((def) => {
-      const value = active[def.field];
-      if (!value) return [];
-      const option = def.options?.find((o) => o.value === value);
-      return option
-        ? `${def.label} is “${option.label}”`
-        : `${def.label} contains “${value}”`;
-    })
-    .join(" and ");
-}
-
 export interface DataTableProps<TData extends RowData> {
   /** Keep stable (module scope or useMemo). */
   columns: DataTableColumnDef<TData>[];
@@ -133,13 +112,12 @@ export interface DataTableProps<TData extends RowData> {
   data: TData[];
   /** Row key; defaults to the row index. */
   getRowId?: (row: TData, index: number) => string;
-  /** Page path, used for filter, sort and paging URLs. */
-  path: string;
+  /** The table's config, shared with the server page. */
+  config: DataTableConfig;
+  /** The current view, from getTableParams on the server. */
   params: TableParams;
   /** Total rows across all pages. */
   total: number;
-  /** Fields to filter by; shows the filter bar when not empty. Keep stable. */
-  filters?: readonly DataTableFilterDef[];
   /** Shown instead of the table when there are no rows. */
   empty?: ReactNode;
   /** Unit for the count, e.g. "users" ("1–20 of 42 users"). */
@@ -150,10 +128,9 @@ export function DataTable<TData extends RowData>({
   columns,
   data,
   getRowId,
-  path,
+  config,
   params,
   total,
-  filters,
   empty,
   noun,
 }: DataTableProps<TData>) {
@@ -183,15 +160,18 @@ export function DataTable<TData extends RowData>({
     onPaginationChange: (updater) => {
       const next =
         typeof updater === "function" ? updater(pagination) : updater;
-      navigate(tableHref(path, { ...params, page: next.pageIndex + 1 }));
+      // A new page size starts again from page 1.
+      const page =
+        next.pageSize === pagination.pageSize ? next.pageIndex + 1 : 1;
+      navigate(tableHref(config, { ...params, pageSize: next.pageSize, page }));
     },
     onSortingChange: (updater) => {
       const [next] = typeof updater === "function" ? updater(sorting) : updater;
       // A new order starts again from page 1.
       navigate(
-        tableHref(path, {
+        tableHref(config, {
           ...params,
-          sort: next ?? params.defaultSort,
+          sort: next ?? config.defaultSort,
           page: 1,
         }),
       );
@@ -205,16 +185,16 @@ export function DataTable<TData extends RowData>({
 
   return (
     <div className="flex flex-col gap-4">
-      {filters && filters.length > 0 && (
+      {config.filters.length > 0 && (
         <DataTableFilters
           // Reset the inputs when the URL's filters change (e.g. Back).
           key={JSON.stringify(params.filters)}
-          filters={filters}
+          filters={config.filters}
           active={params.filters}
           disabled={navigating}
           onChange={(next) =>
             // New filters start again from page 1.
-            navigate(tableHref(path, { ...params, filters: next, page: 1 }))
+            navigate(tableHref(config, { ...params, filters: next, page: 1 }))
           }
         />
       )}
@@ -223,7 +203,7 @@ export function DataTable<TData extends RowData>({
         (empty ?? (
           <DataTableEmpty
             filter={
-              filters ? describeFilters(params.filters, filters) : undefined
+              describeFilters(params.filters, config.filters) || undefined
             }
           />
         ))
@@ -303,7 +283,29 @@ export function DataTable<TData extends RowData>({
             : `0${unit || " results"}`}
           {navigating && <Spinner />}
         </span>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
+          {config.pageSizes.length > 1 && (
+            <Select
+              items={config.pageSizes.map((size) => ({
+                value: size,
+                label: `${size} / page`,
+              }))}
+              value={pagination.pageSize}
+              onValueChange={(size) => size && table.setPageSize(size)}
+              disabled={navigating}
+            >
+              <SelectTrigger size="sm" aria-label="Rows per page">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {config.pageSizes.map((size) => (
+                  <SelectItem key={size} value={size}>
+                    {size} / page
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
           <Button
             variant="outline"
             size="sm"
@@ -337,7 +339,7 @@ export function DataTableFilters({
   disabled,
   onChange,
 }: {
-  filters: readonly DataTableFilterDef[];
+  filters: readonly TableFilterDef[];
   active: TableFilters;
   disabled?: boolean;
   onChange: (filters: TableFilters) => void;

@@ -1,6 +1,7 @@
 import { backendFetch } from "./backend";
 import type { TableFilters, TableSort } from "./data-table";
 import type { User } from "./session";
+import { usersTable } from "./users-table";
 
 type DateFields = "createdAt" | "updatedAt" | "banExpires";
 
@@ -21,26 +22,6 @@ export interface UsersPage {
   offset?: number;
 }
 
-/** Fields the backend can sort users by (see the backend's ListUsersQueryDto). */
-export const USER_SORT_FIELDS = [
-  "name",
-  "email",
-  "role",
-  "banned",
-  "createdAt",
-] as const;
-
-/**
- * Fields the backend can filter users by (see the backend's
- * ListUsersQueryDto). They combine with AND, and the backend picks each
- * operator: email and name match text they contain, role and banned match
- * exactly.
- */
-export const USER_FILTER_FIELDS = ["email", "name", "role", "banned"] as const;
-
-/** Newest first. */
-export const DEFAULT_USER_SORT: TableSort = { id: "name", desc: false };
-
 /**
  * Calls the backend's GET /users/list (admins only: other users get a
  * BackendError with status 403).
@@ -49,7 +30,7 @@ export async function listUsers({
   limit,
   offset,
   filters = {},
-  sort = DEFAULT_USER_SORT,
+  sort = usersTable.defaultSort,
 }: {
   limit: number;
   offset: number;

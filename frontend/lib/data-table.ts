@@ -1,8 +1,14 @@
 /**
- * URL state for server-side data tables: one param per filter field (e.g.
- * `?email=ada&role=admin`), `?page=` (1-based), `?sort=` (column id) and
- * `?dir=` (asc | desc). The URL is the source of truth, so any view can be
- * shared or reloaded. Filter fields must not be named page, sort or dir.
+ * Config and URL state for server-side data tables.
+ *
+ * Each table defines one config with `defineDataTable` (path, page sizes,
+ * sort and filter fields). It's plain data, so the server page reads the URL
+ * with it (`getTableParams`) and the client `DataTable` builds links with it.
+ *
+ * URL: one param per filter field (e.g. `?email=ada&role=admin`), `?page=`
+ * (1-based), `?limit=` (rows per page), `?sort=` (column id) and `?dir=`
+ * (asc | desc). The URL is the source of truth, so any view can be shared or
+ * reloaded. Filter fields must not be named page, limit, sort or dir.
  */
 
 export interface TableSort {
@@ -18,27 +24,72 @@ export interface TableSort {
  */
 export type TableFilters = Record<string, string>;
 
+/**
+ * A field the table can be filtered by. With `options` the value is picked
+ * from a list (the backend matches it exactly); without, it's typed in.
+ */
+export interface TableFilterDef {
+  /** Backend filter field, e.g. "email". */
+  field: string;
+  label: string;
+  placeholder?: string;
+  options?: readonly { value: string; label: string }[];
+}
+
+/** A table's config, with defaults filled in (see `defineDataTable`). */
+export interface DataTableConfig {
+  /** Page path, used for filter, sort and paging URLs. */
+  path: string;
+  /** Page sizes the picker offers. */
+  pageSizes: readonly number[];
+  /** Page size without `?limit=`. */
+  defaultPageSize: number;
+  /** Column ids the backend can sort by; others in the URL are ignored. */
+  sortable: readonly string[];
+  /** Sort without `?sort=`. */
+  defaultSort: TableSort;
+  /** Fields to filter by; others in the URL are ignored. */
+  filters: readonly TableFilterDef[];
+}
+
+export const DEFAULT_PAGE_SIZES: readonly number[] = [10, 20, 50];
+export const DEFAULT_PAGE_SIZE = 20;
+
+/**
+ * Defines a table. Page sizes default to 10, 20 and 50; the default page
+ * size is 20 when offered, otherwise the first size. Define it at module
+ * scope in a plain (not "use client") module, so server and client share it.
+ */
+export function defineDataTable({
+  pageSizes = DEFAULT_PAGE_SIZES,
+  defaultPageSize = pageSizes.includes(DEFAULT_PAGE_SIZE)
+    ? DEFAULT_PAGE_SIZE
+    : pageSizes[0],
+  filters = [],
+  ...config
+}: Omit<DataTableConfig, "pageSizes" | "defaultPageSize" | "filters"> &
+  Partial<
+    Pick<DataTableConfig, "pageSizes" | "defaultPageSize" | "filters">
+  >): DataTableConfig {
+  if (!pageSizes.includes(defaultPageSize))
+    throw new Error(
+      `${config.path}: default page size ${defaultPageSize} is not in pageSizes`,
+    );
+  return { ...config, pageSizes, defaultPageSize, filters };
+}
+
+/** The current view of a table, read from the URL. */
 export interface TableParams {
   filters: TableFilters;
   page: number;
+  /** Rows per page, for the backend's `limit`. */
   pageSize: number;
   /** Rows to skip, for the backend's `offset`. */
   offset: number;
   sort: TableSort;
-  /** The table's default sort; it's left out of URLs. */
-  defaultSort: TableSort;
 }
 
 type SearchParams = Record<string, string | string[] | undefined>;
-
-export interface TableParamsOptions {
-  pageSize?: number;
-  /** Column ids the backend can sort by; others in the URL are ignored. */
-  sortable: readonly string[];
-  /** Fields the backend can filter by; others in the URL are ignored. */
-  filterable?: readonly string[];
-  defaultSort: TableSort;
-}
 
 /** Drops empty values and trims the rest. */
 export function cleanFilters(filters: TableFilters): TableFilters {
@@ -49,48 +100,68 @@ export function cleanFilters(filters: TableFilters): TableFilters {
   );
 }
 
-/** Reads filters, page and sort from a page's `searchParams`. */
+/** Reads filters, page, page size and sort from a page's `searchParams`. */
 export function getTableParams(
   params: SearchParams,
-  { pageSize = 20, sortable, filterable = [], defaultSort }: TableParamsOptions,
+  config: DataTableConfig,
 ): TableParams {
   const filters = cleanFilters(
     Object.fromEntries(
-      filterable.flatMap((field) => {
+      config.filters.flatMap(({ field }) => {
         const value = params[field];
         return typeof value === "string" ? [[field, value]] : [];
       }),
     ),
   );
   const page = Math.max(1, Math.floor(Number(params.page)) || 1);
+  const limit = Number(params.limit);
+  // Only offered sizes, so the URL can't ask the backend for any size.
+  const pageSize = config.pageSizes.includes(limit)
+    ? limit
+    : config.defaultPageSize;
   const sort =
-    typeof params.sort === "string" && sortable.includes(params.sort)
+    typeof params.sort === "string" && config.sortable.includes(params.sort)
       ? { id: params.sort, desc: params.dir === "desc" }
-      : defaultSort;
-  return {
-    filters,
-    page,
-    pageSize,
-    offset: (page - 1) * pageSize,
-    sort,
-    defaultSort,
-  };
+      : config.defaultSort;
+  return { filters, page, pageSize, offset: (page - 1) * pageSize, sort };
 }
 
-/** URL of a table view. Page 1, empty filters and the default sort are omitted. */
+/**
+ * URL of a table view. Page 1, empty filters, the default page size and the
+ * default sort are omitted.
+ */
 export function tableHref(
-  path: string,
-  params: Pick<TableParams, "filters" | "sort" | "defaultSort"> & {
-    page?: number;
-  },
+  config: DataTableConfig,
+  { filters, page, pageSize, sort }: Omit<TableParams, "offset">,
 ) {
-  const { filters, page, sort, defaultSort } = params;
   const query = new URLSearchParams(cleanFilters(filters));
+  const { defaultSort } = config;
   if (sort.id !== defaultSort.id || sort.desc !== defaultSort.desc) {
     query.set("sort", sort.id);
     query.set("dir", sort.desc ? "desc" : "asc");
   }
-  if (page && page > 1) query.set("page", String(page));
+  if (pageSize !== config.defaultPageSize) query.set("limit", String(pageSize));
+  if (page > 1) query.set("page", String(page));
   const qs = query.toString();
-  return qs ? `${path}?${qs}` : path;
+  return qs ? `${config.path}?${qs}` : config.path;
+}
+
+/**
+ * Human-readable filters, e.g. `Email contains “ada” and Role is “Admin”`.
+ * Empty when no filter is active.
+ */
+export function describeFilters(
+  active: TableFilters,
+  filters: readonly TableFilterDef[],
+) {
+  return filters
+    .flatMap((def) => {
+      const value = active[def.field];
+      if (!value) return [];
+      const option = def.options?.find((o) => o.value === value);
+      return option
+        ? `${def.label} is “${option.label}”`
+        : `${def.label} contains “${value}”`;
+    })
+    .join(" and ");
 }

@@ -7,7 +7,7 @@ import type { ListedUser } from "@/lib/users";
 
 /*
  * Columns of the users table. Column ids double as the backend's sort
- * fields, so they must match USER_SORT_FIELDS in lib/users.ts.
+ * fields, so they must match usersTable.sortable in lib/users-table.ts.
  */
 
 const col = createDataTableColumnHelper<ListedUser>();
