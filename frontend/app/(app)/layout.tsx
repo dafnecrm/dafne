@@ -40,9 +40,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 // Not SidebarMenuSkeleton: its random width breaks prerendering.
 function UserSkeleton() {
   return (
-    <div className="flex h-12 items-center gap-2 p-2">
+    <div className="flex h-12 items-center gap-2 p-2 group-data-[collapsible=icon]:p-0">
       <Skeleton className="size-8 shrink-0 rounded-lg" />
-      <div className="grid flex-1 gap-1.5">
+      <div className="grid flex-1 gap-1.5 group-data-[collapsible=icon]:hidden">
         <Skeleton className="h-3.5 w-24" />
         <Skeleton className="h-3 w-32" />
       </div>

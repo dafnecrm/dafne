@@ -1,6 +1,10 @@
+import { HouseIcon, UserIcon, type LucideIcon } from "lucide-react";
+
 export interface NavItem {
   title: string;
   href: string;
+  /** Shown when the sidebar is minimized to a rail. */
+  icon: LucideIcon;
 }
 
 export interface NavSection {
@@ -13,14 +17,14 @@ export interface NavSection {
 /** Sidebar navigation: sections with their pages. */
 export const NAV_SECTIONS: NavSection[] = [
   {
-    title: "Workspace",
+    title: "Home",
     href: "/",
-    items: [{ title: "Home", href: "/" }],
+    items: [{ title: "Dashboard", href: "/", icon: HouseIcon }],
   },
   {
     title: "Settings",
     href: "/account",
-    items: [{ title: "Account", href: "/account" }],
+    items: [{ title: "Account", href: "/account", icon: UserIcon }],
   },
 ];
 
