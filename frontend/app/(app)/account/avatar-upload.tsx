@@ -41,30 +41,27 @@ export function AvatarUpload({ image, initials }: { image: string | null; initia
   }
 
   return (
-    <div className="flex items-center gap-5">
-      <Avatar className="size-20">
+    <div className="flex flex-col items-center gap-5">
+      <Avatar className="size-20" onClick={() => inputRef.current?.click()}>
         {image && <AvatarImage src={image} alt="Your avatar" />}
         <AvatarFallback className="text-xl">{initials}</AvatarFallback>
       </Avatar>
       <div className="flex flex-col gap-2">
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" disabled={pending} onClick={() => inputRef.current?.click()}>
-            {pending ? <Spinner data-icon="inline-start" /> : <ImageUpIcon data-icon="inline-start" />}
-            {image ? "Change avatar" : "Upload avatar"}
-          </Button>
-          {image && (
-            <Button variant="ghost" disabled={pending} onClick={() => save(null)}>
-              <Trash2Icon data-icon="inline-start" />
-              Remove
-            </Button>
-          )}
-        </div>
         {error ? (
           <p role="alert" className="text-sm text-destructive">
             {error}
           </p>
         ) : (
-          <p className="text-sm text-muted-foreground">PNG, JPEG, WebP or GIF. Cropped to a square.</p>
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground">Click the avatar to change image. </p>
+            <p className="text-sm text-muted-foreground">PNG, JPEG, WebP or GIF accepted. Cropped to a square.</p>
+          </div>
+        )}
+        {image && (
+          <Button variant="outline" disabled={pending} onClick={() => save(null)}>
+            <Trash2Icon data-icon="inline-start" />
+            Remove
+          </Button>
         )}
         <input
           ref={inputRef}

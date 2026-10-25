@@ -35,12 +35,13 @@ async function Profile() {
   const user = await requireUser();
 
   return (
-    <div className="flex flex-col gap-6">
-      <AvatarUpload
-        image={user.image}
-        initials={`${user.firstname[0] ?? ""}${user.lastname[0] ?? ""}`.toUpperCase()}
-      />
-      <Separator />
+    <div className="flex flex-col md:flex-row gap-10">
+      <div className="md:order-1">
+        <AvatarUpload
+          image={user.image}
+          initials={`${user.firstname[0] ?? ""}${user.lastname[0] ?? ""}`.toUpperCase()}
+        />
+      </div>
       <ProfileDetails
         firstname={user.firstname}
         lastname={user.lastname}

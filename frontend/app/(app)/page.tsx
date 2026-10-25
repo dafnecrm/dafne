@@ -17,7 +17,7 @@ async function Welcome() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-2xl">Welcome, {user.firstname}</CardTitle>
+        <CardTitle className="text-2xl">Welcome, {user.firstname}!</CardTitle>
         <CardDescription>Signed in as {user.email}</CardDescription>
       </CardHeader>
     </Card>
