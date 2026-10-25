@@ -1,6 +1,6 @@
 "use client";
 
-import { ContactIcon } from "lucide-react";
+import { ChevronRightIcon, ContactIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
@@ -12,6 +12,11 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   Sidebar,
   SidebarContent,
@@ -43,13 +48,18 @@ export function AppSidebar({ footer }: { footer: ReactNode }) {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" render={<Link href="/" onClick={closeOnMobile} />}>
+            <SidebarMenuButton
+              size="lg"
+              render={<Link href="/" onClick={closeOnMobile} />}
+            >
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                 <ContactIcon className="size-4" />
               </div>
               <div className="flex flex-col gap-0.5 leading-none">
                 <span className="font-medium">Tiny CRM</span>
-                <span className="text-xs text-muted-foreground">Customer relationships</span>
+                <span className="text-xs text-muted-foreground">
+                  Customer relationships
+                </span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -59,31 +69,38 @@ export function AppSidebar({ footer }: { footer: ReactNode }) {
         <SidebarGroup>
           <SidebarMenu className="gap-2">
             {NAV_SECTIONS.map((section) => (
-              <SidebarMenuItem key={section.title}>
-                <SidebarMenuButton
-                  render={
-                    <Link href={section.href} className="font-medium" onClick={closeOnMobile} />
-                  }
+              <Collapsible
+                key={section.title}
+                defaultOpen
+                render={<SidebarMenuItem />}
+              >
+                <CollapsibleTrigger
+                  render={<SidebarMenuButton className="font-medium" />}
                 >
                   {section.title}
-                </SidebarMenuButton>
+                  <ChevronRightIcon className="ml-auto transition-transform duration-200 group-data-panel-open/menu-button:rotate-90" />
+                </CollapsibleTrigger>
                 {section.items.length ? (
-                  <SidebarMenuSub className="ml-0 border-l-0 px-1.5">
-                    {section.items.map((item) => (
-                      <SidebarMenuSubItem key={item.href}>
-                        <SidebarMenuSubButton
-                          isActive={item === active?.item}
-                          // Active page uses the primary color (also on hover).
-                          className="data-active:bg-sidebar-primary data-active:font-medium data-active:text-sidebar-primary-foreground data-active:hover:bg-sidebar-primary/90 data-active:hover:text-sidebar-primary-foreground"
-                          render={<Link href={item.href} onClick={closeOnMobile} />}
-                        >
-                          {item.title}
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    ))}
-                  </SidebarMenuSub>
+                  <CollapsibleContent className="h-(--collapsible-panel-height) overflow-hidden transition-[height] duration-200 ease-out data-ending-style:h-0 data-starting-style:h-0">
+                    <SidebarMenuSub className="ml-0 border-l-0 px-1.5">
+                      {section.items.map((item) => (
+                        <SidebarMenuSubItem key={item.href}>
+                          <SidebarMenuSubButton
+                            isActive={item === active?.item}
+                            // Active page uses the primary color (also on hover).
+                            className="data-active:bg-sidebar-primary data-active:font-medium data-active:text-sidebar-primary-foreground data-active:hover:bg-sidebar-primary/90 data-active:hover:text-sidebar-primary-foreground"
+                            render={
+                              <Link href={item.href} onClick={closeOnMobile} />
+                            }
+                          >
+                            {item.title}
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      ))}
+                    </SidebarMenuSub>
+                  </CollapsibleContent>
                 ) : null}
-              </SidebarMenuItem>
+              </Collapsible>
             ))}
           </SidebarMenu>
         </SidebarGroup>
