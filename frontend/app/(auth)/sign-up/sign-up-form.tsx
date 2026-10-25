@@ -1,71 +1,70 @@
 "use client";
 
-import { useActionState } from "react";
+import {
+  initialFormState,
+  mergeForm,
+  revalidateLogic,
+  useTransform,
+} from "@tanstack/react-form-nextjs";
+import { startTransition, useActionState } from "react";
 import { signUp } from "@/app/actions/auth";
-import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { FormAlert, SubmitButton } from "../form-parts";
+import { FieldGroup } from "@/components/ui/field";
+import { definedState, useAppForm } from "@/lib/app-form/app-form";
+import { signUpFormOpts, signUpSchema } from "../schemas";
 
 export function SignUpForm() {
-  const [state, action, pending] = useActionState(signUp, {});
+  const [state, action, pending] = useActionState(signUp, initialFormState);
+
+  const form = useAppForm({
+    ...signUpFormOpts,
+    // Validate on submit, then on every change.
+    validationLogic: revalidateLogic(),
+    validators: { onDynamic: signUpSchema },
+    // Shows the values and errors returned by the server action.
+    transform: useTransform((base) => mergeForm(base, definedState(state)), [state]),
+    onSubmitMeta: {} as { formData?: FormData },
+    onSubmit: ({ meta }) => {
+      if (meta.formData) startTransition(() => action(meta.formData!));
+    },
+  });
 
   return (
-    <form action={action}>
-      <FieldGroup>
-        <FormAlert message={state.error} />
-        <div className="grid grid-cols-2 gap-3">
-          <Field>
-            <FieldLabel htmlFor="firstname">First name</FieldLabel>
-            <Input
-              id="firstname"
-              name="firstname"
-              autoComplete="given-name"
-              required
-              maxLength={255}
-              defaultValue={state.values?.firstname}
-            />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="lastname">Last name</FieldLabel>
-            <Input
-              id="lastname"
-              name="lastname"
-              autoComplete="family-name"
-              required
-              maxLength={255}
-              defaultValue={state.values?.lastname}
-            />
-          </Field>
-        </div>
-        <Field>
-          <FieldLabel htmlFor="email">Email</FieldLabel>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            autoComplete="email"
-            placeholder="you@example.com"
-            required
-            maxLength={255}
-            defaultValue={state.values?.email}
-          />
-        </Field>
-        <Field>
-          <FieldLabel htmlFor="password">Password</FieldLabel>
-          {/* Same limits as the backend's SignUpDto. */}
-          <Input
-            id="password"
-            name="password"
-            type="password"
-            autoComplete="new-password"
-            required
-            minLength={8}
-            maxLength={128}
-          />
-          <FieldDescription>At least 8 characters.</FieldDescription>
-        </Field>
-        <SubmitButton pending={pending}>Create account</SubmitButton>
-      </FieldGroup>
+    <form
+      action={action}
+      noValidate
+      onSubmit={(e) => {
+        // Without JavaScript the form posts straight to the action.
+        e.preventDefault();
+        form.handleSubmit({ formData: new FormData(e.currentTarget) });
+      }}
+    >
+      <form.AppForm>
+        <FieldGroup>
+          <form.FormErrors />
+          <div className="grid grid-cols-2 gap-3">
+            <form.AppField name="firstname">
+              {(field) => <field.TextField label="First name" autoComplete="given-name" />}
+            </form.AppField>
+            <form.AppField name="lastname">
+              {(field) => <field.TextField label="Last name" autoComplete="family-name" />}
+            </form.AppField>
+          </div>
+          <form.AppField name="email">
+            {(field) => (
+              <field.TextField
+                label="Email"
+                type="email"
+                autoComplete="email"
+                placeholder="you@example.com"
+              />
+            )}
+          </form.AppField>
+          <form.AppField name="password">
+            {(field) => <field.PasswordField label="Password" autoComplete="new-password" />}
+          </form.AppField>
+          <form.SubmitButton label="Create account" pending={pending} className="w-full" />
+        </FieldGroup>
+      </form.AppForm>
     </form>
   );
 }

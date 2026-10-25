@@ -1,6 +1,7 @@
 'use client'
 
-import { useFieldContext, useFormContext } from '@/lib/form-context'
+import { useFieldContext, useFormContext } from '@/lib/app-form/form-context'
+import { Checkbox } from './checkbox'
 import { Field, FieldError, FieldLabel } from './field'
 import { Input } from "./input"
 import { Button } from './button'
@@ -9,7 +10,7 @@ import { Alert, AlertDescription, AlertTitle } from './alert'
 import { useSelector } from '@tanstack/react-form-nextjs'
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from './input-group'
 import { Eye, EyeOff } from 'lucide-react'
-import React, { useRef, useState } from 'react'
+import React, { useState } from 'react'
 
 type TextFieldProps = {
   label: string
@@ -39,12 +40,8 @@ function TextField({ label, className, addons, uncontrolled, orientation, ...pro
         />
       </InputGroup>
       <FieldError>
-        {field.state.meta.errors.reduce((errors, error) => {
-          if (!errors.find((e: any) => e.code === error.code)) {
-            errors.push(error)
-          }
-          return errors;
-        }, []).map((error: any, i: number) => <p key={i}>{error?.message}</p>)}
+        {field.state.meta.errors.length > 0 &&
+          [...new Set(errorMessages(field.state.meta.errors))].map((message, i) => <p key={i}>{message}</p>)}
       </FieldError>
     </Field>
   )
@@ -78,13 +75,37 @@ function UncontrolledField({ label, ...props }: Omit<TextFieldProps, 'uncontroll
   />
 }
 
-function SubmitButton({ label }: { label: string }) {
+function CheckboxField({ label, className }: { label: string; className?: string }) {
+  const field = useFieldContext<boolean>()
+
+  return (
+    <Field orientation="horizontal" className={className} data-invalid={!field.state.meta.isValid}>
+      <Checkbox
+        id={field.name}
+        name={field.name}
+        // Submit "off" when unchecked so the server always receives a value.
+        uncheckedValue="off"
+        checked={field.state.value}
+        onCheckedChange={(checked) => field.handleChange(checked)}
+        onBlur={field.handleBlur}
+      />
+      <FieldLabel htmlFor={field.name} className="font-normal">{label}</FieldLabel>
+    </Field>
+  )
+}
+
+/**
+ * Submit button. The form's onSubmit handler calls form.handleSubmit, so the
+ * button only submits the form. Pass `pending` while a server action runs.
+ */
+function SubmitButton({ label, pending, className }: { label: string; pending?: boolean; className?: string }) {
   const form = useFormContext()
   return (
-    <form.Subscribe selector={(state) => [state.isSubmitting, state.canSubmit]}>
-      {([isSubmitting, canSubmit]) => (
-        <Button type="submit" disabled={isSubmitting || !canSubmit} onClick={form.handleSubmit}>
-          {isSubmitting && <Spinner />}
+    // isFieldsValid ignores form-level server errors, so a failed request can be retried.
+    <form.Subscribe selector={(state) => [state.isSubmitting, state.isFieldsValid]}>
+      {([isSubmitting, isFieldsValid]) => (
+        <Button type="submit" className={className} disabled={pending || isSubmitting || !isFieldsValid}>
+          {(pending || isSubmitting) && <Spinner data-icon="inline-start" />}
           {label}
         </Button>
       )}
@@ -92,16 +113,27 @@ function SubmitButton({ label }: { label: string }) {
   )
 }
 
+/** Flattens a validation error (string, issue, list or map of them) into messages. */
+function errorMessages(error: unknown): string[] {
+  if (!error) return []
+  if (typeof error === 'string') return [error]
+  if (Array.isArray(error)) return error.flatMap(errorMessages)
+  if (typeof error === 'object') {
+    if ('message' in error && typeof error.message === 'string') return [error.message]
+    return Object.values(error).flatMap(errorMessages)
+  }
+  return []
+}
+
 function FormErrors() {
   const form = useFormContext()
   const formErrors = useSelector(form.store, (formState) => formState.errorMap)
+  const messages = [...new Set([...errorMessages(formErrors.onServer), ...errorMessages(formErrors.onSubmit)])]
 
-  return formErrors.onSubmit && <Alert variant="destructive">
-    <AlertTitle>Form has errors!</AlertTitle>
+  return messages.length > 0 && <Alert variant="destructive">
+    <AlertTitle>{formErrors.onServer ? 'Something went wrong' : 'Form has errors!'}</AlertTitle>
     <AlertDescription>
-      {Object.keys(formErrors.onSubmit).reduce((errors, k) => {
-        return errors.concat(formErrors.onSubmit[k]);
-      }, []).map((error: any, i: number) => <p key={i}>{error?.message}</p>)}
+      {messages.map((message, i) => <p key={i}>{message}</p>)}
     </AlertDescription>
   </Alert>
 }
@@ -110,6 +142,7 @@ export {
   TextField,
   PasswordField,
   UncontrolledField,
+  CheckboxField,
   SubmitButton,
   FormErrors
 }

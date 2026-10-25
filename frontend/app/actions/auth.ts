@@ -1,72 +1,101 @@
 "use server";
 
+import { createServerValidate, ServerValidateError } from "@tanstack/react-form-nextjs";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { applySetCookies, BackendError, backendFetch } from "@/lib/backend";
+import {
+  signInFormOpts,
+  signInSchema,
+  signUpFormOpts,
+  signUpSchema,
+  type AuthFormState,
+} from "@/app/(auth)/schemas";
 import { SESSION_COOKIES } from "@/lib/auth-cookies";
+import { applySetCookies, BackendError, backendFetch } from "@/lib/backend";
 
-export interface AuthFormState {
-  error?: string;
-  /** Submitted values, so the form keeps them after an error. */
-  values?: Record<string, string>;
+const validateSignIn = createServerValidate({
+  ...signInFormOpts,
+  onServerValidate: signInSchema,
+});
+
+const validateSignUp = createServerValidate({
+  ...signUpFormOpts,
+  onServerValidate: signUpSchema,
+});
+
+/** Never send the password back to the browser. */
+function withoutPassword(state: AuthFormState): AuthFormState {
+  const values = { ...(state.values ?? {}) } as Record<string, unknown>;
+  delete values.password;
+  return { ...state, values };
 }
 
-const field = (formData: FormData, name: string) =>
-  String(formData.get(name) ?? "").trim();
-
-function errorMessage(error: unknown) {
+/** Form state with a form-level error from the server. */
+function serverError(error: unknown, values: Record<string, unknown>): AuthFormState {
+  let message = "Something went wrong. Please try again.";
   if (error instanceof BackendError) {
-    if (error.status === 401) return "Invalid email or password.";
-    return error.message;
+    message = error.status === 401 ? "Invalid email or password." : error.message;
+  } else {
+    console.error(error);
   }
-  console.error(error);
-  return "Something went wrong. Please try again.";
+  return withoutPassword({ values, errorMap: { onServer: message }, errors: [message] });
 }
 
-export async function signIn(
-  _prev: AuthFormState,
-  formData: FormData,
-): Promise<AuthFormState> {
-  const email = field(formData, "email");
+/**
+ * Runs the server-side validation. Returns the values, or the form state
+ * with the validation errors.
+ */
+async function validate<T>(
+  run: () => Promise<T>,
+): Promise<{ values: T } | { state: AuthFormState }> {
+  try {
+    return { values: await run() };
+  } catch (error) {
+    if (error instanceof ServerValidateError) return { state: withoutPassword(error.formState) };
+    throw error;
+  }
+}
+
+export async function signIn(_prev: AuthFormState, formData: FormData): Promise<AuthFormState> {
+  const result = await validate(() => validateSignIn(formData, { booleans: ["rememberMe"] }));
+  if ("state" in result) return result.state;
+  const { values } = result;
 
   try {
     const res = await backendFetch("/auth/sign-in", {
       method: "POST",
       body: JSON.stringify({
-        email,
-        password: String(formData.get("password") ?? ""),
-        rememberMe: formData.get("rememberMe") === "on",
+        email: values.email,
+        password: values.password,
+        rememberMe: values.rememberMe === true,
       }),
     });
     await applySetCookies(res);
   } catch (error) {
-    return { error: errorMessage(error), values: { email } };
+    return serverError(error, values);
   }
 
   redirect("/");
 }
 
-export async function signUp(
-  _prev: AuthFormState,
-  formData: FormData,
-): Promise<AuthFormState> {
-  const values = {
-    firstname: field(formData, "firstname"),
-    lastname: field(formData, "lastname"),
-    email: field(formData, "email"),
-  };
+export async function signUp(_prev: AuthFormState, formData: FormData): Promise<AuthFormState> {
+  const result = await validate(() => validateSignUp(formData));
+  if ("state" in result) return result.state;
+  const { values } = result;
 
   try {
     const res = await backendFetch("/auth/sign-up", {
       method: "POST",
       body: JSON.stringify({
-        ...values,
-        password: String(formData.get("password") ?? ""),
+        firstname: values.firstname.trim(),
+        lastname: values.lastname.trim(),
+        email: values.email,
+        password: values.password,
       }),
     });
     await applySetCookies(res);
   } catch (error) {
-    return { error: errorMessage(error), values };
+    return serverError(error, values);
   }
 
   redirect("/");
