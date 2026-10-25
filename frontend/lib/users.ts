@@ -27,7 +27,7 @@ export const USER_SORT_FIELDS = [
 ] as const;
 
 /** Newest first. */
-export const DEFAULT_USER_SORT: TableSort = { id: "createdAt", desc: true };
+export const DEFAULT_USER_SORT: TableSort = { id: "name", desc: false };
 
 /**
  * Calls the backend's GET /users/list (admins only: other users get a

@@ -34,6 +34,7 @@ export const userColumns = col.columns([
   col.accessor("email", { header: "Email" }),
   col.accessor("role", {
     header: "Role",
+    enableSorting: false,
     cell: (info) => {
       const role = info.getValue() ?? "user";
       return (
@@ -45,6 +46,7 @@ export const userColumns = col.columns([
   }),
   col.accessor("banned", {
     header: "Status",
+    enableSorting: false,
     cell: (info) =>
       info.getValue() ? (
         <Badge variant="destructive">Banned</Badge>
