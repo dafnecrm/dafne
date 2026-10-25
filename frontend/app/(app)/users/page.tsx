@@ -2,12 +2,12 @@ import { ShieldAlertIcon } from "lucide-react";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  PageContent,
+  PageContentBody,
+  PageContentDescription,
+  PageContentHeader,
+  PageContentTitle,
+} from "@/components/page-content";
 import {
   Empty,
   EmptyDescription,
@@ -31,21 +31,21 @@ export const metadata: Metadata = { title: "Users · Tiny CRM" };
 
 export default function UsersPage({ searchParams }: PageProps<"/users">) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xl">Users</CardTitle>
-        <CardDescription>
+    <PageContent>
+      <PageContentHeader>
+        <PageContentTitle>Users</PageContentTitle>
+        <PageContentDescription>
           Everyone with an account. Filter by a field, or click a column to
           sort.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+        </PageContentDescription>
+      </PageContentHeader>
+      <PageContentBody>
         {/* The session and the query are read per request. */}
         <Suspense fallback={<Skeleton className="h-72 w-full" />}>
           <UsersList searchParams={searchParams} />
         </Suspense>
-      </CardContent>
-    </Card>
+      </PageContentBody>
+    </PageContent>
   );
 }
 

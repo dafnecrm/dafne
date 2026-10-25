@@ -228,68 +228,72 @@ export function DataTable<TData extends RowData>({
           />
         ))
       ) : (
-        <Table aria-busy={navigating}>
-          <TableHeader>
-            {table.getHeaderGroups().map((group) => (
-              <TableRow key={group.id}>
-                {group.headers.map((header) => {
-                  const sorted = header.column.getIsSorted();
-                  return (
-                    <TableHead
-                      key={header.id}
-                      className={header.column.columnDef.meta?.className}
-                      aria-sort={
-                        sorted === "asc"
-                          ? "ascending"
-                          : sorted === "desc"
-                            ? "descending"
-                            : undefined
-                      }
-                    >
-                      {header.isPlaceholder ? null : header.column.getCanSort() ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="-mx-2.5 data-[sorted=false]:text-muted-foreground"
-                          data-sorted={Boolean(sorted)}
-                          disabled={navigating}
-                          onClick={header.column.getToggleSortingHandler()}
-                        >
+        <div className="overflow-hidden rounded-lg border [&_td:first-child]:pl-4 [&_td:last-child]:pr-4 [&_th:first-child]:pl-4 [&_th:last-child]:pr-4">
+          <Table aria-busy={navigating}>
+            <TableHeader>
+              {table.getHeaderGroups().map((group) => (
+                <TableRow key={group.id}>
+                  {group.headers.map((header) => {
+                    const sorted = header.column.getIsSorted();
+                    return (
+                      <TableHead
+                        key={header.id}
+                        className={header.column.columnDef.meta?.className}
+                        aria-sort={
+                          sorted === "asc"
+                            ? "ascending"
+                            : sorted === "desc"
+                              ? "descending"
+                              : undefined
+                        }
+                      >
+                        {header.isPlaceholder ? null : header.column.getCanSort() ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="-mx-2.5 data-[sorted=false]:text-muted-foreground"
+                            data-sorted={Boolean(sorted)}
+                            disabled={navigating}
+                            onClick={header.column.getToggleSortingHandler()}
+                          >
+                            <table.FlexRender header={header} />
+                            {sorted === "asc" ? (
+                              <ArrowUpIcon data-icon="inline-end" />
+                            ) : sorted === "desc" ? (
+                              <ArrowDownIcon data-icon="inline-end" />
+                            ) : (
+                              <ArrowUpDownIcon data-icon="inline-end" />
+                            )}
+                          </Button>
+                        ) : (
                           <table.FlexRender header={header} />
-                          {sorted === "asc" ? (
-                            <ArrowUpIcon data-icon="inline-end" />
-                          ) : sorted === "desc" ? (
-                            <ArrowDownIcon data-icon="inline-end" />
-                          ) : (
-                            <ArrowUpDownIcon data-icon="inline-end" />
-                          )}
-                        </Button>
-                      ) : (
-                        <table.FlexRender header={header} />
-                      )}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody
-            className={navigating ? "opacity-60 transition-opacity" : undefined}
-          >
-            {rows.map((row) => (
-              <TableRow key={row.id}>
-                {row.getAllCells().map((cell) => (
-                  <TableCell
-                    key={cell.id}
-                    className={cell.column.columnDef.meta?.className}
-                  >
-                    <table.FlexRender cell={cell} />
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                        )}
+                      </TableHead>
+                    );
+                  })}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody
+              className={
+                navigating ? "opacity-60 transition-opacity" : undefined
+              }
+            >
+              {rows.map((row) => (
+                <TableRow key={row.id}>
+                  {row.getAllCells().map((cell) => (
+                    <TableCell
+                      key={cell.id}
+                      className={cell.column.columnDef.meta?.className}
+                    >
+                      <table.FlexRender cell={cell} />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       )}
 
       <div className="flex items-center justify-between gap-2 text-sm text-muted-foreground">
