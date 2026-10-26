@@ -180,6 +180,9 @@ function UserProfile({ user }: { user: UserDetail }) {
               "Never"
             )}
           </Detail>
+          {user.expiresAt && <Detail icon={ActivityIcon} label="Session expiry date">
+            <LocalDate value={user.expiresAt} format="dateTime" />
+          </Detail>}
         </DetailSection>
 
         <DetailSection

@@ -28,6 +28,8 @@ export type UserDetail = ListedUser & {
   providers: string[];
   /** Latest session activity, as a JSON date; null if never signed in. */
   lastActiveAt: string | null;
+  /** Session expiration, as a JSON date; null if never signed in. */
+  expiresAt?: string | null;
 };
 
 /**
