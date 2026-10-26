@@ -3,11 +3,8 @@ import { Suspense } from "react";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+  CardHeader
 } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { requireUser } from "@/lib/session";
 import { AvatarUpload } from "./avatar-upload";
@@ -21,7 +18,7 @@ export default function AccountPage() {
     <PageContent>
       <PageContentHeader>
         <PageContentTitle className="text-xl">Account</PageContentTitle>
-        <PageContentDescription>Your profile details.</PageContentDescription>
+        <PageContentDescription>Your account details.</PageContentDescription>
       </PageContentHeader>
       <PageContentBody>
         <Suspense fallback={<Skeleton className="h-72 w-full" />}>

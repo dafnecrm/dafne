@@ -14,11 +14,7 @@ export function ProfileDetails({ user }: { user: User }) {
   const role = user.role ?? "user";
 
   return (
-    <DetailSection
-      title="Profile"
-      className="flex-1"
-      groupClassName="grid grid-cols-1 sm:grid-cols-2"
-    >
+    <DetailSection title="Profile">
       <Detail icon={UserIcon} label="First name">
         {user.firstname}
       </Detail>

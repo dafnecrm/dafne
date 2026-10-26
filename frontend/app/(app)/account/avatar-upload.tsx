@@ -1,18 +1,17 @@
 "use client";
 
-import { ImageUpIcon, Trash2Icon } from "lucide-react";
+import { Trash2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
 import { authClient } from "@/lib/auth-client";
 import {
   AVATAR_ACCEPT,
   AVATAR_MAX_FILE_BYTES,
   fileToAvatar,
 } from "@/lib/avatar";
-import { Card, CardContent } from "@/components/ui/card";
+import { DetailSection } from "@/components/detail";
 
 export function AvatarUpload({
   image,
@@ -66,48 +65,47 @@ export function AvatarUpload({
     }
   }
 
-  return (
-    <Card>
-      <CardContent>
-        <Avatar className="size-20" onClick={() => inputRef.current?.click()}>
-          {image && <AvatarImage src={image} alt="Your avatar" />}
-          <AvatarFallback className="text-xl">{initials}</AvatarFallback>
-        </Avatar>
-        <div className="flex flex-col gap-2">
-          {error ? (
-            <p role="alert" className="text-sm text-destructive">
-              {error}
+  return (<DetailSection title="Avatar" groupClassName="sm:grid-cols-1">
+    <div className="flex items-center gap-4">
+      <Avatar className="size-20" onClick={() => inputRef.current?.click()}>
+        {image && <AvatarImage src={image} alt="Your avatar" />}
+        <AvatarFallback className="text-xl">{initials}</AvatarFallback>
+      </Avatar>
+      <div className="flex flex-col gap-2">
+        {error ? (
+          <p role="alert" className="text-sm text-destructive">
+            {error}
+          </p>
+        ) : (
+          <div>
+            <p className="text-sm text-muted-foreground">
+              Click the avatar to change image.{" "}
             </p>
-          ) : (
-            <div>
-              <p className="text-sm text-muted-foreground">
-                Click the avatar to change image.{" "}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                PNG, JPEG, WebP or GIF accepted. Cropped to a square.
-              </p>
-            </div>
-          )}
-          {image && (
-            <Button
-              variant="outline"
-              disabled={pending}
-              onClick={() => save(null)}
-            >
-              <Trash2Icon data-icon="inline-start" />
-              Remove
-            </Button>
-          )}
-          <input
-            ref={inputRef}
-            type="file"
-            accept={AVATAR_ACCEPT}
-            className="hidden"
-            aria-label="Avatar image"
-            onChange={onFileChange}
-          />
-        </div>
-      </CardContent>
-    </Card>
+            <p className="text-sm text-muted-foreground">
+              PNG, JPEG, WebP or GIF accepted. Cropped to a square.
+            </p>
+          </div>
+        )}
+        {image && (
+          <Button
+            variant="outline"
+            disabled={pending}
+            onClick={() => save(null)}
+          >
+            <Trash2Icon data-icon="inline-start" />
+            Remove
+          </Button>
+        )}
+        <input
+          ref={inputRef}
+          type="file"
+          accept={AVATAR_ACCEPT}
+          className="hidden"
+          aria-label="Avatar image"
+          onChange={onFileChange}
+        />
+      </div>
+    </div>
+  </DetailSection>
   );
 }

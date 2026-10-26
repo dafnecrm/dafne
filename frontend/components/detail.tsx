@@ -11,6 +11,7 @@ import {
   ItemSeparator,
   ItemTitle
 } from "@/components/ui/item";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 
 /*
  * Read-only detail lists, e.g. on a record's page:
@@ -23,15 +24,14 @@ import {
  *   </DetailSection>
  */
 
-/** Item group styles per DetailSection variant. */
-const detailSectionVariants = cva("group/details gap-0", {
+/** Card styles per DetailSection variant. */
+const detailSectionVariants = cva("", {
   variants: {
     variant: {
       /** Looks like a Card: rounded, card background, light ring. */
-      default:
-        "gap-6! rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10",
+      default: "",
       /** No border; details have no padding. */
-      plain: "py-2 gap-6!",
+      plain: "ring-0",
     },
   },
   defaultVariants: {
@@ -64,25 +64,32 @@ export function DetailSection({
   children: ReactNode;
 } & VariantProps<typeof detailSectionVariants>) {
   return (
-    <section
+    <Card
       data-slot="detail-section"
       data-variant={variant}
-      className={cn("flex flex-col gap-2", className)}
-    >
-      {title && <h2 className="font-heading text-base font-medium">{title}</h2>}
-      <ItemGroup
-        // Details read the variant from here (see Detail).
-        data-variant={variant}
-        className={cn(detailSectionVariants({ variant }), groupClassName)}
-      >
-        {Children.toArray(children).map((child, index) => (
-          <Fragment key={index}>
-            {index > 0 && separator && <ItemSeparator className="my-0" />}
-            {child}
-          </Fragment>
-        ))}
-      </ItemGroup>
-    </section>
+      className={cn(detailSectionVariants({ variant }), className)}>
+      {title && (
+        <CardHeader className={cn(variant === "plain" && "px-0")}>
+          <CardTitle>
+            <h2>{title}</h2>
+          </CardTitle>
+        </CardHeader>
+      )}
+      <CardContent className={cn(variant === "plain" && "px-0")}>
+        <ItemGroup
+          // Details read the variant from here (see Detail).
+          data-variant={variant}
+          className={cn("grid grid-cols-1 sm:grid-cols-2", groupClassName)}
+        >
+          {Children.toArray(children).map((child, index) => (
+            <Fragment key={index}>
+              {index > 0 && separator && <ItemSeparator className="my-0" />}
+              {child}
+            </Fragment>
+          ))}
+        </ItemGroup>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -106,7 +113,7 @@ export function Detail({
     <Item
       size="sm"
       // min-w-0: in a grid, let long values truncate instead of overflowing.
-      className="min-w-0 rounded-none p-0"
+      className="min-w-0 rounded-none p-0 items-start"
     >
       <ItemMedia variant="icon">
         <Icon />

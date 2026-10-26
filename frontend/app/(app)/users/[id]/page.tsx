@@ -226,10 +226,7 @@ function UserProfile({ user }: { user: UserDetail }) {
 /** The user's active Better Auth sessions, most recently used first. */
 function UserSessions({ sessions }: { sessions: UserSession[] }) {
   return (
-    <section className="flex flex-col gap-2">
-      <h2 className="font-heading text-base font-medium">
-        Active sessions ({sessions.length})
-      </h2>
+    <DetailSection title={`Active sessions (${sessions.length})`}>
       {sessions.length ? (
         <div className="rounded-lg border">
           <Table>
@@ -277,7 +274,7 @@ function UserSessions({ sessions }: { sessions: UserSession[] }) {
       ) : (
         <p className="text-muted-foreground text-sm">No active sessions.</p>
       )}
-    </section>
+    </DetailSection>
   );
 }
 
