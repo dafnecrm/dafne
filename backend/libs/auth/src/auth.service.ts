@@ -43,12 +43,16 @@ export class AuthService implements OnModuleInit {
           password,
           name: `${firstname} ${lastname}`,
           role: 'admin',
-          data: { firstname, lastname },
+          // Sign-in requires a verified email; the admin has no link to click.
+          data: { firstname, lastname, emailVerified: true },
         },
       });
       this.logger.log(`Admin user ${email} created`);
     } catch (error) {
       if (isAPIError(error) && error.body?.code === 'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL') {
+        // Admins created before verification was required are still unverified.
+        const { internalAdapter } = await this.betterAuth.instance.$context;
+        await internalAdapter.updateUserByEmail(email, { emailVerified: true });
         this.logger.log(`Admin user ${email} already exists`);
         return;
       }

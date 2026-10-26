@@ -61,6 +61,8 @@ export const authOptions = {
   },
   emailAndPassword: {
     enabled: true,
+    // Sign-in fails with EMAIL_NOT_VERIFIED until the user clicks the email link.
+    requireEmailVerification: true,
   },
   user: {
     additionalFields: {

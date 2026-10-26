@@ -37,6 +37,7 @@
     "drizzle-orm": "1.0.0-rc.5",
     "mysql2": "^3.24.6",
     "reflect-metadata": "^0.2.2",
+    "resend": "^6.34.1",
     "rxjs": "^7.8.1",
     "zod": "^4.5.4"
   },

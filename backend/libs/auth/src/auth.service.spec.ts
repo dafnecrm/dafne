@@ -6,13 +6,15 @@ import { AuthService } from './auth.service.js';
 
 describe('AuthService', () => {
   const api = { createUser: vi.fn() };
+  const internalAdapter = { updateUserByEmail: vi.fn() };
+  const instance = { $context: Promise.resolve({ internalAdapter }) };
   let env: Record<string, string>;
 
   async function createService() {
     const module = await Test.createTestingModule({
       providers: [
         AuthService,
-        { provide: BetterAuthService, useValue: { api } },
+        { provide: BetterAuthService, useValue: { api, instance } },
         { provide: ConfigService, useValue: { get: (key: string) => env[key] } },
       ],
     }).compile();
@@ -36,7 +38,7 @@ describe('AuthService', () => {
         password: 'Str0ng!pass',
         name: 'Admin User',
         role: 'admin',
-        data: { firstname: 'Admin', lastname: 'User' },
+        data: { firstname: 'Admin', lastname: 'User', emailVerified: true },
       },
     });
   });
@@ -55,7 +57,7 @@ describe('AuthService', () => {
     });
   });
 
-  it('does nothing when the admin already exists', async () => {
+  it('marks an existing admin as verified', async () => {
     api.createUser.mockRejectedValue(
       new APIError('BAD_REQUEST', {
         code: 'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL',
@@ -65,6 +67,9 @@ describe('AuthService', () => {
     const service = await createService();
 
     await expect(service.createAdminUser()).resolves.toBeUndefined();
+    expect(internalAdapter.updateUserByEmail).toHaveBeenCalledWith('admin@example.com', {
+      emailVerified: true,
+    });
   });
 
   it('skips when ADMIN_EMAIL or ADMIN_PASSWORD is missing', async () => {

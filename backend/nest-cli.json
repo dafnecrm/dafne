@@ -37,6 +37,15 @@
         "tsConfigPath": "libs/database/tsconfig.lib.json"
       }
     },
+    "notifications": {
+      "type": "library",
+      "root": "libs/notifications",
+      "entryFile": "index",
+      "sourceRoot": "libs/notifications/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/notifications/tsconfig.lib.json"
+      }
+    },
     "users": {
       "type": "library",
       "root": "libs/users",

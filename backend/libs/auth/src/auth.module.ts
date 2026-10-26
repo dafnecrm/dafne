@@ -16,6 +16,7 @@ import { AuthService } from './auth.service.js';
           secret: config.getOrThrow<string>('BETTER_AUTH_SECRET'),
           baseURL: config.get<string>('BETTER_AUTH_URL'),
           trustedOrigins: config.get<string>('TRUSTED_ORIGINS')?.split(','),
+          resendApiKey: config.getOrThrow<string>('RESEND_API_KEY'),
         }),
       }),
     }),
