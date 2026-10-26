@@ -1,6 +1,6 @@
 "use client";
 
-import { Edit2Icon, EditIcon, Trash2Icon } from "lucide-react";
+import { Edit2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -11,9 +11,8 @@ import {
   AVATAR_MAX_FILE_BYTES,
   fileToAvatar,
 } from "@/lib/avatar";
-import { DetailSection } from "@/components/detail";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "cn";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 export function AvatarUpload({
   image,
@@ -25,6 +24,7 @@ export function AvatarUpload({
   initials: string;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const editButtonRef = useRef<HTMLButtonElement>(null);
   const [error, setError] = useState<string>();
   const [pending, startTransition] = useTransition();
   const router = useRouter();
@@ -69,29 +69,28 @@ export function AvatarUpload({
     }
   }
 
-  return (<div className={cn('flex flex-col items-center gap-4', className)}>
-    <Tooltip>
-      <TooltipTrigger>
-        <Avatar className="size-40 cursor-pointer" onClick={() => inputRef.current?.click()}>
-          {image && <AvatarImage src={image} alt="Your avatar" />}
-          <AvatarFallback className="text-xl">{initials}</AvatarFallback>
-        </Avatar>
-      </TooltipTrigger>
-      <TooltipContent side="bottom">
-        Click to update.
-      </TooltipContent>
-    </Tooltip>
-
-    {image && (
-      <Button
-        variant="outline"
-        disabled={pending}
-        onClick={() => save(null)}
-      >
-        <Trash2Icon data-icon="inline-start" />
-        Remove
-      </Button>
-    )}
+  return (<div className={cn('flex flex-col gap-4', className)}>
+    <DropdownMenu>
+      <DropdownMenuTrigger>
+        <div className="relative">
+          <Avatar className="size-50" onClick={() => editButtonRef.current?.click()}>
+            {image && <AvatarImage src={image} alt="Your avatar" />}
+            <AvatarFallback className="text-xl cursor-pointer">{initials}</AvatarFallback>
+          </Avatar>
+          <div className="absolute bottom-1 left-0 flex gap-2 items-center rounded-lg border border-border bg-background dark:border-input dark:bg-input/30 h-8 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2">
+            <Edit2Icon data-icon="inline-start" className="size-4" /> Edit
+          </div>
+        </div>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-full">
+        <DropdownMenuItem onClick={() => inputRef.current?.click()}>
+          Upload a photo
+        </DropdownMenuItem>
+        {image && <DropdownMenuItem disabled={pending} onClick={() => save(null)}>
+          Remove photo
+        </DropdownMenuItem>}
+      </DropdownMenuContent>
+    </DropdownMenu>
 
     <div>
       {error && (
