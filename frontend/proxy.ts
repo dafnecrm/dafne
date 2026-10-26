@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { SESSION_COOKIES } from "@/lib/auth-cookies";
 
-const PUBLIC_PATHS = ["/sign-in", "/sign-up"];
+const PUBLIC_PATHS = ["/sign-in", "/sign-up", "/verify-email"];
 /** Clears an invalid session cookie; must run with or without a cookie. */
 const SESSION_EXPIRED_PATH = "/session-expired";
 

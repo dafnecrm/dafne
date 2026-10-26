@@ -7,6 +7,7 @@ import { FieldGroup } from "@/components/ui/field";
 import { setServerError, useAppForm } from "@/lib/app-form/app-form";
 import { authClient, authErrorMessage } from "@/lib/auth-client";
 import { signInFormOpts, signInSchema } from "../schemas";
+import { VERIFY_EMAIL_PATH } from "../verify-email/verify-email";
 
 export function SignInForm() {
   const router = useRouter();
@@ -22,7 +23,18 @@ export function SignInForm() {
         email: value.email,
         password: value.password,
         rememberMe: value.rememberMe === true,
+        // Used by the new verification link sent when the email isn't verified.
+        callbackURL: VERIFY_EMAIL_PATH,
       });
+      if (error?.code === "EMAIL_NOT_VERIFIED") {
+        // The backend just emailed a fresh link.
+        startTransition(() => {
+          router.push(
+            `${VERIFY_EMAIL_PATH}?email=${encodeURIComponent(value.email)}`,
+          );
+        });
+        return;
+      }
       if (error) {
         setServerError(formApi, authErrorMessage(error));
         return;

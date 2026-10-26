@@ -7,6 +7,7 @@ import { FieldGroup } from "@/components/ui/field";
 import { setServerError, useAppForm } from "@/lib/app-form/app-form";
 import { authClient, authErrorMessage } from "@/lib/auth-client";
 import { signUpFormOpts, signUpSchema } from "../schemas";
+import { VERIFY_EMAIL_PATH } from "../verify-email/verify-email";
 
 export function SignUpForm() {
   const router = useRouter();
@@ -26,15 +27,18 @@ export function SignUpForm() {
         lastname,
         email: value.email,
         password: value.password,
+        // Where the link in the verification email lands.
+        callbackURL: VERIFY_EMAIL_PATH,
       });
       if (error) {
         setServerError(formApi, authErrorMessage(error));
         return;
       }
-      // Better Auth signed the new user in; load the app with the session.
+      // No session until the email is verified: ask the user to check their inbox.
       startTransition(() => {
-        router.replace("/");
-        router.refresh();
+        router.replace(
+          `${VERIFY_EMAIL_PATH}?email=${encodeURIComponent(value.email)}`,
+        );
       });
     },
   });
