@@ -35,9 +35,9 @@ export function createAuth(db: Database, options: CreateAuthOptions) {
         console.log("Sending email verification to " + user.email)
         void resend.emails
           .send({
-            from: 'Tiny CRM <onboarding@resend.dev>',
+            from: 'Dafne <noreply@dafne.redpike.eu>',
             to: user.email,
-            subject: 'Tiny CRM - Verify your email address',
+            subject: 'Dafne- Verify your email address',
             html: `Click <a href="${url}">here</a> to verify your email.`,
           })
           .then(({ error }) => {
