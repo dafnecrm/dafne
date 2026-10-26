@@ -117,26 +117,63 @@ describe('UsersService', () => {
   });
 
   describe('getUser', () => {
-    it('returns the user with providers and last activity', async () => {
+    it('returns the user with accounts, active sessions and last activity', async () => {
       const lastActive = new Date('2026-10-01T10:00:00Z');
+      const active = {
+        id: 's1',
+        updatedAt: new Date(),
+        expiresAt: new Date(Date.now() + 60_000),
+      };
+      const expired = {
+        id: 's2',
+        updatedAt: lastActive,
+        expiresAt: new Date(Date.now() - 60_000),
+      };
+      const accounts = [
+        { id: 'a1', providerId: 'credential' },
+        { id: 'a2', providerId: 'google' },
+        { id: 'a3', providerId: 'google' },
+      ];
       findFirst.mockResolvedValue({
         id: '1',
         email: 'ada@example.com',
-        accounts: [
-          { providerId: 'credential' },
-          { providerId: 'google' },
-          { providerId: 'google' },
-        ],
-        sessions: [{ updatedAt: lastActive }],
+        accounts,
+        sessions: [active, expired],
       });
 
       await expect(service.getUser('1')).resolves.toEqual({
         id: '1',
         email: 'ada@example.com',
         providers: ['credential', 'google'],
-        lastActiveAt: lastActive,
+        accounts,
+        lastActiveAt: active.updatedAt,
+        sessions: [active],
       });
       expect(findFirst.mock.calls[0][0]).toMatchObject({ where: { id: '1' } });
+    });
+
+    it('never selects tokens or passwords', async () => {
+      findFirst.mockResolvedValue({ id: '1', accounts: [], sessions: [] });
+      await service.getUser('1');
+
+      const { with: relations } = findFirst.mock.calls[0][0];
+      expect(relations.sessions.columns).not.toHaveProperty('token');
+      expect(relations.accounts.columns).not.toHaveProperty('password');
+      expect(relations.accounts.columns).not.toHaveProperty('accessToken');
+    });
+
+    it('counts expired sessions as activity', async () => {
+      const lastActive = new Date('2026-10-01T10:00:00Z');
+      findFirst.mockResolvedValue({
+        id: '1',
+        accounts: [],
+        sessions: [{ updatedAt: lastActive, expiresAt: new Date(0) }],
+      });
+
+      await expect(service.getUser('1')).resolves.toMatchObject({
+        lastActiveAt: lastActive,
+        sessions: [],
+      });
     });
 
     it('has no last activity without sessions', async () => {
@@ -144,6 +181,8 @@ describe('UsersService', () => {
 
       await expect(service.getUser('1')).resolves.toMatchObject({
         providers: [],
+        accounts: [],
+        sessions: [],
         lastActiveAt: null,
       });
     });

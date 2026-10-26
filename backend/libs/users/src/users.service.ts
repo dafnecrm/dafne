@@ -61,29 +61,43 @@ export class UsersService {
   }
 
   /**
-   * One user with their sign-in methods (e.g. "credential", "google") and
-   * when they were last active. Tokens and passwords are never selected.
+   * One user with their Better Auth accounts (sign-in methods, e.g.
+   * "credential", "google"), their active sessions and when they were last
+   * active. Tokens and passwords are never selected.
    */
   async getUser(id: string) {
     const found = await this.database.db.query.user.findFirst({
       where: { id },
       with: {
-        accounts: { columns: { providerId: true } },
+        accounts: {
+          columns: { id: true, providerId: true, createdAt: true },
+          orderBy: { createdAt: 'asc' },
+        },
         sessions: {
-          columns: { updatedAt: true, expiresAt: true },
+          columns: {
+            id: true,
+            createdAt: true,
+            updatedAt: true,
+            expiresAt: true,
+            ipAddress: true,
+            userAgent: true,
+            impersonatedBy: true,
+          },
           orderBy: { updatedAt: 'desc' },
-          limit: 1,
         },
       },
     });
     if (!found) throw new NotFoundException('User not found');
 
     const { accounts, sessions, ...rest } = found;
+    const now = new Date();
     return {
       ...rest,
       providers: [...new Set(accounts.map((a) => a.providerId))],
+      accounts,
+      // Expired sessions still count as activity, but aren't listed.
       lastActiveAt: sessions[0]?.updatedAt ?? null,
-      expiresAt: sessions[0]?.expiresAt
+      sessions: sessions.filter((s) => s.expiresAt > now),
     };
   }
 }
