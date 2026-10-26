@@ -1,3 +1,4 @@
+import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
 import type { LucideIcon } from "lucide-react";
 import { Children, Fragment, type ReactNode } from "react";
@@ -5,12 +6,10 @@ import {
   Item,
   ItemActions,
   ItemContent,
-  ItemDescription,
-  ItemFooter,
-  ItemGroup,
+  ItemDescription, ItemGroup,
   ItemMedia,
   ItemSeparator,
-  ItemTitle,
+  ItemTitle
 } from "@/components/ui/item";
 
 /*
@@ -24,23 +23,37 @@ import {
  *   </DetailSection>
  */
 
+/** Item group styles per DetailSection variant. */
+const detailSectionVariants = cva("group/details gap-0", {
+  variants: {
+    variant: {
+      /** No border; details have no padding (see Detail). */
+      default: "rounded-lg border",
+      /** Rounded border; details are padded. */
+      plain: "",
+    },
+  },
+  defaultVariants: {
+    variant: "default",
+  },
+});
+
 /**
  * A titled item group of details. Pass Detail elements directly (not in
  * fragments); false/null are skipped.
  *
- * Variants: `default` has no border and no padding around the details;
- * `outline` draws a rounded border and pads each detail.
+ * Variants: `default` draws a rounded border and pads each detail;
+ * `outline` has no border and no padding around the details.
  */
 export function DetailSection({
   title,
-  variant = "default",
+  variant,
   separator,
   className,
   groupClassName,
   children,
 }: {
   title: string;
-  variant?: "default" | "outline";
   /** Draws a line between details. */
   separator?: boolean;
   /** Extra classes for the section, e.g. a grid placement. */
@@ -48,18 +61,18 @@ export function DetailSection({
   /** Extra classes for the item group, e.g. a grid layout. */
   groupClassName?: string;
   children: ReactNode;
-}) {
+} & VariantProps<typeof detailSectionVariants>) {
   return (
-    <section className={cn("flex flex-col gap-2", className)}>
+    <section
+      data-slot="detail-section"
+      data-variant={variant}
+      className={cn("flex flex-col gap-2", className)}
+    >
       <h2 className="font-heading text-base font-medium">{title}</h2>
       <ItemGroup
         // Details read the variant from here (see Detail).
-        data-detail-variant={variant}
-        className={cn(
-          "group/details gap-0",
-          variant === "outline" && "rounded-lg border",
-          groupClassName,
-        )}
+        data-variant={variant}
+        className={cn(detailSectionVariants({ variant }), groupClassName)}
       >
         {Children.toArray(children).map((child, index) => (
           <Fragment key={index}>
@@ -91,7 +104,7 @@ export function Detail({
   return (
     <Item
       size="sm"
-      className="rounded-none group-data-[detail-variant=default]/details:px-0 group-data-[detail-variant=default]/details:py-0"
+      className="rounded-none group-data-[variant=default]/details:px-0 group-data-[variant=default]/details:py-0"
     >
       <ItemMedia variant="icon">
         <Icon />

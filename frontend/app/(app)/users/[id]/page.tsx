@@ -109,7 +109,6 @@ function UserProfile({ user }: { user: UserDetail }) {
 
       <PageContentBody className="flex flex-col gap-6">
         <DetailSection
-          variant="outline"
           title="Profile"
           groupClassName="grid sm:grid-cols-2"
         >
@@ -137,7 +136,6 @@ function UserProfile({ user }: { user: UserDetail }) {
         </DetailSection>
 
         <DetailSection
-          variant="outline"
           title="Access"
           groupClassName="grid sm:grid-cols-2 gap-2"
         >
@@ -185,7 +183,6 @@ function UserProfile({ user }: { user: UserDetail }) {
         </DetailSection>
 
         <DetailSection
-          variant="outline"
           title="Record"
           groupClassName="grid sm:grid-cols-2 gap-2"
         >
