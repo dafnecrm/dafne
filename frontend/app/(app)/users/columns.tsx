@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { createDataTableColumnHelper } from "@/components/data-table";
+import { LocalDate } from "@/components/local-date";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import type { ListedUser } from "@/lib/users";
@@ -26,7 +28,12 @@ export const userColumns = col.columns([
               {`${user.firstname?.[0] ?? ""}${user.lastname?.[0] ?? ""}`.toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <span className="font-medium">{user.name}</span>
+          <Link
+            href={`/users/${encodeURIComponent(user.id)}`}
+            className="font-medium underline-offset-4 hover:underline"
+          >
+            {user.name}
+          </Link>
         </div>
       );
     },
@@ -58,13 +65,7 @@ export const userColumns = col.columns([
     header: "Joined",
     meta: { className: "text-right" },
     cell: (info) => (
-      <span className="text-muted-foreground">
-        {new Date(info.getValue()).toLocaleDateString("en-GB", {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
-        })}
-      </span>
+      <LocalDate value={info.getValue()} className="text-muted-foreground" />
     ),
   }),
 ]);

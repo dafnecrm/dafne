@@ -1,11 +1,13 @@
 "use client";
 
-import { CopyIcon, EllipsisVerticalIcon } from "lucide-react";
+import { CopyIcon, EllipsisVerticalIcon, UserIcon } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { ListedUser } from "@/lib/users";
@@ -27,12 +29,21 @@ export function userActions(user: ListedUser) {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem
-          onClick={() => navigator.clipboard.writeText(user.email)}>
+          render={<Link href={`/users/${encodeURIComponent(user.id)}`} />}
+        >
+          <UserIcon />
+          View details
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onClick={() => navigator.clipboard.writeText(user.email)}
+        >
           <CopyIcon />
           Copy email
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() => navigator.clipboard.writeText(user.id)}>
+          onClick={() => navigator.clipboard.writeText(user.id)}
+        >
           <CopyIcon />
           Copy user ID
         </DropdownMenuItem>

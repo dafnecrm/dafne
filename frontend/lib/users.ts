@@ -22,6 +22,23 @@ export interface UsersPage {
   offset?: number;
 }
 
+/** A user from the backend's GET /users/:id: the listed fields plus activity. */
+export type UserDetail = ListedUser & {
+  /** Sign-in methods, e.g. "credential" (email and password) or "google". */
+  providers: string[];
+  /** Latest session activity, as a JSON date; null if never signed in. */
+  lastActiveAt: string | null;
+};
+
+/**
+ * Calls the backend's GET /users/:id (admins only). Throws a BackendError
+ * with status 404 when the user doesn't exist, 403 for non-admins.
+ */
+export async function getUser(id: string): Promise<UserDetail> {
+  const res = await backendFetch(`/users/${encodeURIComponent(id)}`);
+  return res.json();
+}
+
 /**
  * Calls the backend's GET /users/list (admins only: other users get a
  * BackendError with status 403).

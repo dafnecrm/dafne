@@ -1,4 +1,3 @@
-import { ShieldAlertIcon } from "lucide-react";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import {
@@ -8,19 +7,13 @@ import {
   PageContentHeader,
   PageContentTitle,
 } from "@/components/page-content";
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BackendError } from "@/lib/backend";
 import { getTableParams } from "@/lib/data-table";
 import { isAdmin, requireUser } from "@/lib/session";
 import { listUsers } from "@/lib/users";
 import { usersTable } from "@/lib/users-table";
+import { NotAllowed } from "./not-allowed";
 import { UsersTable } from "./users-table";
 
 export const metadata: Metadata = { title: "Users · Tiny CRM" };
@@ -68,20 +61,4 @@ async function UsersList({
   }
 
   return <UsersTable users={data.users} total={data.total} params={params} />;
-}
-
-function NotAllowed() {
-  return (
-    <Empty>
-      <EmptyHeader>
-        <EmptyMedia variant="icon">
-          <ShieldAlertIcon />
-        </EmptyMedia>
-        <EmptyTitle>Admins only</EmptyTitle>
-        <EmptyDescription>
-          You need the admin role to see the list of users.
-        </EmptyDescription>
-      </EmptyHeader>
-    </Empty>
-  );
 }

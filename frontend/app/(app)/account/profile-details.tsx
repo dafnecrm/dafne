@@ -1,17 +1,36 @@
 "use client";
 
+import { useTimeZone } from "@/components/local-date";
 import { FieldGroup } from "@/components/ui/field";
 import { useAppForm } from "@/lib/app-form/app-form";
+import { formatDate } from "@/lib/dates";
 
 interface ProfileDetailsProps {
   firstname: string;
   lastname: string;
   email: string;
-  memberSince: string;
+  /** Sign-up date (a Date or a JSON date string). */
+  createdAt: string | Date;
 }
 
-/** Read-only view of the user's details. */
-export function ProfileDetails(values: ProfileDetailsProps) {
+/**
+ * Read-only view of the user's details. "Member since" is shown in the
+ * viewer's time zone, which is only known in the browser.
+ */
+export function ProfileDetails({ createdAt, ...values }: ProfileDetailsProps) {
+  const timeZone = useTimeZone();
+  const memberSince = timeZone
+    ? formatDate(createdAt, "longDate", timeZone)
+    : "";
+  // The fields are uncontrolled: remount once the time zone is known.
+  return (
+    <ProfileForm key={timeZone ?? ""} {...values} memberSince={memberSince} />
+  );
+}
+
+function ProfileForm(
+  values: Omit<ProfileDetailsProps, "createdAt"> & { memberSince: string },
+) {
   const form = useAppForm({ defaultValues: values });
 
   return (

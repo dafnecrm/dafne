@@ -46,11 +46,7 @@ async function Profile() {
         firstname={user.firstname}
         lastname={user.lastname}
         email={user.email}
-        memberSince={new Date(user.createdAt).toLocaleDateString("en-GB", {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        })}
+        createdAt={user.createdAt}
       />
     </div>
   );
