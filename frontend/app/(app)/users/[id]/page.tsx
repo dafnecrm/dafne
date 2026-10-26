@@ -39,7 +39,7 @@ import { NotAllowed } from "../not-allowed";
 import { Spinner } from "@/components/ui/spinner";
 import CopyButton from "@/components/copy-button";
 
-export const metadata: Metadata = { title: "User · Tiny CRM" };
+export const metadata: Metadata = { title: "User" };
 
 export default function UserPage({ params }: PageProps<"/users/[id]">) {
   return (

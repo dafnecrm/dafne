@@ -13,7 +13,7 @@ import { requireUser } from "@/lib/session";
 import { AvatarUpload } from "./avatar-upload";
 import { ProfileDetails } from "./profile-details";
 
-export const metadata: Metadata = { title: "Account · Tiny CRM" };
+export const metadata: Metadata = { title: "AccountCRM" };
 
 export default function AccountPage() {
   return (

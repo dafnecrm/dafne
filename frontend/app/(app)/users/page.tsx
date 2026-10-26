@@ -16,7 +16,7 @@ import { usersTable } from "@/lib/users-table";
 import { NotAllowed } from "./not-allowed";
 import { UsersTable } from "./users-table";
 
-export const metadata: Metadata = { title: "Users · Tiny CRM" };
+export const metadata: Metadata = { title: "Users" };
 
 export default function UsersPage({ searchParams }: PageProps<"/users">) {
   return (

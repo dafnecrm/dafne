@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { SignUpForm } from "./sign-up-form";
 
-export const metadata: Metadata = { title: "Sign up · Tiny CRM" };
+export const metadata: Metadata = { title: "Sign up" };
 
 export default function SignUpPage() {
   return (

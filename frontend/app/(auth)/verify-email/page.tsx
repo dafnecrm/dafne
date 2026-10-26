@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { VerifyEmail } from "./verify-email";
 
-export const metadata: Metadata = { title: "Verify your email · Tiny CRM" };
+export const metadata: Metadata = { title: "Verify your email" };
 
 /**
  * Shown after sign-up, after signing in with an unverified email, and when a

@@ -4,6 +4,7 @@ import {
   ChevronRightIcon,
   ContactIcon,
   LayoutGridCirclesIcon,
+  PawPrint,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -75,12 +76,12 @@ export function AppSidebar({
               render={<Link href="/" onClick={closeOnMobile} />}
             >
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                <LayoutGridCirclesIcon className="size-4" />
+                <PawPrint className="size-4" />
               </div>
               <div className="flex flex-col gap-0.5 leading-none">
-                <span className="font-medium">Tiny CRM</span>
+                <span className="font-medium">Dafne</span>
                 <span className="text-xs text-muted-foreground">
-                  A tiny CRM
+                  A purrfect crm
                 </span>
               </div>
             </SidebarMenuButton>
