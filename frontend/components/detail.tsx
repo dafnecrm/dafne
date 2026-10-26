@@ -27,10 +27,11 @@ import {
 const detailSectionVariants = cva("group/details gap-0", {
   variants: {
     variant: {
-      /** No border; details have no padding (see Detail). */
-      default: "rounded-lg border",
-      /** Rounded border; details are padded. */
-      plain: "",
+      /** Looks like a Card: rounded, card background, light ring. */
+      default:
+        "gap-6! rounded-xl bg-card p-4 text-card-foreground ring-1 ring-foreground/10",
+      /** No border; details have no padding. */
+      plain: "py-2 gap-6!",
     },
   },
   defaultVariants: {
@@ -42,8 +43,8 @@ const detailSectionVariants = cva("group/details gap-0", {
  * A titled item group of details. Pass Detail elements directly (not in
  * fragments); false/null are skipped.
  *
- * Variants: `default` draws a rounded border and pads each detail;
- * `outline` has no border and no padding around the details.
+ * Variants: `default` frames the details like a Card; `plain` has no
+ * frame and no padding around the details.
  */
 export function DetailSection({
   title,
@@ -53,7 +54,7 @@ export function DetailSection({
   groupClassName,
   children,
 }: {
-  title: string;
+  title?: string;
   /** Draws a line between details. */
   separator?: boolean;
   /** Extra classes for the section, e.g. a grid placement. */
@@ -68,7 +69,7 @@ export function DetailSection({
       data-variant={variant}
       className={cn("flex flex-col gap-2", className)}
     >
-      <h2 className="font-heading text-base font-medium">{title}</h2>
+      {title && <h2 className="font-heading text-base font-medium">{title}</h2>}
       <ItemGroup
         // Details read the variant from here (see Detail).
         data-variant={variant}
@@ -104,15 +105,16 @@ export function Detail({
   return (
     <Item
       size="sm"
-      className="rounded-none group-data-[variant=default]/details:px-0 group-data-[variant=default]/details:py-0"
+      // min-w-0: in a grid, let long values truncate instead of overflowing.
+      className="min-w-0 rounded-none p-0"
     >
       <ItemMedia variant="icon">
         <Icon />
       </ItemMedia>
-      <ItemContent className="min-w-0">
+      <ItemContent className="min-w-0 items-start">
         <ItemDescription>{label}</ItemDescription>
         {/* Values can be long (IDs, ban reasons): let them wrap. */}
-        <ItemTitle className="line-clamp-none flex-wrap break-words">
+        <ItemTitle className="line-clamp-none max-w-full flex-wrap wrap-break-word">
           {children}
         </ItemTitle>
       </ItemContent>

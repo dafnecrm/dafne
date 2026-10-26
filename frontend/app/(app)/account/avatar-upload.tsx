@@ -12,6 +12,7 @@ import {
   AVATAR_MAX_FILE_BYTES,
   fileToAvatar,
 } from "@/lib/avatar";
+import { Card, CardContent } from "@/components/ui/card";
 
 export function AvatarUpload({
   image,
@@ -66,45 +67,47 @@ export function AvatarUpload({
   }
 
   return (
-    <div className="flex flex-col items-center gap-5">
-      <Avatar className="size-20" onClick={() => inputRef.current?.click()}>
-        {image && <AvatarImage src={image} alt="Your avatar" />}
-        <AvatarFallback className="text-xl">{initials}</AvatarFallback>
-      </Avatar>
-      <div className="flex flex-col gap-2">
-        {error ? (
-          <p role="alert" className="text-sm text-destructive">
-            {error}
-          </p>
-        ) : (
-          <div className="text-center">
-            <p className="text-sm text-muted-foreground">
-              Click the avatar to change image.{" "}
+    <Card>
+      <CardContent>
+        <Avatar className="size-20" onClick={() => inputRef.current?.click()}>
+          {image && <AvatarImage src={image} alt="Your avatar" />}
+          <AvatarFallback className="text-xl">{initials}</AvatarFallback>
+        </Avatar>
+        <div className="flex flex-col gap-2">
+          {error ? (
+            <p role="alert" className="text-sm text-destructive">
+              {error}
             </p>
-            <p className="text-sm text-muted-foreground">
-              PNG, JPEG, WebP or GIF accepted. Cropped to a square.
-            </p>
-          </div>
-        )}
-        {image && (
-          <Button
-            variant="outline"
-            disabled={pending}
-            onClick={() => save(null)}
-          >
-            <Trash2Icon data-icon="inline-start" />
-            Remove
-          </Button>
-        )}
-        <input
-          ref={inputRef}
-          type="file"
-          accept={AVATAR_ACCEPT}
-          className="hidden"
-          aria-label="Avatar image"
-          onChange={onFileChange}
-        />
-      </div>
-    </div>
+          ) : (
+            <div>
+              <p className="text-sm text-muted-foreground">
+                Click the avatar to change image.{" "}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                PNG, JPEG, WebP or GIF accepted. Cropped to a square.
+              </p>
+            </div>
+          )}
+          {image && (
+            <Button
+              variant="outline"
+              disabled={pending}
+              onClick={() => save(null)}
+            >
+              <Trash2Icon data-icon="inline-start" />
+              Remove
+            </Button>
+          )}
+          <input
+            ref={inputRef}
+            type="file"
+            accept={AVATAR_ACCEPT}
+            className="hidden"
+            aria-label="Avatar image"
+            onChange={onFileChange}
+          />
+        </div>
+      </CardContent>
+    </Card>
   );
 }

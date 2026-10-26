@@ -114,10 +114,10 @@ function UserProfile({ user }: { user: UserDetail }) {
         </PageContentAction>
       </PageContentHeader>
 
-      <PageContentBody className="flex flex-col gap-6">
+      <PageContentBody>
         <DetailSection
           title="Profile"
-          groupClassName="grid sm:grid-cols-2"
+          groupClassName="grid grid-cols-1 sm:grid-cols-2"
         >
           <Detail icon={UserIcon} label="First name">
             {user.firstname}
@@ -144,7 +144,7 @@ function UserProfile({ user }: { user: UserDetail }) {
 
         <DetailSection
           title="Access"
-          groupClassName="grid sm:grid-cols-2 gap-2"
+          groupClassName="grid grid-cols-1 sm:grid-cols-2 gap-2"
         >
           <Detail icon={user.banned ? BanIcon : CircleCheckIcon} label="Status">
             {user.banned ? (
@@ -178,7 +178,7 @@ function UserProfile({ user }: { user: UserDetail }) {
 
         <DetailSection
           title="Sign-in methods"
-          groupClassName="grid sm:grid-cols-2 gap-2"
+          groupClassName="grid grid-cols-1 sm:grid-cols-2 gap-2"
         >
           {user.accounts.length ? (
             user.accounts.map((account) => (
@@ -203,7 +203,7 @@ function UserProfile({ user }: { user: UserDetail }) {
 
         <DetailSection
           title="Record"
-          groupClassName="grid sm:grid-cols-2 gap-2"
+          groupClassName="grid grid-cols-1 sm:grid-cols-2 gap-2"
         >
           <Detail icon={FingerprintIcon} label="User ID">
             <div className="flex items-center gap-2">

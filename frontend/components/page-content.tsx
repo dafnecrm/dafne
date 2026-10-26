@@ -82,7 +82,7 @@ function PageContentAction({
 }
 
 function PageContentBody({ className, ...props }: React.ComponentProps<"div">) {
-  return <div data-slot="page-content-body" className={className} {...props} />;
+  return <div data-slot="page-content-body" className={cn('flex flex-col gap-6', className)} {...props} />;
 }
 
 function PageContentFooter({

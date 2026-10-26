@@ -35,16 +35,12 @@ export default function AccountPage() {
 async function Profile() {
   const user = await requireUser();
 
-  return (
-    
-    <div className="flex flex-col md:flex-row gap-10">
-      <div className="md:order-1">
-        <AvatarUpload
-          image={user.image ?? null}
-          initials={`${user.firstname[0] ?? ""}${user.lastname[0] ?? ""}`.toUpperCase()}
-        />
-      </div>
-      <ProfileDetails user={user} />
-    </div>
+  return (<>
+    <AvatarUpload
+      image={user.image ?? null}
+      initials={`${user.firstname[0] ?? ""}${user.lastname[0] ?? ""}`.toUpperCase()}
+    />
+    <ProfileDetails user={user} />
+  </>
   );
 }
