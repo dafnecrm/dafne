@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -108,10 +108,32 @@ export function AppSidebar({
 /**
  * One sidebar section, by title (a server component can render it: icons
  * can't be passed as props). A collapsible group of pages, or icons in the rail.
+ *
+ * The URL (for the active page) isn't known when prerendering dynamic
+ * routes such as /users/[id], so it's read behind a Suspense boundary; until
+ * then the section shows with no active page.
  */
 export function NavSectionItems({ title }: { title: string }) {
+  return (
+    <Suspense fallback={<NavSection title={title} pathname={null} />}>
+      <ActiveNavSection title={title} />
+    </Suspense>
+  );
+}
+
+function ActiveNavSection({ title }: { title: string }) {
+  return <NavSection title={title} pathname={usePathname()} />;
+}
+
+function NavSection({
+  title,
+  pathname,
+}: {
+  title: string;
+  pathname: string | null;
+}) {
   const section = NAV_SECTIONS.find((s) => s.title === title);
-  const active = findNavItem(usePathname());
+  const active = pathname ? findNavItem(pathname) : undefined;
   const { isMobile, setOpenMobile } = useSidebar();
   const closeOnMobile = () => isMobile && setOpenMobile(false);
   const isRail = useIsRail();
@@ -163,8 +185,20 @@ export function NavSectionItems({ title }: { title: string }) {
   );
 }
 
-/** Breadcrumb for the current page: section › page. */
+/**
+ * Breadcrumb for the current page: section › page. Streams in behind a
+ * Suspense boundary, since the URL isn't known when prerendering dynamic
+ * routes.
+ */
 export function PageBreadcrumb() {
+  return (
+    <Suspense fallback={null}>
+      <ActiveBreadcrumb />
+    </Suspense>
+  );
+}
+
+function ActiveBreadcrumb() {
   const active = findNavItem(usePathname());
   if (!active) return null;
 

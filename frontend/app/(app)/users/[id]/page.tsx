@@ -1,8 +1,23 @@
-import { ArrowLeftIcon } from "lucide-react";
+import {
+  ActivityIcon,
+  ArrowLeftIcon,
+  BanIcon,
+  CalendarClockIcon,
+  CalendarPlusIcon,
+  CircleAlertIcon,
+  CircleCheckIcon,
+  Copy,
+  FingerprintIcon,
+  HistoryIcon,
+  KeyRoundIcon,
+  MailIcon,
+  ShieldIcon,
+  UserIcon,
+} from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Suspense, type ReactNode } from "react";
+import { Suspense } from "react";
 import {
   PageContent,
   PageContentAction,
@@ -11,6 +26,7 @@ import {
   PageContentHeader,
   PageContentTitle,
 } from "@/components/page-content";
+import { Detail, DetailSection } from "@/components/detail";
 import { LocalDate } from "@/components/local-date";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +36,8 @@ import { BackendError } from "@/lib/backend";
 import { isAdmin, requireUser } from "@/lib/session";
 import { getUser, type UserDetail } from "@/lib/users";
 import { NotAllowed } from "../not-allowed";
+import { Spinner } from "@/components/ui/spinner";
+import CopyButton from "@/components/copy-button";
 
 export const metadata: Metadata = { title: "User · Tiny CRM" };
 
@@ -76,7 +94,13 @@ function UserProfile({ user }: { user: UserDetail }) {
           </div>
         </div>
         <PageContentAction>
-          <Button variant="outline" size="sm" render={<Link href="/users" />}>
+          <Button
+            variant="outline"
+            size="sm"
+            // Renders a link, not a <button>.
+            nativeButton={false}
+            render={<Link href="/users" />}
+          >
             <ArrowLeftIcon data-icon="inline-start" />
             All users
           </Button>
@@ -84,10 +108,18 @@ function UserProfile({ user }: { user: UserDetail }) {
       </PageContentHeader>
 
       <PageContentBody className="flex flex-col gap-6">
-        <DetailSection title="Profile">
-          <Detail label="First name">{user.firstname}</Detail>
-          <Detail label="Last name">{user.lastname}</Detail>
-          <Detail label="Email">
+        <DetailSection
+          variant="outline"
+          title="Profile"
+          groupClassName="grid sm:grid-cols-2"
+        >
+          <Detail icon={UserIcon} label="First name">
+            {user.firstname}
+          </Detail>
+          <Detail icon={UserIcon} label="Last name">
+            {user.lastname}
+          </Detail>
+          <Detail icon={MailIcon} label="Email">
             <span className="flex flex-wrap items-center gap-2">
               {user.email}
               {user.emailVerified ? (
@@ -97,15 +129,19 @@ function UserProfile({ user }: { user: UserDetail }) {
               )}
             </span>
           </Detail>
-          <Detail label="Role">
+          <Detail icon={ShieldIcon} label="Role">
             <Badge variant={role === "admin" ? "default" : "secondary"}>
               {role}
             </Badge>
           </Detail>
         </DetailSection>
 
-        <DetailSection title="Access">
-          <Detail label="Status">
+        <DetailSection
+          variant="outline"
+          title="Access"
+          groupClassName="grid sm:grid-cols-2 gap-2"
+        >
+          <Detail icon={user.banned ? BanIcon : CircleCheckIcon} label="Status">
             {user.banned ? (
               <Badge variant="destructive">Banned</Badge>
             ) : (
@@ -113,18 +149,20 @@ function UserProfile({ user }: { user: UserDetail }) {
             )}
           </Detail>
           {user.banned && (
-            <>
-              <Detail label="Ban reason">{user.banReason || "—"}</Detail>
-              <Detail label="Ban expires">
-                {user.banExpires ? (
-                  <LocalDate value={user.banExpires} format="dateTime" />
-                ) : (
-                  "Never"
-                )}
-              </Detail>
-            </>
+            <Detail icon={CircleAlertIcon} label="Ban reason">
+              {user.banReason || "—"}
+            </Detail>
           )}
-          <Detail label="Sign-in methods">
+          {user.banned && (
+            <Detail icon={CalendarClockIcon} label="Ban expires">
+              {user.banExpires ? (
+                <LocalDate value={user.banExpires} format="dateTime" />
+              ) : (
+                "Never"
+              )}
+            </Detail>
+          )}
+          <Detail icon={KeyRoundIcon} label="Sign-in methods">
             {user.providers.length ? (
               <span className="flex flex-wrap gap-1">
                 {user.providers.map((provider) => (
@@ -137,7 +175,7 @@ function UserProfile({ user }: { user: UserDetail }) {
               "—"
             )}
           </Detail>
-          <Detail label="Last active">
+          <Detail icon={ActivityIcon} label="Last active">
             {user.lastActiveAt ? (
               <LocalDate value={user.lastActiveAt} format="dateTime" />
             ) : (
@@ -146,44 +184,26 @@ function UserProfile({ user }: { user: UserDetail }) {
           </Detail>
         </DetailSection>
 
-        <DetailSection title="Record">
-          <Detail label="Joined">
+        <DetailSection
+          variant="outline"
+          title="Record"
+          groupClassName="grid sm:grid-cols-2 gap-2"
+        >
+          <Detail icon={CalendarPlusIcon} label="Joined">
             <LocalDate value={user.createdAt} format="dateTime" />
           </Detail>
-          <Detail label="Updated">
+          <Detail icon={HistoryIcon} label="Updated">
             <LocalDate value={user.updatedAt} format="dateTime" />
           </Detail>
-          <Detail label="User ID">
-            <code className="font-mono text-xs break-all">{user.id}</code>
+          <Detail icon={FingerprintIcon} label="User ID">
+            <div className="flex items-center gap-2">
+              <code className="font-mono text-xs break-all">{user.id}</code>
+              <CopyButton variant="ghost" value={user.id} />
+            </div>
           </Detail>
         </DetailSection>
       </PageContentBody>
     </PageContent>
-  );
-}
-
-/** A titled, bordered list of label / value rows. */
-function DetailSection({
-  title,
-  children,
-}: {
-  title: string;
-  children: ReactNode;
-}) {
-  return (
-    <section className="flex flex-col gap-2">
-      <h2 className="font-heading text-base font-medium">{title}</h2>
-      <dl className="divide-y rounded-lg border">{children}</dl>
-    </section>
-  );
-}
-
-function Detail({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="grid gap-1 px-4 py-3 sm:grid-cols-[12rem_1fr] sm:gap-4">
-      <dt className="text-muted-foreground">{label}</dt>
-      <dd>{children}</dd>
-    </div>
   );
 }
 

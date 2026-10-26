@@ -23,27 +23,23 @@ export function userActions(user: ListedUser) {
             size="icon-sm"
             aria-label={`Actions for ${user.email}`}
           />
-        }
-      >
+        }>
         <EllipsisVerticalIcon />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem
-          render={<Link href={`/users/${encodeURIComponent(user.id)}`} />}
-        >
+          render={<Link href={`/users/${encodeURIComponent(user.id)}`} />}>
           <UserIcon />
           View details
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          onClick={() => navigator.clipboard.writeText(user.email)}
-        >
+          onClick={() => navigator.clipboard.writeText(user.email)}>
           <CopyIcon />
           Copy email
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() => navigator.clipboard.writeText(user.id)}
-        >
+          onClick={() => navigator.clipboard.writeText(user.id)}>
           <CopyIcon />
           Copy user ID
         </DropdownMenuItem>
