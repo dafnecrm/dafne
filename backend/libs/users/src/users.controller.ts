@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import {
   Session,
   AllowAnonymous,
@@ -34,5 +34,12 @@ export class UsersController {
   @Roles(['admin'])
   async getUsersList(@Query() query: ListUsersQueryDto) {
     return this.usersService.getUsersList(query);
+  }
+
+  /** Declared last so it doesn't catch /users/me, /users/list… */
+  @Get(':id')
+  @Roles(['admin'])
+  async getUser(@Param('id') id: string) {
+    return this.usersService.getUser(id);
   }
 }

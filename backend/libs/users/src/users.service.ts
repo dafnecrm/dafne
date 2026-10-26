@@ -1,5 +1,5 @@
 import { DatabaseService, schema } from '@app/database';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { and, asc, desc, eq, like, type SQL } from 'drizzle-orm';
 import {
   ListUsersQueryDto,
@@ -58,5 +58,31 @@ export class UsersService {
     ]);
 
     return { users, total, limit, offset };
+  }
+
+  /**
+   * One user with their sign-in methods (e.g. "credential", "google") and
+   * when they were last active. Tokens and passwords are never selected.
+   */
+  async getUser(id: string) {
+    const found = await this.database.db.query.user.findFirst({
+      where: { id },
+      with: {
+        accounts: { columns: { providerId: true } },
+        sessions: {
+          columns: { updatedAt: true },
+          orderBy: { updatedAt: 'desc' },
+          limit: 1,
+        },
+      },
+    });
+    if (!found) throw new NotFoundException('User not found');
+
+    const { accounts, sessions, ...rest } = found;
+    return {
+      ...rest,
+      providers: [...new Set(accounts.map((a) => a.providerId))],
+      lastActiveAt: sessions[0]?.updatedAt ?? null,
+    };
   }
 }

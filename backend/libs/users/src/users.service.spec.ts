@@ -1,4 +1,5 @@
 import { DatabaseService, schema } from '@app/database';
+import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { and, asc, desc, eq, like } from 'drizzle-orm';
 import { UsersService } from './users.service.js';
@@ -14,7 +15,12 @@ describe('UsersService', () => {
     limit: vi.fn(),
     offset: vi.fn(),
   };
-  const db = { select: vi.fn(), $count: vi.fn() };
+  const findFirst = vi.fn();
+  const db = {
+    select: vi.fn(),
+    $count: vi.fn(),
+    query: { user: { findFirst } },
+  };
 
   beforeEach(async () => {
     vi.resetAllMocks();
@@ -108,5 +114,46 @@ describe('UsersService', () => {
       asc(schema.user.email),
       asc(schema.user.id),
     );
+  });
+
+  describe('getUser', () => {
+    it('returns the user with providers and last activity', async () => {
+      const lastActive = new Date('2026-10-01T10:00:00Z');
+      findFirst.mockResolvedValue({
+        id: '1',
+        email: 'ada@example.com',
+        accounts: [
+          { providerId: 'credential' },
+          { providerId: 'google' },
+          { providerId: 'google' },
+        ],
+        sessions: [{ updatedAt: lastActive }],
+      });
+
+      await expect(service.getUser('1')).resolves.toEqual({
+        id: '1',
+        email: 'ada@example.com',
+        providers: ['credential', 'google'],
+        lastActiveAt: lastActive,
+      });
+      expect(findFirst.mock.calls[0][0]).toMatchObject({ where: { id: '1' } });
+    });
+
+    it('has no last activity without sessions', async () => {
+      findFirst.mockResolvedValue({ id: '1', accounts: [], sessions: [] });
+
+      await expect(service.getUser('1')).resolves.toMatchObject({
+        providers: [],
+        lastActiveAt: null,
+      });
+    });
+
+    it('throws 404 when the user does not exist', async () => {
+      findFirst.mockResolvedValue(undefined);
+
+      await expect(service.getUser('nope')).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+    });
   });
 });
