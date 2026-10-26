@@ -11,7 +11,7 @@ import { AvatarUpload } from "./avatar-upload";
 import { ProfileDetails } from "./profile-details";
 import { PageContent, PageContentBody, PageContentDescription, PageContentHeader, PageContentTitle } from "@/components/page-content";
 
-export const metadata: Metadata = { title: "AccountCRM" };
+export const metadata: Metadata = { title: "Account" };
 
 export default function AccountPage() {
   return (
@@ -32,12 +32,7 @@ export default function AccountPage() {
 async function Profile() {
   const user = await requireUser();
 
-  return (<>
-    <AvatarUpload
-      image={user.image ?? null}
-      initials={`${user.firstname[0] ?? ""}${user.lastname[0] ?? ""}`.toUpperCase()}
-    />
+  return (
     <ProfileDetails user={user} />
-  </>
   );
 }

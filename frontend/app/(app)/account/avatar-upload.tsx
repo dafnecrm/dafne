@@ -1,6 +1,6 @@
 "use client";
 
-import { Trash2Icon } from "lucide-react";
+import { Edit2Icon, EditIcon, Trash2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -12,12 +12,16 @@ import {
   fileToAvatar,
 } from "@/lib/avatar";
 import { DetailSection } from "@/components/detail";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "cn";
 
 export function AvatarUpload({
   image,
+  className,
   initials,
 }: {
   image: string | null;
+  className?: string | null;
   initials: string;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -65,47 +69,45 @@ export function AvatarUpload({
     }
   }
 
-  return (<DetailSection title="Avatar" groupClassName="sm:grid-cols-1">
-    <div className="flex items-center gap-4">
-      <Avatar className="size-20" onClick={() => inputRef.current?.click()}>
-        {image && <AvatarImage src={image} alt="Your avatar" />}
-        <AvatarFallback className="text-xl">{initials}</AvatarFallback>
-      </Avatar>
-      <div className="flex flex-col gap-2">
-        {error ? (
-          <p role="alert" className="text-sm text-destructive">
-            {error}
-          </p>
-        ) : (
-          <div>
-            <p className="text-sm text-muted-foreground">
-              Click the avatar to change image.{" "}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              PNG, JPEG, WebP or GIF accepted. Cropped to a square.
-            </p>
-          </div>
-        )}
-        {image && (
-          <Button
-            variant="outline"
-            disabled={pending}
-            onClick={() => save(null)}
-          >
-            <Trash2Icon data-icon="inline-start" />
-            Remove
-          </Button>
-        )}
-        <input
-          ref={inputRef}
-          type="file"
-          accept={AVATAR_ACCEPT}
-          className="hidden"
-          aria-label="Avatar image"
-          onChange={onFileChange}
-        />
-      </div>
+  return (<div className={cn('flex flex-col items-center gap-4', className)}>
+    <Tooltip>
+      <TooltipTrigger>
+        <Avatar className="size-40 cursor-pointer" onClick={() => inputRef.current?.click()}>
+          {image && <AvatarImage src={image} alt="Your avatar" />}
+          <AvatarFallback className="text-xl">{initials}</AvatarFallback>
+        </Avatar>
+      </TooltipTrigger>
+      <TooltipContent side="bottom">
+        Click to update.
+      </TooltipContent>
+    </Tooltip>
+
+    {image && (
+      <Button
+        variant="outline"
+        disabled={pending}
+        onClick={() => save(null)}
+      >
+        <Trash2Icon data-icon="inline-start" />
+        Remove
+      </Button>
+    )}
+
+    <div>
+      {error && (
+        <p role="alert" className="text-sm text-destructive">
+          {error}
+        </p>
+      )}
+      <input
+        ref={inputRef}
+        type="file"
+        accept={AVATAR_ACCEPT}
+        className="hidden"
+        aria-label="Avatar image"
+        onChange={onFileChange}
+      />
     </div>
-  </DetailSection>
+  </div>
   );
 }
