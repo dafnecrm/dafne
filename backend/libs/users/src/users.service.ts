@@ -70,7 +70,7 @@ export class UsersService {
       with: {
         accounts: { columns: { providerId: true } },
         sessions: {
-          columns: { updatedAt: true },
+          columns: { updatedAt: true, expiresAt: true },
           orderBy: { updatedAt: 'desc' },
           limit: 1,
         },
@@ -83,6 +83,7 @@ export class UsersService {
       ...rest,
       providers: [...new Set(accounts.map((a) => a.providerId))],
       lastActiveAt: sessions[0]?.updatedAt ?? null,
+      expiresAt: sessions[0]?.expiresAt
     };
   }
 }
