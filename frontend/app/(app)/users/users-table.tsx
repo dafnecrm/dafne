@@ -13,6 +13,7 @@ import { describeFilters, type TableParams } from "@/lib/data-table";
 import type { ListedUser } from "@/lib/users";
 import { usersTable } from "@/lib/users-table";
 import { userColumns } from "./columns";
+import { userActions } from "./user-actions";
 
 const getRowId = (user: ListedUser) => user.id;
 
@@ -32,6 +33,7 @@ export function UsersTable({
       data={users}
       getRowId={getRowId}
       config={usersTable}
+      rowActions={userActions}
       params={params}
       total={total}
       noun="users"

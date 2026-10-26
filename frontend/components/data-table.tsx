@@ -81,6 +81,13 @@ import {
  *       cell: (info) => formatDate(info.getValue()),
  *     }),
  *   ]);
+ *
+ * Row actions (a button, a dropdown…) go in a last column via `rowActions`:
+ *
+ *   const userActions = (user: User) => (
+ *     <Button size="sm" variant="ghost">Edit</Button>
+ *   );
+ *   <DataTable rowActions={userActions} … />
  */
 
 /** Features shared by every data table. Module scope: must stay stable. */
@@ -105,6 +112,21 @@ export function createDataTableColumnHelper<TData extends RowData>() {
   return createColumnHelper<DataTableFeatures, TData>();
 }
 
+/** The column `rowActions` adds: not sortable, as narrow as its content. */
+function actionsColumn<TData extends RowData>(
+  render: (row: TData) => ReactNode,
+): DataTableColumnDef<TData> {
+  return createDataTableColumnHelper<TData>().display({
+    id: "actions",
+    header: () => <span className="sr-only">Actions</span>,
+    enableSorting: false,
+    meta: { className: "w-0 text-right" },
+    cell: ({ row }) => (
+      <div className="flex justify-end gap-1">{render(row.original)}</div>
+    ),
+  });
+}
+
 export interface DataTableProps<TData extends RowData> {
   /** Keep stable (module scope or useMemo). */
   columns: DataTableColumnDef<TData>[];
@@ -118,6 +140,11 @@ export interface DataTableProps<TData extends RowData> {
   params: TableParams;
   /** Total rows across all pages. */
   total: number;
+  /**
+   * Content of a last, right-aligned "Actions" column for each row, e.g. a
+   * button or a dropdown menu. No column when unset. Keep stable.
+   */
+  rowActions?: (row: TData) => ReactNode;
   /** Shown instead of the table when there are no rows. */
   empty?: ReactNode;
   /** Unit for the count, e.g. "users" ("1–20 of 42 users"). */
@@ -131,6 +158,7 @@ export function DataTable<TData extends RowData>({
   config,
   params,
   total,
+  rowActions,
   empty,
   noun,
 }: DataTableProps<TData>) {
@@ -145,9 +173,14 @@ export function DataTable<TData extends RowData>({
   const sorting = useMemo<SortingState>(() => [params.sort], [params.sort]);
   const navigate = (href: string) => startTransition(() => router.push(href));
 
+  const allColumns = useMemo(
+    () => (rowActions ? [...columns, actionsColumn(rowActions)] : columns),
+    [columns, rowActions],
+  );
+
   const table = useTable({
     features: dataTableFeatures,
-    columns,
+    columns: allColumns,
     data,
     getRowId,
     // The server already returned this page, sorted.
