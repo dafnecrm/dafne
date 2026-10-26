@@ -22,14 +22,38 @@ export interface UsersPage {
   offset?: number;
 }
 
+/** A Better Auth account: one way the user signs in. Dates as JSON strings. */
+export interface UserAccount {
+  id: string;
+  /** e.g. "credential" (email and password) or "google". */
+  providerId: string;
+  /** When this sign-in method was linked. */
+  createdAt: string;
+}
+
+/** An active (not expired) Better Auth session. Dates as JSON strings. */
+export interface UserSession {
+  id: string;
+  /** When the user signed in. */
+  createdAt: string;
+  /** Latest activity on this session. */
+  updatedAt: string;
+  expiresAt: string;
+  ipAddress: string | null;
+  userAgent: string | null;
+  /** The admin's user ID when an admin is impersonating this user. */
+  impersonatedBy: string | null;
+}
+
 /** A user from the backend's GET /users/:id: the listed fields plus activity. */
 export type UserDetail = ListedUser & {
   /** Sign-in methods, e.g. "credential" (email and password) or "google". */
   providers: string[];
+  accounts: UserAccount[];
+  /** Active sessions, most recently used first. */
+  sessions: UserSession[];
   /** Latest session activity, as a JSON date; null if never signed in. */
   lastActiveAt: string | null;
-  /** Session expiration, as a JSON date; null if never signed in. */
-  expiresAt?: string | null;
 };
 
 /**

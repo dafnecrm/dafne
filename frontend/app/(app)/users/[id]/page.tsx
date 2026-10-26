@@ -6,11 +6,11 @@ import {
   CalendarPlusIcon,
   CircleAlertIcon,
   CircleCheckIcon,
-  Copy,
   FingerprintIcon,
   HistoryIcon,
   KeyRoundIcon,
   MailIcon,
+  MonitorSmartphoneIcon,
   ShieldIcon,
   UserIcon,
 } from "lucide-react";
@@ -34,9 +34,16 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BackendError } from "@/lib/backend";
 import { isAdmin, requireUser } from "@/lib/session";
-import { getUser, type UserDetail } from "@/lib/users";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { getUser, type UserDetail, type UserSession } from "@/lib/users";
 import { NotAllowed } from "../not-allowed";
-import { Spinner } from "@/components/ui/spinner";
 import CopyButton from "@/components/copy-button";
 
 export const metadata: Metadata = { title: "User" };
@@ -160,19 +167,6 @@ function UserProfile({ user }: { user: UserDetail }) {
               )}
             </Detail>
           )}
-          <Detail icon={KeyRoundIcon} label="Sign-in methods">
-            {user.providers.length ? (
-              <span className="flex flex-wrap gap-1">
-                {user.providers.map((provider) => (
-                  <Badge key={provider} variant="outline">
-                    {providerLabel(provider)}
-                  </Badge>
-                ))}
-              </span>
-            ) : (
-              "—"
-            )}
-          </Detail>
           <Detail icon={ActivityIcon} label="Last active">
             {user.lastActiveAt ? (
               <LocalDate value={user.lastActiveAt} format="dateTime" />
@@ -180,31 +174,138 @@ function UserProfile({ user }: { user: UserDetail }) {
               "Never"
             )}
           </Detail>
-          {user.expiresAt && <Detail icon={ActivityIcon} label="Session expiry date">
-            <LocalDate value={user.expiresAt} format="dateTime" />
-          </Detail>}
         </DetailSection>
+
+        <DetailSection
+          title="Sign-in methods"
+          groupClassName="grid sm:grid-cols-2 gap-2"
+        >
+          {user.accounts.length ? (
+            user.accounts.map((account) => (
+              <Detail
+                key={account.id}
+                icon={KeyRoundIcon}
+                label={providerLabel(account.providerId)}
+              >
+                <span className="text-muted-foreground font-normal">
+                  Linked <LocalDate value={account.createdAt} format="dateTime" />
+                </span>
+              </Detail>
+            ))
+          ) : (
+            <Detail icon={KeyRoundIcon} label="Accounts">
+              None
+            </Detail>
+          )}
+        </DetailSection>
+
+        <UserSessions sessions={user.sessions} />
 
         <DetailSection
           title="Record"
           groupClassName="grid sm:grid-cols-2 gap-2"
         >
-          <Detail icon={CalendarPlusIcon} label="Joined">
-            <LocalDate value={user.createdAt} format="dateTime" />
-          </Detail>
-          <Detail icon={HistoryIcon} label="Updated">
-            <LocalDate value={user.updatedAt} format="dateTime" />
-          </Detail>
           <Detail icon={FingerprintIcon} label="User ID">
             <div className="flex items-center gap-2">
               <code className="font-mono text-xs break-all">{user.id}</code>
               <CopyButton variant="ghost" value={user.id} />
             </div>
           </Detail>
+          <Detail icon={CalendarPlusIcon} label="Joined">
+            <LocalDate value={user.createdAt} format="dateTime" />
+          </Detail>
+          <Detail icon={HistoryIcon} label="Updated">
+            <LocalDate value={user.updatedAt} format="dateTime" />
+          </Detail>
         </DetailSection>
       </PageContentBody>
     </PageContent>
   );
+}
+
+/** The user's active Better Auth sessions, most recently used first. */
+function UserSessions({ sessions }: { sessions: UserSession[] }) {
+  return (
+    <section className="flex flex-col gap-2">
+      <h2 className="font-heading text-base font-medium">
+        Active sessions ({sessions.length})
+      </h2>
+      {sessions.length ? (
+        <div className="rounded-lg border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Device</TableHead>
+                <TableHead>IP address</TableHead>
+                <TableHead>Signed in</TableHead>
+                <TableHead>Last active</TableHead>
+                <TableHead>Expires</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sessions.map((session) => (
+                <TableRow key={session.id}>
+                  <TableCell>
+                    <span
+                      className="flex items-center gap-2"
+                      title={session.userAgent ?? undefined}
+                    >
+                      <MonitorSmartphoneIcon className="text-muted-foreground size-4 shrink-0" />
+                      {describeUserAgent(session.userAgent)}
+                      {session.impersonatedBy && (
+                        <Badge variant="secondary">Impersonated</Badge>
+                      )}
+                    </span>
+                  </TableCell>
+                  <TableCell className="font-mono text-xs">
+                    {session.ipAddress || "—"}
+                  </TableCell>
+                  <TableCell>
+                    <LocalDate value={session.createdAt} format="dateTime" />
+                  </TableCell>
+                  <TableCell>
+                    <LocalDate value={session.updatedAt} format="dateTime" />
+                  </TableCell>
+                  <TableCell>
+                    <LocalDate value={session.expiresAt} format="dateTime" />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      ) : (
+        <p className="text-muted-foreground text-sm">No active sessions.</p>
+      )}
+    </section>
+  );
+}
+
+const BROWSERS: [RegExp, string][] = [
+  [/Edg\//, "Edge"],
+  [/OPR\/|Opera/, "Opera"],
+  [/Firefox\//, "Firefox"],
+  [/Chrome\//, "Chrome"],
+  [/Safari\//, "Safari"],
+];
+
+const SYSTEMS: [RegExp, string][] = [
+  [/iPhone|iPad/, "iOS"],
+  [/Android/, "Android"],
+  [/Mac OS X|Macintosh/, "macOS"],
+  [/Windows/, "Windows"],
+  [/Linux/, "Linux"],
+];
+
+/** "Mozilla/5.0 (Macintosh; …) … Chrome/130…" → "Chrome on macOS". */
+function describeUserAgent(userAgent: string | null) {
+  if (!userAgent) return "Unknown device";
+  const match = (list: [RegExp, string][]) =>
+    list.find(([pattern]) => pattern.test(userAgent))?.[1];
+  const browser = match(BROWSERS);
+  const os = match(SYSTEMS);
+  if (browser && os) return `${browser} on ${os}`;
+  return browser ?? os ?? userAgent;
 }
 
 const PROVIDER_LABELS: Record<string, string> = {
