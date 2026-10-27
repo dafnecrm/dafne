@@ -46,6 +46,12 @@
       ],
       "@app/users/*": [
         "./libs/users/src/*"
+      ],
+      "@app/customers": [
+        "./libs/customers/src/index.ts"
+      ],
+      "@app/customers/*": [
+        "./libs/customers/src/*"
       ]
     }
   },
