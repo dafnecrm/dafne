@@ -10,6 +10,13 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Tooltip,
@@ -157,15 +164,6 @@ function Sidebar({
 }) {
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
 
-  React.useEffect(() => {
-    if (!isMobile || !openMobile) return
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpenMobile(false)
-    }
-    window.addEventListener("keydown", onKeyDown)
-    return () => window.removeEventListener("keydown", onKeyDown)
-  }, [isMobile, openMobile, setOpenMobile])
-
   if (collapsible === "none") {
     return (
       <div
@@ -182,54 +180,28 @@ function Sidebar({
   }
 
   if (isMobile) {
-    // Mobile: the same floating panel, slid over the page (no Sheet).
     return (
-      <div
-        className="group peer text-sidebar-foreground"
-        data-state={openMobile ? "open" : "closed"}
-        data-variant={variant}
-        data-side={side}
-        data-slot="sidebar"
-        data-mobile="true"
-      >
-        {openMobile && (
-          <div
-            data-slot="sidebar-backdrop"
-            aria-hidden="true"
-            className="fixed inset-0 z-40 bg-black/10 supports-backdrop-filter:backdrop-blur-xs"
-            onClick={() => setOpenMobile(false)}
-          />
-        )}
-        <div
-          data-slot="sidebar-container"
-          data-side={side}
+      <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
+        <SheetContent
           dir={dir}
-          inert={!openMobile}
-          className={cn(
-            "fixed inset-y-0 z-50 flex h-svh w-(--sidebar-width) transition-transform duration-200 ease-linear data-[side=left]:left-0 data-[side=right]:right-0",
-            !openMobile &&
-              "data-[side=left]:-translate-x-full data-[side=right]:translate-x-full",
-            variant === "floating" || variant === "inset"
-              ? "p-2"
-              : "group-data-[side=left]:border-r group-data-[side=right]:border-l",
-            className
-          )}
+          data-sidebar="sidebar"
+          data-slot="sidebar"
+          data-mobile="true"
+          className="w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
           style={
             {
               "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
             } as React.CSSProperties
           }
-          {...props}
+          side={side}
         >
-          <div
-            data-sidebar="sidebar"
-            data-slot="sidebar-inner"
-            className="flex size-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:shadow-sm group-data-[variant=floating]:ring-1 group-data-[variant=floating]:ring-sidebar-border"
-          >
-            {children}
-          </div>
-        </div>
-      </div>
+          <SheetHeader className="sr-only">
+            <SheetTitle>Sidebar</SheetTitle>
+            <SheetDescription>Displays the mobile sidebar.</SheetDescription>
+          </SheetHeader>
+          <div className="flex h-full w-full flex-col">{children}</div>
+        </SheetContent>
+      </Sheet>
     )
   }
 
