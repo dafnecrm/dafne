@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import {
   Session,
   AllowAnonymous,
@@ -8,7 +8,9 @@ import {
 import type { UserSession } from '@thallesp/nestjs-better-auth';
 import { ZodValidationPipe } from '@app/common';
 import {
+  createUserBodySchema,
   listUsersQuerySchema,
+  type CreateUserBody,
   type ListUsersQuery,
   type UserDetail,
   type UsersList,
@@ -42,6 +44,14 @@ export class UsersController {
     @Query(new ZodValidationPipe(listUsersQuerySchema)) query: ListUsersQuery,
   ): Promise<UsersList> {
     return this.usersService.getUsersList(query);
+  }
+
+  @Post()
+  @Roles(['admin'])
+  async createUser(
+    @Body(new ZodValidationPipe(createUserBodySchema)) body: CreateUserBody,
+  ): Promise<UserDetail> {
+    return this.usersService.createUser(body);
   }
 
   /** Declared last so it doesn't catch /users/me, /users/list… */

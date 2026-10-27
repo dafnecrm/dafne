@@ -1,8 +1,16 @@
 import { DatabaseService, schema } from '@app/database';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { AuthService } from '@app/auth';
+import {
+  ConflictException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
+import { isAPIError } from 'better-auth/api';
 import { and, asc, desc, eq, like, type SQL } from 'drizzle-orm';
 import {
   USER_FILTER_FIELDS,
+  type CreateUserBody,
   type ListUsersQuery,
   type UserDetail,
   type UserFilterField,
@@ -30,7 +38,38 @@ const USER_FILTERS: Record<UserFilterField, (value: string) => SQL> = {
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly database: DatabaseService) {}
+  private readonly logger = new Logger(UsersService.name);
+
+  constructor(
+    private readonly database: DatabaseService,
+    private readonly auth: AuthService,
+  ) {}
+
+  /**
+   * Creates a user (admins only, checked by the controller) with the
+   * password the admin picked, and sends them the verification link: they
+   * can sign in once they click it. Throws 409 if the email is taken.
+   */
+  async createUser(body: CreateUserBody): Promise<UserDetail> {
+    let id: string;
+    try {
+      id = await this.auth.createUser(body, { emailVerified: false });
+    } catch (error) {
+      if (
+        isAPIError(error) &&
+        error.body?.code === 'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL'
+      )
+        throw new ConflictException('A user with this email already exists');
+      throw error;
+    }
+    try {
+      await this.auth.sendVerificationEmail(body.email);
+    } catch (error) {
+      // The user exists anyway: signing in sends them a new link.
+      this.logger.error(`Verification email to ${body.email} failed`, error);
+    }
+    return this.getUser(id);
+  }
 
   /** Lists users, paged and sorted, filtered by every field given (AND). */
   async getUsersList(query: ListUsersQuery = {}): Promise<UsersList> {

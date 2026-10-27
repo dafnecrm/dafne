@@ -1,5 +1,8 @@
 import { DatabaseService, schema } from '@app/database';
-import { NotFoundException } from '@nestjs/common';
+import { AuthService } from '@app/auth';
+import { createUserBodySchema } from '@app/contracts';
+import { ConflictException, NotFoundException } from '@nestjs/common';
+import { APIError } from 'better-auth/api';
 import { Test, TestingModule } from '@nestjs/testing';
 import { and, asc, desc, eq, like } from 'drizzle-orm';
 import { UsersService } from './users.service.js';
@@ -22,6 +25,8 @@ describe('UsersService', () => {
     query: { user: { findFirst } },
   };
 
+  const auth = { createUser: vi.fn(), sendVerificationEmail: vi.fn() };
+
   beforeEach(async () => {
     vi.resetAllMocks();
     db.select.mockReturnValue(query);
@@ -33,7 +38,11 @@ describe('UsersService', () => {
     db.$count.mockResolvedValue(42);
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [UsersService, { provide: DatabaseService, useValue: { db } }],
+      providers: [
+        UsersService,
+        { provide: DatabaseService, useValue: { db } },
+        { provide: AuthService, useValue: auth },
+      ],
     }).compile();
 
     service = module.get<UsersService>(UsersService);
@@ -193,6 +202,56 @@ describe('UsersService', () => {
       await expect(service.getUser('nope')).rejects.toBeInstanceOf(
         NotFoundException,
       );
+    });
+  });
+
+  describe('createUser', () => {
+    const body = createUserBodySchema.parse({
+      firstname: 'Ada',
+      lastname: 'Lovelace',
+      email: 'ada@example.com',
+      password: 'Str0ng!pass',
+    });
+
+    it('creates the user unverified, sends the link and returns their detail', async () => {
+      auth.createUser.mockResolvedValue('u1');
+      findFirst.mockResolvedValue({ id: 'u1', accounts: [], sessions: [] });
+
+      await expect(service.createUser(body)).resolves.toMatchObject({
+        id: 'u1',
+      });
+      expect(auth.createUser).toHaveBeenCalledWith(
+        { ...body, role: 'user' },
+        { emailVerified: false },
+      );
+      expect(auth.sendVerificationEmail).toHaveBeenCalledWith(
+        'ada@example.com',
+      );
+      expect(findFirst.mock.calls[0][0].where).toEqual({ id: 'u1' });
+    });
+
+    it('still returns the user when the email fails', async () => {
+      auth.createUser.mockResolvedValue('u1');
+      auth.sendVerificationEmail.mockRejectedValue(new Error('no API key'));
+      findFirst.mockResolvedValue({ id: 'u1', accounts: [], sessions: [] });
+
+      await expect(service.createUser(body)).resolves.toMatchObject({
+        id: 'u1',
+      });
+    });
+
+    it('throws 409 when the email is taken', async () => {
+      auth.createUser.mockRejectedValue(
+        new APIError('BAD_REQUEST', {
+          code: 'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL',
+          message: 'User already exists. Use another email.',
+        }),
+      );
+
+      await expect(service.createUser(body)).rejects.toBeInstanceOf(
+        ConflictException,
+      );
+      expect(auth.sendVerificationEmail).not.toHaveBeenCalled();
     });
   });
 });

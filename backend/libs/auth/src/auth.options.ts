@@ -57,7 +57,7 @@ export const authOptions = {
     database: {
       joins: true,
     },
-    cookiePrefix: 'tiny-crm',
+    cookiePrefix: 'dafne',
   },
   emailAndPassword: {
     enabled: true,

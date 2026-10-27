@@ -1,7 +1,47 @@
 import { z } from 'zod';
-import { pageQuery, SORT_DIRECTIONS } from './common.ts';
+import { pageQuery, requiredText, SORT_DIRECTIONS } from './common.ts';
 
 /* ---------- Requests ---------- */
+
+export const USER_ROLES = ['user', 'admin'] as const;
+export type UserRole = (typeof USER_ROLES)[number];
+
+/**
+ * First and last name: max 127 each, so Better Auth's `name` ("first
+ * last", varchar(255)) always fits. Same limit as the auth options.
+ */
+export const USER_NAME_MAX = 127;
+
+/** At least 8 characters with an uppercase, a lowercase, a digit and a symbol. */
+export const PASSWORD_PATTERN =
+  /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}$/;
+
+export const passwordSchema = z
+  .string()
+  .max(128) // Better Auth's limit
+  .regex(PASSWORD_PATTERN, {
+    error:
+      'Password must contain minimum 8 characters, at least one uppercase letter, one lowercase letter, one number and one special character',
+  });
+
+/**
+ * Body of POST /users (admins only). The admin picks the password and tells
+ * the user, who gets a verification link by email and can sign in once they
+ * click it (as after sign-up).
+ */
+export const createUserBodySchema = z.strictObject({
+  firstname: requiredText(USER_NAME_MAX, 'Enter the first name'),
+  lastname: requiredText(USER_NAME_MAX, 'Enter the last name'),
+  email: z
+    .string()
+    .trim()
+    .pipe(z.email({ error: 'Enter a valid email address' }).max(255)),
+  password: passwordSchema,
+  /** Defaults to user. */
+  role: z.enum(USER_ROLES).default('user'),
+});
+export type CreateUserBodyInput = z.input<typeof createUserBodySchema>;
+export type CreateUserBody = z.output<typeof createUserBodySchema>;
 
 /** User fields the list can be sorted by. */
 export const USER_SORT_FIELDS = [
@@ -90,7 +130,7 @@ export interface UserActiveSession {
   impersonatedBy: string | null;
 }
 
-/** Response of GET /users/:id: the listed fields plus activity. */
+/** Response of GET /users/:id and POST /users: the listed fields plus activity. */
 export interface UserDetail extends ListedUser {
   /** Sign-in methods, e.g. "credential" (email and password) or "google". */
   providers: string[];

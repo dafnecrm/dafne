@@ -5,7 +5,7 @@ import { APIError } from 'better-auth/api';
 import { AuthService } from './auth.service.js';
 
 describe('AuthService', () => {
-  const api = { createUser: vi.fn() };
+  const api = { createUser: vi.fn(), sendVerificationEmail: vi.fn() };
   const internalAdapter = { updateUserByEmail: vi.fn() };
   const instance = { $context: Promise.resolve({ internalAdapter }) };
   let env: Record<string, string>;
@@ -87,5 +87,15 @@ describe('AuthService', () => {
     const service = await createService();
 
     await expect(service.createAdminUser()).rejects.toBe(boom);
+  });
+
+  it('sends the verification link back to the verify-email page', async () => {
+    const service = await createService();
+
+    await service.sendVerificationEmail('ada@example.com');
+
+    expect(api.sendVerificationEmail).toHaveBeenCalledWith({
+      body: { email: 'ada@example.com', callbackURL: '/verify-email' },
+    });
   });
 });

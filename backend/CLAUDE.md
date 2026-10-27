@@ -1,4 +1,4 @@
-# tiny-crm backend
+# dafne backend
 
 NestJS API (monorepo: `apps/api`, libraries in `libs/*`, imported as
 `@app/<lib>`). The frontend (`../frontend`, a separate repo) imports this
