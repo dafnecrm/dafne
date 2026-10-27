@@ -77,7 +77,7 @@ export function AvatarUpload({
             {image && <AvatarImage src={image} alt="Your avatar" />}
             <AvatarFallback className="text-xl cursor-pointer">{initials}</AvatarFallback>
           </Avatar>
-          <div className="absolute bottom-1 left-0 flex gap-2 items-center rounded-lg border border-border bg-background dark:border-input dark:bg-input/30 h-8 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2">
+          <div className="absolute bottom-1 left-0 flex gap-2 items-center rounded-lg border border-border bg-background dark:border-input dark:bg-background h-8 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2">
             <Edit2Icon data-icon="inline-start" className="size-4" /> Edit
           </div>
         </div>

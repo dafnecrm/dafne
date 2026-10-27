@@ -2,6 +2,7 @@ import {
   CheckboxField,
   FormErrors,
   PasswordField,
+  SelectField,
   SubmitButton,
   TextField,
   UncontrolledField,
@@ -17,6 +18,7 @@ const { useAppForm } = createFormHook({
     PasswordField,
     UncontrolledField,
     CheckboxField,
+    SelectField,
   },
   formComponents: {
     SubmitButton,

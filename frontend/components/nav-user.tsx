@@ -97,6 +97,7 @@ export function NavUser({ user }: { user: NavUserProps }) {
               <UserIcon />
               Account
             </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem
               variant="destructive"
               disabled={pending}

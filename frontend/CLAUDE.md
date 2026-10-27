@@ -1,6 +1,6 @@
 @AGENTS.md
 
-# tiny-crm frontend
+# dafne frontend
 
 Next.js app. It calls the NestJS backend (`../backend`, a separate repo,
 checked out side by side) from the server through `backendFetch`

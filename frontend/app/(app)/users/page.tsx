@@ -1,12 +1,16 @@
+import { PlusIcon } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Suspense } from "react";
 import {
   PageContent,
+  PageContentAction,
   PageContentBody,
   PageContentDescription,
   PageContentHeader,
   PageContentTitle,
 } from "@/components/page-content";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BackendError } from "@/lib/backend";
 import { getTableParams } from "@/lib/data-table";
@@ -27,6 +31,12 @@ export default function UsersPage({ searchParams }: PageProps<"/users">) {
           Everyone with an account. Filter by a field, or click a column to
           sort.
         </PageContentDescription>
+        <PageContentAction>
+          <Button nativeButton={false} render={<Link href="/users/new" />}>
+            <PlusIcon data-icon="inline-start" />
+            New user
+          </Button>
+        </PageContentAction>
       </PageContentHeader>
       <PageContentBody>
         {/* The session and the query are read per request. */}

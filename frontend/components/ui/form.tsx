@@ -4,6 +4,13 @@ import { useFieldContext, useFormContext } from '@/lib/app-form/form-context'
 import { Checkbox } from './checkbox'
 import { Field, FieldError, FieldLabel } from './field'
 import { Input } from './input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './select'
 import { Button } from './button'
 import { Spinner } from './spinner'
 import { Alert, AlertDescription, AlertTitle } from './alert'
@@ -97,6 +104,53 @@ function UncontrolledField({
   ...props
 }: Omit<TextFieldProps, 'uncontrolled'>) {
   return <TextField label={label} uncontrolled {...props} />
+}
+
+/** A choice from a fixed list; the field's value is the option's `value`. */
+function SelectField({
+  label,
+  options,
+  className,
+}: {
+  label: string
+  options: readonly { value: string; label: string }[]
+  className?: string
+}) {
+  const field = useFieldContext<string>()
+
+  return (
+    <Field className={className} data-invalid={!field.state.meta.isValid}>
+      <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
+      <Select
+        items={options}
+        name={field.name}
+        value={field.state.value}
+        onValueChange={(value) => value !== null && field.handleChange(value)}
+      >
+        <SelectTrigger
+          id={field.name}
+          className="w-full"
+          aria-invalid={!field.state.meta.isValid}
+          onBlur={field.handleBlur}
+        >
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <FieldError>
+        {field.state.meta.errors.length > 0 &&
+          [...new Set(errorMessages(field.state.meta.errors))].map(
+            (message, i) => <p key={i}>{message}</p>
+          )}
+      </FieldError>
+    </Field>
+  )
 }
 
 function CheckboxField({
@@ -207,6 +261,7 @@ export {
   PasswordField,
   UncontrolledField,
   CheckboxField,
+  SelectField,
   SubmitButton,
   FormErrors,
 }
