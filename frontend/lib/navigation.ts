@@ -1,4 +1,10 @@
-import { HouseIcon, UserIcon, UsersIcon, type LucideIcon } from "lucide-react";
+import {
+  ContactIcon,
+  HouseIcon,
+  UserIcon,
+  UsersIcon,
+  type LucideIcon,
+} from "lucide-react";
 
 export interface NavItem {
   title: string;
@@ -22,6 +28,11 @@ export const NAV_SECTIONS: NavSection[] = [
     title: "Home",
     href: "/",
     items: [{ title: "Dashboard", href: "/", icon: HouseIcon }],
+  },
+  {
+    title: "CRM",
+    href: "/customers",
+    items: [{ title: "Customers", href: "/customers", icon: ContactIcon }],
   },
   {
     title: "Admin",
