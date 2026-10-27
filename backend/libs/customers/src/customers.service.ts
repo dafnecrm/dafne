@@ -2,14 +2,14 @@ import { DatabaseService, schema } from '@app/database';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { and, asc, desc, eq, isNull, like, type SQL } from 'drizzle-orm';
-import type {
-  CustomerAddressDto,
-  CustomerBodyDto,
-} from './dto/customer-body.dto.js';
 import {
   CUSTOMER_FILTER_FIELDS,
-  ListCustomersQueryDto,
-} from './dto/list-customers-query.dto.js';
+  type CustomerAddressBody,
+  type CustomerBody,
+  type CustomerDetail,
+  type CustomersList,
+  type ListCustomersQuery,
+} from '@app/contracts';
 
 export const DEFAULT_PAGE_SIZE = 20;
 
@@ -36,7 +36,7 @@ export class CustomersService {
    * Lists customers that aren't deleted, paged and sorted, filtered by every
    * field given (AND, each matching text the field contains).
    */
-  async listCustomers(query: ListCustomersQueryDto = {}) {
+  async listCustomers(query: ListCustomersQuery = {}): Promise<CustomersList> {
     const {
       limit = DEFAULT_PAGE_SIZE,
       offset = 0,
@@ -76,7 +76,7 @@ export class CustomersService {
    * One customer that isn't deleted, with their addresses and who created
    * and last updated them. Throws 404 otherwise.
    */
-  async getCustomer(id: string) {
+  async getCustomer(id: string): Promise<CustomerDetail> {
     const found = await this.database.db.query.customer.findFirst({
       where: { id, deletedAt: { isNull: true } },
       columns: { createdById: false, updatedById: false },
@@ -94,7 +94,10 @@ export class CustomersService {
   }
 
   /** Creates a customer and their addresses; `userId` is the creator. */
-  async createCustomer(body: CustomerBodyDto, userId: string) {
+  async createCustomer(
+    body: CustomerBody,
+    userId: string,
+  ): Promise<CustomerDetail> {
     const id = randomUUID();
     // Set here, not by the column default: MySQL's now() and the driver can
     // disagree on the time zone, while dates written from JS round-trip.
@@ -103,8 +106,8 @@ export class CustomersService {
       await tx.insert(customer).values({
         id,
         name: body.name,
-        email: body.email ?? null,
-        phone: body.phone ?? null,
+        email: body.email,
+        phone: body.phone,
         createdAt: now,
         updatedAt: now,
         createdById: userId,
@@ -119,14 +122,18 @@ export class CustomersService {
    * Replaces a customer's fields and addresses; `userId` is the editor.
    * Throws 404 if the customer doesn't exist or is deleted.
    */
-  async updateCustomer(id: string, body: CustomerBodyDto, userId: string) {
+  async updateCustomer(
+    id: string,
+    body: CustomerBody,
+    userId: string,
+  ): Promise<CustomerDetail> {
     await this.database.db.transaction(async (tx) => {
       const [result] = await tx
         .update(customer)
         .set({
           name: body.name,
-          email: body.email ?? null,
-          phone: body.phone ?? null,
+          email: body.email,
+          phone: body.phone,
           updatedById: userId,
           // Set explicitly so the row always changes and is counted below.
           updatedAt: new Date(),
@@ -135,7 +142,9 @@ export class CustomersService {
       if (result.affectedRows === 0)
         throw new NotFoundException('Customer not found');
 
-      await tx.delete(customerAddress).where(eq(customerAddress.customerId, id));
+      await tx
+        .delete(customerAddress)
+        .where(eq(customerAddress.customerId, id));
       await insertAddresses(tx, id, body.addresses);
     });
     return this.getCustomer(id);
@@ -159,7 +168,7 @@ export class CustomersService {
 async function insertAddresses(
   tx: Transaction,
   customerId: string,
-  addresses: CustomerAddressDto[] = [],
+  addresses: CustomerAddressBody[],
 ) {
   if (!addresses.length) return;
   await tx.insert(customerAddress).values(
@@ -167,11 +176,11 @@ async function insertAddresses(
       id: randomUUID(),
       customerId,
       position,
-      label: address.label ?? null,
+      label: address.label,
       street: address.street,
       city: address.city,
-      postalCode: address.postalCode ?? null,
-      region: address.region ?? null,
+      postalCode: address.postalCode,
+      region: address.region,
       country: address.country,
     })),
   );

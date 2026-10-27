@@ -1,0 +1,45 @@
+# tiny-crm backend
+
+NestJS API (monorepo: `apps/api`, libraries in `libs/*`, imported as
+`@app/<lib>`). The frontend (`../frontend`, a separate repo) imports this
+repo's `libs/contracts`.
+
+## API contracts (shared with the frontend)
+
+API request and response types live **only here**, in `libs/contracts`.
+The frontend imports them as `@backend/contracts`, so it never writes API
+types itself.
+
+- **Requests** (bodies, query strings) are Zod schemas, e.g.
+  `customerBodySchema`, `listCustomersQuerySchema`. Use `z.strictObject` so
+  unknown fields are rejected. Messages are user-facing: the frontend forms
+  show them too.
+- **Responses** are TypeScript interfaces with dates as `Date`, e.g.
+  `CustomerDetail`, `UsersList`. Service and controller methods declare them
+  as return types, so the compiler checks the code against the contract.
+- Shared helpers are in `contracts/src/common.ts`: `requiredText`,
+  `optionalText` (blank, null or missing all become null), `pageQuery`
+  (limit/offset), `SORT_DIRECTIONS`, `Json<T>` (the client-side type, dates
+  as strings).
+- `libs/contracts` holds plain Zod only, with no Nest, Node or database
+  imports, because it ends up in the frontend bundle.
+- Inside `libs/contracts`, relative imports end in `.ts` (`./common.ts`),
+  not `.js` like the rest of the backend, because the frontend's bundler
+  (Turbopack) can't map `.js` to `.ts`. `rewriteRelativeImportExtensions`
+  in `tsconfig.json` allows it.
+
+## Validation
+
+- Validate with `ZodValidationPipe` from `@app/common`, per parameter:
+  `@Body(new ZodValidationPipe(customerBodySchema)) body: CustomerBody`.
+  The parameter type is the schema's output (`z.output`).
+- There's no global ValidationPipe and no class-validator: don't add DTO
+  classes.
+- Errors are 400 with `message: ["path: message", ...]`.
+
+## Adding an endpoint
+
+1. Add the request schema and response type to
+   `libs/contracts/src/<resource>.ts`, then export the file from `index.ts`.
+2. Use them in the controller (pipe + return type) and in the service.
+3. In the frontend, add the `Json<...>` alias (see `../frontend/CLAUDE.md`).

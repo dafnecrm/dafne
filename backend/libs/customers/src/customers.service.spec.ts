@@ -2,7 +2,11 @@ import { DatabaseService, schema } from '@app/database';
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { and, asc, desc, eq, isNull, like } from 'drizzle-orm';
+import { customerBodySchema, type CustomerBodyInput } from '@app/contracts';
 import { CustomersService } from './customers.service.js';
+
+/** A body as the validation pipe hands it to the service. */
+const body = (input: CustomerBodyInput) => customerBodySchema.parse(input);
 
 const { customer, customerAddress } = schema;
 const notDeleted = isNull(customer.deletedAt);
@@ -137,14 +141,14 @@ describe('CustomersService', () => {
     it('inserts the customer and its addresses in order', async () => {
       await expect(
         service.createCustomer(
-          {
+          body({
             name: 'Acme',
             email: 'info@acme.test',
             addresses: [
               { street: 'Via Roma 1', city: 'Milano', country: 'Italy' },
               { street: 'Main St 2', city: 'Boston', country: 'USA', label: 'HQ' },
             ],
-          },
+          }),
           'u1',
         ),
       ).resolves.toBe(found);
@@ -167,7 +171,7 @@ describe('CustomersService', () => {
     });
 
     it('skips the address insert when there are none', async () => {
-      await service.createCustomer({ name: 'Acme' }, 'u1');
+      await service.createCustomer(body({ name: 'Acme' }), 'u1');
 
       expect(insert.values).toHaveBeenCalledTimes(1);
     });
@@ -177,10 +181,10 @@ describe('CustomersService', () => {
     it('updates the customer and replaces the addresses', async () => {
       await service.updateCustomer(
         'c1',
-        {
+        body({
           name: 'Acme Inc',
           addresses: [{ street: 'Via Roma 1', city: 'Milano', country: 'Italy' }],
-        },
+        }),
         'u2',
       );
 
@@ -206,7 +210,7 @@ describe('CustomersService', () => {
       update.where.mockResolvedValue([{ affectedRows: 0 }]);
 
       await expect(
-        service.updateCustomer('nope', { name: 'X' }, 'u2'),
+        service.updateCustomer('nope', body({ name: 'X' }), 'u2'),
       ).rejects.toBeInstanceOf(NotFoundException);
       expect(db.delete).not.toHaveBeenCalled();
       expect(insert.values).not.toHaveBeenCalled();

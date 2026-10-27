@@ -2,10 +2,12 @@ import { DatabaseService, schema } from '@app/database';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { and, asc, desc, eq, like, type SQL } from 'drizzle-orm';
 import {
-  ListUsersQueryDto,
   USER_FILTER_FIELDS,
-  UserFilterField,
-} from './dto/list-users-query.dto.js';
+  type ListUsersQuery,
+  type UserDetail,
+  type UserFilterField,
+  type UsersList,
+} from '@app/contracts';
 
 export const DEFAULT_PAGE_SIZE = 20;
 
@@ -31,7 +33,7 @@ export class UsersService {
   constructor(private readonly database: DatabaseService) {}
 
   /** Lists users, paged and sorted, filtered by every field given (AND). */
-  async getUsersList(query: ListUsersQueryDto = {}) {
+  async getUsersList(query: ListUsersQuery = {}): Promise<UsersList> {
     const {
       limit = DEFAULT_PAGE_SIZE,
       offset = 0,
@@ -65,7 +67,7 @@ export class UsersService {
    * "credential", "google"), their active sessions and when they were last
    * active. Tokens and passwords are never selected.
    */
-  async getUser(id: string) {
+  async getUser(id: string): Promise<UserDetail> {
     const found = await this.database.db.query.user.findFirst({
       where: { id },
       with: {

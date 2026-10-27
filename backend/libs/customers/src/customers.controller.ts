@@ -12,8 +12,15 @@ import {
 } from '@nestjs/common';
 import { Session } from '@thallesp/nestjs-better-auth';
 import type { UserSession } from '@thallesp/nestjs-better-auth';
-import { CustomerBodyDto } from './dto/customer-body.dto.js';
-import { ListCustomersQueryDto } from './dto/list-customers-query.dto.js';
+import { ZodValidationPipe } from '@app/common';
+import {
+  customerBodySchema,
+  listCustomersQuerySchema,
+  type CustomerBody,
+  type CustomerDetail,
+  type CustomersList,
+  type ListCustomersQuery,
+} from '@app/contracts';
 import { CustomersService } from './customers.service.js';
 
 /** Customers, for any signed-in user (the global auth guard checks it). */
@@ -22,33 +29,42 @@ export class CustomersController {
   constructor(private readonly customersService: CustomersService) {}
 
   @Get()
-  listCustomers(@Query() query: ListCustomersQueryDto) {
+  listCustomers(
+    @Query(new ZodValidationPipe(listCustomersQuerySchema))
+    query: ListCustomersQuery,
+  ): Promise<CustomersList> {
     return this.customersService.listCustomers(query);
   }
 
   @Get(':id')
-  getCustomer(@Param('id') id: string) {
+  getCustomer(@Param('id') id: string): Promise<CustomerDetail> {
     return this.customersService.getCustomer(id);
   }
 
   @Post()
-  createCustomer(@Body() body: CustomerBodyDto, @Session() session: UserSession) {
+  createCustomer(
+    @Body(new ZodValidationPipe(customerBodySchema)) body: CustomerBody,
+    @Session() session: UserSession,
+  ): Promise<CustomerDetail> {
     return this.customersService.createCustomer(body, session.user.id);
   }
 
   @Put(':id')
   updateCustomer(
     @Param('id') id: string,
-    @Body() body: CustomerBodyDto,
+    @Body(new ZodValidationPipe(customerBodySchema)) body: CustomerBody,
     @Session() session: UserSession,
-  ) {
+  ): Promise<CustomerDetail> {
     return this.customersService.updateCustomer(id, body, session.user.id);
   }
 
   /** Logical delete. */
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteCustomer(@Param('id') id: string, @Session() session: UserSession) {
+  async deleteCustomer(
+    @Param('id') id: string,
+    @Session() session: UserSession,
+  ): Promise<void> {
     await this.customersService.deleteCustomer(id, session.user.id);
   }
 }

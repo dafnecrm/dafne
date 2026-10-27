@@ -6,7 +6,13 @@ import {
   Roles,
 } from '@thallesp/nestjs-better-auth';
 import type { UserSession } from '@thallesp/nestjs-better-auth';
-import { ListUsersQueryDto } from './dto/list-users-query.dto.js';
+import { ZodValidationPipe } from '@app/common';
+import {
+  listUsersQuerySchema,
+  type ListUsersQuery,
+  type UserDetail,
+  type UsersList,
+} from '@app/contracts';
 import { UsersService } from './users.service.js';
 
 @Controller('users')
@@ -32,14 +38,16 @@ export class UsersController {
 
   @Get('/list')
   @Roles(['admin'])
-  async getUsersList(@Query() query: ListUsersQueryDto) {
+  async getUsersList(
+    @Query(new ZodValidationPipe(listUsersQuerySchema)) query: ListUsersQuery,
+  ): Promise<UsersList> {
     return this.usersService.getUsersList(query);
   }
 
   /** Declared last so it doesn't catch /users/me, /users/list… */
   @Get(':id')
   @Roles(['admin'])
-  async getUser(@Param('id') id: string) {
+  async getUser(@Param('id') id: string): Promise<UserDetail> {
     return this.usersService.getUser(id);
   }
 }

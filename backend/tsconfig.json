@@ -5,6 +5,8 @@
     "resolvePackageJsonExports": true,
     "esModuleInterop": true,
     "isolatedModules": true,
+    // libs/contracts imports ./x.ts (see its index.ts).
+    "rewriteRelativeImportExtensions": true,
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
@@ -52,6 +54,18 @@
       ],
       "@app/customers/*": [
         "./libs/customers/src/*"
+      ],
+      "@app/common": [
+        "./libs/common/src/index.ts"
+      ],
+      "@app/common/*": [
+        "./libs/common/src/*"
+      ],
+      "@app/contracts": [
+        "./libs/contracts/src/index.ts"
+      ],
+      "@app/contracts/*": [
+        "./libs/contracts/src/*"
       ]
     }
   },
