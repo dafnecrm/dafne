@@ -79,7 +79,7 @@ export function DetailSection({
         <ItemGroup
           // Details read the variant from here (see Detail).
           data-variant={variant}
-          className={groupClassName ?? "grid grid-cols-1 sm:grid-cols-2"}
+          className={groupClassName ?? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"}
         >
           {Children.toArray(children).map((child, index) => (
             <Fragment key={index}>

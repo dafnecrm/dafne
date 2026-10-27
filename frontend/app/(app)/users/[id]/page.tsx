@@ -115,10 +115,7 @@ function UserProfile({ user }: { user: UserDetail }) {
       </PageContentHeader>
 
       <PageContentBody>
-        <DetailSection
-          title="Profile"
-          groupClassName="grid grid-cols-1 sm:grid-cols-2"
-        >
+        <DetailSection title="Profile">
           <Detail icon={UserIcon} label="First name">
             {user.firstname}
           </Detail>
@@ -142,10 +139,7 @@ function UserProfile({ user }: { user: UserDetail }) {
           </Detail>
         </DetailSection>
 
-        <DetailSection
-          title="Access"
-          groupClassName="grid grid-cols-1 sm:grid-cols-2 gap-2"
-        >
+        <DetailSection title="Access">
           <Detail icon={user.banned ? BanIcon : CircleCheckIcon} label="Status">
             {user.banned ? (
               <Badge variant="destructive">Banned</Badge>
@@ -176,10 +170,7 @@ function UserProfile({ user }: { user: UserDetail }) {
           </Detail>
         </DetailSection>
 
-        <DetailSection
-          title="Sign-in methods"
-          groupClassName="grid grid-cols-1 sm:grid-cols-2 gap-2"
-        >
+        <DetailSection title="Sign-in methods">
           {user.accounts.length ? (
             user.accounts.map((account) => (
               <Detail
@@ -201,13 +192,10 @@ function UserProfile({ user }: { user: UserDetail }) {
 
         <UserSessions sessions={user.sessions} />
 
-        <DetailSection
-          title="Record"
-          groupClassName="grid grid-cols-1 sm:grid-cols-2 gap-2"
-        >
+        <DetailSection title="Record">
           <Detail icon={FingerprintIcon} label="User ID">
             <div className="flex items-center gap-2">
-              <code className="font-mono text-xs break-all">{user.id}</code>
+              <code className="font-mono text-xs truncate">{user.id}</code>
               <CopyButton variant="ghost" value={user.id} />
             </div>
           </Detail>
@@ -226,7 +214,7 @@ function UserProfile({ user }: { user: UserDetail }) {
 /** The user's active Better Auth sessions, most recently used first. */
 function UserSessions({ sessions }: { sessions: UserSession[] }) {
   return (
-    <DetailSection title={`Active sessions (${sessions.length})`}>
+    <DetailSection title={`Active sessions (${sessions.length})`} groupClassName="w-full">
       {sessions.length ? (
         <div className="rounded-lg border">
           <Table>

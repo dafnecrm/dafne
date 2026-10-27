@@ -20,7 +20,7 @@ export function ProfileDetails({ user }: { user: User }) {
         image={user.image ?? null}
         initials={`${user.firstname[0] ?? ""}${user.lastname[0] ?? ""}`.toUpperCase()}
       />
-      <div className="grid grid-cols-2 gap-4 w-full">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-10">
         <Detail icon={UserIcon} label="First name">
           {user.firstname}
         </Detail>
@@ -50,6 +50,7 @@ export function ProfileDetails({ user }: { user: User }) {
           <LocalDate value={user.createdAt} format="longDate" />
         </Detail>
       </div>
+
 
     </DetailSection>
   </>
