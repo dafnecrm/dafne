@@ -1,4 +1,12 @@
+import path from "node:path";
 import type { NextConfig } from "next";
+
+/**
+ * The parent folder with backend/ and frontend/ side by side: the frontend
+ * imports the backend's API contracts (libs/contracts), so both must be
+ * inside the root Turbopack builds from.
+ */
+const root = path.join(__dirname, "..");
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -10,9 +18,13 @@ const nextConfig: NextConfig = {
   // there's no CORS and its session cookies belong to the frontend.
   rewrites() {
     const backend = process.env.BACKEND_URL ?? "http://localhost:3000";
-    return [{ source: "/api/auth/:path*", destination: `${backend}/api/auth/:path*` }];
+    return [
+      { source: "/api/auth/:path*", destination: `${backend}/api/auth/:path*` },
+    ];
   },
+  outputFileTracingRoot: root,
   turbopack: {
+    root,
     rules: {
       "*.css": {
         loaders: ["@tailwindcss/turbopack"],

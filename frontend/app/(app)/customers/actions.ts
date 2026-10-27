@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { BackendError, backendFetch } from "@/lib/backend";
+import type { CustomerDetail } from "@/lib/customers";
 import { customerSchema, type CustomerFormValues } from "./schema";
 
 /*
@@ -41,7 +42,7 @@ export async function saveCustomer(
         body: JSON.stringify(parsed.data),
       },
     );
-    savedId = ((await res.json()) as { id: string }).id;
+    savedId = ((await res.json()) as CustomerDetail).id;
   } catch (error) {
     return { error: errorMessage(error) };
   }

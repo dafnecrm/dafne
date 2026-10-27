@@ -1,60 +1,18 @@
+import type * as contracts from "@backend/contracts";
+import type { Json } from "@backend/contracts";
 import { backendFetch } from "./backend";
 import type { TableFilters, TableSort } from "./data-table";
-import type { User } from "./session";
 import { usersTable } from "./users-table";
 
-type DateFields = "createdAt" | "updatedAt" | "banExpires";
-
-/**
- * A user from the backend's GET /users/list: the Better Auth user (admin
- * plugin fields included), with dates still as JSON strings.
+/*
+ * API types come from the backend's contracts (dates arrive as strings,
+ * hence Json<...>), so they can't drift from what the backend returns.
  */
-export type ListedUser = Omit<User, DateFields> & {
-  createdAt: string;
-  updatedAt: string;
-  banExpires?: string | null;
-};
-
-export interface UsersPage {
-  users: ListedUser[];
-  total: number;
-  limit?: number;
-  offset?: number;
-}
-
-/** A Better Auth account: one way the user signs in. Dates as JSON strings. */
-export interface UserAccount {
-  id: string;
-  /** e.g. "credential" (email and password) or "google". */
-  providerId: string;
-  /** When this sign-in method was linked. */
-  createdAt: string;
-}
-
-/** An active (not expired) Better Auth session. Dates as JSON strings. */
-export interface UserSession {
-  id: string;
-  /** When the user signed in. */
-  createdAt: string;
-  /** Latest activity on this session. */
-  updatedAt: string;
-  expiresAt: string;
-  ipAddress: string | null;
-  userAgent: string | null;
-  /** The admin's user ID when an admin is impersonating this user. */
-  impersonatedBy: string | null;
-}
-
-/** A user from the backend's GET /users/:id: the listed fields plus activity. */
-export type UserDetail = ListedUser & {
-  /** Sign-in methods, e.g. "credential" (email and password) or "google". */
-  providers: string[];
-  accounts: UserAccount[];
-  /** Active sessions, most recently used first. */
-  sessions: UserSession[];
-  /** Latest session activity, as a JSON date; null if never signed in. */
-  lastActiveAt: string | null;
-};
+export type ListedUser = Json<contracts.ListedUser>;
+export type UsersList = Json<contracts.UsersList>;
+export type UserAccount = Json<contracts.UserAccount>;
+export type UserSession = Json<contracts.UserActiveSession>;
+export type UserDetail = Json<contracts.UserDetail>;
 
 /**
  * Calls the backend's GET /users/:id (admins only). Throws a BackendError
@@ -79,7 +37,7 @@ export async function listUsers({
   offset: number;
   filters?: TableFilters;
   sort?: TableSort;
-}): Promise<UsersPage> {
+}): Promise<UsersList> {
   const query = new URLSearchParams({
     limit: String(limit),
     offset: String(offset),

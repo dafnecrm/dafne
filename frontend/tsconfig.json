@@ -6,6 +6,7 @@
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
+    "allowImportingTsExtensions": true,
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",
@@ -20,7 +21,8 @@
     ],
     "paths": {
       "@/*": ["./*"],
-      "@backend/auth-options": ["../backend/libs/auth/src/auth.options.ts"]
+      "@backend/auth-options": ["../backend/libs/auth/src/auth.options.ts"],
+      "@backend/contracts": ["../backend/libs/contracts/src/index.ts"]
     }
   },
   "include": [

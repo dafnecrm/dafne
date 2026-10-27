@@ -1,10 +1,11 @@
+import type { UserFilterField, UserSortField } from "@backend/contracts";
 import { defineDataTable } from "./data-table";
 
 /**
  * The users table: plain data with no server-only imports (unlike
  * lib/users.ts), so it's shared by the server page (reads the URL) and the client
- * table (builds links). Sort and filter fields match the backend's
- * ListUsersQueryDto. Filters combine with AND, and the backend picks each
+ * table (builds links). Sort and filter fields are checked against the
+ * backend's contract (type-only import: keeps Zod out of the bundle). Filters combine with AND, and the backend picks each
  * operator: email and name match text they contain, role and banned match
  * exactly.
  */
@@ -12,13 +13,19 @@ export const usersTable = defineDataTable({
   path: "/users",
   // The backend allows up to 100.
   pageSizes: [10, 20, 50],
-  sortable: ["name", "email", "role", "banned", "createdAt"],
+  sortable: [
+    "name",
+    "email",
+    "role",
+    "banned",
+    "createdAt",
+  ] satisfies UserSortField[],
   defaultSort: { id: "name", desc: false },
   filters: [
-    { field: "email", label: "Email" },
-    { field: "name", label: "Name" },
+    { field: "email" satisfies UserFilterField, label: "Email" },
+    { field: "name" satisfies UserFilterField, label: "Name" },
     {
-      field: "role",
+      field: "role" satisfies UserFilterField,
       label: "Role",
       placeholder: "Any role",
       options: [
@@ -27,7 +34,7 @@ export const usersTable = defineDataTable({
       ],
     },
     {
-      field: "banned",
+      field: "banned" satisfies UserFilterField,
       label: "Status",
       placeholder: "Any status",
       options: [

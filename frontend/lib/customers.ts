@@ -1,51 +1,18 @@
+import type * as contracts from "@backend/contracts";
+import type { Json } from "@backend/contracts";
 import { backendFetch } from "./backend";
 import type { TableFilters, TableSort } from "./data-table";
 import { customersTable } from "./customers-table";
 
-/** A customer from the backend's GET /customers. Dates as JSON strings. */
-export interface ListedCustomer {
-  id: string;
-  name: string;
-  email: string | null;
-  phone: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CustomersPage {
-  customers: ListedCustomer[];
-  total: number;
-  limit?: number;
-  offset?: number;
-}
-
-export interface CustomerAddress {
-  id: string;
-  /** e.g. "Billing", "Shipping". */
-  label: string | null;
-  street: string;
-  city: string;
-  postalCode: string | null;
-  /** State, province or region. */
-  region: string | null;
-  country: string;
-}
-
-/** A user who created or last updated a customer; null if since removed. */
-export interface CustomerUser {
-  id: string;
-  name: string;
-}
-
-/** A customer from the backend's GET /customers/:id. */
-export type CustomerDetail = ListedCustomer & {
-  /** In display order. */
-  addresses: CustomerAddress[];
-  createdBy: CustomerUser | null;
-  updatedBy: CustomerUser | null;
-  /** Always null: deleted customers aren't returned. */
-  deletedAt: string | null;
-};
+/*
+ * API types come from the backend's contracts (dates arrive as strings,
+ * hence Json<...>), so they can't drift from what the backend returns.
+ */
+export type ListedCustomer = Json<contracts.ListedCustomer>;
+export type CustomersList = Json<contracts.CustomersList>;
+export type CustomerAddress = Json<contracts.CustomerAddress>;
+export type CustomerUser = Json<contracts.CustomerUser>;
+export type CustomerDetail = Json<contracts.CustomerDetail>;
 
 /**
  * Calls the backend's GET /customers/:id. Throws a BackendError with
@@ -67,7 +34,7 @@ export async function listCustomers({
   offset: number;
   filters?: TableFilters;
   sort?: TableSort;
-}): Promise<CustomersPage> {
+}): Promise<CustomersList> {
   const query = new URLSearchParams({
     limit: String(limit),
     offset: String(offset),
