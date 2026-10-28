@@ -180,6 +180,35 @@ sends without an input, add `{/* dafne-ignore: customerId */}` to the form.
 The field still gets its value type and default. Inputs and defaults whose
 field left the contract are reported, not removed.
 
+## Syncing a list and a detail page with the contract
+
+```sh
+dafne sync list activities      # lib/<plural>-table.ts and columns.tsx
+dafne sync detail activities    # [id]/page.tsx
+```
+
+Both work like `sync form`. They read `Listed<S>`, `<S>Detail` and the
+sort/filter fields of the contract and only add what's missing. A field
+counts as present when the file already uses it, wherever it is. Things
+whose field left the contract are reported, not removed.
+
+- **`sync list`:**
+  - in `lib/<plural>-table.ts`: sort fields in contract order, and filters
+    (enum and boolean ones as pick-lists);
+  - enum labels (`ACTIVITY_TYPE_OPTIONS`), shared with the columns and the
+    detail page;
+  - in `columns.tsx`: a column per listed field, before "Added". `id`,
+    `updatedAt` and foreign key ids are never added. Fields that aren't
+    sortable get `enableSorting: false`.
+- **`sync detail`:** a `<Detail>` per field the page doesn't read
+  (`activity.<field>`), in a "Details" section. The section is created
+  before "Record" if missing.
+
+To keep a field out, write `{/* dafne-ignore: firstname, lastname */}` (or
+`// dafne-ignore: …` in a .ts file) in that file. Lists are often curated:
+the users list, for example, leaves out on purpose fields that
+`sync list users` would add.
+
 ## Development
 
 `pnpm dev g ...` runs from source; `pnpm test` runs generators against

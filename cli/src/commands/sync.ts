@@ -12,7 +12,10 @@ import { API_TAGS, readTable } from '../sync/table.js';
 import { editSource } from '../wiring/ast.js';
 import { BACKEND } from '../wiring/backend.js';
 import { FRONTEND } from '../wiring/frontend.js';
+import { syncDetail } from '../sync/detail.js';
 import { readBody, syncFormComponent, syncFormSchema, type FormReport } from '../sync/form.js';
+import { syncColumns, syncTableConfig } from '../sync/list.js';
+import { readResponse } from '../sync/response.js';
 
 interface SyncOptions {
   root?: string;
@@ -174,14 +177,7 @@ It's still added to the values type and the defaults (the form sends it).`,
         if (p.isCancel(picked)) return p.cancel('Nothing changed.');
         name = picked;
       }
-      const reports = syncForm(changes, name);
-      for (const [file, report] of reports) {
-        const lines = report.added.map((item) => `+ ${item}`);
-        if (lines.length) p.note(lines.join('\n'), file);
-        for (const item of report.stale)
-          p.log.warn(`${file}: ${item} isn't in the contract body any more: kept. Remove it if the field was dropped.`);
-        for (const warning of report.warnings) p.log.warn(warning);
-      }
+      printFrontendReports(syncForm(changes, name));
       if (!changes.summary().length) return p.outro(`${name}: the form already has every field.`);
       if (options.dryRun) return p.outro('Dry run: nothing written.');
       await changes.commit();
@@ -195,7 +191,114 @@ It's still added to the values type and the defaults (the form sends it).`,
       p.outro('Done.');
     });
 
+  for (const [command, description, files, run] of [
+    [
+      'list',
+      'Add the contract fields the list lacks: sort fields, filters, enum labels (lib/<plural>-table.ts) and columns (columns.tsx)',
+      (n: ResourceNames) => [listFiles(n).table, listFiles(n).columns],
+      syncList,
+    ],
+    [
+      'detail',
+      'Add the contract fields the detail page ([id]/page.tsx) lacks, in its "Details" section',
+      (n: ResourceNames) => [detailFile(n)],
+      syncDetailPage,
+    ],
+  ] as const)
+    sync
+      .command(command)
+      .description(description)
+      .argument('[name]', 'resource name, singular or plural')
+      .option('--root <dir>', 'Dafne folder (with backend/ and frontend/)')
+      .option('--dry-run', 'show what would change, write nothing')
+      .option('-y, --yes', 'never prompt')
+      .addHelpText(
+        'after',
+        `
+It reads Listed<S>, <S>Detail and the sort/filter fields of the contract and
+only adds what's missing. A field counts as present when the file already
+uses it (a column, a filter, <record>.<field> on the detail page), wherever
+it is. To keep a field out, write in that file:
+
+  {/* dafne-ignore: customerId */}    (or // dafne-ignore: … in a .ts file)`,
+      )
+      .action(async (name: string | undefined, options: SyncOptions) => {
+        p.intro(`dafne sync ${command}`);
+        const changes = new Changes(findRoot(options.root));
+        if (!name) {
+          const choices = syncable(changes).filter((r) => files(resourceNames(r)).every((f) => changes.exists(f)));
+          if (options.yes || !process.stdin.isTTY || !choices.length) throw new Error('Missing argument: the resource name.');
+          const picked = await p.select({ message: `Which ${command}?`, options: choices.map((value) => ({ value, label: value })) });
+          if (p.isCancel(picked)) return p.cancel('Nothing changed.');
+          name = picked;
+        }
+        printFrontendReports(run(changes, name));
+        if (!changes.summary().length) return p.outro(`${name}: the ${command} already has every field.`);
+        if (options.dryRun) return p.outro('Dry run: nothing written.');
+        await changes.commit();
+        p.note(['Check the new entries: their place, labels and formatting.', 'cd frontend && npx tsc --noEmit'].join('\n'), 'Next steps');
+        p.outro('Done.');
+      });
+
   return sync;
+}
+
+function printFrontendReports(reports: [string, FormReport][]) {
+  for (const [file, report] of reports) {
+    const lines = report.added.map((item) => `+ ${item}`);
+    if (lines.length) p.note(lines.join('\n'), file);
+    for (const item of report.stale)
+      p.log.warn(`${file}: ${item} isn't in the contract any more: kept. Remove it if the field was dropped.`);
+    for (const warning of report.warnings) p.log.warn(warning);
+  }
+}
+
+const listFiles = ({ p }: ResourceNames) => ({
+  table: `${FRONTEND}/lib/${p.kebab}-table.ts`,
+  columns: `${FRONTEND}/app/(app)/${p.kebab}/columns.tsx`,
+});
+const detailFile = ({ p }: ResourceNames) => `${FRONTEND}/app/(app)/${p.kebab}/[id]/page.tsx`;
+
+/** The contract's response fields, with the table for date kinds. */
+function response(changes: Changes, names: ResourceNames) {
+  const contractPath = contractFile(names);
+  const contract = changes.read(contractPath);
+  if (contract === undefined) throw new Error(`${contractPath} not found.`);
+  const tablePath = tableFile(names);
+  const tableSource = changes.read(tablePath);
+  const table = tableSource === undefined ? undefined : readTable(tablePath, tableSource, names);
+  return readResponse(contractPath, contract, names, table);
+}
+
+function applyFrontend(
+  changes: Changes,
+  path: string,
+  hint: string,
+  sync: (source: string) => { content: string; report: FormReport },
+): [string, FormReport] {
+  const source = changes.read(path);
+  if (source === undefined) throw new Error(`${path} not found: generate it with "${hint}".`);
+  const { content, report } = sync(source);
+  changes.update(path, () => content, { format: true });
+  return [path, report];
+}
+
+export function syncList(changes: Changes, name: string): [string, FormReport][] {
+  const names = resourceNames(name);
+  const info = response(changes, names);
+  const files = listFiles(names);
+  const hint = `dafne g frontend table ${names.p.kebab}`;
+  return [
+    applyFrontend(changes, files.table, hint, (source) => syncTableConfig(files.table, source, names, info)),
+    applyFrontend(changes, files.columns, hint, (source) => syncColumns(files.columns, source, names, info)),
+  ];
+}
+
+export function syncDetailPage(changes: Changes, name: string): [string, FormReport][] {
+  const names = resourceNames(name);
+  const info = response(changes, names);
+  const path = detailFile(names);
+  return [applyFrontend(changes, path, `dafne g frontend detail ${names.p.kebab}`, (source) => syncDetail(path, source, names, info))];
 }
 
 const formFiles = ({ s, p }: ResourceNames) => {
