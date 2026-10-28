@@ -1,0 +1,77 @@
+"use client";
+
+import { revalidateLogic } from "@tanstack/react-form-nextjs";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FieldGroup } from "@/components/ui/field";
+import { setServerError, useAppForm } from "@/lib/app-form/app-form";
+import { useResetOnLeave } from "@/lib/app-form/reset-on-leave";
+import type { <%= s.pascal %>Detail } from "@/lib/<%= p.kebab %>";
+import { save<%= s.pascal %> } from "./actions";
+import { <%= s.camel %>FormOpts, <%= s.camel %>Schema } from "./schema";
+
+/** Creates a <%= s.lower %>, or edits `<%= s.camel %>`. Saving opens its page. */
+export function <%= s.pascal %>Form({ <%= s.camel %> }: { <%= s.camel %>?: <%= s.pascal %>Detail }) {
+  const form = useAppForm({
+    ...<%= s.camel %>FormOpts(<%= s.camel %>),
+    // Validate on submit, then on every change.
+    validationLogic: revalidateLogic(),
+    validators: { onDynamic: <%= s.camel %>Schema },
+    onSubmit: async ({ value, formApi }) => {
+      // Redirects on success, so only an error comes back.
+      const result = await save<%= s.pascal %>(<%= s.camel %>?.id ?? null, value);
+      if (result?.error) setServerError(formApi, result.error);
+    },
+  });
+  // The page stays mounted (hidden) after leaving it: start fresh next time.
+  useResetOnLeave(form);
+  const cancelHref = <%= s.camel %>
+    ? `/<%= p.kebab %>/${encodeURIComponent(<%= s.camel %>.id)}`
+    : "/<%= p.kebab %>";
+
+  return (
+    <form
+      noValidate
+      onSubmit={(e) => {
+        e.preventDefault();
+        form.handleSubmit();
+      }}
+    >
+      <form.AppForm>
+        <FieldGroup>
+          <form.FormErrors />
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                <h2>Details</h2>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <form.AppField name="name">
+                  {(field) => (
+                    <field.TextField label="Name" autoComplete="off" autoFocus />
+                  )}
+                </form.AppField>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              nativeButton={false}
+              render={<Link href={cancelHref} />}
+            >
+              Cancel
+            </Button>
+            <form.SubmitButton
+              label={<%= s.camel %> ? "Save changes" : "Create <%= s.lower %>"}
+            />
+          </div>
+        </FieldGroup>
+      </form.AppForm>
+    </form>
+  );
+}

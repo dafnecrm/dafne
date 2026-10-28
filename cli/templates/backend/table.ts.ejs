@@ -1,0 +1,52 @@
+import { defineRelationsPart } from 'drizzle-orm';
+import { index, mysqlTable, timestamp, varchar } from 'drizzle-orm/mysql-core';
+import { user } from './auth.js';
+
+/**
+ * A <%= s.lower %> managed by the users. Deletion is logical: `deletedAt` is
+ * set and the row is hidden from every query, but kept in the table.
+ */
+export const <%= s.camel %> = mysqlTable(
+  '<%= s.snake %>',
+  {
+    id: varchar('id', { length: 36 }).primaryKey(),
+    name: varchar('name', { length: 255 }).notNull(),
+    createdAt: timestamp('created_at', { fsp: 3 }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { fsp: 3 })
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+    deletedAt: timestamp('deleted_at', { fsp: 3 }),
+    // Nullable so removing a user keeps the <%= p.lower %> they touched.
+    createdById: varchar('created_by_id', { length: 36 }).references(
+      () => user.id,
+      { onDelete: 'set null' },
+    ),
+    updatedById: varchar('updated_by_id', { length: 36 }).references(
+      () => user.id,
+      { onDelete: 'set null' },
+    ),
+  },
+  (table) => [
+    index('<%= s.snake %>_deletedAt_idx').on(table.deletedAt),
+    index('<%= s.snake %>_name_idx').on(table.name),
+  ],
+);
+
+export const <%= s.camel %>Relations = defineRelationsPart(
+  { user, <%= s.camel %> },
+  (r) => ({
+    <%= s.camel %>: {
+      createdBy: r.one.user({
+        from: r.<%= s.camel %>.createdById,
+        to: r.user.id,
+        alias: '<%= s.camel %>CreatedBy',
+      }),
+      updatedBy: r.one.user({
+        from: r.<%= s.camel %>.updatedById,
+        to: r.user.id,
+        alias: '<%= s.camel %>UpdatedBy',
+      }),
+    },
+  }),
+);

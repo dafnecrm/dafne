@@ -1,0 +1,25 @@
+import type { Metadata } from "next";
+import {
+  PageContent,
+  PageContentBody,
+  PageContentDescription,
+  PageContentHeader,
+  PageContentTitle,
+} from "@/components/page-content";
+import { <%= s.pascal %>Form } from "../<%= s.kebab %>-form";
+
+export const metadata: Metadata = { title: "New <%= s.lower %>" };
+
+export default function New<%= s.pascal %>Page() {
+  return (
+    <PageContent>
+      <PageContentHeader>
+        <PageContentTitle>New <%= s.lower %></PageContentTitle>
+        <PageContentDescription>Only the name is required.</PageContentDescription>
+      </PageContentHeader>
+      <PageContentBody>
+        <<%= s.pascal %>Form />
+      </PageContentBody>
+    </PageContent>
+  );
+}

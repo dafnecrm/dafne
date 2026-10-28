@@ -1,0 +1,44 @@
+import type { Metadata } from "next";
+import { Suspense } from "react";
+import {
+  PageContent,
+  PageContentBody,
+  PageContentDescription,
+  PageContentHeader,
+  PageContentTitle,
+} from "@/components/page-content";
+import { Skeleton } from "@/components/ui/skeleton";
+import { <%= s.pascal %>Form } from "../../<%= s.kebab %>-form";
+import { load<%= s.pascal %> } from "../load-<%= s.kebab %>";
+
+export const metadata: Metadata = { title: "Edit <%= s.lower %>" };
+
+export default function Edit<%= s.pascal %>Page({
+  params,
+}: PageProps<"/<%= p.kebab %>/[id]/edit">) {
+  return (
+    <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+      <Edit<%= s.pascal %> params={params} />
+    </Suspense>
+  );
+}
+
+async function Edit<%= s.pascal %>({
+  params,
+}: Pick<PageProps<"/<%= p.kebab %>/[id]/edit">, "params">) {
+  const <%= s.camel %> = await load<%= s.pascal %>((await params).id);
+
+  return (
+    <PageContent>
+      <PageContentHeader>
+        <PageContentTitle>Edit {<%= s.camel %>.name}</PageContentTitle>
+        <PageContentDescription>
+          Saving replaces the <%= s.lower %>&apos;s details.
+        </PageContentDescription>
+      </PageContentHeader>
+      <PageContentBody>
+        <<%= s.pascal %>Form <%= s.camel %>={<%= s.camel %>} />
+      </PageContentBody>
+    </PageContent>
+  );
+}

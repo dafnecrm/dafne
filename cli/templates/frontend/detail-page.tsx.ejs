@@ -1,0 +1,92 @@
+import {
+  ArrowLeftIcon,
+  CalendarPlusIcon,
+  FingerprintIcon,
+  HistoryIcon,
+  PencilIcon,
+  UserPenIcon,
+  UserPlusIcon,
+} from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { Suspense } from "react";
+import CopyButton from "@/components/copy-button";
+import { Detail, DetailSection } from "@/components/detail";
+import { LocalDate } from "@/components/local-date";
+import {
+  PageContent,
+  PageContentAction,
+  PageContentBody,
+  PageContentHeader,
+  PageContentTitle,
+} from "@/components/page-content";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { <%= s.pascal %>Detail } from "@/lib/<%= p.kebab %>";
+import { Delete<%= s.pascal %>Button } from "../delete-<%= s.kebab %>-button";
+import { load<%= s.pascal %> } from "./load-<%= s.kebab %>";
+
+export const metadata: Metadata = { title: "<%= s.title %>" };
+
+export default function <%= s.pascal %>Page({ params }: PageProps<"/<%= p.kebab %>/[id]">) {
+  return (
+    <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+      <<%= s.pascal %>Details params={params} />
+    </Suspense>
+  );
+}
+
+async function <%= s.pascal %>Details({
+  params,
+}: Pick<PageProps<"/<%= p.kebab %>/[id]">, "params">) {
+  return <<%= s.pascal %>Profile <%= s.camel %>={await load<%= s.pascal %>((await params).id)} />;
+}
+
+function <%= s.pascal %>Profile({ <%= s.camel %> }: { <%= s.camel %>: <%= s.pascal %>Detail }) {
+  const editHref = `/<%= p.kebab %>/${encodeURIComponent(<%= s.camel %>.id)}/edit`;
+  return (
+    <PageContent>
+      <PageContentHeader>
+        <PageContentTitle>{<%= s.camel %>.name}</PageContentTitle>
+        <PageContentAction className="flex flex-wrap justify-end gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            nativeButton={false}
+            render={<Link href="/<%= p.kebab %>" />}
+          >
+            <ArrowLeftIcon data-icon="inline-start" />
+            All <%= p.lower %>
+          </Button>
+          <Button size="sm" nativeButton={false} render={<Link href={editHref} />}>
+            <PencilIcon data-icon="inline-start" />
+            Edit
+          </Button>
+          <Delete<%= s.pascal %>Button <%= s.camel %>={<%= s.camel %>} then="list" />
+        </PageContentAction>
+      </PageContentHeader>
+      <PageContentBody>
+        <DetailSection title="Record">
+          <Detail icon={FingerprintIcon} label="<%= s.title %> ID">
+            <div className="flex items-center gap-2">
+              <code className="truncate font-mono text-xs">{<%= s.camel %>.id}</code>
+              <CopyButton variant="ghost" value={<%= s.camel %>.id} />
+            </div>
+          </Detail>
+          <Detail icon={CalendarPlusIcon} label="Created">
+            <LocalDate value={<%= s.camel %>.createdAt} format="dateTime" />
+          </Detail>
+          <Detail icon={UserPlusIcon} label="Created by">
+            {<%= s.camel %>.createdBy?.name ?? "—"}
+          </Detail>
+          <Detail icon={HistoryIcon} label="Updated">
+            <LocalDate value={<%= s.camel %>.updatedAt} format="dateTime" />
+          </Detail>
+          <Detail icon={UserPenIcon} label="Updated by">
+            {<%= s.camel %>.updatedBy?.name ?? "—"}
+          </Detail>
+        </DetailSection>
+      </PageContentBody>
+    </PageContent>
+  );
+}

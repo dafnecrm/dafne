@@ -1,0 +1,71 @@
+import { z } from 'zod';
+import { pageQuery, requiredText, SORT_DIRECTIONS } from './common.ts';
+
+/* ---------- Requests ---------- */
+
+/**
+ * Body of POST /<%= p.kebab %> and PUT /<%= p.kebab %>/:id. PUT replaces the
+ * whole <%= s.lower %>: omitted optional fields are cleared.
+ */
+export const <%= s.camel %>BodySchema = z.strictObject({
+  name: requiredText(255, 'Enter the name'),
+});
+
+/** What a client sends: blank optional fields may be "", null or missing. */
+export type <%= s.pascal %>BodyInput = z.input<typeof <%= s.camel %>BodySchema>;
+/** What the backend gets after validation: blanks are null. */
+export type <%= s.pascal %>Body = z.output<typeof <%= s.camel %>BodySchema>;
+
+/** <%= s.title %> fields the list can be sorted by. */
+export const <%= s.constant %>_SORT_FIELDS = ['name', 'createdAt', 'updatedAt'] as const;
+export type <%= s.pascal %>SortField = (typeof <%= s.constant %>_SORT_FIELDS)[number];
+
+/**
+ * <%= s.title %> fields the list can be filtered by, each a query param of
+ * its own. Filters combine with AND and match text the field contains.
+ */
+export const <%= s.constant %>_FILTER_FIELDS = ['name'] as const;
+export type <%= s.pascal %>FilterField = (typeof <%= s.constant %>_FILTER_FIELDS)[number];
+
+/** Query string of GET /<%= p.kebab %>. Deleted <%= p.lower %> are never listed. */
+export const list<%= p.pascal %>QuerySchema = z.strictObject({
+  ...pageQuery,
+  name: z.string().max(255).optional(),
+  /** Defaults to name. */
+  sortBy: z.enum(<%= s.constant %>_SORT_FIELDS).optional(),
+  /** Defaults to asc. */
+  sortDirection: z.enum(SORT_DIRECTIONS).optional(),
+});
+export type List<%= p.pascal %>Query = z.output<typeof list<%= p.pascal %>QuerySchema>;
+
+/* ---------- Responses (dates as Date; clients get Json<T>) ---------- */
+
+/** A <%= s.lower %> in GET /<%= p.kebab %>. */
+export interface Listed<%= s.pascal %> {
+  id: string;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/** Response of GET /<%= p.kebab %>. */
+export interface <%= p.pascal %>List {
+  <%= p.camel %>: Listed<%= s.pascal %>[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+/** A user who created or last updated a <%= s.lower %>; null if since removed. */
+export interface <%= s.pascal %>User {
+  id: string;
+  name: string;
+}
+
+/** Response of GET /<%= p.kebab %>/:id, POST /<%= p.kebab %> and PUT /<%= p.kebab %>/:id. */
+export interface <%= s.pascal %>Detail extends Listed<%= s.pascal %> {
+  createdBy: <%= s.pascal %>User | null;
+  updatedBy: <%= s.pascal %>User | null;
+  /** Always null: deleted <%= p.lower %> aren't returned. */
+  deletedAt: Date | null;
+}

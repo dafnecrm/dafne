@@ -1,0 +1,57 @@
+"use client";
+
+import { <%= icon %> } from "lucide-react";
+import { DataTable } from "@/components/data-table";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import { describeFilters, type TableParams } from "@/lib/data-table";
+import type { Listed<%= s.pascal %> } from "@/lib/<%= p.kebab %>";
+import { <%= p.camel %>Table } from "@/lib/<%= p.kebab %>-table";
+import { <%= s.camel %>Actions } from "./<%= s.kebab %>-actions";
+import { <%= s.camel %>Columns } from "./columns";
+
+const getRowId = (<%= s.camel %>: Listed<%= s.pascal %>) => <%= s.camel %>.id;
+
+/** <%= p.title %> list; the server page passes one page of <%= p.lower %>. */
+export function <%= p.pascal %>Table({
+  <%= p.camel %>,
+  total,
+  params,
+}: {
+  <%= p.camel %>: Listed<%= s.pascal %>[];
+  total: number;
+  params: TableParams;
+}) {
+  return (
+    <DataTable
+      columns={<%= s.camel %>Columns}
+      data={<%= p.camel %>}
+      getRowId={getRowId}
+      config={<%= p.camel %>Table}
+      rowActions={<%= s.camel %>Actions}
+      params={params}
+      total={total}
+      noun="<%= p.lower %>"
+      empty={
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <<%= icon %> />
+            </EmptyMedia>
+            <EmptyTitle>No <%= p.lower %> found</EmptyTitle>
+            <EmptyDescription>
+              {Object.keys(params.filters).length
+                ? `No <%= s.lower %> where ${describeFilters(params.filters, <%= p.camel %>Table.filters)}.`
+                : "Add your first <%= s.lower %> to get started."}
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      }
+    />
+  );
+}
