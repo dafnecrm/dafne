@@ -14,6 +14,8 @@ import type { ListedUser } from "@/lib/users";
 
 const col = createDataTableColumnHelper<ListedUser>();
 
+const empty = <span className="text-muted-foreground">—</span>;
+
 // Module scope, so the table sees the same columns on every render.
 export const userColumns = col.columns([
   col.accessor("name", {
@@ -38,7 +40,19 @@ export const userColumns = col.columns([
       );
     },
   }),
-  col.accessor("email", { header: "Email" }),
+  col.accessor("email", { 
+    header: "Email",
+    cell: (info) => {
+      const email = info.getValue();
+      return email ? (
+        <a href={`mailto:${email}`} className="underline-offset-4 hover:underline">
+          {email}
+        </a>
+      ) : (
+        empty
+      );
+    }
+  }),
   col.accessor("role", {
     header: "Role",
     enableSorting: false,

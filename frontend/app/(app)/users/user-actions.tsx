@@ -32,16 +32,10 @@ export function userActions(user: ListedUser) {
           <UserIcon />
           View details
         </DropdownMenuItem>
-        <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => navigator.clipboard.writeText(user.email)}>
           <CopyIcon />
           Copy email
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => navigator.clipboard.writeText(user.id)}>
-          <CopyIcon />
-          Copy user ID
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
