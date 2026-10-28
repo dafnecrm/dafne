@@ -126,10 +126,7 @@ function nextSteps(backend: string[], frontend: string[]): string[] {
   const steps: string[] = [];
   const pages = frontend.some((piece) => piece !== 'nav');
   if (backend.includes('table'))
-    steps.push(
-      'cd backend && pnpm migration:generate   # creates the table migration',
-      '  check migration.sql: drizzle-kit 1.0.0-rc.5 drops "ON DELETE SET NULL" from foreign keys inside CREATE TABLE',
-    );
+    steps.push('dafne migration generate   # creates the table migration (and fixes its foreign keys)');
   if (backend.length) steps.push('cd backend && pnpm test');
   if (pages)
     steps.push('cd frontend && pnpm dev   # also generates the PageProps types of new routes');

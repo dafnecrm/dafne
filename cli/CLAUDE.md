@@ -13,6 +13,8 @@ TypeScript ESM, Node ≥ 22, pnpm. `pnpm dev g ...` runs from source (tsx),
 
 - `src/commands/generate.ts`: commander commands, prompts (@clack/prompts),
   summary and next steps. `src/commands/sync.ts` is `dafne sync contract`.
+- `src/commands/migration.ts`: `dafne migration generate|fix`. It runs
+  drizzle-kit from `backend/node_modules/.bin` with the terminal attached.
 - `src/fields/`: `dafne field add|remove`. `spec.ts` holds the types and
   builders. `table-file.ts` edits one table file (columns, indexes,
   relation parts). `operations.ts` handles the four relation kinds and
@@ -117,7 +119,7 @@ TypeScript ESM, Node ≥ 22, pnpm. `pnpm dev g ...` runs from source (tsx),
 
 drizzle-kit 1.0.0-rc.5 is the latest 1.x and is still unfixed upstream on
 the `beta` branch. For MySQL it writes foreign keys inside `CREATE TABLE`
-without `ON DELETE`/`ON UPDATE` (`dialects/mysql/convertor.ts`). The
-migration of every generated table therefore loses `ON DELETE SET NULL` on
-`created_by_id`/`updated_by_id`, and the next steps printed for a backend
-`table` say so. Remove that hint once drizzle-kit is fixed.
+without `ON DELETE`/`ON UPDATE` (`dialects/mysql/convertor.ts`).
+`dafne migration generate` (and `migration fix`) put them back from the
+migration's `snapshot.json` (`src/migrations/fix.ts`). Once drizzle-kit is
+fixed, the fix finds nothing to change; it can then be removed.

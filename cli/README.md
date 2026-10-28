@@ -51,7 +51,7 @@ It also registers the code in `nest-cli.json`, `tsconfig.json` paths,
 written until every file is generated, and new files are formatted with the
 target package's Prettier config.
 
-Afterwards: `cd backend && pnpm migration:generate`, then replace `name`
+Afterwards: `dafne migration generate`, then replace `name`
 with the real fields.
 
 ## Adding or removing a field
@@ -99,6 +99,25 @@ it combines the relation parts table by table, where the old spread kept
 only the last part of a table. `field remove` takes a column (with its
 indexes and relations) or a relation name, e.g. a many-to-many with its
 junction table. `auth.ts` is never edited (Better Auth generates it).
+
+## Migrations
+
+```sh
+dafne migration generate add-activity-customer   # name asked if missing
+dafne migration generate --custom backfill       # empty, for SQL by hand
+dafne migration fix [folder]                     # default: the latest
+```
+
+`generate` runs drizzle-kit in `backend/`, with the terminal attached, so you
+can answer when it asks whether a column was renamed. It then prints the
+statements of the new migration.
+
+drizzle-kit 1.0.0-rc.5 drops `ON DELETE`/`ON UPDATE` from foreign keys inside
+`CREATE TABLE`. `generate` puts them back from the migration's
+`snapshot.json`; skip that with `--no-fix`. `fix` does the same for a
+migration made with `pnpm migration:generate`. Only fix migrations no
+database has applied yet. The backend applies pending migrations when it
+starts.
 
 ## Syncing a contract with its table
 

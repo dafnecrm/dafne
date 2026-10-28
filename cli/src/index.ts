@@ -2,6 +2,7 @@ import * as p from '@clack/prompts';
 import { Command } from 'commander';
 import { generateCommand } from './commands/generate.js';
 import { fieldCommand } from './commands/field.js';
+import { migrationCommand } from './commands/migration.js';
 import { syncCommand } from './commands/sync.js';
 
 const program = new Command('dafne')
@@ -9,6 +10,7 @@ const program = new Command('dafne')
   .version('0.1.0')
   .addCommand(generateCommand())
   .addCommand(fieldCommand())
+  .addCommand(migrationCommand())
   .addCommand(syncCommand());
 
 try {

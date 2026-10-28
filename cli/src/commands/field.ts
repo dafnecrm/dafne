@@ -248,10 +248,7 @@ async function finish(changes: Changes, result: FieldResult, options: CommonOpti
   await changes.commit();
   p.note(
     [
-      'cd backend && pnpm migration:generate',
-      ...(result.foreignKey
-        ? ['  check migration.sql: drizzle-kit 1.0.0-rc.5 drops ON DELETE from foreign keys inside CREATE TABLE']
-        : []),
+      'dafne migration generate   # fixes the foreign keys drizzle-kit 1.0.0-rc.5 gets wrong',
       'cd backend && npx tsc --noEmit   # shows where the service must change',
       'Update the service (select, insert, update), and in the frontend the form and the columns.',
     ].join('\n'),
