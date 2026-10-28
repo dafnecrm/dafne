@@ -12,7 +12,8 @@
     "templates"
   ],
   "engines": {
-    "node": ">=22"
+    "npm": ">=11.20.0",
+    "node": ">=26.0.0"
   },
   "packageManager": "pnpm@9.15.2",
   "scripts": {

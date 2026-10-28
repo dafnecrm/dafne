@@ -6,7 +6,7 @@ following the patterns of the `customers` resource.
 ## Usage
 
 ```sh
-cd cli && pnpm install && pnpm build && pnpm link --global   # once: `dafne` on PATH
+cd cli && pnpm install && pnpm build && npm link   # once: `dafne` on PATH
 # or, without linking: pnpm --dir cli dev g ...
 ```
 
