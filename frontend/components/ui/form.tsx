@@ -106,6 +106,55 @@ function UncontrolledField({
   return <TextField label={label} uncontrolled {...props} />
 }
 
+/**
+ * A number input whose field value is a number: what's typed is converted,
+ * and an empty input is null (the contract turns it into "not set").
+ */
+function NumberField({
+  label,
+  className,
+  addons,
+  orientation,
+  ...props
+}: Omit<TextFieldProps, 'type' | 'uncontrolled'>) {
+  const field = useFieldContext<number | null>()
+
+  return (
+    <Field
+      className={className}
+      orientation={orientation}
+      data-invalid={!field.state.meta.isValid}
+    >
+      <FieldLabel htmlFor={field.name} className={'text-nowrap'}>
+        {label}
+      </FieldLabel>
+      <InputGroup>
+        {addons}
+        <InputGroupInput
+          id={field.name}
+          name={field.name}
+          type="number"
+          value={field.state.value ?? ''}
+          aria-invalid={!field.state.meta.isValid}
+          onBlur={field.handleBlur}
+          onChange={(e) =>
+            field.handleChange(
+              e.target.value === '' ? null : e.target.valueAsNumber
+            )
+          }
+          {...props}
+        />
+      </InputGroup>
+      <FieldError>
+        {field.state.meta.errors.length > 0 &&
+          [...new Set(errorMessages(field.state.meta.errors))].map(
+            (message, i) => <p key={i}>{message}</p>
+          )}
+      </FieldError>
+    </Field>
+  )
+}
+
 /** A choice from a fixed list; the field's value is the option's `value`. */
 function SelectField({
   label,
@@ -260,6 +309,7 @@ export {
   TextField,
   PasswordField,
   UncontrolledField,
+  NumberField,
   CheckboxField,
   SelectField,
   SubmitButton,
