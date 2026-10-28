@@ -7,6 +7,8 @@ export type ChangeKind = 'create' | 'update';
 interface Change {
   kind: ChangeKind;
   content: string;
+  /** Format even if the file wasn't Prettier-formatted before. */
+  format?: boolean;
   /** Content on disk before this run, for updates. */
   original?: string;
 }
@@ -62,7 +64,7 @@ export class Changes {
   }
 
   /** Rewrites an existing file; `edit` returns the same text when nothing changes. */
-  update(path: string, edit: (source: string) => string) {
+  update(path: string, edit: (source: string) => string, options: { format?: boolean } = {}) {
     // Files created in this run are always completed (e.g. a new @Module).
     if (this.options.skipUpdates && this.changes.get(path)?.kind !== 'create') {
       this.skipped.add(path);
@@ -78,6 +80,7 @@ export class Changes {
       kind: previous?.kind ?? 'update',
       content,
       original: previous ? previous.original : source,
+      format: options.format || previous?.format,
     });
   }
 
@@ -93,7 +96,7 @@ export class Changes {
   async commit() {
     for (const [path, change] of this.changes) {
       const abs = this.abs(path);
-      const content = await formatSource(abs, change.content, change.original);
+      const content = await formatSource(abs, change.content, change.format ? undefined : change.original);
       mkdirSync(dirname(abs), { recursive: true });
       writeFileSync(abs, content);
     }

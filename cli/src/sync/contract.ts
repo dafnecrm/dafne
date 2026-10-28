@@ -39,11 +39,13 @@ export function syncContract(
   source: string,
   names: ResourceNames,
   table: TableInfo,
+  /** Columns just removed from the table: dropped from the contract too. */
+  dropped: string[] = [],
 ): { content: string; report: SyncReport } {
   const report: SyncReport = { added: [], removed: [], unknown: [], required: [], warnings: [] };
   const { s, p } = names;
   const columns = table.columns.map((column) => ({ column, roles: rolesOf(column) }));
-  const isColumn = new Set(table.columns.map((c) => c.key));
+  const isColumn = new Set([...table.columns.map((c) => c.key), ...dropped]);
   const pick = (role: keyof Roles) => columns.filter((c) => c.roles[role]).map((c) => c.column);
   const api = columns.filter(({ roles }) => Object.values(roles).some(Boolean)).map((c) => c.column);
   const listedKeys = new Set(pick('listed').map((c) => c.key));

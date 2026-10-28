@@ -63,7 +63,7 @@ export function ensureNamedImport(file: SourceFile, module: string, name: string
   else appendToList(file, list, list.getElements(), name);
 }
 
-type ListNode = ArrayLiteralExpression | ObjectLiteralExpression | Node;
+export type ListNode = ArrayLiteralExpression | ObjectLiteralExpression | Node;
 
 /** Whitespace at the start of the line holding `pos`. */
 function indentAt(file: SourceFile, pos: number) {
@@ -73,7 +73,7 @@ function indentAt(file: SourceFile, pos: number) {
 }
 
 /** Appends `element` after the last of `elements`, inside the brackets of `list`. */
-function appendToList(file: SourceFile, list: ListNode, elements: Node[], element: string) {
+export function appendToList(file: SourceFile, list: ListNode, elements: Node[], element: string) {
   const text = file.getFullText();
   const last = elements[elements.length - 1];
   if (!last) {
@@ -99,7 +99,7 @@ function appendToList(file: SourceFile, list: ListNode, elements: Node[], elemen
 }
 
 /** Inserts `element` before `elements[index]` (index > 0). */
-function insertListElement(file: SourceFile, elements: Node[], index: number, element: string) {
+export function insertListElement(file: SourceFile, elements: Node[], index: number, element: string) {
   const before = elements[index];
   const prev = elements[index - 1];
   const multiline = file.getFullText().slice(prev.getEnd(), before.getStart()).includes('\n');
@@ -172,4 +172,59 @@ export function ensureSpread(file: SourceFile, object: ObjectLiteralExpression, 
     (p) => Node.isSpreadAssignment(p) && p.getExpression().getText() === name,
   );
   if (!has) appendToList(file, object, properties, `...${name}`);
+}
+
+/**
+ * Removes an element of a list (array, object, arguments, imports) with
+ * its comments and the comma that separates it from its neighbours.
+ */
+export function removeListElement(file: SourceFile, elements: Node[], element: Node) {
+  const text = file.getFullText();
+  const index = elements.indexOf(element);
+  const after = text.slice(element.getEnd());
+  const comma = /^\s*,/.exec(after);
+  if (comma) {
+    // ", " on one line: drop the spaces too; a newline stays for the next one.
+    const spaces = /^[ \t]*/.exec(after.slice(comma[0].length))![0];
+    // On its own line: drop the line with its comments; inline: just "x, ".
+    const leading = text.slice(element.getFullStart(), element.getStart());
+    const start = leading.includes('\n') ? element.getFullStart() : element.getStart();
+    file.removeText(start, element.getEnd() + comma[0].length + spaces.length);
+  } else if (index > 0) {
+    file.removeText(elements[index - 1].getEnd(), element.getEnd());
+  } else {
+    file.removeText(element.getFullStart(), element.getEnd());
+  }
+}
+
+/** Removes unused named imports (and imports left empty) from `module`. */
+export function removeUnusedImports(file: SourceFile, module: (specifier: string) => boolean) {
+  for (;;) {
+    const unused = file
+      .getImportDeclarations()
+      .filter((d) => module(d.getModuleSpecifierValue()))
+      .flatMap((d) => d.getNamedImports().map((n) => ({ d, n })))
+      .find(({ n }) => {
+        const name = n.getAliasNode()?.getText() ?? n.getName();
+        const uses = file
+          .getDescendantsOfKind(SyntaxKind.Identifier)
+          .filter((id) => id.getText() === name && !id.getFirstAncestorByKind(SyntaxKind.ImportDeclaration))
+          // `.primaryKey()` or `{ primaryKey: 1 }` don't use the import.
+          .filter((id) => {
+            const parent = id.getParent();
+            if (Node.isPropertyAccessExpression(parent) && parent.getNameNode() === id) return false;
+            if (Node.isPropertyAssignment(parent) && parent.getNameNode() === id) return false;
+            return true;
+          });
+        return uses.length === 0;
+      });
+    if (!unused) return;
+    const named = unused.d.getNamedImports();
+    if (named.length === 1) {
+      const decl = unused.d;
+      const end = decl.getEnd();
+      const next = file.getFullText().slice(end).match(/^\r?\n/)?.[0].length ?? 0;
+      file.removeText(decl.getStart(), end + next);
+    } else removeListElement(file, named, unused.n);
+  }
 }

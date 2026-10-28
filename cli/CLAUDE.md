@@ -13,6 +13,10 @@ TypeScript ESM, Node ≥ 22, pnpm. `pnpm dev g ...` runs from source (tsx),
 
 - `src/commands/generate.ts`: commander commands, prompts (@clack/prompts),
   summary and next steps. `src/commands/sync.ts` is `dafne sync contract`.
+- `src/fields/`: `dafne field add|remove`. `spec.ts` holds the types and
+  builders. `table-file.ts` edits one table file (columns, indexes,
+  relation parts). `operations.ts` handles the four relation kinds and
+  removal.
 - `src/sync/`: `table.ts` reads a Drizzle table (columns, `@api` tags,
   relations); `roles.ts` decides where each column goes (body, list,
   detail, filter, sort) and its Zod/TS types; `contract.ts` merges that
@@ -78,6 +82,16 @@ TypeScript ESM, Node ≥ 22, pnpm. `pnpm dev g ...` runs from source (tsx),
   when they leave that part of the API. Non-column members (relations,
   `sortBy`, spreads) stay. The defaults in `roles.ts` must keep
   `customers` in sync with no changes (there is a test for it).
+- **Relations live in the file that holds the key.** That file has both
+  sides: `activity.customer` and the reverse `customer.activities` both go
+  in `activityRelations`. Table files must never import each other both
+  ways, because ESM cycles break `defineRelationsPart`, which reads the
+  tables eagerly. That's why `schema.ts` combines the parts with
+  `mergeRelations` (a per-table merge) instead of a spread; the CLI
+  converts it on the first ref. `wireTable` handles both forms.
+- **Table files are always formatted** after a field edit
+  (`Changes.update(..., { format: true })`), even when they weren't
+  Prettier-clean before.
 - **`frontend` and `backend` are fixed folder names** under the root
   (`BACKEND`/`FRONTEND` constants).
 

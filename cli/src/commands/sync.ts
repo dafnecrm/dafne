@@ -22,7 +22,7 @@ const TABLES = `${BACKEND}/libs/database/src/tables`;
 const tableFile = ({ p }: ResourceNames) => `${TABLES}/${p.kebab}.ts`;
 
 /** Resources with both a table file and a contract. */
-function syncable(changes: Changes): string[] {
+export function syncable(changes: Changes): string[] {
   return readdirSync(join(changes.root, TABLES))
     .filter((file) => file.endsWith('.ts') && file !== 'auth.ts')
     .map((file) => file.replace(/\.ts$/, ''))
@@ -35,7 +35,7 @@ function syncable(changes: Changes): string[] {
     });
 }
 
-async function syncOne(changes: Changes, name: string): Promise<SyncReport> {
+export async function syncOne(changes: Changes, name: string, dropped: string[] = []): Promise<SyncReport> {
   const names = resourceNames(name);
   const tablePath = tableFile(names);
   const contractPath = contractFile(names);
@@ -46,7 +46,7 @@ async function syncOne(changes: Changes, name: string): Promise<SyncReport> {
 
   const info = readTable(tablePath, table, names);
   const source = changes.read(contractPath)!;
-  const { content, report } = syncContract(contractPath, source, names, info);
+  const { content, report } = syncContract(contractPath, source, names, info, dropped);
   // Compare formatted, so a rewrite that changes only the layout is no change.
   const formatted = await formatSource(join(changes.root, contractPath), content, source);
   if (formatted !== source) changes.update(contractPath, () => formatted);
@@ -54,7 +54,7 @@ async function syncOne(changes: Changes, name: string): Promise<SyncReport> {
   return report;
 }
 
-function print(name: string, report: SyncReport, changed: boolean) {
+export function printSync(name: string, report: SyncReport, changed: boolean) {
   const lines = [
     ...report.added.map((item) => `+ ${item}`),
     ...report.removed.map((item) => `- ${item}`),
@@ -116,7 +116,7 @@ id, createdById/updatedById, deletedAt and server-filled columns
       for (const resource of resources) {
         const before = changes.summary().length;
         const report = await syncOne(changes, resource);
-        print(resource, report, changes.summary().length > before);
+        printSync(resource, report, changes.summary().length > before);
       }
 
       if (!changes.summary().length || options.dryRun) return p.outro(options.dryRun ? 'Dry run: nothing written.' : 'Done.');

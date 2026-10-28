@@ -1,7 +1,10 @@
 import { applyEdits, modify, parse } from 'jsonc-parser';
 import type { Changes } from '../core/changes.js';
 import type { ResourceNames } from '../core/names.js';
+import type { SourceFile } from 'ts-morph';
+import { render } from '../core/templates.js';
 import {
+  appendToList,
   arrayProperty,
   decoratorObject,
   editSource,
@@ -114,7 +117,49 @@ export function wireTable(changes: Changes, { s, p }: ResourceNames) {
       }
 
       ensureSpread(file, variableObject(file, 'schema'), tables);
-      ensureSpread(file, variableObject(file, 'relations'), relations);
+      const merged = mergeRelationsCall(file);
+      if (merged) {
+        if (!merged.getArguments().some((a) => a.getText() === relations))
+          appendToList(file, merged, merged.getArguments(), relations);
+      } else ensureSpread(file, variableObject(file, 'relations'), relations);
+    }),
+  );
+}
+
+export const MERGE_RELATIONS = `${BACKEND}/libs/database/src/merge-relations.ts`;
+
+/** The `mergeRelations(...)` call that builds `relations`, if schema.ts uses it. */
+function mergeRelationsCall(file: SourceFile) {
+  const init = file.getVariableDeclaration('relations')?.getInitializer();
+  return init && Node.isCallExpression(init) && init.getExpression().getText() === 'mergeRelations'
+    ? init
+    : undefined;
+}
+
+/**
+ * Switches schema.ts from `{ ...defineRelations(schema), ...xRelations }`
+ * to `mergeRelations(defineRelations(schema), xRelations)`, so a part can
+ * add relations to another part's table (see merge-relations.ts).
+ */
+export function ensureMergedRelations(changes: Changes) {
+  if (!changes.exists(MERGE_RELATIONS))
+    changes.create(MERGE_RELATIONS, render('backend/merge-relations.ts', {}));
+  changes.update(DB_SCHEMA, (source) =>
+    editSource(DB_SCHEMA, source, (file) => {
+      if (mergeRelationsCall(file)) return;
+      const object = variableObject(file, 'relations');
+      const parts = object.getProperties().map((p) => {
+        if (!Node.isSpreadAssignment(p))
+          throw new Error(`${DB_SCHEMA}: "relations" has a property that isn't a spread (${p.getText()}); merge it by hand.`);
+        return p.getExpression().getText();
+      });
+      const indent = '  ';
+      file.replaceText(
+        [object.getStart(), object.getEnd()],
+        `mergeRelations(\n${parts.map((p) => `${indent}${p},`).join('\n')}\n)`,
+      );
+      if (!file.getImportDeclaration((d) => d.getModuleSpecifierValue() === './merge-relations.js'))
+        insertImportLine(file, '{ mergeRelations }', './merge-relations.js');
     }),
   );
 }
