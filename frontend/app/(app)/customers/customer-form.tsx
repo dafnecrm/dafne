@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { FieldGroup } from "@/components/ui/field";
 import { setServerError, useAppForm } from "@/lib/app-form/app-form";
+import { useResetOnLeave } from "@/lib/app-form/reset-on-leave";
 import type { CustomerDetail } from "@/lib/customers";
 import { saveCustomer } from "./actions";
 import { customerFormOpts, customerSchema, emptyAddress } from "./schema";
@@ -34,6 +35,8 @@ export function CustomerForm({ customer }: { customer?: CustomerDetail }) {
       if (result?.error) setServerError(formApi, result.error);
     },
   });
+  // The page stays mounted (hidden) after leaving it: start fresh next time.
+  useResetOnLeave(form);
   const cancelHref = customer
     ? `/customers/${encodeURIComponent(customer.id)}`
     : "/customers";

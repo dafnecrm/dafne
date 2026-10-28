@@ -11,9 +11,9 @@ const root = path.join(__dirname, "..");
 const nextConfig: NextConfig = {
   /* config options here */
   cacheComponents: true,
+  partialPrefetching: true,
   // Keep the dev badge off the sidebar's user menu (bottom-left).
   devIndicators: { position: "bottom-right" },
-  partialPrefetching: true,
   // Better Auth runs on the backend; the browser calls it on this origin, so
   // there's no CORS and its session cookies belong to the frontend.
   rewrites() {

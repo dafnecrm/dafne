@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { FieldGroup } from "@/components/ui/field";
 import { setServerError, useAppForm } from "@/lib/app-form/app-form";
+import { useResetOnLeave } from "@/lib/app-form/reset-on-leave";
 import { authClient, authErrorMessage } from "@/lib/auth-client";
 import { signInFormOpts, signInSchema } from "../schemas";
 import { VERIFY_EMAIL_PATH } from "../verify-email/verify-email";
@@ -46,6 +47,8 @@ export function SignInForm() {
       });
     },
   });
+  // The page stays mounted (hidden) after leaving it: start fresh next time.
+  useResetOnLeave(form);
 
   return (
     <form

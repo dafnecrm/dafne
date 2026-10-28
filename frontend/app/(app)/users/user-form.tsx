@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { FieldGroup } from "@/components/ui/field";
 import { setServerError, useAppForm } from "@/lib/app-form/app-form";
+import { useResetOnLeave } from "@/lib/app-form/reset-on-leave";
 import { createUser } from "./actions";
 import { ROLE_OPTIONS, userFormOpts, userSchema } from "./schema";
 
@@ -28,6 +29,8 @@ export function UserForm() {
       if (result?.error) setServerError(formApi, result.error);
     },
   });
+  // The page stays mounted (hidden) after leaving it: start fresh next time.
+  useResetOnLeave(form);
 
   return (
     <form
