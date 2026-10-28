@@ -3,6 +3,7 @@ import {
   HouseIcon,
   UserIcon,
   UsersIcon,
+  FileIcon,
   type LucideIcon,
 } from "lucide-react";
 
@@ -32,7 +33,10 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     title: "CRM",
     href: "/customers",
-    items: [{ title: "Customers", href: "/customers", icon: ContactIcon }],
+    items: [
+      { title: "Customers", href: "/customers", icon: ContactIcon },
+      { title: "Activities", href: "/activities", icon: FileIcon },
+    ],
   },
   {
     title: "Admin",

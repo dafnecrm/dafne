@@ -1,6 +1,6 @@
 'use client'
 
-import { Copy } from "lucide-react";
+import { Check, Copy } from "lucide-react";
 import { Button } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { useState } from "react";
@@ -27,7 +27,8 @@ export default function CopyButton({
             <PopoverTrigger render={<Button {...props} onClick={copyValue} />}>
                 <Copy />
             </PopoverTrigger>
-            <PopoverContent className="w-24">
+            <PopoverContent className="flex flex-row gap-2 items-center text-sm w-fit">
+                <Check className="size-4" />
                 Copied!
             </PopoverContent>
         </Popover>
