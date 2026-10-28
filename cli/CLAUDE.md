@@ -19,6 +19,9 @@ TypeScript ESM, Node ≥ 22, pnpm. `pnpm dev g ...` runs from source (tsx),
   builders. `table-file.ts` edits one table file (columns, indexes,
   relation parts). `operations.ts` handles the four relation kinds and
   removal.
+- `src/sync/form.ts` is `dafne sync form`. It reads the contract body
+  (`readBody`, which classifies each Zod expression) and adds what's
+  missing to the form's `schema.ts` and `<singular>-form.tsx`.
 - `src/sync/`: `table.ts` reads a Drizzle table (columns, `@api` tags,
   relations); `roles.ts` decides where each column goes (body, list,
   detail, filter, sort) and its Zod/TS types; `contract.ts` merges that
@@ -91,6 +94,12 @@ TypeScript ESM, Node ≥ 22, pnpm. `pnpm dev g ...` runs from source (tsx),
   tables eagerly. That's why `schema.ts` combines the parts with
   `mergeRelations` (a per-table merge) instead of a spread; the CLI
   converts it on the first ref. `wireTable` handles both forms.
+- **Forms send numbers as numbers and dates as strings.** For numbers, the
+  frontend's `NumberField` gives `number | null`. For dates, nullable
+  date columns use `optionalDate` in the contracts, which turns "" into
+  null. `sync contract` adds it to `contracts/src/common.ts` on first use.
+  `formSchema` only compiles when every form value is valid input for the
+  contract, so the two must match.
 - **Table files are always formatted** after a field edit
   (`Changes.update(..., { format: true })`), even when they weren't
   Prettier-clean before.

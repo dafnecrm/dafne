@@ -75,6 +75,12 @@ export function bodyZod(names: ResourceNames, column: Column): string {
     return `optionalText(z.string().max(${max}))`;
   }
 
+  // A form sends "" for an empty date: optionalDate turns it into null.
+  if ((column.kind === 'datetime' || column.kind === 'date') && !column.stringMode && !required && !optionalDefault)
+    return `optionalDate('Enter a valid date')`;
+  if ((column.kind === 'datetime' || column.kind === 'date') && column.stringMode && !required && !optionalDefault)
+    return `optionalText(${column.kind === 'date' ? 'z.iso.date' : 'z.iso.datetime'}({ error: 'Enter a valid date' }))`;
+
   const base = baseZod(names, column, what);
   if (required) return base;
   if (optionalDefault) return `${base}.optional()`;

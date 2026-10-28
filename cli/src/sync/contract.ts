@@ -12,6 +12,22 @@ import type { Column, TableInfo } from './table.js';
  * removed. Members that aren't columns (addresses, createdBy…) stay.
  */
 
+/** Helpers from contracts/src/common.ts the generated fields use. */
+export const COMMON_HELPERS = ['requiredText', 'optionalText', 'optionalDate'];
+
+/** Added to common.ts the first time a contract uses it. */
+export const OPTIONAL_DATE_HELPER = `
+/**
+ * Optional date: blank, null or missing all become null, so a form can send
+ * "" for an empty date field. Anything else must be a valid date.
+ */
+export const optionalDate = (error: string) =>
+  z.preprocess(
+    (value) => (value === '' || value == null ? null : value),
+    z.coerce.date({ error }).nullable(),
+  );
+`;
+
 export interface SyncReport {
   /** "body: type", "Listed: type"… */
   added: string[];
@@ -125,7 +141,7 @@ export function syncContract(
   // Helpers the new body fields use.
   step((file) => {
     const text = file.getFullText();
-    for (const helper of ['requiredText', 'optionalText'])
+    for (const helper of COMMON_HELPERS)
       if (text.includes(`${helper}(`)) ensureNamedImport(file, './common.ts', helper);
   });
 

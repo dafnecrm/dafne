@@ -44,6 +44,8 @@ export interface Column {
   serverManaged: boolean;
   /** Has `.default(...)`: the body may leave it out. */
   hasDefault: boolean;
+  /** The text passed to `.default(...)`, e.g. 1 or 'open'. */
+  defaultValue?: string;
   references: boolean;
   tags: Set<ApiTag>;
 }
@@ -125,6 +127,7 @@ export function readTable(path: string, source: string, { s }: ResourceNames): T
 
 function readColumn(key: string, init: Node, warnings: string[], path: string): Column {
   const methods: string[] = [];
+  let defaultValue: string | undefined;
   let builder = '';
   let args: Node[] = [];
   let node: Node = init;
@@ -133,6 +136,7 @@ function readColumn(key: string, init: Node, warnings: string[], path: string): 
     const callee = node.getExpression();
     if (Node.isPropertyAccessExpression(callee)) {
       methods.push(callee.getName());
+      if (callee.getName() === 'default') defaultValue = node.getArguments()[0]?.getText();
       node = callee.getExpression();
     } else {
       builder = callee.getText();
@@ -150,6 +154,7 @@ function readColumn(key: string, init: Node, warnings: string[], path: string): 
     stringMode: false,
     serverManaged: methods.some((m) => SERVER_MANAGED.has(m)) || builder === 'serial',
     hasDefault: methods.includes('default'),
+    defaultValue,
     references: methods.includes('references'),
     tags: new Set(),
   };

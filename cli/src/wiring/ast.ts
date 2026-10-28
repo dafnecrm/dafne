@@ -48,13 +48,20 @@ export function insertImportLine(file: SourceFile, clause: string, module: strin
 }
 
 /** Adds `import { name } from 'module'` unless the name is already imported from it. */
-export function ensureNamedImport(file: SourceFile, module: string, name: string) {
+export function ensureNamedImport(
+  file: SourceFile,
+  module: string,
+  name: string,
+  { typeOnly = false }: { typeOnly?: boolean } = {},
+) {
   const existing = file.getImportDeclaration(
     (decl) => decl.getModuleSpecifierValue() === module,
   );
-  if (!existing) return insertImportLine(file, `{ ${name} }`, module);
+  const spec = typeOnly && !existing?.isTypeOnly() ? `type ${name}` : name;
+  if (!existing) return insertImportLine(file, `{ ${spec} }`, module);
   const named = existing.getNamedImports();
   if (named.some((n) => n.getName() === name)) return;
+  name = spec;
   // Before the first type-only import (`type LucideIcon`), or at the end.
   const typeIndex = named.findIndex((n) => n.isTypeOnly());
   const list = named[0]?.getParentOrThrow();

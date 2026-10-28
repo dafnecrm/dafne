@@ -7,9 +7,12 @@ import { formatSource } from '../core/format.js';
 import { resourceNames, type ResourceNames } from '../core/names.js';
 import { findRoot } from '../core/workspace.js';
 import { contractFile } from '../generators/backend.js';
-import { syncContract, type SyncReport } from '../sync/contract.js';
+import { OPTIONAL_DATE_HELPER, syncContract, type SyncReport } from '../sync/contract.js';
 import { API_TAGS, readTable } from '../sync/table.js';
+import { editSource } from '../wiring/ast.js';
 import { BACKEND } from '../wiring/backend.js';
+import { FRONTEND } from '../wiring/frontend.js';
+import { readBody, syncFormComponent, syncFormSchema, type FormReport } from '../sync/form.js';
 
 interface SyncOptions {
   root?: string;
@@ -50,6 +53,12 @@ export async function syncOne(changes: Changes, name: string, dropped: string[] 
   // Compare formatted, so a rewrite that changes only the layout is no change.
   const formatted = await formatSource(join(changes.root, contractPath), content, source);
   if (formatted !== source) changes.update(contractPath, () => formatted);
+  if (formatted.includes('optionalDate(')) {
+    const common = `${BACKEND}/libs/contracts/src/common.ts`;
+    changes.update(common, (text) =>
+      /export const optionalDate\b/.test(text) ? text : text.replace(/\n*$/, '\n') + OPTIONAL_DATE_HELPER,
+    );
+  }
   report.warnings.unshift(...info.warnings);
   return report;
 }
@@ -133,5 +142,100 @@ id, createdById/updatedById, deletedAt and server-filled columns
       p.outro('Done.');
     });
 
+  sync
+    .command('form')
+    .description(
+      'Add the contract body fields a frontend form lacks (values type, defaults, inputs), leaving the rest as it is',
+    )
+    .argument('[name]', 'resource name, singular or plural')
+    .option('--root <dir>', 'Dafne folder (with backend/ and frontend/)')
+    .option('--dry-run', 'show what would change, write nothing')
+    .option('-y, --yes', 'never prompt')
+    .addHelpText(
+      'after',
+      `
+It reads <singular>BodySchema in backend/libs/contracts/src/<plural>.ts and
+edits frontend/app/(app)/<plural>/schema.ts and <singular>-form.tsx. A field
+counts as present when the form has a <form.AppField name="…"> for it,
+wherever it is. For a field that must have no input, write in the form:
+
+  {/* dafne-ignore: customerId */}
+
+It's still added to the values type and the defaults (the form sends it).`,
+    )
+    .action(async (name: string | undefined, options: SyncOptions) => {
+      p.intro('dafne sync form');
+      const changes = new Changes(findRoot(options.root));
+      if (!name) {
+        const choices = syncable(changes).filter((r) => changes.exists(formFiles(resourceNames(r)).form));
+        if (options.yes || !process.stdin.isTTY || !choices.length)
+          throw new Error('Missing argument: the resource name.');
+        const picked = await p.select({ message: 'Which form?', options: choices.map((value) => ({ value, label: value })) });
+        if (p.isCancel(picked)) return p.cancel('Nothing changed.');
+        name = picked;
+      }
+      const reports = syncForm(changes, name);
+      for (const [file, report] of reports) {
+        const lines = report.added.map((item) => `+ ${item}`);
+        if (lines.length) p.note(lines.join('\n'), file);
+        for (const item of report.stale)
+          p.log.warn(`${file}: ${item} isn't in the contract body any more: kept. Remove it if the field was dropped.`);
+        for (const warning of report.warnings) p.log.warn(warning);
+      }
+      if (!changes.summary().length) return p.outro(`${name}: the form already has every field.`);
+      if (options.dryRun) return p.outro('Dry run: nothing written.');
+      await changes.commit();
+      p.note(
+        [
+          'Check the new inputs: their place in the form, labels and the default values.',
+          'cd frontend && npx tsc --noEmit',
+        ].join('\n'),
+        'Next steps',
+      );
+      p.outro('Done.');
+    });
+
   return sync;
+}
+
+const formFiles = ({ s, p }: ResourceNames) => {
+  const dir = `${FRONTEND}/app/(app)/${p.kebab}`;
+  return { schema: `${dir}/schema.ts`, form: `${dir}/${s.kebab}-form.tsx` };
+};
+
+/** Adds the contract's new body fields to the form; returns the reports by file. */
+export function syncForm(changes: Changes, name: string): [string, FormReport][] {
+  const names = resourceNames(name);
+  const contractPath = contractFile(names);
+  const contract = changes.read(contractPath);
+  if (contract === undefined) throw new Error(`${contractPath} not found.`);
+  const tablePath = tableFile(names);
+  const tableSource = changes.read(tablePath);
+  const table = tableSource === undefined ? undefined : readTable(tablePath, tableSource, names);
+  const fields = readBody(contractPath, contract, names, table);
+  const responseKeys = responseFields(contractPath, contract, names);
+
+  const files = formFiles(names);
+  const reports: [string, FormReport][] = [];
+  for (const [path, sync] of [
+    [files.schema, (source: string) => syncFormSchema(files.schema, source, names, fields, responseKeys)],
+    [files.form, (source: string) => syncFormComponent(files.form, source, fields)],
+  ] as const) {
+    const source = changes.read(path);
+    if (source === undefined) throw new Error(`${path} not found: generate the form with "dafne g frontend form ${names.p.kebab}".`);
+    const { content, report } = sync(source);
+    changes.update(path, () => content, { format: true });
+    reports.push([path, report]);
+  }
+  return reports;
+}
+
+/** Fields of Listed<S> and <S>Detail: what the form can read back when editing. */
+function responseFields(path: string, contract: string, names: ResourceNames): Set<string> {
+  const keys = new Set<string>();
+  editSource(path, contract, (file) => {
+    for (const name of [`Listed${names.s.pascal}`, `${names.s.pascal}Detail`])
+      for (const prop of file.getInterface(name)?.getProperties() ?? []) keys.add(prop.getName());
+  });
+  return keys;
 }

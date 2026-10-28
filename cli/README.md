@@ -155,6 +155,31 @@ testinternal: varchar('testinternal', { length: 10 }),
 | `filter` / `nofilter` | force or prevent filtering |
 | `sort` / `nosort` | force or prevent sorting |
 
+## Syncing a form with its contract
+
+```sh
+dafne sync form activities     # --dry-run to preview
+```
+
+It adds the contract body fields that a form lacks, in
+`frontend/app/(app)/<plural>/`. It never changes what's already there.
+- **`schema.ts`:**
+  - the values type: enums, booleans and numbers get their own type, e.g.
+    `Record<Exclude<keyof ActivityBody, "type">, string> & { type: ActivityType }`;
+  - the enum options (`TYPE_OPTIONS`);
+  - the default values: dates are cut to what the inputs show, required
+    numbers start at the table default (or 0).
+- **`<singular>-form.tsx`:** a `<form.AppField>` after the last one:
+  - text, email, date and datetime-local use `TextField`;
+  - enums use `SelectField`, booleans `CheckboxField`, numbers `NumberField`
+    (a number, empty = null).
+
+A field counts as present when the form has a `<form.AppField name="…">`
+for it, wherever it is and however it was changed. For a field the form
+sends without an input, add `{/* dafne-ignore: customerId */}` to the form.
+The field still gets its value type and default. Inputs and defaults whose
+field left the contract are reported, not removed.
+
 ## Development
 
 `pnpm dev g ...` runs from source; `pnpm test` runs generators against
