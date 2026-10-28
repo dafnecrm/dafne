@@ -11,7 +11,7 @@ import type { <%= s.pascal %>Detail } from "@/lib/<%= p.kebab %>";
 import { save<%= s.pascal %> } from "./actions";
 import { <%= s.camel %>FormOpts, <%= s.camel %>Schema } from "./schema";
 
-/** Creates a <%= s.lower %>, or edits `<%= s.camel %>`. Saving opens its page. */
+/** Creates <%= s.a %>, or edits `<%= s.camel %>`. Saving opens its page. */
 export function <%= s.pascal %>Form({ <%= s.camel %> }: { <%= s.camel %>?: <%= s.pascal %>Detail }) {
   const form = useAppForm({
     ...<%= s.camel %>FormOpts(<%= s.camel %>),

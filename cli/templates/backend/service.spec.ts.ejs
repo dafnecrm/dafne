@@ -106,7 +106,7 @@ describe('<%= p.pascal %>Service', () => {
   });
 
   describe('get<%= s.pascal %>', () => {
-    it('returns a <%= s.lower %> that is not deleted, with its users', async () => {
+    it('returns <%= s.a %> that is not deleted, with its users', async () => {
       await expect(service.get<%= s.pascal %>('r1')).resolves.toBe(found);
 
       const options = findFirst.mock.calls[0][0];

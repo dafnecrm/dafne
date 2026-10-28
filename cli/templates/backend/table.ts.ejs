@@ -3,7 +3,7 @@ import { index, mysqlTable, timestamp, varchar } from 'drizzle-orm/mysql-core';
 import { user } from './auth.js';
 
 /**
- * A <%= s.lower %> managed by the users. Deletion is logical: `deletedAt` is
+ * <%= s.A %> managed by the users. Deletion is logical: `deletedAt` is
  * set and the row is hidden from every query, but kept in the table.
  */
 export const <%= s.camel %> = mysqlTable(

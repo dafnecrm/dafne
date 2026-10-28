@@ -79,7 +79,7 @@ export class <%= p.pascal %>Service {
     return found;
   }
 
-  /** Creates a <%= s.lower %>; `userId` is the creator. */
+  /** Creates <%= s.a %>; `userId` is the creator. */
   async create<%= s.pascal %>(body: <%= s.pascal %>Body, userId: string): Promise<<%= s.pascal %>Detail> {
     const id = randomUUID();
     // Set here, not by the column default: MySQL's now() and the driver can
@@ -97,7 +97,7 @@ export class <%= p.pascal %>Service {
   }
 
   /**
-   * Replaces a <%= s.lower %>'s fields; `userId` is the editor. Throws 404
+   * Replaces <%= s.a %>'s fields; `userId` is the editor. Throws 404
    * if the <%= s.lower %> doesn't exist or is deleted.
    */
   async update<%= s.pascal %>(
@@ -120,7 +120,7 @@ export class <%= p.pascal %>Service {
   }
 
   /**
-   * Deletes a <%= s.lower %> logically: sets deletedAt, so it disappears
+   * Deletes <%= s.a %> logically: sets deletedAt, so it disappears
    * from the API but stays in the database. Throws 404 if already deleted.
    */
   async delete<%= s.pascal %>(id: string, userId: string) {

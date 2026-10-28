@@ -18,6 +18,8 @@ describe('resourceNames', () => {
       constant: 'INVOICE_ITEM',
       lower: 'invoice item',
       title: 'Invoice item',
+      a: 'an invoice item',
+      A: 'An invoice item',
     });
     expect(p.pascal).toBe('InvoiceItems');
     expect(resourceNames('category').p.kebab).toBe('categories');

@@ -12,7 +12,11 @@ TypeScript ESM, Node ≥ 22, pnpm. `pnpm dev g ...` runs from source (tsx),
 ## Layout
 
 - `src/commands/generate.ts`: commander commands, prompts (@clack/prompts),
-  summary and next steps.
+  summary and next steps. `src/commands/sync.ts` is `dafne sync contract`.
+- `src/sync/`: `table.ts` reads a Drizzle table (columns, `@api` tags,
+  relations); `roles.ts` decides where each column goes (body, list,
+  detail, filter, sort) and its Zod/TS types; `contract.ts` merges that
+  into the existing contract.
 - `src/core/`:
   - `names.ts`: singular/plural names in every casing.
   - `workspace.ts`: finds the Dafne root.
@@ -69,6 +73,11 @@ TypeScript ESM, Node ≥ 22, pnpm. `pnpm dev g ...` runs from source (tsx),
   3. a place in `BACKEND_RESOURCE`/`FRONTEND_RESOURCE` if it belongs to a
      full resource;
   4. a test.
+- **`sync contract` edits, it doesn't regenerate.** Members matching a
+  column keep their text. Columns are added in table order and removed
+  when they leave that part of the API. Non-column members (relations,
+  `sortBy`, spreads) stay. The defaults in `roles.ts` must keep
+  `customers` in sync with no changes (there is a test for it).
 - **`frontend` and `backend` are fixed folder names** under the root
   (`BACKEND`/`FRONTEND` constants).
 

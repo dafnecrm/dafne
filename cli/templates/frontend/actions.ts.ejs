@@ -22,7 +22,7 @@ function errorMessage(error: unknown) {
 }
 
 /**
- * Creates a <%= s.lower %> (no `id`) or replaces one, then opens its page.
+ * Creates <%= s.a %> (no `id`) or replaces one, then opens its page.
  * Returns an error message when it fails.
  */
 export async function save<%= s.pascal %>(
@@ -50,7 +50,7 @@ export async function save<%= s.pascal %>(
 }
 
 /**
- * Deletes a <%= s.lower %> (logically: the backend sets deletedAt). The
+ * Deletes <%= s.a %> (logically: the backend sets deletedAt). The
  * caller refreshes or leaves the page. Returns an error message when it fails.
  */
 export async function delete<%= s.pascal %>(id: string): Promise<ActionError | null> {

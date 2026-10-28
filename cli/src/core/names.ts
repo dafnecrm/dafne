@@ -16,6 +16,10 @@ export interface Casings {
   lower: string;
   /** Invoice item */
   title: string;
+  /** an invoice item (with its article) */
+  a: string;
+  /** An invoice item */
+  A: string;
 }
 
 /** A resource name, singular (`s`) and plural (`p`). */
@@ -40,6 +44,7 @@ const capitalize = (word: string) => word.charAt(0).toUpperCase() + word.slice(1
 export function casings(parts: string[]): Casings {
   if (!parts.length) throw new Error('The name is empty.');
   const lower = parts.join(' ');
+  const a = `${/^[aeiou]/.test(lower) ? 'an' : 'a'} ${lower}`;
   return {
     kebab: parts.join('-'),
     camel: parts[0] + parts.slice(1).map(capitalize).join(''),
@@ -48,6 +53,8 @@ export function casings(parts: string[]): Casings {
     constant: parts.join('_').toUpperCase(),
     lower,
     title: capitalize(lower),
+    a,
+    A: capitalize(a),
   };
 }
 

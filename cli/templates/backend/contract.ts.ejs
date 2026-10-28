@@ -40,7 +40,7 @@ export type List<%= p.pascal %>Query = z.output<typeof list<%= p.pascal %>QueryS
 
 /* ---------- Responses (dates as Date; clients get Json<T>) ---------- */
 
-/** A <%= s.lower %> in GET /<%= p.kebab %>. */
+/** <%= s.A %> in GET /<%= p.kebab %>. */
 export interface Listed<%= s.pascal %> {
   id: string;
   name: string;
@@ -56,7 +56,7 @@ export interface <%= p.pascal %>List {
   offset: number;
 }
 
-/** A user who created or last updated a <%= s.lower %>; null if since removed. */
+/** A user who created or last updated <%= s.a %>; null if since removed. */
 export interface <%= s.pascal %>User {
   id: string;
   name: string;
