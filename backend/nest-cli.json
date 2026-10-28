@@ -81,6 +81,15 @@
       "compilerOptions": {
         "tsConfigPath": "libs/contracts/tsconfig.lib.json"
       }
+    },
+    "activities": {
+      "type": "library",
+      "root": "libs/activities",
+      "entryFile": "index",
+      "sourceRoot": "libs/activities/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/activities/tsconfig.lib.json"
+      }
     }
   }
 }

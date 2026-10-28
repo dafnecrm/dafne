@@ -66,6 +66,12 @@
       ],
       "@app/contracts/*": [
         "./libs/contracts/src/*"
+      ],
+      "@app/activities": [
+        "./libs/activities/src/index.ts"
+      ],
+      "@app/activities/*": [
+        "./libs/activities/src/*"
       ]
     }
   },

@@ -6,6 +6,7 @@ import { DatabaseModule } from '@app/database';
 import { AuthModule } from '@app/auth';
 import { UsersModule } from '@app/users';
 import { CustomersModule } from '@app/customers';
+import { ActivitiesModule } from '@app/activities';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { CustomersModule } from '@app/customers';
     AuthModule,
     UsersModule,
     CustomersModule,
+    ActivitiesModule,
   ],
   controllers: [ApiController],
   providers: [ApiService],
