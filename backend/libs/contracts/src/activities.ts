@@ -12,6 +12,10 @@ import {
 export const ACTIVITY_TYPES = ['email', 'phone'] as const;
 export type ActivityType = (typeof ACTIVITY_TYPES)[number];
 
+/** Values of activity status. */
+export const ACTIVITY_STATUSES = ['open', 'in_progress', 'closed'] as const;
+export type ActivityStatus = (typeof ACTIVITY_STATUSES)[number];
+
 /**
  * Body of POST /activities and PUT /activities/:id. PUT replaces the
  * whole activity: omitted optional fields are cleared.
@@ -30,6 +34,8 @@ export type ActivityBody = z.output<typeof activityBodySchema>;
 export const ACTIVITY_SORT_FIELDS = [
   'name',
   'type',
+  'completedAt',
+  'status',
   'createdAt',
   'updatedAt',
 ] as const;
@@ -39,7 +45,7 @@ export type ActivitySortField = (typeof ACTIVITY_SORT_FIELDS)[number];
  * Activity fields the list can be filtered by, each a query param of
  * its own. Filters combine with AND and match text the field contains.
  */
-export const ACTIVITY_FILTER_FIELDS = ['name', 'type'] as const;
+export const ACTIVITY_FILTER_FIELDS = ['name', 'type', 'status'] as const;
 export type ActivityFilterField = (typeof ACTIVITY_FILTER_FIELDS)[number];
 
 /** Query string of GET /activities. Deleted activities are never listed. */
@@ -47,6 +53,7 @@ export const listActivitiesQuerySchema = z.strictObject({
   ...pageQuery,
   name: z.string().max(255).optional(),
   type: z.enum(ACTIVITY_TYPES).optional(),
+  status: z.enum(ACTIVITY_STATUSES).optional(),
   /** Defaults to name. */
   sortBy: z.enum(ACTIVITY_SORT_FIELDS).optional(),
   /** Defaults to asc. */
@@ -61,6 +68,8 @@ export interface ListedActivity {
   id: string;
   name: string;
   type: ActivityType;
+  completedAt: Date | null;
+  status: ActivityStatus;
   createdAt: Date;
   updatedAt: Date;
 }

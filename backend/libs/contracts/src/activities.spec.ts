@@ -10,19 +10,22 @@ function failedFields(body: unknown) {
 
 describe('activityBodySchema', () => {
   it('trims values', () => {
-    expect(activityBodySchema.parse({ name: '  Acme  ' })).toEqual({
+    expect(
+      activityBodySchema.parse({ name: '  Acme  ', type: 'email' }),
+    ).toEqual({
       name: 'Acme',
+      type: 'email',
     });
   });
 
   it('rejects a blank name', () => {
-    expect(failedFields({ name: '   ' })).toEqual(['name']);
+    expect(failedFields({ name: '   ', type: 'email' })).toEqual(['name']);
   });
 
   it('rejects unknown properties such as deletedAt', () => {
-    expect(failedFields({ name: 'Acme', deletedAt: '2026-01-01' })).toEqual([
-      'unrecognized_keys',
-    ]);
+    expect(
+      failedFields({ name: 'Acme', deletedAt: '2026-01-01', type: 'email' }),
+    ).toEqual(['unrecognized_keys']);
   });
 });
 

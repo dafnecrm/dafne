@@ -18,6 +18,12 @@ export const activity = mysqlTable(
     id: varchar('id', { length: 36 }).primaryKey(),
     name: varchar('name', { length: 255 }).notNull(),
     type: mysqlEnum(['email', 'phone']).notNull(),
+    /** @api readonly */
+    status: mysqlEnum('status', ['open', 'in_progress', 'closed'])
+      .notNull()
+      .default('open'),
+    /** @api readonly */
+    completedAt: timestamp('completed_at', { fsp: 3 }),
     createdAt: timestamp('created_at', { fsp: 3 }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { fsp: 3 })
       .defaultNow()

@@ -54,6 +54,8 @@ export class ActivitiesService {
           id: activity.id,
           name: activity.name,
           type: activity.type,
+          completedAt: activity.completedAt,
+          status: activity.status,
           createdAt: activity.createdAt,
           updatedAt: activity.updatedAt,
         })
@@ -116,6 +118,7 @@ export class ActivitiesService {
       .update(activity)
       .set({
         name: body.name,
+        type: body.type,
         updatedById: userId,
         // Set explicitly so the row always changes and is counted below.
         updatedAt: new Date(),

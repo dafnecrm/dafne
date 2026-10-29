@@ -127,7 +127,7 @@ describe('ActivitiesService', () => {
   describe('createActivity', () => {
     it('inserts the activity with its creator', async () => {
       await expect(
-        service.createActivity(body({ name: 'Acme' }), 'u1'),
+        service.createActivity(body({ name: 'Acme', type: 'email' }), 'u1'),
       ).resolves.toBe(found);
 
       const [row] = insert.values.mock.calls[0];
@@ -142,7 +142,11 @@ describe('ActivitiesService', () => {
 
   describe('updateActivity', () => {
     it('updates the activity', async () => {
-      await service.updateActivity('r1', body({ name: 'Acme Inc' }), 'u2');
+      await service.updateActivity(
+        'r1',
+        body({ name: 'Acme Inc', type: 'email' }),
+        'u2',
+      );
 
       expect(update.set.mock.calls[0][0]).toMatchObject({
         name: 'Acme Inc',
@@ -157,7 +161,11 @@ describe('ActivitiesService', () => {
       update.where.mockResolvedValue([{ affectedRows: 0 }]);
 
       await expect(
-        service.updateActivity('nope', body({ name: 'X' }), 'u2'),
+        service.updateActivity(
+          'nope',
+          body({ name: 'X', type: 'email' }),
+          'u2',
+        ),
       ).rejects.toBeInstanceOf(NotFoundException);
     });
   });
