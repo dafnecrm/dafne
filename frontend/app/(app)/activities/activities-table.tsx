@@ -44,6 +44,7 @@ import { describeFilters, type TableParams } from "@/lib/data-table";
 const col = createDataTableColumnHelper<ListedActivity>();
 
 // Module scope, so the table sees the same columns on every render.
+// dafne-ignore: completedAt
 const activityColumns = col.columns([
   col.accessor("name", {
     header: "Name",
@@ -71,13 +72,6 @@ const activityColumns = col.columns([
     cell: (info) =>
       ACTIVITY_STATUS_OPTIONS.find((o) => o.value === info.getValue())?.label ??
       "—",
-  }),
-  col.accessor("completedAt", {
-    header: "Completed at",
-    cell: (info) => {
-      const value = info.getValue();
-      return value ? <LocalDate value={value} format="dateTime" /> : "—";
-    },
   }),
   col.accessor("createdAt", {
     header: "Added",
