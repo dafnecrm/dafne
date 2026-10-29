@@ -7,7 +7,11 @@ import {
 } from "@/components/data-table";
 import { LocalDate } from "@/components/local-date";
 import type { ListedActivity } from "@/lib/activities";
-import { ACTIVITY_TYPE_OPTIONS, activitiesTable } from "@/lib/activities-table";
+import {
+  ACTIVITY_TYPE_OPTIONS,
+  activitiesTable,
+  ACTIVITY_STATUS_OPTIONS,
+} from "@/lib/activities-table";
 import {
   EllipsisVerticalIcon,
   EyeIcon,
@@ -60,6 +64,19 @@ const activityColumns = col.columns([
         ACTIVITY_TYPE_OPTIONS.find((o) => o.value === info.getValue())?.label ??
         "—"
       );
+    },
+  }),
+  col.accessor("status", {
+    header: "Status",
+    cell: (info) =>
+      ACTIVITY_STATUS_OPTIONS.find((o) => o.value === info.getValue())?.label ??
+      "—",
+  }),
+  col.accessor("completedAt", {
+    header: "Completed at",
+    cell: (info) => {
+      const value = info.getValue();
+      return value ? <LocalDate value={value} format="dateTime" /> : "—";
     },
   }),
   col.accessor("createdAt", {

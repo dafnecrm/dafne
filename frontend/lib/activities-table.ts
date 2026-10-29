@@ -2,6 +2,7 @@ import type {
   ActivityFilterField,
   ActivitySortField,
   ActivityType,
+  ActivityStatus,
 } from "@backend/contracts";
 import { defineDataTable } from "./data-table";
 
@@ -10,6 +11,13 @@ export const ACTIVITY_TYPE_OPTIONS = [
   { value: "email", label: "Email" },
   { value: "phone", label: "Phone" },
 ] satisfies { value: ActivityType; label: string }[];
+
+/** Labels of the status values. */
+export const ACTIVITY_STATUS_OPTIONS = [
+  { value: "open", label: "Open" },
+  { value: "in_progress", label: "In progress" },
+  { value: "closed", label: "Closed" },
+] satisfies { value: ActivityStatus; label: string }[];
 
 /**
  * The activities table: plain data with no server-only imports (unlike
@@ -26,6 +34,8 @@ export const activitiesTable = defineDataTable({
   sortable: [
     "name",
     "type",
+    "completedAt",
+    "status",
     "createdAt",
     "updatedAt",
   ] satisfies ActivitySortField[],
@@ -37,6 +47,12 @@ export const activitiesTable = defineDataTable({
       label: "Type",
       placeholder: "Any type",
       options: ACTIVITY_TYPE_OPTIONS,
+    },
+    {
+      field: "status" satisfies ActivityFilterField,
+      label: "Status",
+      placeholder: "Any status",
+      options: ACTIVITY_STATUS_OPTIONS,
     },
   ],
 });
