@@ -29,15 +29,15 @@ export const frontendPieces: Record<string, Piece> = {
     },
   },
   actions: {
-    description: 'Server actions (save, delete), form schema and the delete confirmation (<singular>-actions.tsx)',
+    description: 'Server actions (save, delete), form schema and the delete confirmation (<singular>-dialogs.tsx)',
     deps: ['data'],
     marker: (n) => `${routeDir(n)}/actions.ts`,
     generate(ctx) {
       const dir = routeDir(ctx.names);
       create(ctx, `${dir}/actions.ts`, 'actions.ts');
       create(ctx, `${dir}/schema.ts`, 'schema.ts');
-      // Menu items and confirmations, shared by the table's and the detail page's menus.
-      create(ctx, `${dir}/${ctx.names.s.kebab}-actions.tsx`, 'shared-actions.tsx');
+      // Confirmation dialogs, shared by the table's and the detail page's menus.
+      create(ctx, `${dir}/${ctx.names.s.kebab}-dialogs.tsx`, 'dialogs.tsx');
     },
   },
   table: {
