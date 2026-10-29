@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { BreadcrumbLabel } from "@/components/page-breadcrumb";
 import {
   PageContent,
   PageContentBody,
@@ -30,6 +31,10 @@ async function Edit<%= s.pascal %>({
 
   return (
     <PageContent>
+      <BreadcrumbLabel
+        href={`/<%= p.kebab %>/${encodeURIComponent(<%= s.camel %>.id)}`}
+        label={<%= s.camel %>.name}
+      />
       <PageContentHeader>
         <PageContentTitle>Edit {<%= s.camel %>.name}</PageContentTitle>
         <PageContentDescription>

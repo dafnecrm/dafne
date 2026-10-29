@@ -2,6 +2,7 @@ import { ArrowLeftIcon, PencilIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { BreadcrumbLabel } from "@/components/page-breadcrumb";
 import {
   PageContent,
   PageContentAction,
@@ -34,6 +35,10 @@ async function <%= s.pascal %>Profile({
 
   return (
     <PageContent>
+      <BreadcrumbLabel
+        href={`/<%= p.kebab %>/${encodeURIComponent(<%= s.camel %>.id)}`}
+        label={<%= s.camel %>.name}
+      />
       <PageContentHeader>
         <PageContentTitle>{<%= s.camel %>.name}</PageContentTitle>
         <PageContentAction className="flex flex-wrap justify-end gap-2">
