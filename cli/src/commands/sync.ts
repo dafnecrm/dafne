@@ -8,6 +8,8 @@ import { resourceNames, type ResourceNames } from '../core/names.js';
 import { findRoot } from '../core/workspace.js';
 import { contractFile } from '../generators/backend.js';
 import { OPTIONAL_DATE_HELPER, syncContract, type SyncReport } from '../sync/contract.js';
+import { syncService } from '../sync/service.js';
+import { syncContractSpec, syncServiceSpec } from '../sync/service-spec.js';
 import { API_TAGS, readTable } from '../sync/table.js';
 import { editSource } from '../wiring/ast.js';
 import { BACKEND } from '../wiring/backend.js';
@@ -20,6 +22,7 @@ import { readResponse } from '../sync/response.js';
 interface SyncOptions {
   root?: string;
   all?: boolean;
+  service?: boolean;
   dryRun?: boolean;
   yes?: boolean;
 }
@@ -41,7 +44,12 @@ export function syncable(changes: Changes): string[] {
     });
 }
 
-export async function syncOne(changes: Changes, name: string, dropped: string[] = []): Promise<SyncReport> {
+export async function syncOne(
+  changes: Changes,
+  name: string,
+  dropped: string[] = [],
+  { service = true }: { service?: boolean } = {},
+): Promise<SyncReport> {
   const names = resourceNames(name);
   const tablePath = tableFile(names);
   const contractPath = contractFile(names);
@@ -63,6 +71,43 @@ export async function syncOne(changes: Changes, name: string, dropped: string[] 
     );
   }
   report.warnings.unshift(...info.warnings);
+
+  // Sample bodies in the specs: fields that left the body (or the table)
+  // are dropped from them; other unknown keys may be there on purpose
+  // (e.g. a test that the schema rejects deletedAt).
+  const bodyNow = readBody(contractPath, formatted, names, info);
+  const bodyBefore = new Set(readBody(contractPath, source, names, info).map((f) => f.key));
+  const leftBody = new Set([...dropped, ...[...bodyBefore].filter((k) => !bodyNow.some((f) => f.key === k))]);
+
+  // The service's queries: list select, detail columns, insert and update.
+  const servicePath = `${BACKEND}/libs/${names.p.kebab}/src/${names.p.kebab}.service.ts`;
+  const serviceSource = service ? changes.read(servicePath) : undefined;
+  if (serviceSource !== undefined) {
+    const result = syncService(servicePath, serviceSource, names, info, dropped);
+    changes.update(servicePath, () => result.content);
+    report.added.push(...result.report.added.map((item) => `service ${item}`));
+    report.removed.push(...result.report.removed.map((item) => `service ${item}`));
+    report.warnings.push(...result.report.warnings);
+
+    // The specs' sample bodies must stay valid for the (strict) body schema.
+    const specPath = servicePath.replace(/\.ts$/, '.spec.ts');
+    const specSource = changes.read(specPath);
+    if (specSource !== undefined) {
+      const spec = syncServiceSpec(specPath, specSource, bodyNow, leftBody);
+      changes.update(specPath, () => spec.content);
+      report.added.push(...spec.report.added.map((key) => `service spec body samples: ${key}`));
+      report.removed.push(...spec.report.removed.map((key) => `service spec body samples: ${key}`));
+    }
+  }
+
+  const contractSpecPath = contractPath.replace(/\.ts$/, '.spec.ts');
+  const contractSpec = changes.read(contractSpecPath);
+  if (contractSpec !== undefined) {
+    const spec = syncContractSpec(contractSpecPath, contractSpec, `${names.s.camel}BodySchema`, bodyNow, leftBody);
+    changes.update(contractSpecPath, () => spec.content);
+    report.added.push(...spec.report.added.map((key) => `contract spec samples: ${key}`));
+    report.removed.push(...spec.report.removed.map((key) => `contract spec samples: ${key}`));
+  }
   return report;
 }
 
@@ -78,7 +123,7 @@ export function printSync(name: string, report: SyncReport, changed: boolean) {
   for (const warning of report.warnings) p.log.warn(warning);
   if (report.required.length)
     p.log.warn(
-      `New required body fields: ${report.required.join(', ')}. Add them to the samples in the contract spec and to the frontend form.`,
+      `New required body fields: ${report.required.join(', ')}. Add them to the frontend form (dafne sync form).`,
     );
 }
 
@@ -88,10 +133,11 @@ export function syncCommand() {
   sync
     .command('contract')
     .description(
-      'Update libs/contracts/src/<plural>.ts from libs/database/src/tables/<plural>.ts, keeping hand-written validation',
+      'Update libs/contracts/src/<plural>.ts and the service queries (list, detail, create, update) from libs/database/src/tables/<plural>.ts, keeping hand-written code',
     )
     .argument('[name]', 'resource name, singular or plural')
     .option('--all', 'every table that has a contract')
+    .option('--no-service', "don't update the service's queries (list, detail, create, update)")
     .option('--root <dir>', 'Dafne folder (with backend/ and frontend/)')
     .option('--dry-run', 'show what would change, write nothing')
     .option('-y, --yes', 'never prompt')
@@ -127,7 +173,7 @@ id, createdById/updatedById, deletedAt and server-filled columns
 
       for (const resource of resources) {
         const before = changes.summary().length;
-        const report = await syncOne(changes, resource);
+        const report = await syncOne(changes, resource, [], { service: options.service });
         printSync(resource, report, changes.summary().length > before);
       }
 
@@ -135,10 +181,8 @@ id, createdById/updatedById, deletedAt and server-filled columns
       await changes.commit();
       p.note(
         [
-          'The service and the frontend still use the old fields; the typecheck shows where:',
           'cd backend && npx tsc --noEmit && pnpm test',
-          'cd frontend && npx tsc --noEmit',
-          'Update the service (select, insert, update), the form (schema.ts, form) and the columns.',
+          'dafne sync form|table|detail <resource>   # the frontend',
         ].join('\n'),
         'Next steps',
       );

@@ -19,6 +19,14 @@ TypeScript ESM, Node ≥ 22, pnpm. `pnpm dev g ...` runs from source (tsx),
   builders. `table-file.ts` edits one table file (columns, indexes,
   relation parts). `operations.ts` handles the four relation kinds and
   removal.
+- `src/sync/service.ts` is the service part of `sync contract`. It edits
+  `list<P>` select, `get<S>` findFirst columns and `create<S>`/`update<S>`
+  values/set. It only touches members shaped like `key: <table>.key`,
+  `key: false` or `key: body.key`; others are hand-written and kept.
+- `src/sync/service-spec.ts` keeps the specs' sample bodies valid: the
+  service spec's `body({...})`, and the contract spec's `failedFields` and
+  `parse` calls. It only removes keys that were in the body before the sync
+  (or were dropped columns), never other unknown keys.
 - `src/sync/form.ts` is `dafne sync form`. It reads the contract body
   (`readBody`, which classifies each Zod expression) and adds what's
   missing to the form's `schema.ts` and `<singular>-form.tsx`.

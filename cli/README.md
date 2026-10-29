@@ -130,10 +130,30 @@ dafne sync contract activities     # or --all; --dry-run to preview
 ```
 
 It updates `libs/contracts/src/<plural>.ts`: the body schema, sort and
-filter fields, list query and response types. It adds new columns, drops
+filter fields, list query and response types. It also updates the queries in
+`libs/<plural>/src/<plural>.service.ts`; skip that with `--no-service`:
+- the list's `select({...})` gets the listed columns;
+- the detail's `findFirst({ columns })` leaves out (`key: false`) the
+  columns that aren't in the response, e.g. `internal` ones;
+- the create's `values({...})` and the update's `set({...})` save the body
+  fields (`key: body.key`).
+
+Only members of the form `key: <table>.key`, `key: false` and
+`key: body.key` are managed. Ids, dates, users and computed values stay as
+they are.
+
+The sample bodies in the specs follow the body too:
+- in `<plural>.service.spec.ts`, every `body({...})`;
+- in the contract's `<plural>.spec.ts`, every `failedFields({...})` and
+  `<singular>BodySchema.parse/safeParse({...})`, plus the expected result in
+  `expect(parse(...)).toEqual({...})`.
+
+They get the new required fields, with a sample value, and lose the fields
+that left the body. Other unknown keys stay: they may be there on purpose,
+like the `deletedAt` the schema must reject. Assertions aren't changed. It adds new columns, drops
 the ones removed from the API and keeps hand-written validation. Members
 that aren't columns (e.g. `addresses`) are left alone. It doesn't touch the
-service or the frontend: the typecheck shows what to update there.
+frontend: use `dafne sync form|table|detail` there.
 
 Which column goes where follows the customers contract:
 - `id` and server-filled columns (`defaultNow`, `$onUpdate`…) are in
