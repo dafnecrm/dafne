@@ -1,7 +1,7 @@
 import { DatabaseService, schema } from '@app/database';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { and, asc, desc, eq, isNull, like, type SQL } from 'drizzle-orm';
+import { and, asc, desc, eq, isNull, like, ne, type SQL } from 'drizzle-orm';
 import {
   ACTIVITY_FILTER_FIELDS,
   type ActivityBody,
@@ -19,6 +19,7 @@ const escapeLike = (value: string) => value.replace(/[\\%_]/g, '\\$&');
 
 /** Activities that haven't been deleted. */
 const notDeleted = isNull(activity.deletedAt);
+const notClosed = ne(activity.status, 'closed');
 
 /** Only the user's ID and name, for "created by" / "updated by". */
 const userSummary = { columns: { id: true, name: true } } as const;
@@ -124,7 +125,7 @@ export class ActivitiesService {
         // Set explicitly so the row always changes and is counted below.
         updatedAt: new Date(),
       })
-      .where(and(eq(activity.id, id), notDeleted));
+      .where(and(eq(activity.id, id), notDeleted, notClosed));
     if (result.affectedRows === 0)
       throw new NotFoundException('Activity not found');
     return this.getActivity(id);
@@ -150,6 +151,16 @@ export class ActivitiesService {
     const [result] = await this.database.db
       .update(activity)
       .set({ status: 'closed', completedAt: now, completedById: userId })
+      .where(and(eq(activity.id, id), notDeleted, notClosed));
+    if (result.affectedRows === 0)
+      throw new NotFoundException('Activity not found or closed');
+  }
+  
+  /** Set an activity in progress */
+  async setInProgress(id: string, userId: string) {
+    const [result] = await this.database.db
+      .update(activity)
+      .set({ status: 'in_progress', completedAt: null, completedById: null })
       .where(and(eq(activity.id, id), notDeleted));
     if (result.affectedRows === 0)
       throw new NotFoundException('Activity not found');

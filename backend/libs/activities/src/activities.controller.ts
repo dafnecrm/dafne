@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Put,
   Query,
@@ -68,11 +69,19 @@ export class ActivitiesController {
     await this.activitiesService.deleteActivity(id, session.user.id);
   }
 
-  @Post(':id/close')
+  @Patch(':id/close')
   async completeActivity(
     @Param('id') id: string,
     @Session() session: UserSession,
   ) {
     return this.activitiesService.closeActivity(id, session.user.id);
+  }
+
+  @Patch(':id/inProgress')
+  async inProgressActivity(
+    @Param('id') id: string,
+    @Session() session: UserSession,
+  ) {
+    return this.activitiesService.setInProgress(id, session.user.id);
   }
 }
