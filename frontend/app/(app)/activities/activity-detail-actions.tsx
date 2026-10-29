@@ -1,29 +1,98 @@
 "use client";
 
-import { DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import {
-  ActivityActionsMenu,
-  useActivityActions,
+  CircleOffIcon,
+  EllipsisVerticalIcon,
+  LoaderCircleIcon,
+  PencilIcon,
+  Trash2Icon,
+} from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  ACTIVITY_STATUSES_ALLOW_CLOSE,
+  ACTIVITY_STATUSES_ALLOW_EDIT,
+  ACTIVITY_STATUSES_ALLOW_INPROGRESS,
+  CloseActivityDialog,
+  DeleteActivityDialog,
+  SetInProgressActivityDialog,
   type ActivityRef,
-} from "./activity-actions";
+} from "./activity-dialogs";
 
 /** Actions on the activity's page, in a menu. */
 export function ActivityDetailActions({ activity }: { activity: ActivityRef }) {
-  const { items, dialogs } = useActivityActions(activity, {
-    placement: "detail",
-  });
+  const [dialog, setDialog] = useState<"setInProgress" | "close" | "delete">();
+  const href = `/activities/${encodeURIComponent(activity.id)}`;
+  const closeDialog = () => setDialog(undefined);
 
   return (
-    <ActivityActionsMenu
-      activity={activity}
-      variant="outline"
-      dialogs={dialogs}
-    >
-      {items.edit}
-      {items.setInProgress}
-      {items.close}
-      <DropdownMenuSeparator />
-      {items.delete}
-    </ActivityActionsMenu>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          render={
+            <Button
+              variant="outline"
+              size="icon-sm"
+              aria-label={`Actions for ${activity.name}`}
+            />
+          }
+        >
+          <EllipsisVerticalIcon />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          {ACTIVITY_STATUSES_ALLOW_EDIT.includes(activity.status) && (
+            <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
+              <PencilIcon />
+              Edit
+            </DropdownMenuItem>
+          )}
+          {ACTIVITY_STATUSES_ALLOW_INPROGRESS.includes(activity.status) && (
+            <DropdownMenuItem onClick={() => setDialog("setInProgress")}>
+              <LoaderCircleIcon />
+              Set in progress
+            </DropdownMenuItem>
+          )}
+          {ACTIVITY_STATUSES_ALLOW_CLOSE.includes(activity.status) && (
+            <DropdownMenuItem onClick={() => setDialog("close")}>
+              <CircleOffIcon />
+              Close
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            variant="destructive"
+            onClick={() => setDialog("delete")}
+          >
+            <Trash2Icon />
+            Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      {/* Outside the menu, which closes when an item is clicked. */}
+      {dialog === "setInProgress" && (
+        <SetInProgressActivityDialog
+          activity={activity}
+          onClose={closeDialog}
+        />
+      )}
+      {dialog === "close" && (
+        <CloseActivityDialog activity={activity} onClose={closeDialog} />
+      )}
+      {dialog === "delete" && (
+        <DeleteActivityDialog
+          activity={activity}
+          then="list"
+          onClose={closeDialog}
+        />
+      )}
+    </>
   );
 }
