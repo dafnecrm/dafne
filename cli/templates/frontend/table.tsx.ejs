@@ -14,7 +14,7 @@ import {
 import { describeFilters, type TableParams } from "@/lib/data-table";
 import type { Listed<%= s.pascal %> } from "@/lib/<%= p.kebab %>";
 import { <%= p.camel %>Table } from "@/lib/<%= p.kebab %>-table";
-import { <%= s.pascal %>Actions } from "./[id]/<%= s.kebab %>-actions";
+import { <%= s.pascal %>TableActions } from "./<%= s.kebab %>-table-actions";
 
 /*
  * Columns of the <%= p.lower %> table. Column ids double as the backend's
@@ -48,7 +48,7 @@ const <%= s.camel %>Columns = col.columns([
 
 // Module scope, so the table sees the same function on every render.
 const <%= s.camel %>Actions = (<%= s.camel %>: Listed<%= s.pascal %>) => (
-  <<%= s.pascal %>Actions <%= s.camel %>={<%= s.camel %>} placement="table" />
+  <<%= s.pascal %>TableActions <%= s.camel %>={<%= s.camel %>} />
 );
 
 const getRowId = (<%= s.camel %>: Listed<%= s.pascal %>) => <%= s.camel %>.id;

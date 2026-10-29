@@ -12,7 +12,7 @@ import {
 } from "@/components/page-content";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { <%= s.pascal %>Actions } from "./<%= s.kebab %>-actions";
+import { <%= s.pascal %>DetailActions } from "../<%= s.kebab %>-detail-actions";
 import { <%= s.pascal %>Details } from "../<%= s.kebab %>-detail";
 import { load<%= s.pascal %> } from "./load-<%= s.kebab %>";
 
@@ -50,7 +50,7 @@ async function <%= s.pascal %>Profile({
             <ArrowLeftIcon data-icon="inline-start" />
             All <%= p.lower %>
           </Button>
-          <<%= s.pascal %>Actions <%= s.camel %>={<%= s.camel %>} />
+          <<%= s.pascal %>DetailActions <%= s.camel %>={<%= s.camel %>} />
         </PageContentAction>
       </PageContentHeader>
       <PageContentBody>

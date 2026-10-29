@@ -29,15 +29,15 @@ export const frontendPieces: Record<string, Piece> = {
     },
   },
   actions: {
-    description: 'Server actions (save, delete), form schema and the actions menu ([id]/<singular>-actions.tsx)',
+    description: 'Server actions (save, delete), form schema and the delete confirmation (<singular>-actions.tsx)',
     deps: ['data'],
     marker: (n) => `${routeDir(n)}/actions.ts`,
     generate(ctx) {
       const dir = routeDir(ctx.names);
       create(ctx, `${dir}/actions.ts`, 'actions.ts');
       create(ctx, `${dir}/schema.ts`, 'schema.ts');
-      // The actions menu (Edit, Delete) of the table rows and the detail page.
-      create(ctx, `${dir}/[id]/${ctx.names.s.kebab}-actions.tsx`, 'record-actions.tsx');
+      // The delete confirmation, shared by the table's and the detail page's menus.
+      create(ctx, `${dir}/${ctx.names.s.kebab}-actions.tsx`, 'actions-dialogs.tsx');
     },
   },
   table: {
@@ -48,8 +48,8 @@ export const frontendPieces: Record<string, Piece> = {
       const { s, p } = ctx.names;
       const dir = routeDir(ctx.names);
       create(ctx, `${dir}/page.tsx`, 'page.tsx');
-      // Table, columns and row actions, in one file.
       create(ctx, `${dir}/${p.kebab}-table.tsx`, 'table.tsx');
+      create(ctx, `${dir}/${s.kebab}-table-actions.tsx`, 'table-actions.tsx');
     },
   },
   detail: {
@@ -59,6 +59,7 @@ export const frontendPieces: Record<string, Piece> = {
     generate(ctx) {
       const dir = `${routeDir(ctx.names)}/[id]`;
       create(ctx, `${routeDir(ctx.names)}/${ctx.names.s.kebab}-detail.tsx`, 'detail.tsx');
+      create(ctx, `${routeDir(ctx.names)}/${ctx.names.s.kebab}-detail-actions.tsx`, 'detail-actions.tsx');
       create(ctx, `${dir}/page.tsx`, 'detail-page.tsx');
       create(ctx, `${dir}/load-${ctx.names.s.kebab}.ts`, 'load.ts');
     },
