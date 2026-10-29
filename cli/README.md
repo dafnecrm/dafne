@@ -43,8 +43,9 @@ Frontend:
 - `app/(app)/<plural>/`: list, detail, new and edit pages, table
   (`<plural>-table.tsx`: table and columns), the action menus
   (`<singular>-table-actions.tsx` for the rows,
-  `<singular>-detail-actions.tsx` for the detail page) and their shared
-  confirmations (`<singular>-actions.tsx`), form (`<singular>-form.tsx`),
+  `<singular>-detail-actions.tsx` for the detail page) and what they share
+  (`<singular>-actions.tsx`: `use<Singular>Actions` gives the menu items and
+  the confirmations, `CONFIRMED_ACTIONS` lists the actions to confirm, each with where it goes after, in the table and on the detail page: `then: { table: "refresh", detail: "list" }`), form (`<singular>-form.tsx`),
   detail (`<singular>-detail.tsx`), server actions (`actions.ts`).
 
 Each resource starts with one `name` field. It has soft delete and

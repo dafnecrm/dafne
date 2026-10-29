@@ -36,8 +36,8 @@ export const frontendPieces: Record<string, Piece> = {
       const dir = routeDir(ctx.names);
       create(ctx, `${dir}/actions.ts`, 'actions.ts');
       create(ctx, `${dir}/schema.ts`, 'schema.ts');
-      // The delete confirmation, shared by the table's and the detail page's menus.
-      create(ctx, `${dir}/${ctx.names.s.kebab}-actions.tsx`, 'actions-dialogs.tsx');
+      // Menu items and confirmations, shared by the table's and the detail page's menus.
+      create(ctx, `${dir}/${ctx.names.s.kebab}-actions.tsx`, 'shared-actions.tsx');
     },
   },
   table: {
