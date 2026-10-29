@@ -5,6 +5,7 @@ import type {
   ActivityStatus,
 } from "@backend/contracts";
 import { defineDataTable } from "./data-table";
+import { CircleIcon, CircleOffIcon, LoaderCircleIcon, LucideIcon } from "lucide-react";
 
 /** Labels of the type values. */
 export const ACTIVITY_TYPE_OPTIONS = [
@@ -14,10 +15,10 @@ export const ACTIVITY_TYPE_OPTIONS = [
 
 /** Labels of the status values. */
 export const ACTIVITY_STATUS_OPTIONS = [
-  { value: "open", label: "Open" },
-  { value: "in_progress", label: "In progress" },
-  { value: "closed", label: "Closed" },
-] satisfies { value: ActivityStatus; label: string }[];
+  { value: "open", label: "Open", icon: CircleIcon },
+  { value: "in_progress", label: "In progress", icon: LoaderCircleIcon },
+  { value: "closed", label: "Closed", icon: CircleOffIcon },
+] satisfies { value: ActivityStatus; label: string, icon: LucideIcon }[];
 
 /**
  * The activities table: plain data with no server-only imports (unlike

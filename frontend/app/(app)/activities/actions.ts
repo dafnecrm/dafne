@@ -71,7 +71,22 @@ export async function deleteActivity(id: string): Promise<ActionError | null> {
 export async function closeActivity(id: string): Promise<ActionError | null> {
   try {
     await backendFetch(`/activities/${encodeURIComponent(id)}/close`, {
-      method: "POST",
+      method: "PATCH",
+    });
+    return null;
+  } catch (error) {
+    return { error: errorMessage(error) };
+  }
+}
+
+/**
+ * Reopen an activity. The
+ * caller refreshes or leaves the page. Returns an error message when it fails.
+ */
+export async function reopenActivity(id: string): Promise<ActionError | null> {
+  try {
+    await backendFetch(`/activities/${encodeURIComponent(id)}/inProgress`, {
+      method: "PATCH",
     });
     return null;
   } catch (error) {

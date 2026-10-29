@@ -22,6 +22,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { describeFilters, type TableParams } from "@/lib/data-table";
+import { Badge } from "@/components/ui/badge";
 
 /*
  * Columns of the activities table. Column ids double as the backend's
@@ -57,9 +58,18 @@ const activityColumns = col.columns([
   }),
   col.accessor("status", {
     header: "Status",
-    cell: (info) =>
-      ACTIVITY_STATUS_OPTIONS.find((o) => o.value === info.getValue())?.label ??
-      "—",
+    cell: (info) => {
+      const status = ACTIVITY_STATUS_OPTIONS.find((o) => o.value === info.getValue());
+      if (!status) return "—";
+      // A component, not an element: render it with a capitalized name.
+      const Icon = status.icon;
+      return (
+        <Badge variant="outline">
+          <Icon className="size-4 text-muted-foreground" />
+          {status.label}
+        </Badge>
+      );
+    }
   }),
   col.accessor("createdAt", {
     header: "Added",
