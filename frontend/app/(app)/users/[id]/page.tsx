@@ -11,6 +11,7 @@ import {
   PageContentHeader,
   PageContentTitle,
 } from "@/components/page-content";
+import { BreadcrumbLabel } from "@/components/page-breadcrumb";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -58,6 +59,10 @@ async function UserProfile({
 
   return (
     <PageContent>
+      <BreadcrumbLabel
+        href={`/users/${encodeURIComponent(user.id)}`}
+        label={user.name}
+      />
       <PageContentHeader>
         <div className="flex items-center gap-3">
           <Avatar size="lg">

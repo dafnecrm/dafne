@@ -9,6 +9,7 @@ import {
   PageContentHeader,
   PageContentTitle,
 } from "@/components/page-content";
+import { BreadcrumbLabel } from "@/components/page-breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ActivityDetails } from "../activity-detail";
@@ -36,6 +37,10 @@ async function ActivityProfile({
 
   return (
     <PageContent>
+      <BreadcrumbLabel
+        href={`/activities/${encodeURIComponent(activity.id)}`}
+        label={activity.name}
+      />
       <PageContentHeader>
         <PageContentTitle>{activity.name}</PageContentTitle>
         <PageContentAction className="flex flex-wrap justify-end gap-2">

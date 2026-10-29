@@ -7,6 +7,7 @@ import {
   PageContentHeader,
   PageContentTitle,
 } from "@/components/page-content";
+import { BreadcrumbLabel } from "@/components/page-breadcrumb";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CustomerForm } from "../../customer-form";
 import { loadCustomer } from "../load-customer";
@@ -30,6 +31,10 @@ async function EditCustomer({
 
   return (
     <PageContent>
+      <BreadcrumbLabel
+        href={`/customers/${encodeURIComponent(customer.id)}`}
+        label={customer.name}
+      />
       <PageContentHeader>
         <PageContentTitle>Edit {customer.name}</PageContentTitle>
         <PageContentDescription>

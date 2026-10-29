@@ -7,6 +7,7 @@ import {
   PageContentHeader,
   PageContentTitle,
 } from "@/components/page-content";
+import { BreadcrumbLabel } from "@/components/page-breadcrumb";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ActivityForm } from "../../activity-form";
 import { loadActivity } from "../load-activity";
@@ -30,6 +31,10 @@ async function EditActivity({
 
   return (
     <PageContent>
+      <BreadcrumbLabel
+        href={`/activities/${encodeURIComponent(activity.id)}`}
+        label={activity.name}
+      />
       <PageContentHeader>
         <PageContentTitle>Edit {activity.name}</PageContentTitle>
         <PageContentDescription>

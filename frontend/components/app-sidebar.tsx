@@ -10,14 +10,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense, type ReactNode } from "react";
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
@@ -183,39 +175,5 @@ function NavSection({
         </CollapsibleContent>
       ) : null}
     </Collapsible>
-  );
-}
-
-/**
- * Breadcrumb for the current page: section › page. Streams in behind a
- * Suspense boundary, since the URL isn't known when prerendering dynamic
- * routes.
- */
-export function PageBreadcrumb() {
-  return (
-    <Suspense fallback={null}>
-      <ActiveBreadcrumb />
-    </Suspense>
-  );
-}
-
-function ActiveBreadcrumb() {
-  const active = findNavItem(usePathname());
-  if (!active) return null;
-
-  return (
-    <Breadcrumb>
-      <BreadcrumbList>
-        <BreadcrumbItem className="hidden md:block">
-          <BreadcrumbLink render={<Link href={active.section.href} />}>
-            {active.section.title}
-          </BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbSeparator className="hidden md:block" />
-        <BreadcrumbItem>
-          <BreadcrumbPage>{active.item.title}</BreadcrumbPage>
-        </BreadcrumbItem>
-      </BreadcrumbList>
-    </Breadcrumb>
   );
 }

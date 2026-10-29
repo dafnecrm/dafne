@@ -9,6 +9,7 @@ import {
   PageContentHeader,
   PageContentTitle,
 } from "@/components/page-content";
+import { BreadcrumbLabel } from "@/components/page-breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CustomerDetails } from "../customer-detail";
@@ -34,6 +35,10 @@ async function CustomerProfile({
 
   return (
     <PageContent>
+      <BreadcrumbLabel
+        href={`/customers/${encodeURIComponent(customer.id)}`}
+        label={customer.name}
+      />
       <PageContentHeader>
         <PageContentTitle>{customer.name}</PageContentTitle>
         <PageContentAction className="flex flex-wrap justify-end gap-2">
