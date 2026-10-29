@@ -3,6 +3,16 @@
 import { Trash2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -15,67 +25,62 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { delete<%= s.pascal %> } from "./actions";
 
+type Deleted<%= s.pascal %> = { id: string; name: string };
+
 /**
- * Delete button that asks for confirmation in a popover. After deleting,
- * goes back to the list (`then="list"`) or refreshes the current one
- * (`then="refresh"`). `iconOnly` fits a table row.
+ * Deletes <%= s.a %>, then goes back to the list (`then="list"`) or
+ * refreshes the current page (`then="refresh"`). `done` runs on success,
+ * e.g. to close the confirmation.
  */
-export function Delete<%= s.pascal %>Button({
-  <%= s.camel %>,
-  then,
-  iconOnly,
-}: {
-  <%= s.camel %>: { id: string; name: string };
-  then: "list" | "refresh";
-  iconOnly?: boolean;
-}) {
+function useDelete<%= s.pascal %>(<%= s.camel %>: Deleted<%= s.pascal %>, then: "list" | "refresh") {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
   const [error, setError] = useState<string>();
   const [pending, startTransition] = useTransition();
 
-  const confirm = () =>
+  const confirm = (done: () => void) =>
     startTransition(async () => {
       const result = await delete<%= s.pascal %>(<%= s.camel %>.id);
       if (result) {
         setError(result.error);
         return;
       }
-      setOpen(false);
+      done();
       if (then === "list") router.replace("/<%= p.kebab %>");
       else router.refresh();
     });
+
+  return { error, pending, confirm, clearError: () => setError(undefined) };
+}
+
+const description = "The <%= s.lower %> will no longer be listed or editable.";
+
+/** Delete button that asks for confirmation in a popover (detail page). */
+export function Delete<%= s.pascal %>Button({
+  <%= s.camel %>,
+  then,
+}: {
+  <%= s.camel %>: Deleted<%= s.pascal %>;
+  then: "list" | "refresh";
+}) {
+  const [open, setOpen] = useState(false);
+  const { error, pending, confirm, clearError } = useDelete<%= s.pascal %>(<%= s.camel %>, then);
 
   return (
     <Popover
       open={open}
       onOpenChange={(next) => {
         setOpen(next);
-        if (next) setError(undefined);
+        if (next) clearError();
       }}
     >
-      <PopoverTrigger
-        render={
-          iconOnly ? (
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label={`Delete ${<%= s.camel %>.name}`}
-            />
-          ) : (
-            <Button variant="destructive" size="sm" />
-          )
-        }
-      >
-        <Trash2Icon data-icon={iconOnly ? undefined : "inline-start"} />
-        {!iconOnly && "Delete"}
+      <PopoverTrigger render={<Button variant="destructive" size="sm" />}>
+        <Trash2Icon data-icon="inline-start" />
+        Delete
       </PopoverTrigger>
       <PopoverContent align="end">
         <PopoverHeader>
           <PopoverTitle>Delete {<%= s.camel %>.name}?</PopoverTitle>
-          <PopoverDescription>
-            The <%= s.lower %> will no longer be listed or editable.
-          </PopoverDescription>
+          <PopoverDescription>{description}</PopoverDescription>
         </PopoverHeader>
         {error && (
           <p role="alert" className="text-sm text-destructive">
@@ -95,7 +100,7 @@ export function Delete<%= s.pascal %>Button({
             variant="destructive"
             size="sm"
             disabled={pending}
-            onClick={confirm}
+            onClick={() => confirm(() => setOpen(false))}
           >
             {pending && <Spinner data-icon="inline-start" />}
             Delete
@@ -103,5 +108,55 @@ export function Delete<%= s.pascal %>Button({
         </div>
       </PopoverContent>
     </Popover>
+  );
+}
+
+/**
+ * Confirmation for deleting from a menu (the table's row actions): the menu
+ * item opens it, since a popover would close with the menu. Refreshes the
+ * list after deleting.
+ */
+export function Delete<%= s.pascal %>Dialog({
+  <%= s.camel %>,
+  open,
+  onOpenChange,
+}: {
+  <%= s.camel %>: Deleted<%= s.pascal %>;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const { error, pending, confirm, clearError } = useDelete<%= s.pascal %>(<%= s.camel %>, "refresh");
+
+  return (
+    <AlertDialog
+      open={open}
+      onOpenChange={(next) => {
+        onOpenChange(next);
+        if (next) clearError();
+      }}
+    >
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete {<%= s.camel %>.name}?</AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
+        </AlertDialogHeader>
+        {error && (
+          <p role="alert" className="text-sm text-destructive">
+            {error}
+          </p>
+        )}
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            variant="destructive"
+            disabled={pending}
+            onClick={() => confirm(() => onOpenChange(false))}
+          >
+            {pending && <Spinner data-icon="inline-start" />}
+            Delete
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
