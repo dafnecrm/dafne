@@ -40,7 +40,8 @@ Backend:
 
 Frontend:
 - `lib/<plural>.ts` and `lib/<plural>-table.ts`.
-- `app/(app)/<plural>/`: list, detail, new and edit pages, form, actions.
+- `app/(app)/<plural>/`: list, detail, new and edit pages, form
+  (`<singular>-form.tsx`), detail (`<singular>-detail.tsx`), actions.
 
 Each resource starts with one `name` field. It has soft delete and
 created/updated by, as customers do.
@@ -184,7 +185,7 @@ field left the contract are reported, not removed.
 
 ```sh
 dafne sync list activities      # lib/<plural>-table.ts and columns.tsx
-dafne sync detail activities    # [id]/page.tsx
+dafne sync detail activities    # <singular>-detail.tsx
 ```
 
 Both work like `sync form`. They read `Listed<S>`, `<S>Detail` and the
@@ -200,7 +201,10 @@ whose field left the contract are reported, not removed.
   - in `columns.tsx`: a column per listed field, before "Added". `id`,
     `updatedAt` and foreign key ids are never added. Fields that aren't
     sortable get `enableSorting: false`.
-- **`sync detail`:** a `<Detail>` per field the page doesn't read
+- **`sync detail`:** in `<singular>-detail.tsx`, the detail sections. The
+  `[id]/page.tsx` page loads the record and keeps `PageContent` (title,
+  actions); what it shows, like the name, isn't added again. It adds a `<Detail>` per field
+  the page doesn't read
   (`activity.<field>`), in a "Details" section. The section is created
   before "Record" if missing.
 

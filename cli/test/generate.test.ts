@@ -56,6 +56,7 @@ describe('a fullstack resource', () => {
         'frontend/lib/invoices-table.ts',
         'frontend/app/(app)/invoices/[id]/edit/page.tsx',
         'frontend/app/(app)/invoices/invoice-form.tsx',
+        'frontend/app/(app)/invoices/invoice-detail.tsx',
       ]),
     );
     expect(read('backend/libs/invoices/src/invoices.controller.ts')).toContain(

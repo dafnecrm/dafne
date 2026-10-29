@@ -53,11 +53,12 @@ export const frontendPieces: Record<string, Piece> = {
     },
   },
   detail: {
-    description: 'Detail page ([id]) and its loader',
+    description: 'Detail page ([id]), its loader and the <singular>-detail component',
     deps: ['data', 'actions'],
     marker: (n) => `${routeDir(n)}/[id]/page.tsx`,
     generate(ctx) {
       const dir = `${routeDir(ctx.names)}/[id]`;
+      create(ctx, `${routeDir(ctx.names)}/${ctx.names.s.kebab}-detail.tsx`, 'detail.tsx');
       create(ctx, `${dir}/page.tsx`, 'detail-page.tsx');
       create(ctx, `${dir}/load-${ctx.names.s.kebab}.ts`, 'load.ts');
     },

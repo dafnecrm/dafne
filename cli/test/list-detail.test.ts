@@ -80,8 +80,16 @@ describe('syncColumns', () => {
 });
 
 describe('syncDetail', () => {
+  it("doesn't add what the page shows (the title)", () => {
+    const page = render('frontend/detail-page.tsx', view);
+    const { content } = syncDetail('d.tsx', render('frontend/detail.tsx', view), names, info(), [page]);
+    expect(content).not.toContain('label="Name"');
+    const alone = syncDetail('d.tsx', render('frontend/detail.tsx', view), names, info()).content;
+    expect(alone).toContain('label="Name"');
+  });
+
   it('adds a Details section before Record with the missing fields', () => {
-    const { content } = syncDetail('p.tsx', render('frontend/detail-page.tsx', view), names, info());
+    const { content } = syncDetail('p.tsx', render('frontend/detail.tsx', view), names, info());
     expect(content.indexOf('title="Details"')).toBeLessThan(content.indexOf('title="Record"'));
     expect(content).toMatch(/<Detail icon=\{TagIcon\} label="Type">/);
     expect(content).toMatch(/<Detail icon=\{TextIcon\} label="Notes">\s*\{activity\.notes \?\? "—"\}/);
@@ -91,7 +99,7 @@ describe('syncDetail', () => {
   });
 
   it('adds to an existing Details section and skips fields the page reads', () => {
-    const source = render('frontend/detail-page.tsx', view).replace(
+    const source = render('frontend/detail.tsx', view).replace(
       '<DetailSection title="Record">',
       '<DetailSection title="Details">\n          <p>{activity.type}</p>\n        </DetailSection>\n        <DetailSection title="Record">',
     );

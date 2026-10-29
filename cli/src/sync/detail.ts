@@ -71,7 +71,17 @@ function indentAt(file: SourceFile, pos: number) {
   return /^[ \t]*/.exec(text.slice(text.lastIndexOf('\n', pos - 1) + 1))![0];
 }
 
-export function syncDetail(path: string, source: string, names: ResourceNames, info: ResponseInfo): { content: string; report: Report } {
+/**
+ * `alsoShownIn`: other files that show the record, e.g. the [id] page with
+ * the title (`activity.name`); what they read isn't added again.
+ */
+export function syncDetail(
+  path: string,
+  source: string,
+  names: ResourceNames,
+  info: ResponseInfo,
+  alsoShownIn: string[] = [],
+): { content: string; report: Report } {
   const report: Report = { added: [], stale: [], warnings: [] };
   const record = names.s.camel;
   const ignored = ignoredKeys(source);
@@ -80,7 +90,9 @@ export function syncDetail(path: string, source: string, names: ResourceNames, i
     return { content: source, report };
   }
   const shown = (text: string, key: string) => new RegExp(`\\b${record}\\??\\.${key}\\b`).test(text);
-  const missing = info.fields.filter((f) => !NOT_SHOWN.has(f.key) && !ignored.has(f.key) && !shown(source, f.key));
+  const missing = info.fields.filter(
+    (f) => !NOT_SHOWN.has(f.key) && !ignored.has(f.key) && ![source, ...alsoShownIn].some((text) => shown(text, f.key)),
+  );
 
   const content = editSource(path, source, (file) => {
     for (const field of missing) {

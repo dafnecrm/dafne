@@ -200,8 +200,8 @@ It's still added to the values type and the defaults (the form sends it).`,
     ],
     [
       'detail',
-      'Add the contract fields the detail page ([id]/page.tsx) lacks, in its "Details" section',
-      (n: ResourceNames) => [detailFile(n)],
+      'Add the contract fields the detail page lacks (<singular>-detail.tsx, or [id]/page.tsx), in its "Details" section',
+      (n: ResourceNames) => [detailFiles(n).page],
       syncDetailPage,
     ],
   ] as const)
@@ -257,7 +257,15 @@ const listFiles = ({ p }: ResourceNames) => ({
   table: `${FRONTEND}/lib/${p.kebab}-table.ts`,
   columns: `${FRONTEND}/app/(app)/${p.kebab}/columns.tsx`,
 });
-const detailFile = ({ p }: ResourceNames) => `${FRONTEND}/app/(app)/${p.kebab}/[id]/page.tsx`;
+/** The <singular>-detail component; older resources have it in [id]/page.tsx. */
+const detailFiles = ({ s, p }: ResourceNames) => ({
+  component: `${FRONTEND}/app/(app)/${p.kebab}/${s.kebab}-detail.tsx`,
+  page: `${FRONTEND}/app/(app)/${p.kebab}/[id]/page.tsx`,
+});
+const detailFile = (names: ResourceNames, changes?: Changes) => {
+  const { component, page } = detailFiles(names);
+  return !changes || changes.exists(component) ? component : page;
+};
 
 /** The contract's response fields, with the table for date kinds. */
 function response(changes: Changes, names: ResourceNames) {
@@ -297,8 +305,15 @@ export function syncList(changes: Changes, name: string): [string, FormReport][]
 export function syncDetailPage(changes: Changes, name: string): [string, FormReport][] {
   const names = resourceNames(name);
   const info = response(changes, names);
-  const path = detailFile(names);
-  return [applyFrontend(changes, path, `dafne g frontend detail ${names.p.kebab}`, (source) => syncDetail(path, source, names, info))];
+  const path = detailFile(names, changes);
+  const { page } = detailFiles(names);
+  // The page shows the title and the actions: what it reads counts too.
+  const pageSource = path !== page ? changes.read(page) : undefined;
+  return [
+    applyFrontend(changes, path, `dafne g frontend detail ${names.p.kebab}`, (source) =>
+      syncDetail(path, source, names, info, pageSource ? [pageSource] : []),
+    ),
+  ];
 }
 
 const formFiles = ({ s, p }: ResourceNames) => {
