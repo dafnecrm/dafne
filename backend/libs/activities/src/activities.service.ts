@@ -55,6 +55,7 @@ export class ActivitiesService {
           name: activity.name,
           type: activity.type,
           completedAt: activity.completedAt,
+          completedById: activity.completedById,
           status: activity.status,
           createdAt: activity.createdAt,
           updatedAt: activity.updatedAt,
@@ -138,6 +139,17 @@ export class ActivitiesService {
     const [result] = await this.database.db
       .update(activity)
       .set({ deletedAt: now, updatedAt: now, updatedById: userId })
+      .where(and(eq(activity.id, id), notDeleted));
+    if (result.affectedRows === 0)
+      throw new NotFoundException('Activity not found');
+  }
+  
+  /** Completes an activity */
+  async closeActivity(id: string, userId: string) {
+    const now = new Date();
+    const [result] = await this.database.db
+      .update(activity)
+      .set({ status: 'closed', completedAt: now, completedById: userId })
       .where(and(eq(activity.id, id), notDeleted));
     if (result.affectedRows === 0)
       throw new NotFoundException('Activity not found');

@@ -24,6 +24,11 @@ export const activity = mysqlTable(
       .default('open'),
     /** @api readonly */
     completedAt: timestamp('completed_at', { fsp: 3 }),
+    /** @api readonly */
+    completedById: varchar('completed_by_id', { length: 36 }).references(
+      () => user.id,
+      { onDelete: 'set null' },
+    ),
     createdAt: timestamp('created_at', { fsp: 3 }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { fsp: 3 })
       .defaultNow()
@@ -43,6 +48,7 @@ export const activity = mysqlTable(
   (table) => [
     index('activity_deletedAt_idx').on(table.deletedAt),
     index('activity_name_idx').on(table.name),
+    index('activity_completedById_idx').on(table.completedById),
   ],
 );
 
@@ -59,6 +65,18 @@ export const activityRelations = defineRelationsPart(
         from: r.activity.updatedById,
         to: r.user.id,
         alias: 'activityUpdatedBy',
+      }),
+      completedBy: r.one.user({
+        from: r.activity.completedById,
+        to: r.user.id,
+        alias: 'activityCompletedBy',
+      }),
+    },
+    user: {
+      activities: r.many.activity({
+        from: r.user.id,
+        to: r.activity.completedById,
+        alias: 'activityCompletedBy',
       }),
     },
   }),

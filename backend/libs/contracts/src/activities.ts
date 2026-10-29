@@ -70,6 +70,7 @@ export interface ListedActivity {
   type: ActivityType;
   completedAt: Date | null;
   status: ActivityStatus;
+  completedById: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -67,4 +67,12 @@ export class ActivitiesController {
   ): Promise<void> {
     await this.activitiesService.deleteActivity(id, session.user.id);
   }
+
+  @Post(':id/close')
+  async completeActivity(
+    @Param('id') id: string,
+    @Session() session: UserSession,
+  ) {
+    return this.activitiesService.closeActivity(id, session.user.id);
+  }
 }
