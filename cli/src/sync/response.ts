@@ -5,7 +5,7 @@ import type { TableInfo } from './table.js';
 
 /*
  * The response fields of a contract (Listed<S> and <S>Detail), for the
- * list and detail pages. Shared by `sync list` and `sync detail`.
+ * list and detail pages. Shared by `sync table` and `sync detail`.
  */
 
 export type ResponseKind = 'text' | 'id' | 'number' | 'boolean' | 'date' | 'datetime' | 'enum';

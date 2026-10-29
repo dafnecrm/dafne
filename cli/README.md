@@ -40,7 +40,8 @@ Backend:
 
 Frontend:
 - `lib/<plural>.ts` and `lib/<plural>-table.ts`.
-- `app/(app)/<plural>/`: list, detail, new and edit pages, form
+- `app/(app)/<plural>/`: list, detail, new and edit pages, table
+  (`<plural>-table.tsx`: table, columns, row actions), form
   (`<singular>-form.tsx`), detail (`<singular>-detail.tsx`), actions.
 
 Each resource starts with one `name` field. It has soft delete and
@@ -181,10 +182,10 @@ sends without an input, add `{/* dafne-ignore: customerId */}` to the form.
 The field still gets its value type and default. Inputs and defaults whose
 field left the contract are reported, not removed.
 
-## Syncing a list and a detail page with the contract
+## Syncing a table and a detail page with the contract
 
 ```sh
-dafne sync list activities      # lib/<plural>-table.ts and columns.tsx
+dafne sync table activities     # lib/<plural>-table.ts and <plural>-table.tsx
 dafne sync detail activities    # <singular>-detail.tsx
 ```
 
@@ -193,12 +194,13 @@ sort/filter fields of the contract and only add what's missing. A field
 counts as present when the file already uses it, wherever it is. Things
 whose field left the contract are reported, not removed.
 
-- **`sync list`:**
+- **`sync table`:**
   - in `lib/<plural>-table.ts`: sort fields in contract order, and filters
     (enum and boolean ones as pick-lists);
   - enum labels (`ACTIVITY_TYPE_OPTIONS`), shared with the columns and the
     detail page;
-  - in `columns.tsx`: a column per listed field, before "Added". `id`,
+  - in `app/(app)/<plural>/<plural>-table.tsx` (table, columns and row
+    actions in one file): a column per listed field, before "Added". `id`,
     `updatedAt` and foreign key ids are never added. Fields that aren't
     sortable get `enableSorting: false`.
 - **`sync detail`:** in `<singular>-detail.tsx`, the detail sections. The
@@ -211,7 +213,7 @@ whose field left the contract are reported, not removed.
 To keep a field out, write `{/* dafne-ignore: firstname, lastname */}` (or
 `// dafne-ignore: …` in a .ts file) in that file. Lists are often curated:
 the users list, for example, leaves out on purpose fields that
-`sync list users` would add.
+`sync table users` would add.
 
 ## Development
 

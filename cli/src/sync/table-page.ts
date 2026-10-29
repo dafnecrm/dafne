@@ -5,7 +5,7 @@ import type { FormReport as Report } from './form.js';
 import { enumOptionsName, ignoredKeys, optionLabel, type ResponseField, type ResponseInfo } from './response.js';
 
 /*
- * `sync list`: adds what the contract has and the list lacks, in
+ * `sync table`: adds what the contract has and the table lacks, in
  * lib/<plural>-table.ts (sort fields, filters, enum labels) and in
  * app/(app)/<plural>/columns.tsx (columns). Nothing that's there changes.
  */

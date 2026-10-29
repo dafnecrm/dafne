@@ -40,16 +40,15 @@ export const frontendPieces: Record<string, Piece> = {
     },
   },
   table: {
-    description: 'List page with filters, sorting, paging and row actions',
+    description: 'List page and <plural>-table.tsx (table, columns, row actions)',
     deps: ['data', 'actions'],
     marker: (n) => `${routeDir(n)}/page.tsx`,
     generate(ctx) {
       const { s, p } = ctx.names;
       const dir = routeDir(ctx.names);
       create(ctx, `${dir}/page.tsx`, 'page.tsx');
+      // Table, columns and row actions, in one file.
       create(ctx, `${dir}/${p.kebab}-table.tsx`, 'table.tsx');
-      create(ctx, `${dir}/columns.tsx`, 'columns.tsx');
-      create(ctx, `${dir}/${s.kebab}-actions.tsx`, 'row-actions.tsx');
     },
   },
   detail: {

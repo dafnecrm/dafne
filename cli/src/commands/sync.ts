@@ -14,7 +14,7 @@ import { BACKEND } from '../wiring/backend.js';
 import { FRONTEND } from '../wiring/frontend.js';
 import { syncDetail } from '../sync/detail.js';
 import { readBody, syncFormComponent, syncFormSchema, type FormReport } from '../sync/form.js';
-import { syncColumns, syncTableConfig } from '../sync/list.js';
+import { syncColumns, syncTableConfig } from '../sync/table-page.js';
 import { readResponse } from '../sync/response.js';
 
 interface SyncOptions {
@@ -193,10 +193,10 @@ It's still added to the values type and the defaults (the form sends it).`,
 
   for (const [command, description, files, run] of [
     [
-      'list',
-      'Add the contract fields the list lacks: sort fields, filters, enum labels (lib/<plural>-table.ts) and columns (columns.tsx)',
-      (n: ResourceNames) => [listFiles(n).table, listFiles(n).columns],
-      syncList,
+      'table',
+      'Add the contract fields the table lacks: sort fields, filters, enum labels (lib/<plural>-table.ts) and columns (app/(app)/<plural>/<plural>-table.tsx)',
+      (n: ResourceNames) => [tableFiles(n).table, tableFiles(n).columns],
+      syncTablePage,
     ],
     [
       'detail',
@@ -253,10 +253,15 @@ function printFrontendReports(reports: [string, FormReport][]) {
   }
 }
 
-const listFiles = ({ p }: ResourceNames) => ({
-  table: `${FRONTEND}/lib/${p.kebab}-table.ts`,
-  columns: `${FRONTEND}/app/(app)/${p.kebab}/columns.tsx`,
-});
+/** The columns are in <plural>-table.tsx; older resources have a columns.tsx. */
+const tableFiles = ({ p }: ResourceNames, changes?: Changes) => {
+  const dir = `${FRONTEND}/app/(app)/${p.kebab}`;
+  const legacy = `${dir}/columns.tsx`;
+  return {
+    table: `${FRONTEND}/lib/${p.kebab}-table.ts`,
+    columns: changes?.exists(legacy) ? legacy : `${dir}/${p.kebab}-table.tsx`,
+  };
+};
 /** The <singular>-detail component; older resources have it in [id]/page.tsx. */
 const detailFiles = ({ s, p }: ResourceNames) => ({
   component: `${FRONTEND}/app/(app)/${p.kebab}/${s.kebab}-detail.tsx`,
@@ -291,10 +296,10 @@ function applyFrontend(
   return [path, report];
 }
 
-export function syncList(changes: Changes, name: string): [string, FormReport][] {
+export function syncTablePage(changes: Changes, name: string): [string, FormReport][] {
   const names = resourceNames(name);
   const info = response(changes, names);
-  const files = listFiles(names);
+  const files = tableFiles(names, changes);
   const hint = `dafne g frontend table ${names.p.kebab}`;
   return [
     applyFrontend(changes, files.table, hint, (source) => syncTableConfig(files.table, source, names, info)),

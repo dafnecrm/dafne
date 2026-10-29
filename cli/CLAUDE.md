@@ -22,7 +22,7 @@ TypeScript ESM, Node ≥ 22, pnpm. `pnpm dev g ...` runs from source (tsx),
 - `src/sync/form.ts` is `dafne sync form`. It reads the contract body
   (`readBody`, which classifies each Zod expression) and adds what's
   missing to the form's `schema.ts` and `<singular>-form.tsx`.
-- `src/sync/list.ts` and `detail.ts` are `dafne sync list|detail`. They
+- `src/sync/table-page.ts` and `detail.ts` are `dafne sync table|detail`. They
   read the contract's response with `response.ts` (`readResponse`, plus
   `ignoredKeys` for `dafne-ignore`). The enum labels
   (`<S>_<FIELD>_OPTIONS`) live in `lib/<plural>-table.ts`: it's plain data

@@ -2,7 +2,7 @@ import { resourceNames } from '../src/core/names.js';
 import { render } from '../src/core/templates.js';
 import { syncContract } from '../src/sync/contract.js';
 import { syncDetail } from '../src/sync/detail.js';
-import { syncColumns, syncTableConfig } from '../src/sync/list.js';
+import { syncColumns, syncTableConfig } from '../src/sync/table-page.js';
 import { readResponse } from '../src/sync/response.js';
 import { readTable } from '../src/sync/table.js';
 
@@ -62,10 +62,10 @@ describe('syncTableConfig', () => {
 
 describe('syncColumns', () => {
   it('adds the listed fields before "Added", not ids or detail-only fields', () => {
-    const { content, report } = syncColumns('c.tsx', render('frontend/columns.tsx', view), names, info());
+    const { content, report } = syncColumns('c.tsx', render('frontend/table.tsx', view), names, info());
     expect(content.indexOf('col.accessor("type"')).toBeLessThan(content.indexOf('col.accessor("createdAt"'));
     expect(content).toContain('ACTIVITY_TYPE_OPTIONS.find((o) => o.value === info.getValue())?.label');
-    expect(content).toMatch(/import \{ ACTIVITY_TYPE_OPTIONS \} from "@\/lib\/activities-table"/);
+    expect(content).toMatch(/import \{[^}]*ACTIVITY_TYPE_OPTIONS[^}]*\} from "@\/lib\/activities-table"/);
     expect(content).toContain('cell: (info) => info.getValue() ?? "—"');
     expect(content).not.toContain('"notes"');
     expect(content).not.toContain('"customerId"');
@@ -74,7 +74,7 @@ describe('syncColumns', () => {
   });
 
   it('is idempotent', () => {
-    const once = syncColumns('c.tsx', render('frontend/columns.tsx', view), names, info()).content;
+    const once = syncColumns('c.tsx', render('frontend/table.tsx', view), names, info()).content;
     expect(syncColumns('c.tsx', once, names, info()).report.added).toEqual([]);
   });
 });
