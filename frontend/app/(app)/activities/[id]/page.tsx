@@ -1,19 +1,7 @@
-import {
-  ArrowLeftIcon,
-  CalendarPlusIcon,
-  FingerprintIcon,
-  HistoryIcon,
-  PencilIcon,
-  UserPenIcon,
-  UserPlusIcon,
-  TagIcon,
-} from "lucide-react";
+import { ArrowLeftIcon, PencilIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import CopyButton from "@/components/copy-button";
-import { Detail, DetailSection } from "@/components/detail";
-import { LocalDate } from "@/components/local-date";
 import {
   PageContent,
   PageContentAction,
@@ -23,10 +11,9 @@ import {
 } from "@/components/page-content";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { ActivityDetail } from "@/lib/activities";
+import { ActivityDetails } from "../activity-detail";
 import { DeleteActivityButton } from "../delete-activity-button";
 import { loadActivity } from "./load-activity";
-import { ACTIVITY_TYPE_OPTIONS } from "@/lib/activities-table";
 
 export const metadata: Metadata = { title: "Activity" };
 
@@ -35,19 +22,18 @@ export default function ActivityPage({
 }: PageProps<"/activities/[id]">) {
   return (
     <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-      <ActivityDetails params={params} />
+      <ActivityProfile params={params} />
     </Suspense>
   );
 }
 
-async function ActivityDetails({
+/** Loads the activity: its name and actions, then its details. */
+async function ActivityProfile({
   params,
 }: Pick<PageProps<"/activities/[id]">, "params">) {
-  return <ActivityProfile activity={await loadActivity((await params).id)} />;
-}
-
-function ActivityProfile({ activity }: { activity: ActivityDetail }) {
+  const activity = await loadActivity((await params).id);
   const editHref = `/activities/${encodeURIComponent(activity.id)}/edit`;
+
   return (
     <PageContent>
       <PageContentHeader>
@@ -74,32 +60,7 @@ function ActivityProfile({ activity }: { activity: ActivityDetail }) {
         </PageContentAction>
       </PageContentHeader>
       <PageContentBody>
-        <DetailSection title="Details">
-          <Detail icon={TagIcon} label="Type">
-            {ACTIVITY_TYPE_OPTIONS.find((o) => o.value === activity.type)
-              ?.label ?? "—"}
-          </Detail>
-        </DetailSection>
-        <DetailSection title="Record">
-          <Detail icon={FingerprintIcon} label="Activity ID">
-            <div className="flex items-center gap-2">
-              <code className="truncate font-mono text-xs">{activity.id}</code>
-              <CopyButton variant="ghost" value={activity.id} />
-            </div>
-          </Detail>
-          <Detail icon={CalendarPlusIcon} label="Created">
-            <LocalDate value={activity.createdAt} format="dateTime" />
-          </Detail>
-          <Detail icon={UserPlusIcon} label="Created by">
-            {activity.createdBy?.name ?? "—"}
-          </Detail>
-          <Detail icon={HistoryIcon} label="Updated">
-            <LocalDate value={activity.updatedAt} format="dateTime" />
-          </Detail>
-          <Detail icon={UserPenIcon} label="Updated by">
-            {activity.updatedBy?.name ?? "—"}
-          </Detail>
-        </DetailSection>
+        <ActivityDetails activity={activity} />
       </PageContentBody>
     </PageContent>
   );
