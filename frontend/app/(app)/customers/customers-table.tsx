@@ -1,7 +1,28 @@
 "use client";
 
-import { ContactIcon } from "lucide-react";
-import { DataTable } from "@/components/data-table";
+import Link from "next/link";
+import {
+  createDataTableColumnHelper,
+  DataTable,
+} from "@/components/data-table";
+import { LocalDate } from "@/components/local-date";
+import type { ListedCustomer } from "@/lib/customers";
+import {
+  CopyIcon,
+  EllipsisVerticalIcon,
+  PencilIcon,
+  UserRoundIcon,
+  ContactIcon,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { DeleteCustomerButton } from "./delete-customer-button";
 import {
   Empty,
   EmptyDescription,
@@ -10,10 +31,111 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { describeFilters, type TableParams } from "@/lib/data-table";
-import type { ListedCustomer } from "@/lib/customers";
 import { customersTable } from "@/lib/customers-table";
-import { customerActions } from "./customer-actions";
-import { customerColumns } from "./columns";
+
+/*
+ * Columns of the customers table. Column ids double as the backend's sort
+ * fields, so they must match customersTable.sortable in lib/customers-table.ts.
+ */
+
+const col = createDataTableColumnHelper<ListedCustomer>();
+
+const empty = <span className="text-muted-foreground">—</span>;
+
+// Module scope, so the table sees the same columns on every render.
+const customerColumns = col.columns([
+  col.accessor("name", {
+    header: "Name",
+    cell: ({ row }) => (
+      <Link
+        href={`/customers/${encodeURIComponent(row.original.id)}`}
+        className="font-medium underline-offset-4 hover:underline"
+      >
+        {row.original.name}
+      </Link>
+    ),
+  }),
+  col.accessor("email", {
+    header: "Email",
+    cell: (info) => {
+      const email = info.getValue();
+      return email ? (
+        <a
+          href={`mailto:${email}`}
+          className="underline-offset-4 hover:underline"
+        >
+          {email}
+        </a>
+      ) : (
+        empty
+      );
+    },
+  }),
+  col.accessor("phone", {
+    header: "Phone",
+    cell: (info) => {
+      const phone = info.getValue();
+      return phone ? (
+        <a href={`tel:${phone}`} className="underline-offset-4 hover:underline">
+          {phone}
+        </a>
+      ) : (
+        empty
+      );
+    },
+  }),
+  col.accessor("createdAt", {
+    header: "Added",
+    meta: { className: "text-right" },
+    cell: (info) => (
+      <LocalDate value={info.getValue()} className="text-muted-foreground" />
+    ),
+  }),
+]);
+
+/** Row actions of the customers table (DataTable `rowActions`). */
+function customerActions(customer: ListedCustomer) {
+  const href = `/customers/${encodeURIComponent(customer.id)}`;
+  return (
+    <>
+      <DeleteCustomerButton customer={customer} then="refresh" iconOnly />
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          render={
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label={`Actions for ${customer.name}`}
+            />
+          }
+        >
+          <EllipsisVerticalIcon />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem render={<Link href={href} />}>
+            <UserRoundIcon />
+            View details
+          </DropdownMenuItem>
+          <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
+            <PencilIcon />
+            Edit
+          </DropdownMenuItem>
+          {customer.email && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => navigator.clipboard.writeText(customer.email!)}
+              >
+                <CopyIcon />
+                Copy email
+              </DropdownMenuItem>
+            </>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </>
+  );
+}
 
 const getRowId = (customer: ListedCustomer) => customer.id;
 
