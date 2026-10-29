@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import {
   createDataTableColumnHelper,
   DataTable,
@@ -13,6 +14,7 @@ import {
   PencilIcon,
   UserRoundIcon,
   ContactIcon,
+  Trash2Icon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,7 +24,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DeleteCustomerButton } from "./delete-customer-button";
+import { DeleteCustomerDialog } from "./delete-customer-button";
 import {
   Empty,
   EmptyDescription,
@@ -93,12 +95,12 @@ const customerColumns = col.columns([
   }),
 ]);
 
-/** Row actions of the customers table (DataTable `rowActions`). */
-function customerActions(customer: ListedCustomer) {
+/** Row actions of the customers table: a menu, with Delete last. */
+function CustomerRowActions({ customer }: { customer: ListedCustomer }) {
+  const [deleting, setDeleting] = useState(false);
   const href = `/customers/${encodeURIComponent(customer.id)}`;
   return (
     <>
-      <DeleteCustomerButton customer={customer} then="refresh" iconOnly />
       <DropdownMenu>
         <DropdownMenuTrigger
           render={
@@ -131,11 +133,30 @@ function customerActions(customer: ListedCustomer) {
               </DropdownMenuItem>
             </>
           )}
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            variant="destructive"
+            onClick={() => setDeleting(true)}
+          >
+            <Trash2Icon />
+            Delete
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      {/* Outside the menu, which closes when the item is clicked. */}
+      <DeleteCustomerDialog
+        customer={customer}
+        open={deleting}
+        onOpenChange={setDeleting}
+      />
     </>
   );
 }
+
+// A component per row (it has state); module scope keeps it stable.
+const customerActions = (customer: ListedCustomer) => (
+  <CustomerRowActions customer={customer} />
+);
 
 const getRowId = (customer: ListedCustomer) => customer.id;
 

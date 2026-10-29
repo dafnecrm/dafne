@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import {
   createDataTableColumnHelper,
   DataTable,
@@ -17,15 +18,17 @@ import {
   EyeIcon,
   PencilIcon,
   FileIcon,
+  Trash2Icon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DeleteActivityButton } from "./delete-activity-button";
+import { DeleteActivityDialog } from "./delete-activity-button";
 import {
   Empty,
   EmptyDescription,
@@ -82,12 +85,12 @@ const activityColumns = col.columns([
   }),
 ]);
 
-/** Row actions of the activities table (DataTable `rowActions`). */
-function activityActions(activity: ListedActivity) {
+/** Row actions of the activities table: a menu, with Delete last. */
+function ActivityRowActions({ activity }: { activity: ListedActivity }) {
+  const [deleting, setDeleting] = useState(false);
   const href = `/activities/${encodeURIComponent(activity.id)}`;
   return (
     <>
-      <DeleteActivityButton activity={activity} then="refresh" iconOnly />
       <DropdownMenu>
         <DropdownMenuTrigger
           render={
@@ -109,11 +112,30 @@ function activityActions(activity: ListedActivity) {
             <PencilIcon />
             Edit
           </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            variant="destructive"
+            onClick={() => setDeleting(true)}
+          >
+            <Trash2Icon />
+            Delete
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      {/* Outside the menu, which closes when the item is clicked. */}
+      <DeleteActivityDialog
+        activity={activity}
+        open={deleting}
+        onOpenChange={setDeleting}
+      />
     </>
   );
 }
+
+// A component per row (it has state); module scope keeps it stable.
+const activityActions = (activity: ListedActivity) => (
+  <ActivityRowActions activity={activity} />
+);
 
 const getRowId = (activity: ListedActivity) => activity.id;
 
