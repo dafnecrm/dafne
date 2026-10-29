@@ -29,14 +29,15 @@ export const frontendPieces: Record<string, Piece> = {
     },
   },
   actions: {
-    description: 'Server actions (save, delete), form schema and delete button',
+    description: 'Server actions (save, delete), form schema and the actions menu ([id]/<singular>-actions.tsx)',
     deps: ['data'],
     marker: (n) => `${routeDir(n)}/actions.ts`,
     generate(ctx) {
       const dir = routeDir(ctx.names);
       create(ctx, `${dir}/actions.ts`, 'actions.ts');
       create(ctx, `${dir}/schema.ts`, 'schema.ts');
-      create(ctx, `${dir}/delete-${ctx.names.s.kebab}-button.tsx`, 'delete-button.tsx');
+      // The actions menu (Edit, Delete) of the table rows and the detail page.
+      create(ctx, `${dir}/[id]/${ctx.names.s.kebab}-actions.tsx`, 'record-actions.tsx');
     },
   },
   table: {

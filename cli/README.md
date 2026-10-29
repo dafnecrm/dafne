@@ -41,8 +41,10 @@ Backend:
 Frontend:
 - `lib/<plural>.ts` and `lib/<plural>-table.ts`.
 - `app/(app)/<plural>/`: list, detail, new and edit pages, table
-  (`<plural>-table.tsx`: table, columns, row actions), form
-  (`<singular>-form.tsx`), detail (`<singular>-detail.tsx`), actions.
+  (`<plural>-table.tsx`: table and columns), the actions menu
+  (`[id]/<singular>-actions.tsx`: Edit and Delete, used by the table rows and the
+  detail page), form (`<singular>-form.tsx`), detail
+  (`<singular>-detail.tsx`), server actions (`actions.ts`).
 
 Each resource starts with one `name` field. It has soft delete and
 created/updated by, as customers do.
@@ -130,7 +132,11 @@ dafne sync contract activities     # or --all; --dry-run to preview
 ```
 
 It updates `libs/contracts/src/<plural>.ts`: the body schema, sort and
-filter fields, list query and response types. It also updates the queries in
+filter fields, list query and response types. It adds new columns, drops
+the ones removed from the API and keeps hand-written validation. Members
+that aren't columns (e.g. `addresses`) are left alone.
+
+It also updates the queries in
 `libs/<plural>/src/<plural>.service.ts`; skip that with `--no-service`:
 - the list's `select({...})` gets the listed columns;
 - the detail's `findFirst({ columns })` leaves out (`key: false`) the
@@ -150,10 +156,9 @@ The sample bodies in the specs follow the body too:
 
 They get the new required fields, with a sample value, and lose the fields
 that left the body. Other unknown keys stay: they may be there on purpose,
-like the `deletedAt` the schema must reject. Assertions aren't changed. It adds new columns, drops
-the ones removed from the API and keeps hand-written validation. Members
-that aren't columns (e.g. `addresses`) are left alone. It doesn't touch the
-frontend: use `dafne sync form|table|detail` there.
+like the `deletedAt` the schema must reject. Assertions aren't changed.
+
+It doesn't touch the frontend: use `dafne sync form|table|detail` there.
 
 Which column goes where follows the customers contract:
 - `id` and server-filled columns (`defaultNow`, `$onUpdate`…) are in
@@ -219,8 +224,8 @@ whose field left the contract are reported, not removed.
     (enum and boolean ones as pick-lists);
   - enum labels (`ACTIVITY_TYPE_OPTIONS`), shared with the columns and the
     detail page;
-  - in `app/(app)/<plural>/<plural>-table.tsx` (table, columns and row
-    actions in one file): a column per listed field, before "Added". `id`,
+  - in `app/(app)/<plural>/<plural>-table.tsx` (table and columns): a
+    column per listed field, before "Added". `id`,
     `updatedAt` and foreign key ids are never added. Fields that aren't
     sortable get `enableSorting: false`.
 - **`sync detail`:** in `<singular>-detail.tsx`, the detail sections. The

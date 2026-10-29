@@ -1,18 +1,9 @@
 "use client";
 
-import { EllipsisVerticalIcon, EyeIcon, PencilIcon, Trash2Icon, <%= icon %> } from "lucide-react";
+import { <%= icon %> } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
 import { createDataTableColumnHelper, DataTable } from "@/components/data-table";
 import { LocalDate } from "@/components/local-date";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Empty,
   EmptyDescription,
@@ -23,7 +14,7 @@ import {
 import { describeFilters, type TableParams } from "@/lib/data-table";
 import type { Listed<%= s.pascal %> } from "@/lib/<%= p.kebab %>";
 import { <%= p.camel %>Table } from "@/lib/<%= p.kebab %>-table";
-import { Delete<%= s.pascal %>Dialog } from "./delete-<%= s.kebab %>-button";
+import { <%= s.pascal %>Actions } from "./[id]/<%= s.kebab %>-actions";
 
 /*
  * Columns of the <%= p.lower %> table. Column ids double as the backend's
@@ -55,48 +46,10 @@ const <%= s.camel %>Columns = col.columns([
   }),
 ]);
 
-/** Row actions of the <%= p.lower %> table: a menu, with Delete last. */
-function <%= s.pascal %>RowActions({ <%= s.camel %> }: { <%= s.camel %>: Listed<%= s.pascal %> }) {
-  const [deleting, setDeleting] = useState(false);
-  const href = `/<%= p.kebab %>/${encodeURIComponent(<%= s.camel %>.id)}`;
-  return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          render={
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label={`Actions for ${<%= s.camel %>.name}`}
-            />
-          }
-        >
-          <EllipsisVerticalIcon />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem render={<Link href={href} />}>
-            <EyeIcon />
-            View details
-          </DropdownMenuItem>
-          <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
-            <PencilIcon />
-            Edit
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem variant="destructive" onClick={() => setDeleting(true)}>
-            <Trash2Icon />
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      {/* Outside the menu, which closes when the item is clicked. */}
-      <Delete<%= s.pascal %>Dialog <%= s.camel %>={<%= s.camel %>} open={deleting} onOpenChange={setDeleting} />
-    </>
-  );
-}
-
-// A component per row (it has state); module scope keeps it stable.
-const <%= s.camel %>Actions = (<%= s.camel %>: Listed<%= s.pascal %>) => <<%= s.pascal %>RowActions <%= s.camel %>={<%= s.camel %>} />;
+// Module scope, so the table sees the same function on every render.
+const <%= s.camel %>Actions = (<%= s.camel %>: Listed<%= s.pascal %>) => (
+  <<%= s.pascal %>Actions <%= s.camel %>={<%= s.camel %>} placement="table" />
+);
 
 const getRowId = (<%= s.camel %>: Listed<%= s.pascal %>) => <%= s.camel %>.id;
 
