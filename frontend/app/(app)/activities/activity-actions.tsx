@@ -1,13 +1,5 @@
 "use client";
 
-import {
-  CircleCheckIcon,
-  EllipsisVerticalIcon,
-  EyeIcon,
-  PencilIcon,
-  Trash2Icon,
-} from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import {
@@ -20,92 +12,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Spinner } from "@/components/ui/spinner";
-import { closeActivity, deleteActivity } from "../actions";
+import { closeActivity, deleteActivity } from "./actions";
 
-type ActivityRef = { id: string; name: string };
-
-/**
- * Actions of an activity, in a menu: View details (in the table), Edit and
- * Delete. `placement="table"` fits a row and refreshes the list after
- * deleting; on the activity's page, deleting goes back to the list.
+/*
+ * The confirmations of the activity actions, shared by the table's row menu
+ * (activity-table-actions.tsx) and the detail page's (activity-detail-actions.tsx).
  */
-export function ActivityActions({
-  activity,
-  placement = "page",
-}: {
-  activity: ActivityRef;
-  placement?: "table" | "page";
-}) {
-  const [deleting, setDeleting] = useState(false);
-  const [closing, setClosing] = useState(false);
-  const href = `/activities/${encodeURIComponent(activity.id)}`;
-  const inTable = placement === "table";
 
-  return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          render={
-            <Button
-              variant={inTable ? "ghost" : "outline"}
-              size="icon-sm"
-              aria-label={`Actions for ${activity.name}`}
-            />
-          }
-        >
-          <EllipsisVerticalIcon />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          {inTable && (
-            <DropdownMenuItem render={<Link href={href} />}>
-              <EyeIcon />
-              View details
-            </DropdownMenuItem>
-          )}
-          <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
-            <PencilIcon />
-            Edit
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setClosing(true)}>
-            <CircleCheckIcon />
-            Close
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            variant="destructive"
-            onClick={() => setDeleting(true)}
-          >
-            <Trash2Icon />
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      {/* Outside the menu, which closes when the item is clicked. */}
-      <DeleteActivityDialog
-        activity={activity}
-        then={inTable ? "refresh" : "list"}
-        open={deleting}
-        onOpenChange={setDeleting}
-      />
-      {/* Outside the menu, which closes when the item is clicked. */}
-      <CloseActivityDialog
-        activity={activity}
-        then="refresh"
-        open={closing}
-        onOpenChange={setClosing}
-      />
-    </>
-  );
-}
+export type ActivityRef = { id: string; name: string };
 
 /**
  * Confirms and deletes an activity, then goes back to the list

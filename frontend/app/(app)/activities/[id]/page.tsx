@@ -13,7 +13,7 @@ import { BreadcrumbLabel } from "@/components/page-breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ActivityDetails } from "../activity-detail";
-import { ActivityActions } from "./activity-actions";
+import { ActivityDetailActions } from "../activity-detail-actions";
 import { loadActivity } from "./load-activity";
 
 export const metadata: Metadata = { title: "Activity" };
@@ -52,7 +52,7 @@ async function ActivityProfile({
             <ArrowLeftIcon data-icon="inline-start" />
             All activities
           </Button>
-          <ActivityActions activity={activity} />
+          <ActivityDetailActions activity={activity} />
         </PageContentAction>
       </PageContentHeader>
       <PageContentBody>

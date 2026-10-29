@@ -13,7 +13,7 @@ import {
   ACTIVITY_STATUS_OPTIONS,
 } from "@/lib/activities-table";
 import { FileIcon } from "lucide-react";
-import { ActivityActions } from "./[id]/activity-actions";
+import { ActivityTableActions } from "./activity-table-actions";
 import {
   Empty,
   EmptyDescription,
@@ -76,7 +76,7 @@ const activityColumns = col.columns([
 
 // Module scope, so the table sees the same function on every render.
 const activityActions = (activity: ListedActivity) => (
-  <ActivityActions activity={activity} placement="table" />
+  <ActivityTableActions activity={activity} />
 );
 
 const getRowId = (activity: ListedActivity) => activity.id;

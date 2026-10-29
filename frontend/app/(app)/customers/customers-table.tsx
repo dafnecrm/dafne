@@ -8,7 +8,7 @@ import {
 import { LocalDate } from "@/components/local-date";
 import type { ListedCustomer } from "@/lib/customers";
 import { ContactIcon } from "lucide-react";
-import { CustomerActions } from "./[id]/customer-actions";
+import { CustomerTableActions } from "./customer-table-actions";
 import {
   Empty,
   EmptyDescription,
@@ -81,7 +81,7 @@ const customerColumns = col.columns([
 
 // Module scope, so the table sees the same function on every render.
 const customerActions = (customer: ListedCustomer) => (
-  <CustomerActions customer={customer} placement="table" />
+  <CustomerTableActions customer={customer} />
 );
 
 const getRowId = (customer: ListedCustomer) => customer.id;

@@ -13,7 +13,7 @@ import { BreadcrumbLabel } from "@/components/page-breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CustomerDetails } from "../customer-detail";
-import { CustomerActions } from "./customer-actions";
+import { CustomerDetailActions } from "../customer-detail-actions";
 import { loadCustomer } from "./load-customer";
 
 export const metadata: Metadata = { title: "Customer" };
@@ -50,7 +50,7 @@ async function CustomerProfile({
             <ArrowLeftIcon data-icon="inline-start" />
             All customers
           </Button>
-          <CustomerActions customer={customer} />
+          <CustomerDetailActions customer={customer} />
         </PageContentAction>
       </PageContentHeader>
 
