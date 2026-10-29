@@ -63,3 +63,18 @@ export async function deleteActivity(id: string): Promise<ActionError | null> {
     return { error: errorMessage(error) };
   }
 }
+
+/**
+ * Closes an activity. The
+ * caller refreshes or leaves the page. Returns an error message when it fails.
+ */
+export async function closeActivity(id: string): Promise<ActionError | null> {
+  try {
+    await backendFetch(`/activities/${encodeURIComponent(id)}/close`, {
+      method: "POST",
+    });
+    return null;
+  } catch (error) {
+    return { error: errorMessage(error) };
+  }
+}

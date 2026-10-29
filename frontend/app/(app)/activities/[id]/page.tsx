@@ -1,4 +1,4 @@
-import { ArrowLeftIcon, PencilIcon } from "lucide-react";
+import { ArrowLeftIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -13,7 +13,7 @@ import { BreadcrumbLabel } from "@/components/page-breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ActivityDetails } from "../activity-detail";
-import { DeleteActivityButton } from "../delete-activity-button";
+import { ActivityActions } from "./activity-actions";
 import { loadActivity } from "./load-activity";
 
 export const metadata: Metadata = { title: "Activity" };
@@ -33,7 +33,6 @@ async function ActivityProfile({
   params,
 }: Pick<PageProps<"/activities/[id]">, "params">) {
   const activity = await loadActivity((await params).id);
-  const editHref = `/activities/${encodeURIComponent(activity.id)}/edit`;
 
   return (
     <PageContent>
@@ -53,15 +52,7 @@ async function ActivityProfile({
             <ArrowLeftIcon data-icon="inline-start" />
             All activities
           </Button>
-          <Button
-            size="sm"
-            nativeButton={false}
-            render={<Link href={editHref} />}
-          >
-            <PencilIcon data-icon="inline-start" />
-            Edit
-          </Button>
-          <DeleteActivityButton activity={activity} then="list" />
+          <ActivityActions activity={activity} />
         </PageContentAction>
       </PageContentHeader>
       <PageContentBody>

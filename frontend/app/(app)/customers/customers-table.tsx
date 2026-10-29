@@ -1,30 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import {
   createDataTableColumnHelper,
   DataTable,
 } from "@/components/data-table";
 import { LocalDate } from "@/components/local-date";
 import type { ListedCustomer } from "@/lib/customers";
-import {
-  CopyIcon,
-  EllipsisVerticalIcon,
-  PencilIcon,
-  UserRoundIcon,
-  ContactIcon,
-  Trash2Icon,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { DeleteCustomerDialog } from "./delete-customer-button";
+import { ContactIcon } from "lucide-react";
+import { CustomerActions } from "./[id]/customer-actions";
 import {
   Empty,
   EmptyDescription,
@@ -95,67 +79,9 @@ const customerColumns = col.columns([
   }),
 ]);
 
-/** Row actions of the customers table: a menu, with Delete last. */
-function CustomerRowActions({ customer }: { customer: ListedCustomer }) {
-  const [deleting, setDeleting] = useState(false);
-  const href = `/customers/${encodeURIComponent(customer.id)}`;
-  return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          render={
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label={`Actions for ${customer.name}`}
-            />
-          }
-        >
-          <EllipsisVerticalIcon />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem render={<Link href={href} />}>
-            <UserRoundIcon />
-            View details
-          </DropdownMenuItem>
-          <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
-            <PencilIcon />
-            Edit
-          </DropdownMenuItem>
-          {customer.email && (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(customer.email!)}
-              >
-                <CopyIcon />
-                Copy email
-              </DropdownMenuItem>
-            </>
-          )}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            variant="destructive"
-            onClick={() => setDeleting(true)}
-          >
-            <Trash2Icon />
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      {/* Outside the menu, which closes when the item is clicked. */}
-      <DeleteCustomerDialog
-        customer={customer}
-        open={deleting}
-        onOpenChange={setDeleting}
-      />
-    </>
-  );
-}
-
-// A component per row (it has state); module scope keeps it stable.
+// Module scope, so the table sees the same function on every render.
 const customerActions = (customer: ListedCustomer) => (
-  <CustomerRowActions customer={customer} />
+  <CustomerActions customer={customer} placement="table" />
 );
 
 const getRowId = (customer: ListedCustomer) => customer.id;

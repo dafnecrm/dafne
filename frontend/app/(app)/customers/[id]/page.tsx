@@ -1,4 +1,4 @@
-import { ArrowLeftIcon, PencilIcon } from "lucide-react";
+import { ArrowLeftIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -13,7 +13,7 @@ import { BreadcrumbLabel } from "@/components/page-breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CustomerDetails } from "../customer-detail";
-import { DeleteCustomerButton } from "../delete-customer-button";
+import { CustomerActions } from "./customer-actions";
 import { loadCustomer } from "./load-customer";
 
 export const metadata: Metadata = { title: "Customer" };
@@ -31,7 +31,6 @@ async function CustomerProfile({
   params,
 }: Pick<PageProps<"/customers/[id]">, "params">) {
   const customer = await loadCustomer((await params).id);
-  const editHref = `/customers/${encodeURIComponent(customer.id)}/edit`;
 
   return (
     <PageContent>
@@ -51,11 +50,7 @@ async function CustomerProfile({
             <ArrowLeftIcon data-icon="inline-start" />
             All customers
           </Button>
-          <Button size="sm" nativeButton={false} render={<Link href={editHref} />}>
-            <PencilIcon data-icon="inline-start" />
-            Edit
-          </Button>
-          <DeleteCustomerButton customer={customer} then="list" />
+          <CustomerActions customer={customer} />
         </PageContentAction>
       </PageContentHeader>
 

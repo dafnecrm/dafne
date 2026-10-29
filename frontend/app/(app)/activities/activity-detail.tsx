@@ -5,12 +5,17 @@ import {
   TagIcon,
   UserPenIcon,
   UserPlusIcon,
+  CalendarClockIcon,
+  LinkIcon,
 } from "lucide-react";
 import CopyButton from "@/components/copy-button";
 import { Detail, DetailSection } from "@/components/detail";
 import { LocalDate } from "@/components/local-date";
 import type { ActivityDetail } from "@/lib/activities";
-import { ACTIVITY_TYPE_OPTIONS } from "@/lib/activities-table";
+import {
+  ACTIVITY_TYPE_OPTIONS,
+  ACTIVITY_STATUS_OPTIONS,
+} from "@/lib/activities-table";
 
 /** The details of an activity: its fields, then who created and updated it. */
 export function ActivityDetails({ activity }: { activity: ActivityDetail }) {
@@ -20,6 +25,24 @@ export function ActivityDetails({ activity }: { activity: ActivityDetail }) {
         <Detail icon={TagIcon} label="Type">
           {ACTIVITY_TYPE_OPTIONS.find((o) => o.value === activity.type)
             ?.label ?? "—"}
+        </Detail>
+        <Detail icon={CalendarClockIcon} label="Completed at">
+          {activity.completedAt ? (
+            <LocalDate value={activity.completedAt} format="dateTime" />
+          ) : (
+            "—"
+          )}
+        </Detail>
+        <Detail icon={TagIcon} label="Status">
+          {ACTIVITY_STATUS_OPTIONS.find((o) => o.value === activity.status)
+            ?.label ?? "—"}
+        </Detail>
+        <Detail icon={LinkIcon} label="Completed by">
+          {activity.completedById ? (
+            <code className="font-mono text-xs">{activity.completedById}</code>
+          ) : (
+            "—"
+          )}
         </Detail>
       </DetailSection>
       <DetailSection title="Record">

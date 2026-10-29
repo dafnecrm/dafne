@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import {
   createDataTableColumnHelper,
   DataTable,
@@ -13,22 +12,8 @@ import {
   activitiesTable,
   ACTIVITY_STATUS_OPTIONS,
 } from "@/lib/activities-table";
-import {
-  EllipsisVerticalIcon,
-  EyeIcon,
-  PencilIcon,
-  FileIcon,
-  Trash2Icon,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { DeleteActivityDialog } from "./delete-activity-button";
+import { FileIcon } from "lucide-react";
+import { ActivityActions } from "./[id]/activity-actions";
 import {
   Empty,
   EmptyDescription,
@@ -80,61 +65,18 @@ const activityColumns = col.columns([
     header: "Added",
     meta: { className: "text-right" },
     cell: (info) => (
-      <LocalDate value={info.getValue()} className="text-muted-foreground" />
+      <LocalDate
+        value={info.getValue()}
+        format="dateTime"
+        className="text-muted-foreground"
+      />
     ),
   }),
 ]);
 
-/** Row actions of the activities table: a menu, with Delete last. */
-function ActivityRowActions({ activity }: { activity: ListedActivity }) {
-  const [deleting, setDeleting] = useState(false);
-  const href = `/activities/${encodeURIComponent(activity.id)}`;
-  return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          render={
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label={`Actions for ${activity.name}`}
-            />
-          }
-        >
-          <EllipsisVerticalIcon />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem render={<Link href={href} />}>
-            <EyeIcon />
-            View details
-          </DropdownMenuItem>
-          <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
-            <PencilIcon />
-            Edit
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            variant="destructive"
-            onClick={() => setDeleting(true)}
-          >
-            <Trash2Icon />
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      {/* Outside the menu, which closes when the item is clicked. */}
-      <DeleteActivityDialog
-        activity={activity}
-        open={deleting}
-        onOpenChange={setDeleting}
-      />
-    </>
-  );
-}
-
-// A component per row (it has state); module scope keeps it stable.
+// Module scope, so the table sees the same function on every render.
 const activityActions = (activity: ListedActivity) => (
-  <ActivityRowActions activity={activity} />
+  <ActivityActions activity={activity} placement="table" />
 );
 
 const getRowId = (activity: ListedActivity) => activity.id;
