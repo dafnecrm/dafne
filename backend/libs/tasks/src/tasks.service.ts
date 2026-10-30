@@ -29,7 +29,8 @@ export class TasksService {
 
   /**
    * Lists tasks that aren't deleted, paged and sorted, filtered by
-   * every field given (AND, each matching text the field contains).
+   * every field given (AND): ids match exactly (activityId), the other
+   * fields match text they contain.
    */
   async listTasks(query: ListTasksQuery = {}): Promise<TasksList> {
     const {
@@ -41,7 +42,10 @@ export class TasksService {
     const { db } = this.database;
     const filters = TASK_FILTER_FIELDS.flatMap((field) => {
       const value = query[field]?.trim();
-      return value ? [like(task[field], `%${escapeLike(value)}%`)] : [];
+      if (!value) return [];
+      return field === 'activityId'
+        ? [eq(task[field], value)]
+        : [like(task[field], `%${escapeLike(value)}%`)];
     });
     const where = and(notDeleted, ...filters) as SQL;
     const order = sortDirection === 'asc' ? asc : desc;

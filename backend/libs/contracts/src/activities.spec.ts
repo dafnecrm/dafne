@@ -16,6 +16,7 @@ describe('activityBodySchema', () => {
       name: 'Acme',
       type: 'email',
       notes: null,
+      tasks: [],
     });
   });
 

@@ -82,6 +82,14 @@ describe('TasksService', () => {
       );
     });
 
+    it("filters by an activity's id exactly", async () => {
+      await service.listTasks({ activityId: 'a1' });
+
+      expect(select.where).toHaveBeenCalledWith(
+        and(notDeleted, eq(task.activityId, 'a1')),
+      );
+    });
+
     it('pages and sorts', async () => {
       await service.listTasks({
         limit: 5,

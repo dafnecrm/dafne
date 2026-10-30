@@ -23,6 +23,7 @@ export const task = mysqlTable(
     /** @api detail @form editor */
     notes: text('notes').notNull(),
     type: mysqlEnum('type', ['email', 'phone', 'other']).notNull(),
+    /** @api filter */
     activityId: varchar('activity_id', { length: 36 })
       .notNull()
       .references(() => activity.id, { onDelete: 'cascade' }),

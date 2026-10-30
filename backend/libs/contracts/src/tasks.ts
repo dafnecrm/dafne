@@ -38,7 +38,7 @@ export type TaskSortField = (typeof TASK_SORT_FIELDS)[number];
  * Task fields the list can be filtered by, each a query param of
  * its own. Filters combine with AND and match text the field contains.
  */
-export const TASK_FILTER_FIELDS = ['name', 'type'] as const;
+export const TASK_FILTER_FIELDS = ['name', 'type', 'activityId'] as const;
 export type TaskFilterField = (typeof TASK_FILTER_FIELDS)[number];
 
 /** Query string of GET /tasks. Deleted tasks are never listed. */
@@ -46,6 +46,7 @@ export const listTasksQuerySchema = z.strictObject({
   ...pageQuery,
   name: z.string().max(255).optional(),
   type: z.enum(TASK_TYPES).optional(),
+  activityId: z.string().max(36).optional(),
   /** Defaults to name. */
   sortBy: z.enum(TASK_SORT_FIELDS).optional(),
   /** Defaults to asc. */
