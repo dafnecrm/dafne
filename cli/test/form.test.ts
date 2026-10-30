@@ -97,7 +97,8 @@ describe('syncFormComponent', () => {
     expect(content).toContain('<field.CheckboxField label="Done" />');
     expect(content).toContain('<field.TextareaField label="Notes (optional)" />');
     expect(content).toContain('<field.TextEditorField label="Description (optional)" />');
-    expect(content).toContain('type="datetime-local"');
+    expect(content).toContain('<field.DatePickerField label="Due date (optional)" />');
+    expect(content).toContain('<field.DateTimePickerField label="Starts at (optional)" />');
     expect(content).toMatch(/import \{[^}]*TYPE_OPTIONS[^}]*\} from "\.\/schema"/);
     expect(content.indexOf('name="name"')).toBeLessThan(content.indexOf('name="type"'));
     expect(report.added).toHaveLength(9);

@@ -140,7 +140,7 @@ function defaultValue(f: FormField, param?: string): string {
   })();
   if (!param) return literal;
   const from = `${param}?.${f.key}`;
-  // Dates arrive as ISO strings; the inputs want "2026-10-29" / "2026-10-29T10:30".
+  // Dates arrive as ISO strings; the pickers want "2026-10-29" / "2026-10-29T10:30".
   if (f.kind === 'date') return `${from}?.slice(0, 10) ?? ${literal}`;
   if (f.kind === 'datetime') return `${from}?.slice(0, 16) ?? ${literal}`;
   if (f.kind === 'decimal') return `${from} ?? ${literal}`;
@@ -277,9 +277,9 @@ function fieldJsx(f: FormField): string {
       case 'email':
         return `<field.TextField label="${label}" type="email" autoComplete="off" />`;
       case 'date':
-        return `<field.TextField label="${label}" type="date" />`;
+        return `<field.DatePickerField label="${label}" />`;
       case 'datetime':
-        return `<field.TextField label="${label}" type="datetime-local" />`;
+        return `<field.DateTimePickerField label="${label}" />`;
       case 'textarea':
         return `<field.TextareaField label="${label}" />`;
       case 'editor':

@@ -29,6 +29,17 @@ export function ensureEnumOptions(file: SourceFile, names: ResourceNames, field:
   report.added.push(name);
 }
 
+/**
+ * The enum labels other pages use (the detail page), in lib/<plural>-table.ts,
+ * for a resource without a table page: `sync table` would add them otherwise.
+ */
+export function syncEnumOptions(path: string, source: string, names: ResourceNames, fields: ResponseField[]): { content: string; report: Report } {
+  const report = newReport();
+  for (const field of fields)
+    source = editSource(path, source, (file) => ensureEnumOptions(file, names, field, `${names.p.camel}Table`, report));
+  return { content: source, report };
+}
+
 /** The object passed to defineDataTable({...}). */
 function tableConfig(file: SourceFile, variable: string): ObjectLiteralExpression | undefined {
   return file.getVariableDeclaration(variable)?.getFirstDescendantByKind(SyntaxKind.ObjectLiteralExpression);

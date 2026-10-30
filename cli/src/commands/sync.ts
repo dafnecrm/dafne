@@ -10,14 +10,14 @@ import { contractFile } from '../generators/backend.js';
 import { childRoles, OPTIONAL_DATE_HELPER, syncChildContract, syncContract, type SyncReport } from '../sync/contract.js';
 import { syncChildService, syncService } from '../sync/service.js';
 import { syncContractSpec, syncServiceSpec } from '../sync/service-spec.js';
-import { API_TAGS, readTable, tablesIn, type TableInfo } from '../sync/table.js';
+import { API_TAGS, foreignRelations, readTable, tablesIn, type TableInfo } from '../sync/table.js';
 import { editSource } from '../wiring/ast.js';
 import { BACKEND } from '../wiring/backend.js';
 import { FRONTEND } from '../wiring/frontend.js';
 import { syncDetail } from '../sync/detail.js';
 import { readBody, syncFormComponent, syncFormSchema, type FormReport } from '../sync/form.js';
-import { syncColumns, syncTableConfig } from '../sync/table-page.js';
-import { readResponse } from '../sync/response.js';
+import { syncColumns, syncEnumOptions, syncTableConfig } from '../sync/table-page.js';
+import { enumOptionsName, readResponse } from '../sync/response.js';
 
 interface SyncOptions {
   root?: string;
@@ -59,6 +59,7 @@ export async function syncOne(
     throw new Error(`${contractPath} not found: create it with "dafne g backend contract ${names.p.kebab}".`);
 
   const info = readTable(tablePath, table, names);
+  addForeignRelations(changes, tablePath, info);
   const source = changes.read(contractPath)!;
   let { content, report } = syncContract(contractPath, source, names, info, dropped);
 
@@ -126,6 +127,21 @@ export async function syncOne(
     report.removed.push(...spec.report.removed.map((key) => `contract spec samples: ${key}`));
   }
   return report;
+}
+
+/** Adds the relations other table files declare for the resource (see foreignRelations). */
+function addForeignRelations(changes: Changes, tablePath: string, info: TableInfo) {
+  for (const file of readdirSync(join(changes.root, TABLES))) {
+    const path = `${TABLES}/${file}`;
+    if (!file.endsWith('.ts') || path === tablePath) continue;
+    const source = changes.read(path);
+    if (source === undefined || !source.includes('defineRelationsPart')) continue;
+    for (const [name, target] of Object.entries(foreignRelations(path, source, info.variable)))
+      if (!info.relations.includes(name)) {
+        info.relations.push(name);
+        info.relationTargets[name] = target;
+      }
+  }
 }
 
 interface ChildTable {
@@ -504,11 +520,18 @@ export function syncDetailPage(changes: Changes, name: string): [string, FormRep
   const { page } = detailFiles(names);
   // The page shows the title and the actions: what it reads counts too.
   const pageSource = path !== page ? changes.read(page) : undefined;
-  return [
-    applyFrontend(changes, path, `dafne g frontend detail ${names.p.kebab}`, (source) =>
-      syncDetail(path, source, names, info, pageSource ? [pageSource] : []),
-    ),
+  const hint = `dafne g frontend detail ${names.p.kebab}`;
+  const reports = [
+    applyFrontend(changes, path, hint, (source) => syncDetail(path, source, names, info, pageSource ? [pageSource] : [])),
   ];
+  // The enum labels it reads live in lib/<plural>-table.ts: make sure they're
+  // there, also when the resource has no table page to add them.
+  const detail = changes.read(path)!;
+  const used = info.fields.filter((f) => f.kind === 'enum' && detail.includes(enumOptionsName(names, f)));
+  const lib = tableFiles(names).table;
+  if (used.length && changes.exists(lib))
+    reports.push(applyFrontend(changes, lib, hint, (source) => syncEnumOptions(lib, source, names, used)));
+  return reports;
 }
 
 const formFiles = ({ s, p }: ResourceNames) => {

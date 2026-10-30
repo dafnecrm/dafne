@@ -235,7 +235,10 @@ It adds the contract body fields that a form lacks, in
   - the default values: dates are cut to what the inputs show, required
     numbers start at the table default (or 0).
 - **`<singular>-form.tsx`:** a `<form.AppField>` after the last one:
-  - text, email, date and datetime-local use `TextField`;
+  - text and email use `TextField`;
+  - dates use `DatePickerField` ("2026-10-29") and datetimes
+    `DateTimePickerField` ("2026-10-29T10:30"): a calendar, plus a time
+    input for datetimes;
   - `text` columns (long text) use `TextareaField`, or `TextEditorField`
     (rich text, saved as HTML) when the column says so:
 

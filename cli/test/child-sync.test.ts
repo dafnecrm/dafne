@@ -4,7 +4,7 @@ import { formatSource } from '../src/core/format.js';
 import { resourceNames } from '../src/core/names.js';
 import { childRoles, syncChildContract } from '../src/sync/contract.js';
 import { syncChildService } from '../src/sync/service.js';
-import { readTable } from '../src/sync/table.js';
+import { foreignRelations, readTable } from '../src/sync/table.js';
 
 const FIXTURES = join(import.meta.dirname, 'fixtures');
 const read = (path: string) => readFileSync(join(FIXTURES, path), 'utf8');
@@ -65,5 +65,17 @@ describe('child tables (customer addresses)', () => {
     const { service } = sync(table);
     expect(service.content).toMatch(/columns: \{ customerId: false, position: false, note: false \}/);
     expect(service.content).not.toContain('note: address.note');
+  });
+});
+
+describe('foreignRelations', () => {
+  it("reads the reverse relations another table file gives the resource", () => {
+    const tasks = `
+export const taskRelations = defineRelationsPart({ task, activity }, (r) => ({
+  task: { activity: r.one.activity({ from: r.task.activityId, to: r.activity.id }) },
+  activity: { tasks: r.many.task({ from: r.activity.id, to: r.task.activityId }) },
+}));`;
+    expect(foreignRelations('tasks.ts', tasks, 'activity')).toEqual({ tasks: 'task' });
+    expect(foreignRelations('tasks.ts', tasks, 'customer')).toEqual({});
   });
 });

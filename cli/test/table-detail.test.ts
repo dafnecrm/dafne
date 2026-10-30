@@ -2,7 +2,7 @@ import { resourceNames } from '../src/core/names.js';
 import { render } from '../src/core/templates.js';
 import { syncContract } from '../src/sync/contract.js';
 import { syncDetail } from '../src/sync/detail.js';
-import { syncColumns, syncTableConfig } from '../src/sync/table-page.js';
+import { syncColumns, syncEnumOptions, syncTableConfig } from '../src/sync/table-page.js';
 import { readResponse } from '../src/sync/response.js';
 import { readTable } from '../src/sync/table.js';
 
@@ -116,5 +116,18 @@ describe('syncDetail', () => {
     expect(content).not.toContain('label="Type"');
     expect(content).toContain('label="Budget"');
     expect(syncDetail('p.tsx', content, names, info()).report.added).toEqual([]);
+  });
+});
+
+describe('syncEnumOptions', () => {
+  it('adds the labels a detail page reads, once (no table page to add them)', () => {
+    const type = info().fields.find((f) => f.key === 'type')!;
+    const lib = 'import { defineDataTable } from "./data-table";\n\nexport const activitiesTable = defineDataTable({});\n';
+    const { content, report } = syncEnumOptions('lib.ts', lib, names, [type]);
+    expect(content.indexOf('export const ACTIVITY_TYPE_OPTIONS')).toBeLessThan(content.indexOf('activitiesTable'));
+    expect(content).toContain('{ value: "phone", label: "Phone" }');
+    expect(content).toMatch(/import \{ type ActivityType \} from "@backend\/contracts"/);
+    expect(report.added).toEqual(['ACTIVITY_TYPE_OPTIONS']);
+    expect(syncEnumOptions('lib.ts', content, names, [type]).report.added).toEqual([]);
   });
 });

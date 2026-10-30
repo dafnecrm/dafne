@@ -244,9 +244,12 @@ function readFormInput(prop: Node, column: Column, warnings: string[], path: str
  * the table each points to (`addresses: r.many.customerAddress(...)`).
  */
 function readRelations(file: import('ts-morph').SourceFile, table: string): Record<string, string> {
-  const relations = file.getVariableDeclaration(`${table}Relations`);
-  if (!relations) return {};
-  for (const prop of relations.getDescendantsOfKind(SyntaxKind.PropertyAssignment)) {
+  return relationsOf(file.getVariableDeclaration(`${table}Relations`), table);
+}
+
+function relationsOf(part: Node | undefined, table: string): Record<string, string> {
+  if (!part) return {};
+  for (const prop of part.getDescendantsOfKind(SyntaxKind.PropertyAssignment)) {
     const init = prop.getInitializer();
     if (prop.getName() === table && init && Node.isObjectLiteralExpression(init))
       return Object.fromEntries(
@@ -258,6 +261,22 @@ function readRelations(file: import('ts-morph').SourceFile, table: string): Reco
       );
   }
   return {};
+}
+
+/**
+ * Relations another table file gives `table`: the reverse sides it holds
+ * with its key (tasks.ts declares `activity: { tasks: ... }`).
+ */
+export function foreignRelations(path: string, source: string, table: string): Record<string, string> {
+  let found: Record<string, string> = {};
+  editSource(path, source, (file) => {
+    for (const declaration of file.getVariableDeclarations()) {
+      const call = declaration.getInitializerIfKind(SyntaxKind.CallExpression);
+      if (call?.getExpression().getText() === 'defineRelationsPart')
+        found = { ...found, ...relationsOf(call, table) };
+    }
+  });
+  return found;
 }
 
 /** The tables a file declares: `export const <name> = mysqlTable(...)`. */
