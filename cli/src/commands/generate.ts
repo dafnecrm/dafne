@@ -3,7 +3,9 @@ import { Command, Option } from 'commander';
 import { Changes } from '../core/changes.js';
 import { resourceNames } from '../core/names.js';
 import { findRoot } from '../core/workspace.js';
-import { BACKEND_RESOURCE, backendPieces } from '../generators/backend.js';
+import { addField } from '../fields/operations.js';
+import type { FieldSpec } from '../fields/spec.js';
+import { BACKEND_RESOURCE, backendPieces, contractFile, tableFile } from '../generators/backend.js';
 import {
   FRONTEND_RESOURCE,
   frontendPieces,
@@ -11,6 +13,8 @@ import {
   generatePage,
 } from '../generators/frontend.js';
 import { generatePieces, type Ctx, type ResourceOptions } from '../generators/pieces.js';
+import { askNewFields, FIELD_SPEC_HELP, parseFieldSpec } from './field.js';
+import { printFrontendReports, syncFrontend, syncOne } from './sync.js';
 
 interface CommonOptions {
   root?: string;
@@ -18,6 +22,11 @@ interface CommonOptions {
   force?: boolean;
   skipWiring?: boolean;
   yes?: boolean;
+}
+
+interface FieldOptions {
+  /** --field specs, repeatable. */
+  field?: string[];
 }
 
 interface FrontendOptions {
@@ -91,17 +100,19 @@ async function askChoice<T extends string>(
 
 /* ---------- Running ---------- */
 
+type Generated = { dependencies?: string[]; next: string[] };
+
 /** Runs `generate` on an in-memory change set, then prints and writes it. */
 async function run(
   options: CommonOptions,
-  generate: (changes: Changes) => { dependencies?: string[]; next: string[] },
+  generate: (changes: Changes) => Generated | Promise<Generated>,
 ) {
   const root = findRoot(options.root);
   const changes = new Changes(root, {
     force: options.force,
     skipUpdates: options.skipWiring,
   });
-  const { dependencies = [], next } = generate(changes);
+  const { dependencies = [], next } = await generate(changes);
 
   const summary = changes.summary();
   if (!summary.length) {
@@ -122,7 +133,7 @@ async function run(
   p.outro('Done.');
 }
 
-function nextSteps(backend: string[], frontend: string[]): string[] {
+function nextSteps(backend: string[], frontend: string[], withFields: boolean): string[] {
   const steps: string[] = [];
   const pages = frontend.some((piece) => piece !== 'nav');
   if (backend.includes('table'))
@@ -130,20 +141,48 @@ function nextSteps(backend: string[], frontend: string[]): string[] {
   if (backend.length) steps.push('cd backend && pnpm test');
   if (pages)
     steps.push('cd frontend && pnpm dev   # also generates the PageProps types of new routes');
-  if (backend.length || pages)
-    steps.push('Replace the sample "name" field with the real ones (contract, table, service, form, columns).');
+  if (withFields)
+    steps.push('Check the new fields in the form, the list and the detail page (labels, order, defaults).');
+  else if (backend.length || pages)
+    steps.push('Add the real fields: dafne field add <resource>, then dafne sync frontend <resource>.');
   return steps;
 }
 
-function resource(
+/**
+ * The pieces of a resource. `fields` go into its new table before anything
+ * is written; then the contract, the service and the frontend pages are
+ * synced with them, as `field add` and `sync frontend` would.
+ */
+export async function generateResource(
   changes: Changes,
   name: string,
   requested: { backend: string[]; frontend: string[] },
   options: ResourceOptions,
-) {
-  const ctx: Ctx = { changes, names: resourceNames(name), options };
+  fields: FieldSpec[] = [],
+): Promise<Generated> {
+  const names = resourceNames(name);
+  const ctx: Ctx = { changes, names, options };
+  if (fields.length && changes.exists(tableFile(names)))
+    throw new Error(`${tableFile(names)} already exists: add fields with "dafne field add ${names.p.kebab}".`);
   const backendDeps = generatePieces(backendPieces, requested.backend, ctx);
+
+  if (fields.length) {
+    if (!changes.exists(tableFile(names)))
+      throw new Error('Fields need the table: generate the resource, or the table, service or controller piece.');
+    for (const spec of fields)
+      for (const note of addField(changes, names.p.kebab, spec).notes)
+        // The table is new: it has no rows a NOT NULL column could break.
+        if (!note.includes('already has rows')) changes.warn(note);
+    if (changes.exists(contractFile(names))) {
+      const report = await syncOne(changes, names.p.kebab);
+      for (const warning of [...report.warnings, ...report.unknown.map((key) => `contract: ${key} isn't a column.`)]) changes.warn(warning);
+    }
+  }
+
   const frontendDeps = generatePieces(frontendPieces, requested.frontend, ctx);
+  if (fields.length && [...requested.frontend, ...frontendDeps].some((piece) => piece !== 'nav'))
+    printFrontendReports(syncFrontend(changes, names.p.kebab).reports.map(([path, report]) => [path, { ...report, added: [] }]));
+
   return {
     dependencies: [
       ...backendDeps.map((key) => `backend ${key}`),
@@ -152,6 +191,7 @@ function resource(
     next: nextSteps(
       [...requested.backend, ...backendDeps],
       [...requested.frontend, ...frontendDeps],
+      fields.length > 0,
     ),
   };
 }
@@ -173,6 +213,34 @@ function common(command: Command) {
     .option('-y, --yes', 'never prompt; fail when an argument is missing');
 }
 
+function fieldOptions(command: Command) {
+  return command.option(
+    '--field <spec>',
+    `a field of the new table, repeatable: ${FIELD_SPEC_HELP}`,
+    (value: string, previous: string[] = []) => [...previous, value],
+  );
+}
+
+/**
+ * The fields for a new table: from --field, or asked when the table doesn't
+ * exist yet and prompting is allowed.
+ */
+async function fieldsFor(name: string, options: CommonOptions & FieldOptions, createsTable: boolean): Promise<FieldSpec[]> {
+  const specs = (options.field ?? []).map(parseFieldSpec);
+  if (specs.length || !createsTable || !interactive(options)) return specs;
+  const changes = new Changes(findRoot(options.root));
+  if (changes.exists(tableFile(resourceNames(name)))) return [];
+  const now = cancelled<boolean>(
+    await p.confirm({ message: 'Add the fields of the table now?', initialValue: true }),
+  );
+  return now ? askNewFields(changes, name) : [];
+}
+
+/** Backend pieces that create the table (it's one of their dependencies). */
+function createsTable(piece: string): boolean {
+  return piece === 'table' || (backendPieces[piece]?.deps ?? []).some(createsTable);
+}
+
 function navOptions(command: Command) {
   return command
     .option('--icon <name>', 'lucide-react icon for the sidebar and the empty list', 'FileIcon')
@@ -185,14 +253,23 @@ export function generateCommand() {
     .alias('g')
     .description('Generate a resource (backend, frontend or both) or a single piece');
 
-  common(navOptions(
+  common(fieldOptions(navOptions(
     generate
       .command('resource')
       .description('A whole resource: backend lib + contract + table, frontend pages + sidebar link')
       .argument('[name]', 'resource name, singular or plural (e.g. invoice)')
       .addOption(new Option('--backend', 'only the backend').conflicts('frontend'))
-      .addOption(new Option('--frontend', 'only the frontend').conflicts('backend')),
-  )).action(async (name: string | undefined, options: CommonOptions & FrontendOptions & { backend?: boolean; frontend?: boolean }) => {
+      .addOption(new Option('--frontend', 'only the frontend').conflicts('backend'))
+      .addHelpText(
+        'after',
+        `
+Without --field it asks for the fields of the new table (unless -y); the
+sample "name" field stays. Examples:
+  dafne g resource invoice --field number:string:length=20:required:unique \\
+    --field status:enum:values=draft|sent|paid:default=draft --field dueDate:date \\
+    --field notes:text:editor:api=detail --field customer:ref:to=customers`,
+      ),
+  ))).action(async (name: string | undefined, options: CommonOptions & FrontendOptions & FieldOptions & { backend?: boolean; frontend?: boolean }) => {
     p.intro('dafne generate resource');
     let target: Target = options.backend ? 'backend' : options.frontend ? 'frontend' : 'fullstack';
     if (!name && !options.backend && !options.frontend && interactive(options))
@@ -202,8 +279,11 @@ export function generateCommand() {
         frontend: 'Next.js pages and sidebar link',
       });
     const resolved = await askName(name, options, 'Resource name', 'invoice');
+    if (target === 'frontend' && options.field?.length)
+      throw new Error('--field needs the backend: the fields go in the table.');
+    const fields = await fieldsFor(resolved, options, target !== 'frontend');
     await run(options, (changes) =>
-      resource(
+      generateResource(
         changes,
         resolved,
         {
@@ -211,6 +291,7 @@ export function generateCommand() {
           frontend: target === 'backend' ? [] : FRONTEND_RESOURCE,
         },
         resourceOptions(options),
+        fields,
       ),
     );
   });
@@ -218,18 +299,19 @@ export function generateCommand() {
   const backendChoices = Object.fromEntries(
     Object.entries(backendPieces).map(([key, piece]) => [key, piece.description]),
   );
-  common(
+  common(fieldOptions(
     generate
       .command('backend')
       .description(`A backend piece: ${Object.keys(backendPieces).join(' | ')}`)
       .argument('[piece]', Object.keys(backendPieces).join(' | '))
       .argument('[name]', 'resource name, singular or plural'),
-  ).action(async (piece: string | undefined, name: string | undefined, options: CommonOptions) => {
+  )).action(async (piece: string | undefined, name: string | undefined, options: CommonOptions & FieldOptions) => {
     p.intro('dafne generate backend');
     const key = await askChoice(piece, options, 'Which backend piece?', backendChoices);
     const resolved = await askName(name, options, 'Resource name', 'invoice');
+    const fields = await fieldsFor(resolved, options, createsTable(key));
     await run(options, (changes) =>
-      resource(changes, resolved, { backend: [key], frontend: [] }, resourceOptions({})),
+      generateResource(changes, resolved, { backend: [key], frontend: [] }, resourceOptions({}), fields),
     );
   });
 
@@ -266,7 +348,7 @@ export function generateCommand() {
     }
     const resolved = await askName(name, options, 'Resource name', 'invoice');
     await run(options, (changes) =>
-      resource(changes, resolved, { backend: [], frontend: [key] }, resourceOptions(options)),
+      generateResource(changes, resolved, { backend: [], frontend: [key] }, resourceOptions(options)),
     );
   });
 

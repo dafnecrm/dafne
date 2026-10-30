@@ -388,7 +388,7 @@ export function syncFrontend(
   };
 }
 
-function printFrontendReports(reports: [string, FormReport][]) {
+export function printFrontendReports(reports: [string, FormReport][]) {
   for (const [file, report] of reports) {
     const lines = report.added.map((item) => `+ ${item}`);
     if (lines.length) p.note(lines.join('\n'), file);

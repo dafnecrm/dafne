@@ -12,7 +12,7 @@ import type { Ctx, Piece } from './pieces.js';
 export const libSrc = ({ p }: ResourceNames) => `${BACKEND}/libs/${p.kebab}/src`;
 export const contractFile = ({ p }: ResourceNames) =>
   `${BACKEND}/libs/contracts/src/${p.kebab}.ts`;
-const tableFile = ({ p }: ResourceNames) =>
+export const tableFile = ({ p }: ResourceNames) =>
   `${BACKEND}/libs/database/src/tables/${p.kebab}.ts`;
 
 const create = (ctx: Ctx, path: string, template: string) =>

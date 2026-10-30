@@ -23,6 +23,31 @@ dafne g frontend page reports/monthly # blank page at app/(app)/reports/monthly
 dafne g frontend component status-badge --client [--dir components]
 ```
 
+### Fields of a new resource
+
+`g resource` (and `g backend` when it creates the table) asks for the
+fields of the new table, with the same questions as `dafne field add`; an
+empty name ends the list. Or pass them with `--field`, repeatable:
+
+```sh
+dafne g resource invoice \
+  --field number:string:length=20:required:unique \
+  --field status:enum:values=draft|sent|paid:default=draft \
+  --field dueDate:date \
+  --field notes:text:editor:api=detail \
+  --field customer:ref:to=customers
+```
+
+The spec is `name:type[:option…]`. Flags: `required`, `unique`, `index`,
+`editor`. Values: `length`, `values`, `default`, `precision`, `scale`,
+`api`, `to`, `relation`, `on-delete`, `inverse` (`-` for none); lists use
+`|`. They mean what the `field add` options of the same name mean.
+
+Everything happens before anything is written: the fields go into the
+table, then the contract, the service and its specs are synced (as after
+`field add`), then the frontend pages (as `sync frontend`). The sample
+`name` field stays. For a table that already exists, use `field add`.
+
 The name can be singular or plural (`invoice`, `invoices`, `invoiceItem`).
 A piece also generates the pieces it needs when they're missing (a
 `controller` brings the lib, contract, table and service).

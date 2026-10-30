@@ -12,10 +12,13 @@ TypeScript ESM, Node ≥ 22, pnpm. `pnpm dev g ...` runs from source (tsx),
 ## Layout
 
 - `src/commands/generate.ts`: commander commands, prompts (@clack/prompts),
-  summary and next steps. `src/commands/sync.ts` holds the `dafne sync`
-  commands: `contract`, `form`, `table`, `detail`, and `frontend`
-  (`syncFrontend`: form + table + detail, skipping the parts a resource
-  lacks).
+  summary and next steps. `generateResource` also takes the fields of a
+  new table (`--field`, parsed by `parseFieldSpec`, or asked by
+  `askNewFields` in `field.ts`): it adds them with `addField`, then runs
+  `syncOne` and `syncFrontend` on the same in-memory change set.
+- `src/commands/sync.ts` holds the `dafne sync` commands: `contract`,
+  `form`, `table`, `detail`, and `frontend` (`syncFrontend`: form + table
+  + detail, skipping the parts a resource lacks).
 - `src/commands/migration.ts`: `dafne migration generate|fix`. It runs
   drizzle-kit from `backend/node_modules/.bin` with the terminal attached.
 - `src/fields/`: `dafne field add|remove`. `spec.ts` holds the types and
