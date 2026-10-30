@@ -30,7 +30,7 @@ export const activity = mysqlTable(
       () => user.id,
       { onDelete: 'set null' },
     ),
-    /** @api detail */
+    /** @api detail @form editor */
     notes: text('notes'),
     createdAt: timestamp('created_at', { fsp: 3 }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { fsp: 3 })
