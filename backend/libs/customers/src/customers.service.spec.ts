@@ -1,5 +1,5 @@
 import { DatabaseService, schema } from '@app/database';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { and, asc, desc, eq, isNull, like } from 'drizzle-orm';
 import { customerBodySchema, type CustomerBodyInput } from '@app/contracts';
@@ -142,11 +142,17 @@ describe('CustomersService', () => {
       await expect(
         service.createCustomer(
           body({
+            type: 'company',
             name: 'Acme',
             email: 'info@acme.test',
             addresses: [
               { street: 'Via Roma 1', city: 'Milano', country: 'Italy' },
-              { street: 'Main St 2', city: 'Boston', country: 'USA', type: 'head_office' },
+              {
+                street: 'Main St 2',
+                city: 'Boston',
+                country: 'USA',
+                type: 'head_office',
+              },
             ],
           }),
           'u1',
@@ -165,13 +171,21 @@ describe('CustomersService', () => {
       const [addressRows] = insert.values.mock.calls[1];
       expect(addressRows).toMatchObject([
         { customerId: customerRow.id, position: 0, city: 'Milano', type: null },
-        { customerId: customerRow.id, position: 1, city: 'Boston', type: 'head_office' },
+        {
+          customerId: customerRow.id,
+          position: 1,
+          city: 'Boston',
+          type: 'head_office',
+        },
       ]);
       expect(findFirst.mock.calls[0][0].where.id).toBe(customerRow.id);
     });
 
     it('skips the address insert when there are none', async () => {
-      await service.createCustomer(body({ name: 'Acme' }), 'u1');
+      await service.createCustomer(
+        body({ type: 'company', name: 'Acme' }),
+        'u1',
+      );
 
       expect(insert.values).toHaveBeenCalledTimes(1);
     });
@@ -182,8 +196,11 @@ describe('CustomersService', () => {
       await service.updateCustomer(
         'c1',
         body({
+          type: 'company',
           name: 'Acme Inc',
-          addresses: [{ street: 'Via Roma 1', city: 'Milano', country: 'Italy' }],
+          addresses: [
+            { street: 'Via Roma 1', city: 'Milano', country: 'Italy' },
+          ],
         }),
         'u2',
       );
@@ -195,7 +212,7 @@ describe('CustomersService', () => {
         updatedById: 'u2',
       });
       expect(update.where).toHaveBeenCalledWith(
-        and(eq(customer.id, 'c1'), notDeleted),
+        and(eq(customer.id, 'c1'), notDeleted, eq(customer.type, 'company')),
       );
       expect(db.delete).toHaveBeenCalledWith(customerAddress);
       expect(remove.where).toHaveBeenCalledWith(
@@ -206,11 +223,31 @@ describe('CustomersService', () => {
       ]);
     });
 
-    it('throws 404 and changes nothing when the customer is missing', async () => {
+    it('throws 400 and changes nothing when the type changes', async () => {
       update.where.mockResolvedValue([{ affectedRows: 0 }]);
+      findFirst.mockResolvedValue({ id: 'c1' });
 
       await expect(
-        service.updateCustomer('nope', body({ name: 'X' }), 'u2'),
+        service.updateCustomer(
+          'c1',
+          body({ type: 'person', name: 'Mario Rossi' }),
+          'u2',
+        ),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(db.delete).not.toHaveBeenCalled();
+      expect(insert.values).not.toHaveBeenCalled();
+    });
+
+    it('throws 404 and changes nothing when the customer is missing', async () => {
+      update.where.mockResolvedValue([{ affectedRows: 0 }]);
+      findFirst.mockResolvedValue(undefined);
+
+      await expect(
+        service.updateCustomer(
+          'nope',
+          body({ type: 'company', name: 'X' }),
+          'u2',
+        ),
       ).rejects.toBeInstanceOf(NotFoundException);
       expect(db.delete).not.toHaveBeenCalled();
       expect(insert.values).not.toHaveBeenCalled();

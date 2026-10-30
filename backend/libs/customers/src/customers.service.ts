@@ -1,5 +1,9 @@
 import { DatabaseService, schema } from '@app/database';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { and, asc, desc, eq, isNull, like, type SQL } from 'drizzle-orm';
 import {
@@ -55,7 +59,11 @@ export class CustomersService {
       db
         .select({
           id: customer.id,
+          type: customer.type,
           name: customer.name,
+          birthDate: customer.birthDate,
+          fiscalCode: customer.fiscalCode,
+          vatNumber: customer.vatNumber,
           email: customer.email,
           phone: customer.phone,
           createdAt: customer.createdAt,
@@ -105,7 +113,11 @@ export class CustomersService {
     await this.database.db.transaction(async (tx) => {
       await tx.insert(customer).values({
         id,
+        type: body.type,
         name: body.name,
+        birthDate: body.birthDate,
+        fiscalCode: body.fiscalCode,
+        vatNumber: body.vatNumber,
         email: body.email,
         phone: body.phone,
         createdAt: now,
@@ -120,7 +132,8 @@ export class CustomersService {
 
   /**
    * Replaces a customer's fields and addresses; `userId` is the editor.
-   * Throws 404 if the customer doesn't exist or is deleted.
+   * Throws 404 if the customer doesn't exist or is deleted, 400 if the body
+   * changes the type (it's chosen when the customer is created).
    */
   async updateCustomer(
     id: string,
@@ -131,16 +144,32 @@ export class CustomersService {
       const [result] = await tx
         .update(customer)
         .set({
+          // Same as before: the where below only matches the saved type.
+          type: body.type,
           name: body.name,
+          birthDate: body.birthDate,
+          fiscalCode: body.fiscalCode,
+          vatNumber: body.vatNumber,
           email: body.email,
           phone: body.phone,
           updatedById: userId,
           // Set explicitly so the row always changes and is counted below.
           updatedAt: new Date(),
         })
-        .where(and(eq(customer.id, id), notDeleted));
-      if (result.affectedRows === 0)
-        throw new NotFoundException('Customer not found');
+        .where(
+          and(eq(customer.id, id), notDeleted, eq(customer.type, body.type)),
+        );
+      if (result.affectedRows === 0) {
+        // Missing (404), or there with another type (400).
+        const found = await tx.query.customer.findFirst({
+          where: { id, deletedAt: { isNull: true } },
+          columns: { id: true },
+        });
+        if (!found) throw new NotFoundException('Customer not found');
+        throw new BadRequestException([
+          "type: The type can't be changed after the customer is created",
+        ]);
+      }
 
       await tx
         .delete(customerAddress)

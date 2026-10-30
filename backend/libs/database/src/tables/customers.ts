@@ -6,6 +6,7 @@ import {
   mysqlTable,
   timestamp,
   varchar,
+  date,
 } from 'drizzle-orm/mysql-core';
 import { user } from './auth.js';
 
@@ -17,7 +18,11 @@ export const customer = mysqlTable(
   'customer',
   {
     id: varchar('id', { length: 36 }).primaryKey(),
+    type: mysqlEnum('type', ['person', 'company']).notNull().default('company'),
     name: varchar('name', { length: 255 }).notNull(),
+    birthDate: date('birth_date'),
+    fiscalCode: varchar('fiscal_code', { length: 16 }),
+    vatNumber: varchar('vat_number', { length: 13 }),
     email: varchar('email', { length: 255 }),
     phone: varchar('phone', { length: 32 }),
     createdAt: timestamp('created_at', { fsp: 3 }).defaultNow().notNull(),
@@ -55,7 +60,7 @@ export const customerAddress = mysqlTable(
       .references(() => customer.id, { onDelete: 'cascade' }),
     position: int('position').notNull(),
     /** e.g. "Billing", "Shipping", "Head office". */
-    type: mysqlEnum(['head_office', 'shipping', 'billing',]),
+    type: mysqlEnum(['head_office', 'shipping', 'billing']),
     street: varchar('street', { length: 255 }).notNull(),
     city: varchar('city', { length: 100 }).notNull(),
     postalCode: varchar('postal_code', { length: 20 }),
