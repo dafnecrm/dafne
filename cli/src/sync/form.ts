@@ -10,6 +10,7 @@ import type { TableInfo } from './table.js';
 
 export type FormKind =
   | 'text'
+  | 'textarea'
   | 'email'
   | 'enum'
   | 'boolean'
@@ -81,14 +82,16 @@ function classify(key: string, raw: string, table?: TableInfo): FormField {
   const defaultValue = /\.default\(([^)]*)\)/.exec(zod)?.[1]?.trim() ?? column?.defaultValue;
   const dateKind: FormKind = column?.kind === 'datetime' ? 'datetime' : 'date';
   const base = { key, label, defaultValue };
+  // A `text` column (65535 chars in the contract) gets a multi-line input.
+  const textKind: FormKind = column ? (column.kind === 'text' ? 'textarea' : 'text') : /\b65535\b/.test(zod) ? 'textarea' : 'text';
 
   if (/^z\.(array|object|strictObject|record|unknown|any)\(/.test(zod)) return { ...base, kind: 'unsupported', optional: true };
   if (zod.startsWith('optionalText(')) {
     if (/z\.iso\.datetime\(/.test(zod)) return { ...base, kind: 'datetime', optional: true };
     if (/z\.iso\.date\(/.test(zod)) return { ...base, kind: 'date', optional: true };
-    return { ...base, kind: /z\.email\(/.test(zod) ? 'email' : 'text', optional: true };
+    return { ...base, kind: /z\.email\(/.test(zod) ? 'email' : textKind, optional: true };
   }
-  if (zod.startsWith('requiredText(')) return { ...base, kind: 'text', optional: false };
+  if (zod.startsWith('requiredText(')) return { ...base, kind: textKind, optional: false };
   if (zod.startsWith('optionalDate(')) return { ...base, kind: dateKind, optional: true };
   const enumConst = /^z\.enum\((\w+)/.exec(zod)?.[1];
   if (enumConst) return { ...base, kind: 'enum', optional: nullable, enumConst };
@@ -98,7 +101,7 @@ function classify(key: string, raw: string, table?: TableInfo): FormField {
   if (zod.startsWith('z.iso.datetime(')) return { ...base, kind: 'datetime', optional: nullable };
   if (zod.startsWith('z.iso.date(')) return { ...base, kind: 'date', optional: nullable };
   if (/^z\.string\(\)\.regex\(\/\^-\?\\d/.test(zod)) return { ...base, kind: 'decimal', optional: nullable };
-  if (zod.startsWith('z.string(') || zod.startsWith('z.email(')) return { ...base, kind: zod.startsWith('z.email(') ? 'email' : 'text', optional: nullable };
+  if (zod.startsWith('z.string(') || zod.startsWith('z.email(')) return { ...base, kind: zod.startsWith('z.email(') ? 'email' : textKind, optional: nullable };
   return { ...base, kind: 'unsupported', optional: true };
 }
 
@@ -273,6 +276,8 @@ function fieldJsx(f: FormField): string {
         return `<field.TextField label="${label}" type="date" />`;
       case 'datetime':
         return `<field.TextField label="${label}" type="datetime-local" />`;
+      case 'textarea':
+        return `<field.TextareaField label="${label}" />`;
       default:
         return `<field.TextField label="${label}" autoComplete="off" />`;
     }

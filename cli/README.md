@@ -200,7 +200,8 @@ It adds the contract body fields that a form lacks, in
   - the default values: dates are cut to what the inputs show, required
     numbers start at the table default (or 0).
 - **`<singular>-form.tsx`:** a `<form.AppField>` after the last one:
-  - text, email, date and datetime-local use `TextField`;
+  - text, email, date and datetime-local use `TextField`; `text` columns
+    (long text) use `TextareaField`;
   - enums use `SelectField`, booleans `CheckboxField`, numbers `NumberField`
     (a number, empty = null).
 
