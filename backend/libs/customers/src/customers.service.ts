@@ -176,7 +176,7 @@ async function insertAddresses(
       id: randomUUID(),
       customerId,
       position,
-      label: address.label,
+      type: address.type,
       street: address.street,
       city: address.city,
       postalCode: address.postalCode,

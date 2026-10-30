@@ -11,9 +11,19 @@ import {
 /** Digits, spaces, dashes, dots, parentheses, with an optional leading +. */
 export const PHONE_PATTERN = /^\+?[0-9 ().-]{5,32}$/;
 
+/** Values of customer address type. */
+export const CUSTOMER_ADDRESS_TYPES = [
+  'head_office',
+  'shipping',
+  'billing',
+] as const;
+export type CustomerAddressType = (typeof CUSTOMER_ADDRESS_TYPES)[number];
+
 export const customerAddressBodySchema = z.strictObject({
-  /** e.g. "Billing", "Shipping". */
-  label: optionalText(z.string().max(100)),
+  type: z
+    .enum(CUSTOMER_ADDRESS_TYPES, { error: 'Choose the type' })
+    .nullish()
+    .transform((value) => value ?? null),
   street: requiredText(255, 'Enter the street'),
   city: requiredText(100, 'Enter the city'),
   postalCode: optionalText(z.string().max(20)),
@@ -96,8 +106,7 @@ export interface CustomersList {
 
 export interface CustomerAddress {
   id: string;
-  /** e.g. "Billing", "Shipping". */
-  label: string | null;
+  type: CustomerAddressType | null;
   street: string;
   city: string;
   postalCode: string | null;

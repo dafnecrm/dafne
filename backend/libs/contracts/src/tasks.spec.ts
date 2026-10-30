@@ -20,6 +20,7 @@ describe('taskBodySchema', () => {
       }),
     ).toEqual({
       name: 'Acme',
+      dueDate: new Date('2026-01-01T10:00:00.000Z'),
       notes: 'Notes',
       type: 'email',
       activityId: 'Activity id',

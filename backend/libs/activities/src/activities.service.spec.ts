@@ -1,7 +1,7 @@
 import { DatabaseService, schema } from '@app/database';
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { and, asc, desc, eq, isNull, like } from 'drizzle-orm';
+import { and, asc, desc, eq, isNull, like, ne } from 'drizzle-orm';
 import { activityBodySchema, type ActivityBodyInput } from '@app/contracts';
 import { ActivitiesService } from './activities.service.js';
 
@@ -10,6 +10,8 @@ const body = (input: ActivityBodyInput) => activityBodySchema.parse(input);
 
 const { activity } = schema;
 const notDeleted = isNull(activity.deletedAt);
+// Closed activities can't be edited.
+const notClosed = ne(activity.status, 'closed');
 
 describe('ActivitiesService', () => {
   let service: ActivitiesService;
@@ -153,7 +155,7 @@ describe('ActivitiesService', () => {
         updatedById: 'u2',
       });
       expect(update.where).toHaveBeenCalledWith(
-        and(eq(activity.id, 'r1'), notDeleted),
+        and(eq(activity.id, 'r1'), notDeleted, notClosed),
       );
     });
 

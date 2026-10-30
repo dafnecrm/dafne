@@ -28,7 +28,7 @@ describe('customerBodySchema', () => {
     expect(body.addresses[0]).toMatchObject({
       street: 'Via Roma 1',
       region: null,
-      label: null,
+      type: null,
     });
   });
 

@@ -2,6 +2,7 @@ import { defineRelationsPart } from 'drizzle-orm';
 import {
   index,
   int,
+  mysqlEnum,
   mysqlTable,
   timestamp,
   varchar,
@@ -54,7 +55,7 @@ export const customerAddress = mysqlTable(
       .references(() => customer.id, { onDelete: 'cascade' }),
     position: int('position').notNull(),
     /** e.g. "Billing", "Shipping", "Head office". */
-    label: varchar('label', { length: 100 }),
+    type: mysqlEnum(['head_office', 'shipping', 'billing',]),
     street: varchar('street', { length: 255 }).notNull(),
     city: varchar('city', { length: 100 }).notNull(),
     postalCode: varchar('postal_code', { length: 20 }),

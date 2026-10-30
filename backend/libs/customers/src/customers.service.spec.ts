@@ -146,7 +146,7 @@ describe('CustomersService', () => {
             email: 'info@acme.test',
             addresses: [
               { street: 'Via Roma 1', city: 'Milano', country: 'Italy' },
-              { street: 'Main St 2', city: 'Boston', country: 'USA', label: 'HQ' },
+              { street: 'Main St 2', city: 'Boston', country: 'USA', type: 'head_office' },
             ],
           }),
           'u1',
@@ -164,8 +164,8 @@ describe('CustomersService', () => {
 
       const [addressRows] = insert.values.mock.calls[1];
       expect(addressRows).toMatchObject([
-        { customerId: customerRow.id, position: 0, city: 'Milano', label: null },
-        { customerId: customerRow.id, position: 1, city: 'Boston', label: 'HQ' },
+        { customerId: customerRow.id, position: 0, city: 'Milano', type: null },
+        { customerId: customerRow.id, position: 1, city: 'Boston', type: 'head_office' },
       ]);
       expect(findFirst.mock.calls[0][0].where.id).toBe(customerRow.id);
     });
