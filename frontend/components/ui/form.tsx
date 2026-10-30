@@ -387,12 +387,15 @@ function SelectField({
   label,
   options,
   emptyLabel,
+  disabled,
   className,
   controlClassName,
   orientation,
 }: BaseFieldProps & {
   options: readonly { value: string; label: string }[]
   emptyLabel?: string
+  /** Shows the value but doesn't let it change. */
+  disabled?: boolean
 }) {
   const field = useFieldContext<string | null>()
   const items =
@@ -410,6 +413,7 @@ function SelectField({
       <Select
         items={items}
         name={field.name}
+        disabled={disabled}
         value={field.state.value ?? null}
         onValueChange={(value) =>
           (value !== null || emptyLabel !== undefined) &&

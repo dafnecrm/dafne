@@ -18,7 +18,12 @@ import { useResetOnLeave } from "@/lib/app-form/reset-on-leave";
 import type { CustomerDetail } from "@/lib/customers";
 import { CUSTOMER_ADDRESS_TYPE_OPTIONS } from "@/lib/customers-table";
 import { saveCustomer } from "./actions";
-import { customerFormOpts, customerSchema, emptyAddress } from "./schema";
+import {
+  customerFormOpts,
+  customerSchema,
+  emptyAddress,
+  TYPE_OPTIONS,
+} from "./schema";
 
 /**
  * Creates a customer, or edits `customer`. Saving opens the customer's
@@ -53,7 +58,6 @@ export function CustomerForm({ customer }: { customer?: CustomerDetail }) {
       <form.AppForm>
         <FieldGroup>
           <form.FormErrors />
-
           <Card>
             <CardHeader>
               <CardTitle>
@@ -62,11 +66,62 @@ export function CustomerForm({ customer }: { customer?: CustomerDetail }) {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                <form.AppField name="name">
+                <form.AppField name="type">
                   {(field) => (
-                    <field.TextField label="Name" autoComplete="off" autoFocus />
+                    <field.SelectField
+                      label="Type"
+                      options={TYPE_OPTIONS}
+                      // Chosen when the customer is created (the backend refuses a change).
+                      disabled={!!customer}
+                    />
                   )}
                 </form.AppField>
+                <form.Subscribe selector={(state) => state.values.type}>
+                  {(type) => (
+                    <>
+                      <form.AppField name="name">
+                        {(field) => (
+                          <field.TextField
+                            label={type === "company" ? "Company name" : "Name"}
+                            autoComplete="off"
+                            autoFocus
+                          />
+                        )}
+                      </form.AppField>
+                      {/* Each type has its own fields; the other type's are cleared on save. */}
+                      {type === "person" ? (
+                        <>
+                          <form.AppField name="birthDate">
+                            {(field) => (
+                              <field.DatePickerField label="Birth date (optional)" />
+                            )}
+                          </form.AppField>
+                          <form.AppField name="fiscalCode">
+                            {(field) => (
+                              <field.TextField
+                                label="Fiscal code (optional)"
+                                autoComplete="off"
+                                maxLength={16}
+                                controlClassName="[&_input]:uppercase"
+                              />
+                            )}
+                          </form.AppField>
+                        </>
+                      ) : (
+                        <form.AppField name="vatNumber">
+                          {(field) => (
+                            <field.TextField
+                              label="VAT number (optional)"
+                              autoComplete="off"
+                              maxLength={13}
+                              controlClassName="[&_input]:uppercase"
+                            />
+                          )}
+                        </form.AppField>
+                      )}
+                    </>
+                  )}
+                </form.Subscribe>
                 <form.AppField name="email">
                   {(field) => (
                     <field.TextField

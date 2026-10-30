@@ -1,6 +1,7 @@
 import { formOptions } from "@tanstack/react-form-nextjs";
 import {
   customerBodySchema,
+  type CustomerType,
   type CustomerAddressBody,
   type CustomerAddressType,
   type CustomerBody,
@@ -17,9 +18,12 @@ export type AddressFormValues = Record<
   string
 > & { type: CustomerAddressType | null };
 export type CustomerFormValues = Record<
-  Exclude<keyof CustomerBody, "addresses">,
+  Exclude<keyof CustomerBody, "addresses" | "type">,
   string
-> & { addresses: AddressFormValues[] };
+> & {
+  addresses: AddressFormValues[];
+  type: CustomerType;
+};
 
 /**
  * The form validates with the backend's own schema (same rules and
@@ -37,6 +41,11 @@ export const emptyAddress: AddressFormValues = {
   country: "",
 };
 
+export const TYPE_OPTIONS = [
+  { value: "person", label: "Person" },
+  { value: "company", label: "Company" },
+] satisfies { value: CustomerType; label: string }[];
+
 /** Form values for a new customer, or for editing `customer`. */
 export function customerFormOpts(customer?: CustomerDetail) {
   return formOptions({
@@ -53,6 +62,10 @@ export function customerFormOpts(customer?: CustomerDetail) {
           region: a.region ?? "",
           country: a.country,
         })) ?? [],
+      type: customer?.type ?? "company",
+      birthDate: customer?.birthDate?.slice(0, 10) ?? "",
+      fiscalCode: customer?.fiscalCode ?? "",
+      vatNumber: customer?.vatNumber ?? "",
     } satisfies CustomerFormValues as CustomerFormValues,
   });
 }

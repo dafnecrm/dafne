@@ -48,7 +48,7 @@ export function ActivityForm({ activity }: { activity?: ActivityDetail }) {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <FieldGroup className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <form.AppField name="name">
                   {(field) => (
                     <field.TextField
@@ -60,12 +60,7 @@ export function ActivityForm({ activity }: { activity?: ActivityDetail }) {
                 </form.AppField>
                 <form.AppField name="type">
                   {(field) => (
-                    <field.SelectField label="Type" options={TYPE_OPTIONS} />
-                  )}
-                </form.AppField>
-                <form.AppField name="notes">
-                  {(field) => (
-                    <field.TextEditorField label="Notes (optional)" />
+                    <field.SelectField label="Type" options={TYPE_OPTIONS} disabled={!!activity} />
                   )}
                 </form.AppField>
                 <form.AppField name="dueDate">
@@ -73,7 +68,12 @@ export function ActivityForm({ activity }: { activity?: ActivityDetail }) {
                     <field.DateTimePickerField label="Due date (optional)" />
                   )}
                 </form.AppField>
-              </div>
+                <form.AppField name="notes">
+                  {(field) => (
+                    <field.TextEditorField label="Notes (optional)" controlClassName="col-span-2" />
+                  )}
+                </form.AppField>
+              </FieldGroup>
             </CardContent>
           </Card>
 

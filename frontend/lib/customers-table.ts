@@ -2,6 +2,7 @@ import type {
   CustomerAddressType,
   CustomerFilterField,
   CustomerSortField,
+  CustomerType,
 } from "@backend/contracts";
 import { defineDataTable } from "./data-table";
 
@@ -11,6 +12,12 @@ export const CUSTOMER_ADDRESS_TYPE_OPTIONS = [
   { value: "shipping", label: "Shipping" },
   { value: "billing", label: "Billing" },
 ] as const satisfies readonly { value: CustomerAddressType; label: string }[];
+
+/** Labels of the type values. */
+export const CUSTOMER_TYPE_OPTIONS = [
+  { value: "person", label: "Person" },
+  { value: "company", label: "Company" },
+] satisfies { value: CustomerType; label: string }[];
 
 /**
  * The customers table: plain data with no server-only imports (unlike
@@ -25,7 +32,11 @@ export const customersTable = defineDataTable({
   // The backend allows up to 100.
   pageSizes: [10, 20, 50],
   sortable: [
+    "type",
     "name",
+    "birthDate",
+    "fiscalCode",
+    "vatNumber",
     "email",
     "phone",
     "createdAt",
@@ -36,5 +47,13 @@ export const customersTable = defineDataTable({
     { field: "name" satisfies CustomerFilterField, label: "Name" },
     { field: "email" satisfies CustomerFilterField, label: "Email" },
     { field: "phone" satisfies CustomerFilterField, label: "Phone" },
+    {
+      field: "type" satisfies CustomerFilterField,
+      label: "Type",
+      placeholder: "Any type",
+      options: CUSTOMER_TYPE_OPTIONS,
+    },
+    { field: "fiscalCode" satisfies CustomerFilterField, label: "Fiscal code" },
+    { field: "vatNumber" satisfies CustomerFilterField, label: "VAT number" },
   ],
 });

@@ -7,20 +7,54 @@ import {
   PhoneIcon,
   UserPenIcon,
   UserPlusIcon,
+  TagIcon,
+  CalendarIcon,
+  IdCardIcon,
+  Building2Icon,
 } from "lucide-react";
 import Link from "next/link";
 import CopyButton from "@/components/copy-button";
 import { Detail, DetailSection } from "@/components/detail";
 import { LocalDate } from "@/components/local-date";
 import { formatAddress, type CustomerDetail } from "@/lib/customers";
-import { CUSTOMER_ADDRESS_TYPE_OPTIONS } from "@/lib/customers-table";
+import {
+  CUSTOMER_ADDRESS_TYPE_OPTIONS,
+  CUSTOMER_TYPE_OPTIONS,
+} from "@/lib/customers-table";
 
-/** The details of a customer: contact, addresses, then who created and updated it. */
+/** The details of a customer: type and tax data, contact, addresses, then who created and updated it. */
 export function CustomerDetails({ customer }: { customer: CustomerDetail }) {
   const editHref = `/customers/${encodeURIComponent(customer.id)}/edit`;
 
   return (
     <>
+      <DetailSection title="Details">
+        <Detail icon={TagIcon} label="Type">
+          {CUSTOMER_TYPE_OPTIONS.find((o) => o.value === customer.type)
+            ?.label ?? "—"}
+        </Detail>
+        {/* Each type has its own fields (the other type's are always empty). */}
+        {customer.type === "person" && (
+          <Detail icon={CalendarIcon} label="Birth date">
+            {customer.birthDate ? (
+              <LocalDate value={customer.birthDate} format="longDate" />
+            ) : (
+              "—"
+            )}
+          </Detail>
+        )}
+        {customer.type === "person" && (
+          <Detail icon={IdCardIcon} label="Fiscal code">
+            {customer.fiscalCode ?? "—"}
+          </Detail>
+        )}
+        {customer.type === "company" && (
+          <Detail icon={Building2Icon} label="VAT number">
+            {customer.vatNumber ?? "—"}
+          </Detail>
+        )}
+      </DetailSection>
+
       <DetailSection title="Contact">
         <Detail icon={MailIcon} label="Email">
           {customer.email ? (
@@ -55,8 +89,9 @@ export function CustomerDetails({ customer }: { customer: CustomerDetail }) {
               key={address.id}
               icon={MapPinIcon}
               label={
-                CUSTOMER_ADDRESS_TYPE_OPTIONS.find((o) => o.value === address.type)
-                  ?.label ?? `Address ${i + 1}`
+                CUSTOMER_ADDRESS_TYPE_OPTIONS.find(
+                  (o) => o.value === address.type,
+                )?.label ?? `Address ${i + 1}`
               }
             >
               <span className="font-normal">{formatAddress(address)}</span>

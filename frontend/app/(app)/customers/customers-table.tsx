@@ -17,7 +17,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { describeFilters, type TableParams } from "@/lib/data-table";
-import { customersTable } from "@/lib/customers-table";
+import { customersTable, CUSTOMER_TYPE_OPTIONS } from "@/lib/customers-table";
 
 /*
  * Columns of the customers table. Column ids double as the backend's sort
@@ -69,6 +69,27 @@ const customerColumns = col.columns([
         empty
       );
     },
+  }),
+  col.accessor("type", {
+    header: "Type",
+    cell: (info) =>
+      CUSTOMER_TYPE_OPTIONS.find((o) => o.value === info.getValue())?.label ??
+      "—",
+  }),
+  col.accessor("birthDate", {
+    header: "Birth date",
+    cell: (info) => {
+      const value = info.getValue();
+      return value ? <LocalDate value={value} format="date" /> : "—";
+    },
+  }),
+  col.accessor("fiscalCode", {
+    header: "Fiscal code",
+    cell: (info) => info.getValue() ?? "—",
+  }),
+  col.accessor("vatNumber", {
+    header: "VAT number",
+    cell: (info) => info.getValue() ?? "—",
   }),
   col.accessor("createdAt", {
     header: "Added",
