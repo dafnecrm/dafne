@@ -31,6 +31,10 @@ TypeScript ESM, Node ≥ 22, pnpm. `pnpm dev g ...` runs from source (tsx),
   `list<P>` select, `get<S>` findFirst columns and `create<S>`/`update<S>`
   values/set. It only touches members shaped like `key: <table>.key`,
   `key: false` or `key: body.key`; others are hand-written and kept.
+- Child tables (`syncChildContract`, `syncChildService`, `childTables` in
+  `commands/sync.ts`): other tables of the resource's table file reached
+  through a relation, synced into `<child>BodySchema`, the `<Child>`
+  interface and the service's relation columns and insert map.
 - `src/sync/service-spec.ts` keeps the specs' sample bodies valid: the
   service spec's `body({...})`, and the contract spec's `failedFields` and
   `parse` calls. It only removes keys that were in the body before the sync

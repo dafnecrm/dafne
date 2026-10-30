@@ -188,6 +188,14 @@ They get the new required fields, with a sample value, and lose the fields
 that left the body. Other unknown keys stay: they may be there on purpose,
 like the `deletedAt` the schema must reject. Assertions aren't changed.
 
+Child tables are synced too: a table in the same file that the resource
+reaches through a relation (`customerAddress` for `customer.addresses`),
+when the contract has its `<child>BodySchema` or `<Child>` interface. The
+key to the parent and `position` stay out unless an `@api` tag says
+otherwise; in the service, the `with.<relation>.columns` of `get<S>` and the
+`.insert(<child>).values(list.map(...))` members shaped `key: item.key`
+are kept in line. A renamed or dropped column is reported, not removed.
+
 It doesn't touch the frontend: use `dafne sync frontend` (or `sync form|table|detail`) there.
 
 Which column goes where follows the customers contract:

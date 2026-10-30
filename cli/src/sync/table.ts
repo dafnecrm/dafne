@@ -65,6 +65,8 @@ export interface TableInfo {
   columns: Column[];
   /** Relation names of the table (createdBy, addresses…). */
   relations: string[];
+  /** The table each relation points to, e.g. addresses → customerAddress. */
+  relationTargets: Record<string, string>;
   warnings: string[];
 }
 
@@ -130,7 +132,8 @@ export function readTable(path: string, source: string, { s }: ResourceNames): T
       column.formInput = readFormInput(prop, column, warnings, path);
       columns.push(column);
     }
-    info = { variable: s.camel, columns, relations: readRelations(file, s.camel), warnings };
+    const relations = readRelations(file, s.camel);
+    info = { variable: s.camel, columns, relations: Object.keys(relations), relationTargets: relations, warnings };
   });
   return info!;
 }
@@ -236,14 +239,35 @@ function readFormInput(prop: Node, column: Column, warnings: string[], path: str
   return input;
 }
 
-/** Names under `<table>: { ... }` in the file's defineRelationsPart. */
-function readRelations(file: import('ts-morph').SourceFile, table: string): string[] {
+/**
+ * Relations under `<table>: { ... }` in the file's defineRelationsPart, with
+ * the table each points to (`addresses: r.many.customerAddress(...)`).
+ */
+function readRelations(file: import('ts-morph').SourceFile, table: string): Record<string, string> {
   const relations = file.getVariableDeclaration(`${table}Relations`);
-  if (!relations) return [];
+  if (!relations) return {};
   for (const prop of relations.getDescendantsOfKind(SyntaxKind.PropertyAssignment)) {
     const init = prop.getInitializer();
     if (prop.getName() === table && init && Node.isObjectLiteralExpression(init))
-      return init.getProperties().flatMap((p) => (Node.isPropertyAssignment(p) ? [p.getName()] : []));
+      return Object.fromEntries(
+        init.getProperties().flatMap((p) =>
+          Node.isPropertyAssignment(p)
+            ? [[p.getName(), /\br\.(?:one|many)\.(\w+)\(/.exec(p.getInitializer()?.getText() ?? '')?.[1] ?? '']]
+            : [],
+        ),
+      );
   }
-  return [];
+  return {};
+}
+
+/** The tables a file declares: `export const <name> = mysqlTable(...)`. */
+export function tablesIn(path: string, source: string): string[] {
+  const names: string[] = [];
+  editSource(path, source, (file) => {
+    for (const declaration of file.getVariableDeclarations()) {
+      const call = declaration.getInitializerIfKind(SyntaxKind.CallExpression);
+      if (call && /Table$/.test(call.getExpression().getText())) names.push(declaration.getName());
+    }
+  });
+  return names;
 }

@@ -7,10 +7,10 @@ import { formatSource } from '../core/format.js';
 import { resourceNames, type ResourceNames } from '../core/names.js';
 import { findRoot } from '../core/workspace.js';
 import { contractFile } from '../generators/backend.js';
-import { OPTIONAL_DATE_HELPER, syncContract, type SyncReport } from '../sync/contract.js';
-import { syncService } from '../sync/service.js';
+import { childRoles, OPTIONAL_DATE_HELPER, syncChildContract, syncContract, type SyncReport } from '../sync/contract.js';
+import { syncChildService, syncService } from '../sync/service.js';
 import { syncContractSpec, syncServiceSpec } from '../sync/service-spec.js';
-import { API_TAGS, readTable } from '../sync/table.js';
+import { API_TAGS, readTable, tablesIn, type TableInfo } from '../sync/table.js';
 import { editSource } from '../wiring/ast.js';
 import { BACKEND } from '../wiring/backend.js';
 import { FRONTEND } from '../wiring/frontend.js';
@@ -60,7 +60,17 @@ export async function syncOne(
 
   const info = readTable(tablePath, table, names);
   const source = changes.read(contractPath)!;
-  const { content, report } = syncContract(contractPath, source, names, info, dropped);
+  let { content, report } = syncContract(contractPath, source, names, info, dropped);
+
+  // Child tables (customerAddress for customer.addresses): their own body
+  // schema and response interface, when the contract has them.
+  const children = childTables(tablePath, table, info, content);
+  for (const child of children) {
+    const result = syncChildContract(contractPath, content, child.names, child.info, info.variable);
+    content = result.content;
+    mergeReport(report, result.report);
+    report.warnings.push(...child.info.warnings);
+  }
   // Compare formatted, so a rewrite that changes only the layout is no change.
   const formatted = await formatSource(join(changes.root, contractPath), content, source);
   if (formatted !== source) changes.update(contractPath, () => formatted);
@@ -84,6 +94,13 @@ export async function syncOne(
   const serviceSource = service ? changes.read(servicePath) : undefined;
   if (serviceSource !== undefined) {
     const result = syncService(servicePath, serviceSource, names, info, dropped);
+    for (const child of children) {
+      const childResult = syncChildService(servicePath, result.content, names, child.info, child.relation, (c) => childRoles(c, info.variable));
+      result.content = childResult.content;
+      result.report.added.push(...childResult.report.added);
+      result.report.removed.push(...childResult.report.removed);
+      result.report.warnings.push(...childResult.report.warnings);
+    }
     changes.update(servicePath, () => result.content);
     report.added.push(...result.report.added.map((item) => `service ${item}`));
     report.removed.push(...result.report.removed.map((item) => `service ${item}`));
@@ -109,6 +126,34 @@ export async function syncOne(
     report.removed.push(...spec.report.removed.map((key) => `contract spec samples: ${key}`));
   }
   return report;
+}
+
+interface ChildTable {
+  names: ResourceNames;
+  info: TableInfo;
+  /** The parent's relation to it, e.g. addresses. */
+  relation: string;
+}
+
+/**
+ * The other tables of the resource's table file that a relation of the
+ * resource reaches, and whose contract parts (<child>BodySchema or the
+ * <Child> interface) exist.
+ */
+function childTables(tablePath: string, table: string, parent: TableInfo, contract: string): ChildTable[] {
+  return tablesIn(tablePath, table).flatMap((variable) => {
+    if (variable === parent.variable) return [];
+    const relation = Object.entries(parent.relationTargets).find(([, target]) => target === variable)?.[0];
+    if (!relation) return [];
+    const names = resourceNames(variable);
+    const hasParts =
+      new RegExp(`\\b${names.s.camel}BodySchema\\b`).test(contract) || new RegExp(`\\binterface ${names.s.pascal}\\b`).test(contract);
+    return hasParts ? [{ names, info: readTable(tablePath, table, names), relation }] : [];
+  });
+}
+
+function mergeReport(into: SyncReport, from: SyncReport) {
+  for (const key of ['added', 'removed', 'unknown', 'required', 'warnings'] as const) into[key].push(...from[key]);
 }
 
 export function printSync(name: string, report: SyncReport, changed: boolean) {

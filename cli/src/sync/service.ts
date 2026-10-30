@@ -22,10 +22,12 @@ export interface ServiceReport {
 }
 
 interface Section {
-  /** The method, e.g. listActivities. */
+  /** Where the object is, for messages: a method (listActivities) or a function. */
   method: string;
-  /** Finds the object literal to edit inside the method. */
-  find: (method: Node) => ObjectLiteralExpression | undefined;
+  /** Finds the object literal to edit. */
+  locate: (file: SourceFile) => ObjectLiteralExpression | undefined;
+  /** Not finding it isn't worth a warning (nothing would change anyway). */
+  optional?: boolean;
   /** The members this section manages: key → whether it belongs to it. */
   owns: (key: string, value: string) => boolean;
   /** Keys that should be there, in table order, with their text. */
@@ -79,42 +81,138 @@ export function syncService(
   // already there in the generated services.
   const hidden = keys((r) => !r.listed && !r.detail);
 
+  const inMethod = (method: string, find: (method: Node) => ObjectLiteralExpression | undefined) => (file: SourceFile) => {
+    const found = file.getClass(`${p.pascal}Service`)?.getMethod(method);
+    return found && find(found);
+  };
   const sections: Section[] = [
     {
       method: `list${p.pascal}`,
-      find: callArgument('select'),
+      locate: inMethod(`list${p.pascal}`, callArgument('select')),
       owns: (key, value) => isColumn.has(key) && value === `${record}.${key}`,
       wanted: listed.map((key) => ({ key, text: `${key}: ${record}.${key}` })),
       label: 'select',
     },
     {
       method: `get${s.pascal}`,
-      find: findFirstColumns,
+      locate: inMethod(`get${s.pascal}`, findFirstColumns),
       owns: (key, value) => isColumn.has(key) && value === 'false',
       wanted: hidden.map((key) => ({ key, text: `${key}: false` })),
       label: 'findFirst columns',
     },
     {
       method: `create${s.pascal}`,
-      find: callArgument('values'),
+      locate: inMethod(`create${s.pascal}`, callArgument('values')),
       owns: (key, value) => isColumn.has(key) && value === `body.${key}`,
       wanted: body.map((key) => ({ key, text: `${key}: body.${key}` })),
       label: 'insert values',
     },
     {
       method: `update${s.pascal}`,
-      find: callArgument('set'),
+      locate: inMethod(`update${s.pascal}`, callArgument('set')),
       owns: (key, value) => isColumn.has(key) && value === `body.${key}`,
       wanted: body.map((key) => ({ key, text: `${key}: body.${key}` })),
       label: 'update set',
     },
   ];
 
+  source = applySections(path, source, sections, report, `${p.pascal}Service.`);
+  return { content: source, report };
+}
+
+/**
+ * The service parts of a child table (see syncChildContract), reached from
+ * the parent through `relation` (e.g. addresses → customerAddress):
+ * - get<S>: `with: { <relation>: { columns: {...} } }` leaves out the
+ *   columns that aren't in the response;
+ * - the insert: `.insert(<child>).values(<list>.map((item…) => ({...})))`
+ *   saves the body's fields (`key: item.key`).
+ */
+export function syncChildService(
+  path: string,
+  source: string,
+  names: ResourceNames,
+  child: TableInfo,
+  relation: string,
+  roles: (column: TableInfo['columns'][number]) => ReturnType<typeof rolesOf>,
+  dropped: string[] = [],
+): { content: string; report: ServiceReport } {
+  const report: ServiceReport = { added: [], removed: [], warnings: [] };
+  const { s, p } = names;
+  const isColumn = new Set([...child.columns.map((c) => c.key), ...dropped]);
+  const keys = (pick: (r: ReturnType<typeof rolesOf>) => boolean) => child.columns.filter((c) => pick(roles(c))).map((c) => c.key);
+  // Not in the response: left out of the relation's columns.
+  const hidden = keys((r) => !r.listed && !r.detail);
+  const body = keys((r) => r.body);
+
+  // The arrow function inside `.insert(<child>).values(...)`, and its item.
+  const insertMap = (file: SourceFile) => {
+    for (const call of file.getDescendantsOfKind(SyntaxKind.CallExpression)) {
+      const callee = call.getExpression();
+      if (!Node.isPropertyAccessExpression(callee) || callee.getName() !== 'values') continue;
+      const target = callee.getExpression();
+      if (!Node.isCallExpression(target) || target.getArguments()[0]?.getText() !== child.variable) continue;
+      const arrow = call.getArguments()[0]?.getFirstDescendantByKind(SyntaxKind.ArrowFunction);
+      const item = arrow?.getParameters()[0]?.getName();
+      const object = arrow?.getBody().asKind(SyntaxKind.ParenthesizedExpression)?.getExpression().asKind(SyntaxKind.ObjectLiteralExpression);
+      if (item && object) return { item, object };
+    }
+    return undefined;
+  };
+  const item = editSourceValue(path, source, (file) => insertMap(file)?.item);
+
+  const sections: Section[] = [
+    {
+      method: `get${s.pascal}`,
+      locate: (file) => {
+        const method = file.getClass(`${p.pascal}Service`)?.getMethod(`get${s.pascal}`);
+        const options = method && callArgument('findFirst')(method);
+        const withs = options?.getProperty('with');
+        const entry = withs && Node.isPropertyAssignment(withs) ? withs.getInitializer()?.asKind(SyntaxKind.ObjectLiteralExpression)?.getProperty(relation) : undefined;
+        const config = entry && Node.isPropertyAssignment(entry) ? entry.getInitializer()?.asKind(SyntaxKind.ObjectLiteralExpression) : undefined;
+        const columns = config?.getProperty('columns');
+        return columns && Node.isPropertyAssignment(columns) ? columns.getInitializer()?.asKind(SyntaxKind.ObjectLiteralExpression) : undefined;
+      },
+      optional: !hidden.length,
+      owns: (key, value) => isColumn.has(key) && value === 'false',
+      wanted: hidden.map((key) => ({ key, text: `${key}: false` })),
+      label: `with ${relation} columns`,
+    },
+    ...(item
+      ? [
+          {
+            method: `insert ${child.variable}`,
+            locate: (file: SourceFile) => insertMap(file)?.object,
+            owns: (key: string, value: string) => value === `${item}.${key}`,
+            wanted: body.map((key) => ({ key, text: `${key}: ${item}.${key}` })),
+            label: 'values',
+          },
+        ]
+      : []),
+  ];
+  if (!item) report.warnings.push(`${path}: no .insert(${child.variable}).values(list.map(...)); update the ${relation} insert by hand.`);
+  source = applySections(path, source, sections, report, '', isColumn);
+  return { content: source, report };
+}
+
+/** Reads something from the file without changing it. */
+function editSourceValue<T>(path: string, source: string, read: (file: SourceFile) => T): T {
+  let value!: T;
+  editSource(path, source, (file) => {
+    value = read(file);
+  });
+  return value;
+}
+
+/**
+ * Removes the members a section owns that aren't wanted, then adds the
+ * missing wanted ones in table order. `isColumn` tells, for a member the
+ * section owns but doesn't want, whether it's a column (removed) or not
+ * (kept, and reported: maybe a dropped or renamed column).
+ */
+function applySections(path: string, source: string, sections: Section[], report: ServiceReport, owner: string, isColumn?: Set<string>): string {
   for (const section of sections) {
-    const locate = (file: SourceFile) => {
-      const method = file.getClass(`${p.pascal}Service`)?.getMethod(section.method);
-      return method && section.find(method);
-    };
+    const locate = section.locate;
     let found = true;
     // Removals first, then additions; each step re-parses.
     for (;;) {
@@ -128,7 +226,7 @@ export function syncService(
         const wantedKeys = new Set(section.wanted.map((w) => w.key));
         const stale = object.getProperties().find((prop) => {
           const key = keyOf(prop);
-          return key !== undefined && section.owns(key, valueOf(prop)) && !wantedKeys.has(key);
+          return key !== undefined && section.owns(key, valueOf(prop)) && !wantedKeys.has(key) && (!isColumn || isColumn.has(key));
         });
         if (stale) {
           report.removed.push(`${section.method} ${section.label}: ${keyOf(stale)}`);
@@ -139,9 +237,17 @@ export function syncService(
       if (!found || !removedOne) break;
     }
     if (!found) {
-      report.warnings.push(`${path}: no ${section.label} in ${p.pascal}Service.${section.method}; update it by hand.`);
+      if (!section.optional) report.warnings.push(`${path}: no ${section.label} in ${owner}${section.method}; update it by hand.`);
       continue;
     }
+    if (isColumn)
+      source = editSource(path, source, (file) => {
+        for (const prop of locate(file)!.getProperties()) {
+          const key = keyOf(prop);
+          if (key !== undefined && section.owns(key, valueOf(prop)) && !isColumn.has(key))
+            report.warnings.push(`${path}: ${owner}${section.method} ${section.label}: ${key} isn't a column of the table: kept. Remove it if the column was dropped or renamed.`);
+        }
+      });
 
     source = editSource(path, source, (file) => {
       for (const [index, want] of section.wanted.entries()) {
@@ -166,5 +272,5 @@ export function syncService(
       }
     });
   }
-  return { content: source, report };
+  return source;
 }
