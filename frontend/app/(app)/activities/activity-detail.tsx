@@ -46,9 +46,9 @@ export function ActivityDetails({ activity }: { activity: ActivityDetail }) {
             "—"
           )}
         </Detail>
-        <Detail icon={TextIcon} label="Notes" className="col-span-full">
+        <Detail icon={TextIcon} label="Notes" wide>
           {activity.notes ? (
-            <TextEditorContent html={activity.notes} className="w-full font-normal" />
+            <TextEditorContent html={activity.notes} className="font-normal" />
           ) : (
             "—"
           )}

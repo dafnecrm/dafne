@@ -131,7 +131,7 @@ export function UserDetails({ user }: { user: UserDetail }) {
 /** The user's active Better Auth sessions, most recently used first. */
 function UserSessions({ sessions }: { sessions: UserSession[] }) {
   return (
-    <DetailSection title={`Active sessions (${sessions.length})`} groupClassName="w-full">
+    <DetailSection title={`Active sessions (${sessions.length})`} groupClassName="flex">
       {sessions.length ? (
         <div className="rounded-lg border">
           <Table>
