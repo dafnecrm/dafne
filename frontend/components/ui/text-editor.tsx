@@ -43,12 +43,40 @@ type TextEditorProps = {
   className?: string
 }
 
+/** The editor's frame, styled like <Textarea />. */
+const FRAME =
+  'w-full rounded-lg border border-input bg-transparent text-base transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 aria-disabled:cursor-not-allowed aria-disabled:bg-input/50 aria-disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:aria-disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40'
+
 /**
  * A rich text editor (Tiptap) whose value is HTML. An empty editor gives
  * "", so the contracts' optionalText turns it into null. Show the saved
  * HTML with <TextEditorContent />, which sanitizes it.
+ *
+ * The server renders only the empty frame: Tiptap calls Math.random() when
+ * it creates an editor, which Next.js forbids while prerendering a page
+ * (Cache Components). The editor appears once the page is in the browser.
  */
-function TextEditor({
+function TextEditor(props: TextEditorProps) {
+  const inBrowser = React.useSyncExternalStore(
+    subscribe,
+    () => true,
+    () => false
+  )
+  if (!inBrowser)
+    return (
+      <div
+        data-slot="text-editor"
+        aria-invalid={props['aria-invalid']}
+        aria-disabled={props.disabled}
+        className={cn(FRAME, props.className)}
+      >
+        <div className="min-h-16" />
+      </div>
+    )
+  return <TiptapEditor {...props} />
+}
+
+function TiptapEditor({
   value,
   onChange,
   onBlur,
@@ -99,10 +127,7 @@ function TextEditor({
       data-slot="text-editor"
       aria-invalid={ariaInvalid}
       aria-disabled={disabled}
-      className={cn(
-        'w-full rounded-lg border border-input bg-transparent text-base transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 aria-disabled:cursor-not-allowed aria-disabled:bg-input/50 aria-disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:aria-disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40',
-        className
-      )}
+      className={cn(FRAME, className)}
     >
       {editor && !readOnly && (
         <TextEditorToolbar editor={editor} disabled={disabled} />

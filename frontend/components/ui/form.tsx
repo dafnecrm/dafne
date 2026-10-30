@@ -2,6 +2,7 @@
 
 import { useFieldContext, useFormContext } from '@/lib/app-form/form-context'
 import { Checkbox } from './checkbox'
+import { DatePicker, type DatePickerProps } from './date-picker'
 import { Field, FieldError, FieldLabel } from './field'
 import { Input } from './input'
 import { Textarea } from './textarea'
@@ -238,6 +239,156 @@ function TextEditorField({
   )
 }
 
+/** "YYYY-MM-DD" to a local Date (midnight), or undefined when blank/invalid. */
+function parseDateValue(value: string | null | undefined) {
+  const match = value?.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (!match) return undefined
+  return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
+}
+
+/** A local Date to "YYYY-MM-DD". */
+function toDateValue(date: Date) {
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+}
+
+/**
+ * A date picked from a calendar; the field's value is "YYYY-MM-DD" ("" when
+ * blank), the same format as an `<input type="date">`.
+ */
+function DatePickerField({
+  label,
+  className,
+  orientation,
+  ...props
+}: {
+  label: string
+  className?: string
+} & Pick<React.ComponentProps<typeof Field>, 'orientation'> &
+  Omit<
+    DatePickerProps,
+    | 'id'
+    | 'name'
+    | 'value'
+    | 'onChange'
+    | 'onBlur'
+    | 'aria-invalid'
+    | 'className'
+  >) {
+  const field = useFieldContext<string>()
+
+  return (
+    <Field
+      className={className}
+      orientation={orientation}
+      data-invalid={!field.state.meta.isValid}
+    >
+      <FieldLabel htmlFor={field.name} className={'text-nowrap'}>
+        {label}
+      </FieldLabel>
+      <DatePicker
+        id={field.name}
+        name={field.name}
+        value={parseDateValue(field.state.value)}
+        aria-invalid={!field.state.meta.isValid}
+        onChange={(date) => field.handleChange(date ? toDateValue(date) : '')}
+        onBlur={field.handleBlur}
+        {...props}
+      />
+      <FieldError>
+        {field.state.meta.errors.length > 0 &&
+          [...new Set(errorMessages(field.state.meta.errors))].map(
+            (message, i) => <p key={i}>{message}</p>
+          )}
+      </FieldError>
+    </Field>
+  )
+}
+
+/** "YYYY-MM-DDTHH:mm" split into its date and time ("" when missing). */
+function splitDateTimeValue(value: string | null | undefined) {
+  const [date = '', time = ''] = (value ?? '').split('T')
+  return { date: parseDateValue(date), time: time.slice(0, 5) }
+}
+
+/**
+ * A date picked from a calendar plus a time input; the field's value is
+ * "YYYY-MM-DDTHH:mm" ("" when blank), the same format as an
+ * `<input type="datetime-local">`. Picking a date first sets the time to 00:00.
+ */
+function DateTimePickerField({
+  label,
+  className,
+  orientation,
+  ...props
+}: {
+  label: string
+  className?: string
+} & Pick<React.ComponentProps<typeof Field>, 'orientation'> &
+  Omit<
+    DatePickerProps,
+    | 'id'
+    | 'name'
+    | 'value'
+    | 'onChange'
+    | 'onBlur'
+    | 'aria-invalid'
+    | 'className'
+  >) {
+  const field = useFieldContext<string>()
+  const { date, time } = splitDateTimeValue(field.state.value)
+  const invalid = !field.state.meta.isValid
+
+  return (
+    <Field
+      className={className}
+      orientation={orientation}
+      data-invalid={invalid}
+    >
+      <FieldLabel htmlFor={field.name} className={'text-nowrap'}>
+        {label}
+      </FieldLabel>
+      <div className="flex gap-2">
+        <DatePicker
+          id={field.name}
+          name={field.name}
+          className="min-w-0 flex-1"
+          value={date}
+          aria-invalid={invalid}
+          onChange={(picked) =>
+            field.handleChange(
+              picked ? `${toDateValue(picked)}T${time || '00:00'}` : ''
+            )
+          }
+          onBlur={field.handleBlur}
+          {...props}
+        />
+        <Input
+          type="time"
+          aria-label={`${label} (time)`}
+          className="w-28 appearance-none [&::-webkit-calendar-picker-indicator]:hidden"
+          value={time}
+          disabled={!date || props.disabled}
+          aria-invalid={invalid}
+          onBlur={field.handleBlur}
+          onChange={(e) =>
+            date &&
+            field.handleChange(
+              `${toDateValue(date)}T${e.target.value || '00:00'}`
+            )
+          }
+        />
+      </div>
+      <FieldError>
+        {field.state.meta.errors.length > 0 &&
+          [...new Set(errorMessages(field.state.meta.errors))].map(
+            (message, i) => <p key={i}>{message}</p>
+          )}
+      </FieldError>
+    </Field>
+  )
+}
+
 /**
  * A choice from a fixed list; the field's value is the option's `value`.
  * With `emptyLabel` the choice is optional: that item sets the value to null.
@@ -407,6 +558,8 @@ export {
   NumberField,
   TextareaField,
   TextEditorField,
+  DatePickerField,
+  DateTimePickerField,
   CheckboxField,
   SelectField,
   SubmitButton,

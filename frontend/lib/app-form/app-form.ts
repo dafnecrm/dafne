@@ -1,5 +1,7 @@
 import {
   CheckboxField,
+  DatePickerField,
+  DateTimePickerField,
   FormErrors,
   NumberField,
   PasswordField,
@@ -23,6 +25,8 @@ const { useAppForm } = createFormHook({
     NumberField,
     TextareaField,
     TextEditorField,
+    DatePickerField,
+    DateTimePickerField,
     CheckboxField,
     SelectField,
   },

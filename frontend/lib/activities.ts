@@ -12,6 +12,7 @@ export type ListedActivity = Json<contracts.ListedActivity>;
 export type ActivitiesList = Json<contracts.ActivitiesList>;
 export type ActivityUser = Json<contracts.ActivityUser>;
 export type ActivityDetail = Json<contracts.ActivityDetail>;
+export type ActivityTask = Json<contracts.ActivityTask>;
 
 /**
  * Calls the backend's GET /activities/:id. Throws a BackendError with
