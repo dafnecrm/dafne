@@ -1,8 +1,16 @@
 import type {
+  CustomerAddressType,
   CustomerFilterField,
   CustomerSortField,
 } from "@backend/contracts";
 import { defineDataTable } from "./data-table";
+
+/** Labels of an address's type, for the form and the detail page. */
+export const CUSTOMER_ADDRESS_TYPE_OPTIONS = [
+  { value: "head_office", label: "Head office" },
+  { value: "shipping", label: "Shipping" },
+  { value: "billing", label: "Billing" },
+] as const satisfies readonly { value: CustomerAddressType; label: string }[];
 
 /**
  * The customers table: plain data with no server-only imports (unlike

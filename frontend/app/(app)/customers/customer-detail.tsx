@@ -13,6 +13,7 @@ import CopyButton from "@/components/copy-button";
 import { Detail, DetailSection } from "@/components/detail";
 import { LocalDate } from "@/components/local-date";
 import { formatAddress, type CustomerDetail } from "@/lib/customers";
+import { CUSTOMER_ADDRESS_TYPE_OPTIONS } from "@/lib/customers-table";
 
 /** The details of a customer: contact, addresses, then who created and updated it. */
 export function CustomerDetails({ customer }: { customer: CustomerDetail }) {
@@ -53,7 +54,10 @@ export function CustomerDetails({ customer }: { customer: CustomerDetail }) {
             <Detail
               key={address.id}
               icon={MapPinIcon}
-              label={address.label || `Address ${i + 1}`}
+              label={
+                CUSTOMER_ADDRESS_TYPE_OPTIONS.find((o) => o.value === address.type)
+                  ?.label ?? `Address ${i + 1}`
+              }
             >
               <span className="font-normal">{formatAddress(address)}</span>
             </Detail>

@@ -16,6 +16,7 @@ import { FieldGroup } from "@/components/ui/field";
 import { setServerError, useAppForm } from "@/lib/app-form/app-form";
 import { useResetOnLeave } from "@/lib/app-form/reset-on-leave";
 import type { CustomerDetail } from "@/lib/customers";
+import { CUSTOMER_ADDRESS_TYPE_OPTIONS } from "@/lib/customers-table";
 import { saveCustomer } from "./actions";
 import { customerFormOpts, customerSchema, emptyAddress } from "./schema";
 
@@ -137,11 +138,12 @@ export function CustomerForm({ customer }: { customer?: CustomerDetail }) {
                           </Button>
                         </div>
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
-                          <form.AppField name={`addresses[${i}].label`}>
+                          <form.AppField name={`addresses[${i}].type`}>
                             {(field) => (
-                              <field.TextField
-                                label="Label (optional)"
-                                placeholder="Billing, Shipping…"
+                              <field.SelectField
+                                label="Type (optional)"
+                                options={CUSTOMER_ADDRESS_TYPE_OPTIONS}
+                                emptyLabel="None"
                                 className="md:col-span-2"
                               />
                             )}

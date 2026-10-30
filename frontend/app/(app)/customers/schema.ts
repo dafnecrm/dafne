@@ -2,13 +2,20 @@ import { formOptions } from "@tanstack/react-form-nextjs";
 import {
   customerBodySchema,
   type CustomerAddressBody,
+  type CustomerAddressType,
   type CustomerBody,
 } from "@backend/contracts";
 import { formSchema } from "@/lib/app-form/form-schema";
 import type { CustomerDetail } from "@/lib/customers";
 
-/** Form values: every field is text, "" when blank. Keys follow the contract. */
-export type AddressFormValues = Record<keyof CustomerAddressBody, string>;
+/**
+ * Form values: every field is text, "" when blank, except the address type
+ * (picked from a list, null when not set). Keys follow the contract.
+ */
+export type AddressFormValues = Record<
+  Exclude<keyof CustomerAddressBody, "type">,
+  string
+> & { type: CustomerAddressType | null };
 export type CustomerFormValues = Record<
   Exclude<keyof CustomerBody, "addresses">,
   string
@@ -22,7 +29,7 @@ export const customerSchema =
   formSchema<CustomerFormValues>()(customerBodySchema);
 
 export const emptyAddress: AddressFormValues = {
-  label: "",
+  type: null,
   street: "",
   city: "",
   postalCode: "",
@@ -39,7 +46,7 @@ export function customerFormOpts(customer?: CustomerDetail) {
       phone: customer?.phone ?? "",
       addresses:
         customer?.addresses.map((a) => ({
-          label: a.label ?? "",
+          type: a.type,
           street: a.street,
           city: a.city,
           postalCode: a.postalCode ?? "",

@@ -238,26 +238,38 @@ function TextEditorField({
   )
 }
 
-/** A choice from a fixed list; the field's value is the option's `value`. */
+/**
+ * A choice from a fixed list; the field's value is the option's `value`.
+ * With `emptyLabel` the choice is optional: that item sets the value to null.
+ */
 function SelectField({
   label,
   options,
+  emptyLabel,
   className,
 }: {
   label: string
   options: readonly { value: string; label: string }[]
+  emptyLabel?: string
   className?: string
 }) {
-  const field = useFieldContext<string>()
+  const field = useFieldContext<string | null>()
+  const items =
+    emptyLabel === undefined
+      ? options
+      : [{ value: null, label: emptyLabel }, ...options]
 
   return (
     <Field className={className} data-invalid={!field.state.meta.isValid}>
       <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
       <Select
-        items={options}
+        items={items}
         name={field.name}
-        value={field.state.value}
-        onValueChange={(value) => value !== null && field.handleChange(value)}
+        value={field.state.value ?? null}
+        onValueChange={(value) =>
+          (value !== null || emptyLabel !== undefined) &&
+          field.handleChange(value)
+        }
       >
         <SelectTrigger
           id={field.name}
@@ -268,8 +280,8 @@ function SelectField({
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          {options.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
+          {items.map((option) => (
+            <SelectItem key={option.value ?? ''} value={option.value}>
               {option.label}
             </SelectItem>
           ))}
