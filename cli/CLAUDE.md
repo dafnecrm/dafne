@@ -21,6 +21,8 @@ TypeScript ESM, Node ≥ 22, pnpm. `pnpm dev g ...` runs from source (tsx),
   + detail, skipping the parts a resource lacks).
 - `src/commands/migration.ts`: `dafne migration generate|fix`. It runs
   drizzle-kit from `backend/node_modules/.bin` with the terminal attached.
+- `src/commands/run.ts`: `dafne run`, package scripts as child processes
+  (one process group each, so Ctrl+C or a failure stops what they started).
 - `src/fields/`: `dafne field add|remove`. `spec.ts` holds the types and
   builders. `table-file.ts` edits one table file (columns, indexes,
   relation parts). `operations.ts` handles the four relation kinds and

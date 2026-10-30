@@ -3,6 +3,7 @@ import { Command } from 'commander';
 import { generateCommand } from './commands/generate.js';
 import { fieldCommand } from './commands/field.js';
 import { migrationCommand } from './commands/migration.js';
+import { runCommand } from './commands/run.js';
 import { syncCommand } from './commands/sync.js';
 
 const program = new Command('dafne')
@@ -11,7 +12,8 @@ const program = new Command('dafne')
   .addCommand(generateCommand())
   .addCommand(fieldCommand())
   .addCommand(migrationCommand())
-  .addCommand(syncCommand());
+  .addCommand(syncCommand())
+  .addCommand(runCommand());
 
 try {
   await program.parseAsync();

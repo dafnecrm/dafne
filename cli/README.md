@@ -288,6 +288,22 @@ It runs `sync form`, `sync table` and `sync detail` one after the other,
 with the same rules. A part the resource doesn't have (no form, no detail
 page…) is skipped. Run `dafne sync contract` first if the table changed.
 
+## Running the backend and the frontend
+
+```sh
+dafne run                          # pnpm run dev in backend/ and frontend/
+dafne run build                    # the same script in both
+dafne run -b start:debug           # a different script per package (-b, -f)
+dafne run test --only backend      # one package
+dafne run --pick                   # choose from each package.json
+```
+
+The scripts run in this terminal, side by side, each output line prefixed
+with `[backend]` or `[frontend]`; with `--only` the script has the terminal
+to itself. Ctrl+C stops everything, and when one script fails the other is
+stopped too. A script the package lacks is an error that lists the ones it
+has.
+
 ## Development
 
 `pnpm dev g ...` runs from source; `pnpm test` runs generators against
