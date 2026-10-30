@@ -22,10 +22,14 @@ export const OPTIONAL_DATE_HELPER = `
  * "" for an empty date field. Anything else must be a valid date.
  */
 export const optionalDate = (error: string) =>
-  z.preprocess(
-    (value) => (value === '' || value == null ? null : value),
-    z.coerce.date({ error }).nullable(),
-  );
+  z
+    .preprocess(
+      (value) => (value === '' || value == null ? null : value),
+      z.coerce.date({ error }).nullable(),
+    )
+    // Without it the key is required in z.input (preprocess takes unknown).
+    .optional()
+    .transform((value) => value ?? null);
 `;
 
 export interface SyncReport {
