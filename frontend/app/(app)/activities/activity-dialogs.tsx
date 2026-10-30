@@ -31,16 +31,10 @@ type ActivityStatus = ActivityDetail["status"];
 
 export type ActivityRef = { id: string; name: string; status: ActivityStatus };
 
-/** Statuses an activity can be edited, closed or set in progress from. */
-export const ACTIVITY_STATUSES_ALLOW_EDIT: ActivityStatus[] = [
-  "open",
-  "in_progress",
-];
-export const ACTIVITY_STATUSES_ALLOW_CLOSE: ActivityStatus[] = ["in_progress"];
-export const ACTIVITY_STATUSES_ALLOW_INPROGRESS: ActivityStatus[] = [
-  "open",
-  "closed",
-];
+/** Statuses an activity can be edited, closed or reopened from. */
+export const ACTIVITY_STATUSES_ALLOW_EDIT: ActivityStatus[] = ["open"];
+export const ACTIVITY_STATUSES_ALLOW_CLOSE: ActivityStatus[] = ["open"];
+export const ACTIVITY_STATUSES_ALLOW_REOPEN: ActivityStatus[] = ["closed"];
 
 interface DialogProps {
   activity: ActivityRef;
@@ -49,13 +43,13 @@ interface DialogProps {
   onClose: () => void;
 }
 
-export function SetInProgressActivityDialog(props: DialogProps) {
+export function ReopenActivityDialog(props: DialogProps) {
   return (
     <ConfirmDialog
       {...props}
-      title={`Set ${props.activity.name} in progress?`}
-      description="The activity will be set in progress."
-      label="Set in progress"
+      title={`Reopen ${props.activity.name}?`}
+      description="The activity will be open and editable again."
+      label="Reopen"
       run={reopenActivity}
     />
   );

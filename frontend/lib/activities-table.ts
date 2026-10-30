@@ -5,20 +5,21 @@ import type {
   ActivityStatus,
 } from "@backend/contracts";
 import { defineDataTable } from "./data-table";
-import { CircleIcon, CircleOffIcon, LoaderCircleIcon, LucideIcon } from "lucide-react";
+import { CircleIcon, CircleOffIcon, LucideIcon } from "lucide-react";
 
 /** Labels of the type values. */
 export const ACTIVITY_TYPE_OPTIONS = [
+  { value: "call", label: "Call" },
   { value: "email", label: "Email" },
-  { value: "phone", label: "Phone" },
+  { value: "meeting", label: "Meeting" },
+  { value: "task", label: "Task" },
 ] satisfies { value: ActivityType; label: string }[];
 
 /** Labels of the status values. */
 export const ACTIVITY_STATUS_OPTIONS = [
   { value: "open", label: "Open", icon: CircleIcon },
-  { value: "in_progress", label: "In progress", icon: LoaderCircleIcon },
   { value: "closed", label: "Closed", icon: CircleOffIcon },
-] satisfies { value: ActivityStatus; label: string, icon: LucideIcon }[];
+] satisfies { value: ActivityStatus; label: string; icon: LucideIcon }[];
 
 /**
  * The activities table: plain data with no server-only imports (unlike
@@ -35,6 +36,7 @@ export const activitiesTable = defineDataTable({
   sortable: [
     "name",
     "type",
+    "dueDate",
     "completedAt",
     "status",
     "createdAt",

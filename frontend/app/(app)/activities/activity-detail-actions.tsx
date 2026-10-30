@@ -3,8 +3,8 @@
 import {
   CircleOffIcon,
   EllipsisVerticalIcon,
-  LoaderCircleIcon,
   PencilIcon,
+  RotateCcwIcon,
   Trash2Icon,
 } from "lucide-react";
 import Link from "next/link";
@@ -20,16 +20,16 @@ import {
 import {
   ACTIVITY_STATUSES_ALLOW_CLOSE,
   ACTIVITY_STATUSES_ALLOW_EDIT,
-  ACTIVITY_STATUSES_ALLOW_INPROGRESS,
+  ACTIVITY_STATUSES_ALLOW_REOPEN,
   CloseActivityDialog,
   DeleteActivityDialog,
-  SetInProgressActivityDialog,
+  ReopenActivityDialog,
   type ActivityRef,
 } from "./activity-dialogs";
 
 /** Actions on the activity's page, in a menu. */
 export function ActivityDetailActions({ activity }: { activity: ActivityRef }) {
-  const [dialog, setDialog] = useState<"setInProgress" | "close" | "delete">();
+  const [dialog, setDialog] = useState<"reopen" | "close" | "delete">();
   const href = `/activities/${encodeURIComponent(activity.id)}`;
   const closeDialog = () => setDialog(undefined);
 
@@ -54,10 +54,10 @@ export function ActivityDetailActions({ activity }: { activity: ActivityRef }) {
               Edit
             </DropdownMenuItem>
           )}
-          {ACTIVITY_STATUSES_ALLOW_INPROGRESS.includes(activity.status) && (
-            <DropdownMenuItem onClick={() => setDialog("setInProgress")}>
-              <LoaderCircleIcon />
-              Set in progress
+          {ACTIVITY_STATUSES_ALLOW_REOPEN.includes(activity.status) && (
+            <DropdownMenuItem onClick={() => setDialog("reopen")}>
+              <RotateCcwIcon />
+              Reopen
             </DropdownMenuItem>
           )}
           {ACTIVITY_STATUSES_ALLOW_CLOSE.includes(activity.status) && (
@@ -77,11 +77,8 @@ export function ActivityDetailActions({ activity }: { activity: ActivityRef }) {
         </DropdownMenuContent>
       </DropdownMenu>
       {/* Outside the menu, which closes when an item is clicked. */}
-      {dialog === "setInProgress" && (
-        <SetInProgressActivityDialog
-          activity={activity}
-          onClose={closeDialog}
-        />
+      {dialog === "reopen" && (
+        <ReopenActivityDialog activity={activity} onClose={closeDialog} />
       )}
       {dialog === "close" && (
         <CloseActivityDialog activity={activity} onClose={closeDialog} />

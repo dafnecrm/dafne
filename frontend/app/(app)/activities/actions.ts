@@ -80,12 +80,12 @@ export async function closeActivity(id: string): Promise<ActionError | null> {
 }
 
 /**
- * Reopen an activity. The
+ * Reopens a closed activity. The
  * caller refreshes or leaves the page. Returns an error message when it fails.
  */
 export async function reopenActivity(id: string): Promise<ActionError | null> {
   try {
-    await backendFetch(`/activities/${encodeURIComponent(id)}/inProgress`, {
+    await backendFetch(`/activities/${encodeURIComponent(id)}/reopen`, {
       method: "PATCH",
     });
     return null;

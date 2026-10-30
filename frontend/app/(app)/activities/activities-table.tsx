@@ -59,7 +59,9 @@ const activityColumns = col.columns([
   col.accessor("status", {
     header: "Status",
     cell: (info) => {
-      const status = ACTIVITY_STATUS_OPTIONS.find((o) => o.value === info.getValue());
+      const status = ACTIVITY_STATUS_OPTIONS.find(
+        (o) => o.value === info.getValue(),
+      );
       if (!status) return "—";
       // A component, not an element: render it with a capitalized name.
       const Icon = status.icon;
@@ -69,7 +71,14 @@ const activityColumns = col.columns([
           {status.label}
         </Badge>
       );
-    }
+    },
+  }),
+  col.accessor("dueDate", {
+    header: "Due date",
+    cell: (info) => {
+      const value = info.getValue();
+      return value ? <LocalDate value={value} format="dateTime" /> : "—";
+    },
   }),
   col.accessor("createdAt", {
     header: "Added",

@@ -18,7 +18,6 @@ import {
   ACTIVITY_TYPE_OPTIONS,
   ACTIVITY_STATUS_OPTIONS,
 } from "@/lib/activities-table";
-import { ActivityTasks } from "./activity-tasks";
 
 /** The details of an activity: its fields, then who created and updated it. */
 export function ActivityDetails({ activity }: { activity: ActivityDetail }) {
@@ -54,8 +53,14 @@ export function ActivityDetails({ activity }: { activity: ActivityDetail }) {
             "—"
           )}
         </Detail>
+        <Detail icon={CalendarClockIcon} label="Due date">
+          {activity.dueDate ? (
+            <LocalDate value={activity.dueDate} format="dateTime" />
+          ) : (
+            "—"
+          )}
+        </Detail>
       </DetailSection>
-      <ActivityTasks activity={activity} />
       <DetailSection title="Record">
         <Detail icon={FingerprintIcon} label="Activity ID">
           <div className="flex items-center gap-2">
