@@ -7,6 +7,7 @@ import {
   UserPlusIcon,
   CalendarClockIcon,
   LinkIcon,
+  TextIcon,
 } from "lucide-react";
 import CopyButton from "@/components/copy-button";
 import { Detail, DetailSection } from "@/components/detail";
@@ -43,6 +44,9 @@ export function ActivityDetails({ activity }: { activity: ActivityDetail }) {
           ) : (
             "—"
           )}
+        </Detail>
+        <Detail icon={TextIcon} label="Notes">
+          {activity.notes ?? "—"}
         </Detail>
       </DetailSection>
       <DetailSection title="Record">

@@ -48,7 +48,7 @@ export function ActivityForm({ activity }: { activity?: ActivityDetail }) {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <form.AppField name="name">
                   {(field) => (
                     <field.TextField
@@ -61,6 +61,14 @@ export function ActivityForm({ activity }: { activity?: ActivityDetail }) {
                 <form.AppField name="type">
                   {(field) => (
                     <field.SelectField label="Type" options={TYPE_OPTIONS} />
+                  )}
+                </form.AppField>
+                <form.AppField name="notes">
+                  {(field) => (
+                    <field.TextareaField
+                      label="Notes (optional)"
+                      autoComplete="off"
+                    />
                   )}
                 </form.AppField>
               </div>

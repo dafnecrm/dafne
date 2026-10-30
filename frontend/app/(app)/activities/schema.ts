@@ -33,6 +33,7 @@ export function activityFormOpts(activity?: ActivityDetail) {
     defaultValues: {
       name: activity?.name ?? "",
       type: activity?.type ?? "email",
+      notes: activity?.notes ?? "",
     } satisfies ActivityFormValues as ActivityFormValues,
   });
 }

@@ -4,6 +4,7 @@ import { useFieldContext, useFormContext } from '@/lib/app-form/form-context'
 import { Checkbox } from './checkbox'
 import { Field, FieldError, FieldLabel } from './field'
 import { Input } from './input'
+import { Textarea } from './textarea'
 import {
   Select,
   SelectContent,
@@ -145,6 +146,50 @@ function NumberField({
           {...props}
         />
       </InputGroup>
+      <FieldError>
+        {field.state.meta.errors.length > 0 &&
+          [...new Set(errorMessages(field.state.meta.errors))].map(
+            (message, i) => <p key={i}>{message}</p>
+          )}
+      </FieldError>
+    </Field>
+  )
+}
+
+/** A multi-line text input; the field's value is a string ("" when blank). */
+function TextareaField({
+  label,
+  className,
+  orientation,
+  ...props
+}: {
+  label: string
+  className?: string
+} & Pick<React.ComponentProps<typeof Field>, 'orientation'> &
+  Omit<
+    React.ComponentProps<typeof Textarea>,
+    'id' | 'name' | 'value' | 'aria-invalid' | 'onChange' | 'onBlur' | 'className'
+  >) {
+  const field = useFieldContext<string>()
+
+  return (
+    <Field
+      className={className}
+      orientation={orientation}
+      data-invalid={!field.state.meta.isValid}
+    >
+      <FieldLabel htmlFor={field.name} className={'text-nowrap'}>
+        {label}
+      </FieldLabel>
+      <Textarea
+        id={field.name}
+        name={field.name}
+        value={field.state.value ?? ''}
+        aria-invalid={!field.state.meta.isValid}
+        onBlur={field.handleBlur}
+        onChange={(e) => field.handleChange(e.target.value)}
+        {...props}
+      />
       <FieldError>
         {field.state.meta.errors.length > 0 &&
           [...new Set(errorMessages(field.state.meta.errors))].map(
@@ -310,6 +355,7 @@ export {
   PasswordField,
   UncontrolledField,
   NumberField,
+  TextareaField,
   CheckboxField,
   SelectField,
   SubmitButton,
