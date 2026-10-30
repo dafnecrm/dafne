@@ -8,6 +8,7 @@ import {
   mysqlEnum,
 } from 'drizzle-orm/mysql-core';
 import { user } from './auth.js';
+import { activity } from './activities.js';
 
 /**
  * A task managed by the users. Deletion is logical: `deletedAt` is
@@ -22,6 +23,9 @@ export const task = mysqlTable(
     /** @api detail @form editor */
     notes: text('notes').notNull(),
     type: mysqlEnum('type', ['email', 'phone', 'other']).notNull(),
+    activityId: varchar('activity_id', { length: 36 })
+      .notNull()
+      .references(() => activity.id, { onDelete: 'cascade' }),
     createdAt: timestamp('created_at', { fsp: 3 }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { fsp: 3 })
       .defaultNow()
@@ -41,20 +45,37 @@ export const task = mysqlTable(
   (table) => [
     index('task_deletedAt_idx').on(table.deletedAt),
     index('task_name_idx').on(table.name),
+    index('task_activityId_idx').on(table.activityId),
   ],
 );
 
-export const taskRelations = defineRelationsPart({ user, task }, (r) => ({
-  task: {
-    createdBy: r.one.user({
-      from: r.task.createdById,
-      to: r.user.id,
-      alias: 'taskCreatedBy',
-    }),
-    updatedBy: r.one.user({
-      from: r.task.updatedById,
-      to: r.user.id,
-      alias: 'taskUpdatedBy',
-    }),
-  },
-}));
+export const taskRelations = defineRelationsPart(
+  { user, task, activity },
+  (r) => ({
+    task: {
+      createdBy: r.one.user({
+        from: r.task.createdById,
+        to: r.user.id,
+        alias: 'taskCreatedBy',
+      }),
+      updatedBy: r.one.user({
+        from: r.task.updatedById,
+        to: r.user.id,
+        alias: 'taskUpdatedBy',
+      }),
+      activity: r.one.activity({
+        from: r.task.activityId,
+        to: r.activity.id,
+        optional: false,
+        alias: 'taskActivity',
+      }),
+    },
+    activity: {
+      tasks: r.many.task({
+        from: r.activity.id,
+        to: r.task.activityId,
+        alias: 'taskActivity',
+      }),
+    },
+  }),
+);

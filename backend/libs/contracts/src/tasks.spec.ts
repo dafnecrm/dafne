@@ -16,11 +16,13 @@ describe('taskBodySchema', () => {
         dueDate: '2026-01-01T10:00:00.000Z',
         notes: 'Notes',
         type: 'email',
+        activityId: 'Activity id',
       }),
     ).toEqual({
       name: 'Acme',
       notes: 'Notes',
       type: 'email',
+      activityId: 'Activity id',
     });
   });
 
@@ -31,6 +33,7 @@ describe('taskBodySchema', () => {
         dueDate: '2026-01-01T10:00:00.000Z',
         notes: 'Notes',
         type: 'email',
+        activityId: 'Activity id',
       }),
     ).toEqual(['name']);
   });
@@ -43,6 +46,7 @@ describe('taskBodySchema', () => {
         dueDate: '2026-01-01T10:00:00.000Z',
         notes: 'Notes',
         type: 'email',
+        activityId: 'Activity id',
       }),
     ).toEqual(['unrecognized_keys']);
   });

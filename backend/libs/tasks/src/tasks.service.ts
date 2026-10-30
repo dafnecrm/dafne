@@ -53,6 +53,7 @@ export class TasksService {
           name: task.name,
           dueDate: task.dueDate,
           type: task.type,
+          activityId: task.activityId,
           createdAt: task.createdAt,
           updatedAt: task.updatedAt,
         })
@@ -93,6 +94,7 @@ export class TasksService {
       dueDate: body.dueDate,
       notes: body.notes,
       type: body.type,
+      activityId: body.activityId,
       createdAt: now,
       updatedAt: now,
       createdById: userId,
@@ -117,6 +119,7 @@ export class TasksService {
         dueDate: body.dueDate,
         notes: body.notes,
         type: body.type,
+        activityId: body.activityId,
         updatedById: userId,
         // Set explicitly so the row always changes and is counted below.
         updatedAt: new Date(),

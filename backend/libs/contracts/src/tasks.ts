@@ -16,6 +16,7 @@ export const taskBodySchema = z.strictObject({
   dueDate: z.coerce.date({ error: 'Enter a valid date' }),
   notes: requiredText(65535, 'Enter the notes'),
   type: z.enum(TASK_TYPES, { error: 'Choose the type' }),
+  activityId: requiredText(36, 'Enter the activity id'),
 });
 
 /** What a client sends: blank optional fields may be "", null or missing. */
@@ -60,6 +61,7 @@ export interface ListedTask {
   name: string;
   dueDate: Date;
   type: TaskType;
+  activityId: string;
   createdAt: Date;
   updatedAt: Date;
 }
