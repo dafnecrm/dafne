@@ -18,9 +18,10 @@ export const activity = mysqlTable(
   {
     id: varchar('id', { length: 36 }).primaryKey(),
     name: varchar('name', { length: 255 }).notNull(),
-    type: mysqlEnum(['email', 'phone']).notNull(),
+    type: mysqlEnum(['call', 'email', 'meeting', 'task']).notNull(),
+    dueDate: timestamp('due_date', { fsp: 3 }),
     /** @api readonly */
-    status: mysqlEnum('status', ['open', 'in_progress', 'closed'])
+    status: mysqlEnum('status', ['open', 'closed'])
       .notNull()
       .default('open'),
     /** @api readonly */

@@ -72,12 +72,6 @@
       ],
       "@app/activities/*": [
         "./libs/activities/src/*"
-      ],
-      "@app/tasks": [
-        "./libs/tasks/src/index.ts"
-      ],
-      "@app/tasks/*": [
-        "./libs/tasks/src/*"
       ]
     }
   },

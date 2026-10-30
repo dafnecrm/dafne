@@ -37,3 +37,17 @@ export type Json<T> = T extends Date
     : T extends object
       ? { [K in keyof T]: Json<T[K]> }
       : T;
+
+/**
+ * Optional date: blank, null or missing all become null, so a form can send
+ * "" for an empty date field. Anything else must be a valid date.
+ */
+export const optionalDate = (error: string) =>
+  z
+    .preprocess(
+      (value) => (value === '' || value == null ? null : value),
+      z.coerce.date({ error }).nullable(),
+    )
+    // Without it the key is required in z.input (preprocess takes unknown).
+    .optional()
+    .transform((value) => value ?? null);

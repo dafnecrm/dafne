@@ -15,8 +15,8 @@ describe('activityBodySchema', () => {
     ).toEqual({
       name: 'Acme',
       type: 'email',
+      dueDate: null,
       notes: null,
-      tasks: [],
     });
   });
 

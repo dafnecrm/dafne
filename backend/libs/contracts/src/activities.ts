@@ -4,50 +4,40 @@ import {
   requiredText,
   SORT_DIRECTIONS,
   optionalText,
+  optionalDate,
 } from './common.ts';
-import { taskBodySchema, type TaskType } from './tasks.ts';
 
 /* ---------- Requests ---------- */
 
 /** Values of activity type. */
-export const ACTIVITY_TYPES = ['email', 'phone'] as const;
+export const ACTIVITY_TYPES = ['call', 'email', 'meeting', 'task'] as const;
 export type ActivityType = (typeof ACTIVITY_TYPES)[number];
 
 /** Values of activity status. */
-export const ACTIVITY_STATUSES = ['open', 'in_progress', 'closed'] as const;
+export const ACTIVITY_STATUSES = ['open', 'closed'] as const;
 export type ActivityStatus = (typeof ACTIVITY_STATUSES)[number];
 
 /**
- * A task in the activity's body: the task's fields, without the activity
- * (it's this one). With the `id` of one of the activity's tasks it updates
- * that task; without, it creates one.
- */
-export const activityTaskBodySchema = taskBodySchema
-  .omit({ activityId: true })
-  .extend({ id: z.string().max(36).optional() });
-
-/**
  * Body of POST /activities and PUT /activities/:id. PUT replaces the
- * whole activity: omitted optional fields are cleared, and tasks left out
- * of `tasks` are deleted.
+ * whole activity: omitted optional fields are cleared.
  */
 export const activityBodySchema = z.strictObject({
   name: requiredText(255, 'Enter the name'),
   type: z.enum(ACTIVITY_TYPES, { error: 'Choose the type' }),
+  dueDate: optionalDate('Enter a valid date'),
   notes: optionalText(z.string().max(65535)),
-  tasks: z.array(activityTaskBodySchema).max(100).default([]),
 });
 
 /** What a client sends: blank optional fields may be "", null or missing. */
 export type ActivityBodyInput = z.input<typeof activityBodySchema>;
 /** What the backend gets after validation: blanks are null. */
 export type ActivityBody = z.output<typeof activityBodySchema>;
-export type ActivityTaskBody = ActivityBody['tasks'][number];
 
 /** Activity fields the list can be sorted by. */
 export const ACTIVITY_SORT_FIELDS = [
   'name',
   'type',
+  'dueDate',
   'completedAt',
   'status',
   'createdAt',
@@ -82,6 +72,7 @@ export interface ListedActivity {
   id: string;
   name: string;
   type: ActivityType;
+  dueDate: Date | null;
   completedAt: Date | null;
   status: ActivityStatus;
   completedById: string | null;
@@ -103,19 +94,8 @@ export interface ActivityUser {
   name: string;
 }
 
-/** A task of the activity, in its detail. */
-export interface ActivityTask {
-  id: string;
-  name: string;
-  dueDate: Date;
-  type: TaskType;
-  notes: string;
-}
-
 /** Response of GET /activities/:id, POST /activities and PUT /activities/:id. */
 export interface ActivityDetail extends ListedActivity {
-  /** Not deleted, soonest due first. */
-  tasks: ActivityTask[];
   createdBy: ActivityUser | null;
   updatedBy: ActivityUser | null;
   notes: string | null;

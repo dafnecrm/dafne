@@ -77,11 +77,8 @@ export class ActivitiesController {
     return this.activitiesService.closeActivity(id, session.user.id);
   }
 
-  @Patch(':id/inProgress')
-  async inProgressActivity(
-    @Param('id') id: string,
-    @Session() session: UserSession,
-  ) {
-    return this.activitiesService.setInProgress(id, session.user.id);
+  @Patch(':id/reopen')
+  async reopenActivity(@Param('id') id: string) {
+    return this.activitiesService.reopenActivity(id);
   }
 }

@@ -1,14 +1,14 @@
 import { DatabaseService, schema } from '@app/database';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { and, asc, desc, eq, inArray, isNull, like, ne } from 'drizzle-orm';
+import { and, asc, desc, eq, isNull, like, ne } from 'drizzle-orm';
 import { activityBodySchema, type ActivityBodyInput } from '@app/contracts';
 import { ActivitiesService } from './activities.service.js';
 
 /** A body as the validation pipe hands it to the service. */
 const body = (input: ActivityBodyInput) => activityBodySchema.parse(input);
 
-const { activity, task } = schema;
+const { activity } = schema;
 const notDeleted = isNull(activity.deletedAt);
 // Closed activities can't be edited.
 const notClosed = ne(activity.status, 'closed');
@@ -16,17 +16,13 @@ const notClosed = ne(activity.status, 'closed');
 describe('ActivitiesService', () => {
   let service: ActivitiesService;
   const rows = [{ id: 'r1', name: 'Acme' }];
-  // The activity's tasks, as saveTasks reads them (select().from().where()).
-  let existingTasks: object[] = [];
-  // Chainable stand-in for db.select().from().where().orderBy().limit().offset();
-  // awaited after where() it gives the existing tasks.
+  // Chainable stand-in for db.select().from().where().orderBy().limit().offset()
   const select = {
     from: vi.fn(),
     where: vi.fn(),
     orderBy: vi.fn(),
     limit: vi.fn(),
     offset: vi.fn(),
-    then: (resolve: (rows: object[]) => unknown) => resolve(existingTasks),
   };
   // Stand-ins for insert().values() and update().set().where()
   const insert = { values: vi.fn() };
@@ -38,7 +34,6 @@ describe('ActivitiesService', () => {
     insert: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
-    transaction: vi.fn(),
     query: { activity: { findFirst } },
   };
   const found = { id: 'r1', name: 'Acme' };
@@ -57,11 +52,6 @@ describe('ActivitiesService', () => {
     db.update.mockReturnValue(update);
     update.set.mockReturnValue(update);
     update.where.mockResolvedValue([{ affectedRows: 1 }]);
-    // The transaction runs on the same mock db.
-    db.transaction.mockImplementation((run: (tx: typeof db) => unknown) =>
-      run(db),
-    );
-    existingTasks = [];
     findFirst.mockResolvedValue(found);
 
     const module: TestingModule = await Test.createTestingModule({
@@ -151,55 +141,6 @@ describe('ActivitiesService', () => {
       expect(findFirst.mock.calls[0][0].where.id).toBe(row.id);
     });
 
-    it('creates its tasks', async () => {
-      await service.createActivity(
-        body({
-          name: 'Acme',
-          type: 'email',
-          tasks: [
-            {
-              name: 'Call back',
-              dueDate: '2026-01-01T10:00:00.000Z',
-              type: 'phone',
-              notes: 'Ask for the budget',
-            },
-          ],
-        }),
-        'u1',
-      );
-
-      const [activityRow] = insert.values.mock.calls[0];
-      const [taskRows] = insert.values.mock.calls[1];
-      expect(taskRows).toMatchObject([
-        {
-          activityId: activityRow.id,
-          name: 'Call back',
-          dueDate: new Date('2026-01-01T10:00:00.000Z'),
-          createdById: 'u1',
-        },
-      ]);
-    });
-
-    it('rejects a task id, since a new activity has none', async () => {
-      await expect(
-        service.createActivity(
-          body({
-            name: 'Acme',
-            type: 'email',
-            tasks: [
-              {
-                id: 't9',
-                name: 'Stolen',
-                dueDate: '2026-01-01T10:00:00.000Z',
-                type: 'phone',
-                notes: 'x',
-              },
-            ],
-          }),
-          'u1',
-        ),
-      ).rejects.toBeInstanceOf(BadRequestException);
-    });
   });
 
   describe('updateActivity', () => {
@@ -217,47 +158,6 @@ describe('ActivitiesService', () => {
       expect(update.where).toHaveBeenCalledWith(
         and(eq(activity.id, 'r1'), notDeleted, notClosed),
       );
-    });
-
-    it('updates changed tasks, creates new ones and deletes the others', async () => {
-      const due = new Date('2026-01-01T10:00:00.000Z');
-      existingTasks = [
-        { id: 't1', name: 'Old', dueDate: due, type: 'email', notes: 'n' },
-        { id: 't2', name: 'Kept', dueDate: due, type: 'email', notes: 'n' },
-        { id: 't3', name: 'Gone', dueDate: due, type: 'email', notes: 'n' },
-      ];
-      const item = {
-        dueDate: due.toISOString(),
-        type: 'email' as const,
-        notes: 'n',
-      };
-
-      await service.updateActivity(
-        'r1',
-        body({
-          name: 'Acme',
-          type: 'email',
-          tasks: [
-            { ...item, id: 't1', name: 'New' },
-            { ...item, id: 't2', name: 'Kept' },
-            { ...item, name: 'Fresh' },
-          ],
-        }),
-        'u2',
-      );
-
-      // t3 left out: deleted logically.
-      expect(update.where).toHaveBeenCalledWith(inArray(task.id, ['t3']));
-      // t1 changed: updated; t2 didn't: left alone.
-      expect(update.where).toHaveBeenCalledWith(eq(task.id, 't1'));
-      expect(update.where).not.toHaveBeenCalledWith(eq(task.id, 't2'));
-      expect(update.set).toHaveBeenCalledWith(
-        expect.objectContaining({ name: 'New', updatedById: 'u2' }),
-      );
-      const [created] = insert.values.mock.calls[0];
-      expect(created).toMatchObject([
-        { activityId: 'r1', name: 'Fresh', createdById: 'u2' },
-      ]);
     });
 
     it('throws 404 when the activity is missing', async () => {

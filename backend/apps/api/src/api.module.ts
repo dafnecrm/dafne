@@ -7,7 +7,6 @@ import { AuthModule } from '@app/auth';
 import { UsersModule } from '@app/users';
 import { CustomersModule } from '@app/customers';
 import { ActivitiesModule } from '@app/activities';
-import { TasksModule } from '@app/tasks';
 
 @Module({
   imports: [
@@ -17,7 +16,6 @@ import { TasksModule } from '@app/tasks';
     UsersModule,
     CustomersModule,
     ActivitiesModule,
-    TasksModule,
   ],
   controllers: [ApiController],
   providers: [ApiService],

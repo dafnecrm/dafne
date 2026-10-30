@@ -4,14 +4,12 @@ import * as auth from './tables/auth.js';
 import * as customers from './tables/customers.js';
 import * as activities from './tables/activities.js';
 import { mergeRelations } from './merge-relations.js';
-import * as tasks from './tables/tasks.js';
 
 const { authRelations, ...authTables } = auth;
 const { customerRelations, ...customerTables } = customers;
 const { activityRelations, ...activityTables } = activities;
-const { taskRelations, ...taskTables } = tasks;
 
-export const schema = { ...authTables, ...customerTables, ...activityTables, ...taskTables };
+export const schema = { ...authTables, ...customerTables, ...activityTables };
 
 // Tables plus the relations defined next to them.
 export const relations = mergeRelations(
@@ -19,7 +17,6 @@ export const relations = mergeRelations(
   authRelations,
   customerRelations,
   activityRelations,
-  taskRelations,
 );
 
 export type Database = import('drizzle-orm/mysql2').MySql2Database<typeof relations>;
