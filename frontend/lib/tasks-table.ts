@@ -2,6 +2,7 @@ import type {
   TaskFilterField,
   TaskSortField,
   TaskType,
+  TaskStatus,
 } from "@backend/contracts";
 import { defineDataTable } from "./data-table";
 
@@ -11,6 +12,12 @@ export const TASK_TYPE_OPTIONS = [
   { value: "phone", label: "Phone" },
   { value: "other", label: "Other" },
 ] satisfies { value: TaskType; label: string }[];
+
+/** Labels of the status values. */
+export const TASK_STATUS_OPTIONS = [
+  { value: "open", label: "Open" },
+  { value: "closed", label: "Closed" },
+] satisfies { value: TaskStatus; label: string }[];
 
 /**
  * The tasks table: plain data with no server-only imports (unlike

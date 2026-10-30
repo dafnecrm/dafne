@@ -13,6 +13,8 @@ import {
 } from "@/components/ui/table";
 import type { ActivityDetail } from "@/lib/activities";
 import { TASK_TYPE_OPTIONS } from "@/lib/tasks-table";
+import { TaskDetailActions } from "../tasks/task-detail-actions";
+import { TaskTableActions } from "../tasks/task-table-actions";
 
 /**
  * The tasks of an activity (they come with it), soonest due first, with a
@@ -28,7 +30,15 @@ export function ActivityTasks({
   const newHref = `/tasks/new?activityId=${encodeURIComponent(activity.id)}`;
 
   return (
-    <DetailSection title={`Tasks (${tasks.length})`} groupClassName="flex">
+    <DetailSection title={`Tasks (${tasks.length})`} groupClassName="flex" actions={<Button
+      variant="outline"
+      size="sm"
+      nativeButton={false}
+      render={<Link href={newHref} />}
+    >
+      <PlusIcon data-icon="inline-start" />
+      Add task
+    </Button>}>
       {tasks.length ? (
         <div className="rounded-lg border">
           <Table>
@@ -57,6 +67,9 @@ export function ActivityTasks({
                   <TableCell>
                     <LocalDate value={task.dueDate} format="dateTime" />
                   </TableCell>
+                  <TableCell className="text-end">
+                    <TaskTableActions task={{ ...task, activityId: activity.id }} />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -65,17 +78,6 @@ export function ActivityTasks({
       ) : (
         <p className="text-sm text-muted-foreground">No tasks yet.</p>
       )}
-      <div className="flex justify-end">
-        <Button
-          variant="outline"
-          size="sm"
-          nativeButton={false}
-          render={<Link href={newHref} />}
-        >
-          <PlusIcon data-icon="inline-start" />
-          Add task
-        </Button>
-      </div>
     </DetailSection>
   );
 }

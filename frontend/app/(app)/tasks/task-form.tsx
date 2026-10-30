@@ -10,7 +10,12 @@ import { useResetOnLeave } from "@/lib/app-form/reset-on-leave";
 import type { TaskDetail } from "@/lib/tasks";
 import { activityHref } from "@/lib/tasks-table";
 import { saveTask } from "./actions";
-import { taskFormOpts, taskSchema, TYPE_OPTIONS } from "./schema";
+import {
+  taskFormOpts,
+  taskSchema,
+  TYPE_OPTIONS,
+  STATUS_OPTIONS,
+} from "./schema";
 
 /**
  * Creates a task of `activityId`, or edits `task`. The activity isn't an
@@ -19,7 +24,9 @@ import { taskFormOpts, taskSchema, TYPE_OPTIONS } from "./schema";
 export function TaskForm({
   task,
   activityId,
-}: { task: TaskDetail; activityId?: never } | { task?: never; activityId: string }) {
+}:
+  | { task: TaskDetail; activityId?: never }
+  | { task?: never; activityId: string }) {
   const form = useAppForm({
     ...taskFormOpts(task, activityId),
     // Validate on submit, then on every change.
@@ -65,17 +72,29 @@ export function TaskForm({
                     />
                   )}
                 </form.AppField>
-                <form.AppField name="dueDate">
-                  {(field) => (
-                    <field.DateTimePickerField label="Due date" />
-                  )}
-                </form.AppField>
-                <form.AppField name="notes">
-                  {(field) => <field.TextEditorField label="Notes" />}
-                </form.AppField>
                 <form.AppField name="type">
                   {(field) => (
                     <field.SelectField label="Type" options={TYPE_OPTIONS} />
+                  )}
+                </form.AppField>
+                <form.AppField name="dueDate">
+                  {(field) => <field.DateTimePickerField label="Due date" />}
+                </form.AppField>
+                <form.AppField name="notes">
+                  {(field) => (
+                    <field.TextEditorField
+                      label="Notes"
+                      className="col-span-3"
+                      controlClassName="min-h-30"
+                    />
+                  )}
+                </form.AppField>
+                <form.AppField name="status">
+                  {(field) => (
+                    <field.SelectField
+                      label="Status"
+                      options={STATUS_OPTIONS}
+                    />
                   )}
                 </form.AppField>
                 {/* dafne-ignore: activityId */}

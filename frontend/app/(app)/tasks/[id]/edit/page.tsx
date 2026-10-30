@@ -38,7 +38,7 @@ async function EditTask({
       <PageContentHeader>
         <PageContentTitle>Edit {task.name}</PageContentTitle>
         <PageContentDescription>
-          Saving replaces the task&apos;s details.
+          Activity <span className="font-semibold">{task.activity?.name}</span>.
         </PageContentDescription>
       </PageContentHeader>
       <PageContentBody>

@@ -40,7 +40,10 @@ type TextEditorProps = {
   disabled?: boolean
   readOnly?: boolean
   'aria-invalid'?: boolean
+  /** Classes of the frame (toolbar + writing area). */
   className?: string
+  /** Classes of the writing area, e.g. "min-h-48" or "h-64 overflow-y-auto". */
+  contentClassName?: string
 }
 
 /** The editor's frame, styled like <Textarea />. */
@@ -70,7 +73,7 @@ function TextEditor(props: TextEditorProps) {
         aria-disabled={props.disabled}
         className={cn(FRAME, props.className)}
       >
-        <div className="min-h-16" />
+        <div className={cn('min-h-16', props.contentClassName)} />
       </div>
     )
   return <TiptapEditor {...props} />
@@ -86,6 +89,7 @@ function TiptapEditor({
   readOnly,
   'aria-invalid': ariaInvalid,
   className,
+  contentClassName,
 }: TextEditorProps) {
   const editable = !disabled && !readOnly
   const editor = useEditor({
@@ -132,7 +136,11 @@ function TiptapEditor({
       {editor && !readOnly && (
         <TextEditorToolbar editor={editor} disabled={disabled} />
       )}
-      <EditorContent editor={editor} />
+      {/* Flex, so the editable area fills a taller box and clicks anywhere focus it. */}
+      <EditorContent
+        editor={editor}
+        className={cn('flex flex-col [&>.ProseMirror]:flex-1', contentClassName)}
+      />
     </div>
   )
 }

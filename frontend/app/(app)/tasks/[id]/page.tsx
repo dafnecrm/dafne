@@ -7,6 +7,7 @@ import {
   PageContent,
   PageContentAction,
   PageContentBody,
+  PageContentDescription,
   PageContentHeader,
   PageContentTitle,
 } from "@/components/page-content";
@@ -41,6 +42,7 @@ async function TaskProfile({
       />
       <PageContentHeader>
         <PageContentTitle>{task.name}</PageContentTitle>
+        <PageContentDescription>{task.status}</PageContentDescription>
         <PageContentAction className="flex flex-wrap justify-end gap-2">
           <Button
             variant="outline"

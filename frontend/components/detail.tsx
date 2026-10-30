@@ -11,12 +11,12 @@ import {
   ItemSeparator,
   ItemTitle
 } from "@/components/ui/item";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "./ui/card";
 
 /*
  * Read-only detail lists, e.g. on a record's page:
  *
- *   <DetailSection title="Profile">
+ *   <DetailSection title="Profile" actions={<Button …>Edit</Button>}>
  *     <Detail icon={MailIcon} label="Email" actions={<CopyButton … />}>
  *       {user.email}
  *     </Detail>
@@ -51,11 +51,14 @@ const DETAIL_GRID =
  * `groupClassName` is merged with the grid: `xl:grid-cols-3` changes only
  * that, `flex` stacks the children in one column.
  *
+ * `actions` (e.g. buttons) go at the end of the header, in CardAction.
+ *
  * Variants: `default` frames the details like a Card; `plain` has no
  * frame and no padding around the details.
  */
 export function DetailSection({
   title,
+  actions,
   variant,
   separator,
   className,
@@ -63,6 +66,8 @@ export function DetailSection({
   children,
 }: {
   title?: string;
+  /** Shown at the end of the header, in CardAction. */
+  actions?: ReactNode;
   /** Draws a line between details. */
   separator?: boolean;
   /** Extra classes for the section, e.g. a grid placement. */
@@ -76,11 +81,14 @@ export function DetailSection({
       data-slot="detail-section"
       data-variant={variant}
       className={cn(detailSectionVariants({ variant }), className)}>
-      {title && (
+      {(title || actions) && (
         <CardHeader className={cn(variant === "plain" && "px-0")}>
-          <CardTitle>
-            <h2>{title}</h2>
-          </CardTitle>
+          {title && (
+            <CardTitle>
+              <h2>{title}</h2>
+            </CardTitle>
+          )}
+          {actions && <CardAction>{actions}</CardAction>}
         </CardHeader>
       )}
       <CardContent className={cn(variant === "plain" && "px-0")}>

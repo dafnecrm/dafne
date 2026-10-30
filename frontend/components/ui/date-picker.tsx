@@ -49,7 +49,7 @@ function DatePicker({
   format = "longDate",
   disabled,
   disabledDays,
-  captionLayout,
+  captionLayout = "dropdown",
   startMonth,
   endMonth,
   className,

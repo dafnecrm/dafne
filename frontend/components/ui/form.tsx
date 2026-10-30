@@ -1,6 +1,7 @@
 'use client'
 
 import { useFieldContext, useFormContext } from '@/lib/app-form/form-context'
+import { cn } from 'cn'
 import { Checkbox } from './checkbox'
 import { DatePicker, type DatePickerProps } from './date-picker'
 import { Field, FieldError, FieldLabel } from './field'
@@ -27,20 +28,34 @@ import {
 import { Eye, EyeOff } from 'lucide-react'
 import React, { useState } from 'react'
 
-type TextFieldProps = {
+/** Props every field takes. */
+type BaseFieldProps = {
   label: string
+  /** Classes of the whole field (label, control and errors). */
   className?: string
+  /** Classes of the control itself (input box, textarea, editor area…), e.g. its height. */
+  controlClassName?: string
+} & Pick<React.ComponentProps<typeof Field>, 'orientation'>
+
+/** Props of the control that the field sets itself. */
+type OwnProps =
+  | 'id'
+  | 'name'
+  | 'value'
+  | 'aria-invalid'
+  | 'onChange'
+  | 'onBlur'
+  | 'className'
+
+type TextFieldProps = BaseFieldProps & {
   addons?: React.ReactNode[]
   uncontrolled?: boolean
-} & Pick<React.ComponentProps<typeof Field>, 'orientation'> &
-  Omit<
-    React.ComponentProps<typeof Input>,
-    'name' | 'value' | 'ariaInvalid' | 'onChange' | 'onBlur' | 'className'
-  >
+} & Omit<React.ComponentProps<typeof Input>, OwnProps>
 
 function TextField({
   label,
   className,
+  controlClassName,
   addons,
   uncontrolled,
   orientation,
@@ -57,7 +72,7 @@ function TextField({
       <FieldLabel htmlFor={field.name} className={'text-nowrap'}>
         {label}
       </FieldLabel>
-      <InputGroup>
+      <InputGroup className={controlClassName}>
         {addons}
         <InputGroupInput
           id={field.name}
@@ -116,6 +131,7 @@ function UncontrolledField({
 function NumberField({
   label,
   className,
+  controlClassName,
   addons,
   orientation,
   ...props
@@ -131,7 +147,7 @@ function NumberField({
       <FieldLabel htmlFor={field.name} className={'text-nowrap'}>
         {label}
       </FieldLabel>
-      <InputGroup>
+      <InputGroup className={controlClassName}>
         {addons}
         <InputGroupInput
           id={field.name}
@@ -162,16 +178,10 @@ function NumberField({
 function TextareaField({
   label,
   className,
+  controlClassName,
   orientation,
   ...props
-}: {
-  label: string
-  className?: string
-} & Pick<React.ComponentProps<typeof Field>, 'orientation'> &
-  Omit<
-    React.ComponentProps<typeof Textarea>,
-    'id' | 'name' | 'value' | 'aria-invalid' | 'onChange' | 'onBlur' | 'className'
-  >) {
+}: BaseFieldProps & Omit<React.ComponentProps<typeof Textarea>, OwnProps>) {
   const field = useFieldContext<string>()
 
   return (
@@ -185,6 +195,7 @@ function TextareaField({
       </FieldLabel>
       <Textarea
         id={field.name}
+        className={controlClassName}
         name={field.name}
         value={field.state.value ?? ''}
         aria-invalid={!field.state.meta.isValid}
@@ -206,23 +217,25 @@ function TextareaField({
 function TextEditorField({
   label,
   className,
+  controlClassName,
+  orientation,
   ...props
-}: {
-  label: string
-  className?: string
-} & Omit<
-  React.ComponentProps<typeof TextEditor>,
-  'id' | 'value' | 'onChange' | 'onBlur' | 'aria-invalid' | 'className'
->) {
+}: BaseFieldProps &
+  Omit<React.ComponentProps<typeof TextEditor>, OwnProps | 'contentClassName'>) {
   const field = useFieldContext<string>()
 
   return (
-    <Field className={className} data-invalid={!field.state.meta.isValid}>
+    <Field
+      className={className}
+      orientation={orientation}
+      data-invalid={!field.state.meta.isValid}
+    >
       <FieldLabel htmlFor={field.name} className={'text-nowrap'}>
         {label}
       </FieldLabel>
       <TextEditor
         id={field.name}
+        contentClassName={controlClassName}
         value={field.state.value ?? ''}
         aria-invalid={!field.state.meta.isValid}
         onChange={field.handleChange}
@@ -259,22 +272,10 @@ function toDateValue(date: Date) {
 function DatePickerField({
   label,
   className,
+  controlClassName,
   orientation,
   ...props
-}: {
-  label: string
-  className?: string
-} & Pick<React.ComponentProps<typeof Field>, 'orientation'> &
-  Omit<
-    DatePickerProps,
-    | 'id'
-    | 'name'
-    | 'value'
-    | 'onChange'
-    | 'onBlur'
-    | 'aria-invalid'
-    | 'className'
-  >) {
+}: BaseFieldProps & Omit<DatePickerProps, OwnProps>) {
   const field = useFieldContext<string>()
 
   return (
@@ -289,6 +290,7 @@ function DatePickerField({
       <DatePicker
         id={field.name}
         name={field.name}
+        className={controlClassName}
         value={parseDateValue(field.state.value)}
         aria-invalid={!field.state.meta.isValid}
         onChange={(date) => field.handleChange(date ? toDateValue(date) : '')}
@@ -319,22 +321,10 @@ function splitDateTimeValue(value: string | null | undefined) {
 function DateTimePickerField({
   label,
   className,
+  controlClassName,
   orientation,
   ...props
-}: {
-  label: string
-  className?: string
-} & Pick<React.ComponentProps<typeof Field>, 'orientation'> &
-  Omit<
-    DatePickerProps,
-    | 'id'
-    | 'name'
-    | 'value'
-    | 'onChange'
-    | 'onBlur'
-    | 'aria-invalid'
-    | 'className'
-  >) {
+}: BaseFieldProps & Omit<DatePickerProps, OwnProps>) {
   const field = useFieldContext<string>()
   const { date, time } = splitDateTimeValue(field.state.value)
   const invalid = !field.state.meta.isValid
@@ -348,7 +338,7 @@ function DateTimePickerField({
       <FieldLabel htmlFor={field.name} className={'text-nowrap'}>
         {label}
       </FieldLabel>
-      <div className="flex gap-2">
+      <div className={cn('flex gap-2', controlClassName)}>
         <DatePicker
           id={field.name}
           name={field.name}
@@ -398,11 +388,11 @@ function SelectField({
   options,
   emptyLabel,
   className,
-}: {
-  label: string
+  controlClassName,
+  orientation,
+}: BaseFieldProps & {
   options: readonly { value: string; label: string }[]
   emptyLabel?: string
-  className?: string
 }) {
   const field = useFieldContext<string | null>()
   const items =
@@ -411,7 +401,11 @@ function SelectField({
       : [{ value: null, label: emptyLabel }, ...options]
 
   return (
-    <Field className={className} data-invalid={!field.state.meta.isValid}>
+    <Field
+      className={className}
+      orientation={orientation}
+      data-invalid={!field.state.meta.isValid}
+    >
       <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
       <Select
         items={items}
@@ -424,7 +418,7 @@ function SelectField({
       >
         <SelectTrigger
           id={field.name}
-          className="w-full"
+          className={cn('w-full', controlClassName)}
           aria-invalid={!field.state.meta.isValid}
           onBlur={field.handleBlur}
         >
@@ -448,13 +442,12 @@ function SelectField({
   )
 }
 
+/** Always horizontal: the box, then its label. */
 function CheckboxField({
   label,
   className,
-}: {
-  label: string
-  className?: string
-}) {
+  controlClassName,
+}: Omit<BaseFieldProps, 'orientation'>) {
   const field = useFieldContext<boolean>()
 
   return (
@@ -465,6 +458,7 @@ function CheckboxField({
     >
       <Checkbox
         id={field.name}
+        className={controlClassName}
         name={field.name}
         // Submit "off" when unchecked so the server always receives a value.
         uncheckedValue="off"

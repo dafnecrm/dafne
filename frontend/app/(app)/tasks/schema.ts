@@ -1,6 +1,7 @@
 import { formOptions } from "@tanstack/react-form-nextjs";
 import {
   taskBodySchema,
+  type TaskStatus,
   type TaskType,
   type TaskBody,
 } from "@backend/contracts";
@@ -8,8 +9,12 @@ import { formSchema } from "@/lib/app-form/form-schema";
 import type { TaskDetail } from "@/lib/tasks";
 
 /** Form values: every field is text, "" when blank. Keys follow the contract. */
-export type TaskFormValues = Record<Exclude<keyof TaskBody, "type">, string> & {
+export type TaskFormValues = Record<
+  Exclude<keyof TaskBody, "type" | "status">,
+  string
+> & {
   type: TaskType;
+  status: TaskStatus;
 };
 
 /**
@@ -24,6 +29,11 @@ export const TYPE_OPTIONS = [
   { value: "other", label: "Other" },
 ] satisfies { value: TaskType; label: string }[];
 
+export const STATUS_OPTIONS = [
+  { value: "open", label: "Open" },
+  { value: "closed", label: "Closed" },
+] satisfies { value: TaskStatus; label: string }[];
+
 /** Form values for a new task of `activityId`, or for editing `task`. */
 export function taskFormOpts(task?: TaskDetail, activityId = "") {
   return formOptions({
@@ -33,6 +43,7 @@ export function taskFormOpts(task?: TaskDetail, activityId = "") {
       notes: task?.notes ?? "",
       type: task?.type ?? "email",
       activityId: task?.activityId ?? activityId,
+      status: task?.status ?? "open",
     } satisfies TaskFormValues as TaskFormValues,
   });
 }

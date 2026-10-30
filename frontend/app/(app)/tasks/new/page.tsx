@@ -37,7 +37,9 @@ async function NewTask({
     <PageContent>
       <PageContentHeader>
         <PageContentTitle>New task</PageContentTitle>
-        <PageContentDescription>For {activity.name}.</PageContentDescription>
+        <PageContentDescription>
+          Activity <span className="font-semibold">{activity.name}</span>.
+        </PageContentDescription>
       </PageContentHeader>
       <PageContentBody>
         <TaskForm activityId={activity.id} />

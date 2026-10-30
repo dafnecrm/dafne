@@ -14,7 +14,11 @@ import CopyButton from "@/components/copy-button";
 import { Detail, DetailSection } from "@/components/detail";
 import { LocalDate } from "@/components/local-date";
 import type { TaskDetail } from "@/lib/tasks";
-import { activityHref, TASK_TYPE_OPTIONS } from "@/lib/tasks-table";
+import {
+  activityHref,
+  TASK_TYPE_OPTIONS,
+  TASK_STATUS_OPTIONS,
+} from "@/lib/tasks-table";
 import { TextEditorContent } from "@/components/ui/text-editor";
 
 /** The details of a task: its fields, then who created and updated it. */
@@ -33,11 +37,15 @@ export function TaskDetails({ task }: { task: TaskDetail }) {
             href={activityHref(task.activityId)}
             className="underline-offset-4 hover:underline"
           >
-            Open the activity
+            {task.activity?.name}
           </Link>
         </Detail>
         <Detail icon={TextIcon} label="Notes" wide>
           <TextEditorContent html={task.notes} className="font-normal" />
+        </Detail>
+        <Detail icon={TagIcon} label="Status">
+          {TASK_STATUS_OPTIONS.find((o) => o.value === task.status)?.label ??
+            "—"}
         </Detail>
       </DetailSection>
       <DetailSection title="Record">

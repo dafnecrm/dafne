@@ -14,7 +14,6 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ActivityDetails } from "../activity-detail";
 import { ActivityDetailActions } from "../activity-detail-actions";
-import { ActivityTasks } from "../activity-tasks";
 import { loadActivity } from "./load-activity";
 
 export const metadata: Metadata = { title: "Activity" };
@@ -58,7 +57,6 @@ async function ActivityProfile({
       </PageContentHeader>
       <PageContentBody>
         <ActivityDetails activity={activity} />
-        <ActivityTasks activity={activity} />
       </PageContentBody>
     </PageContent>
   );
