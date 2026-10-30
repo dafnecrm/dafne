@@ -101,19 +101,22 @@ export function Detail({
   icon: Icon,
   label,
   actions,
+  className,
   children,
 }: {
   icon: LucideIcon;
   label: string;
   /** Shown at the end of the row, in ItemActions. */
   actions?: ReactNode;
+  /** Extra classes, e.g. col-span-full for a long value (rich text). */
+  className?: string;
   children: ReactNode;
 }) {
   return (
     <Item
       size="sm"
       // min-w-0: in a grid, let long values truncate instead of overflowing.
-      className="min-w-0 rounded-none p-0 items-start"
+      className={cn("min-w-0 rounded-none p-0 items-start", className)}
     >
       <ItemMedia variant="icon">
         <Icon />

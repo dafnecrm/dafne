@@ -7,6 +7,7 @@ import {
   SubmitButton,
   TextField,
   TextareaField,
+  TextEditorField,
   UncontrolledField,
 } from "@/components/ui/form"
 import { fieldContext, formContext } from "@/lib/app-form/form-context"
@@ -21,6 +22,7 @@ const { useAppForm } = createFormHook({
     UncontrolledField,
     NumberField,
     TextareaField,
+    TextEditorField,
     CheckboxField,
     SelectField,
   },

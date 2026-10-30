@@ -5,6 +5,7 @@ import { Checkbox } from './checkbox'
 import { Field, FieldError, FieldLabel } from './field'
 import { Input } from './input'
 import { Textarea } from './textarea'
+import { TextEditor } from './text-editor'
 import {
   Select,
   SelectContent,
@@ -200,6 +201,43 @@ function TextareaField({
   )
 }
 
+/** A rich text editor; the field's value is HTML ("" when empty). */
+function TextEditorField({
+  label,
+  className,
+  ...props
+}: {
+  label: string
+  className?: string
+} & Omit<
+  React.ComponentProps<typeof TextEditor>,
+  'id' | 'value' | 'onChange' | 'onBlur' | 'aria-invalid' | 'className'
+>) {
+  const field = useFieldContext<string>()
+
+  return (
+    <Field className={className} data-invalid={!field.state.meta.isValid}>
+      <FieldLabel htmlFor={field.name} className={'text-nowrap'}>
+        {label}
+      </FieldLabel>
+      <TextEditor
+        id={field.name}
+        value={field.state.value ?? ''}
+        aria-invalid={!field.state.meta.isValid}
+        onChange={field.handleChange}
+        onBlur={field.handleBlur}
+        {...props}
+      />
+      <FieldError>
+        {field.state.meta.errors.length > 0 &&
+          [...new Set(errorMessages(field.state.meta.errors))].map(
+            (message, i) => <p key={i}>{message}</p>
+          )}
+      </FieldError>
+    </Field>
+  )
+}
+
 /** A choice from a fixed list; the field's value is the option's `value`. */
 function SelectField({
   label,
@@ -356,6 +394,7 @@ export {
   UncontrolledField,
   NumberField,
   TextareaField,
+  TextEditorField,
   CheckboxField,
   SelectField,
   SubmitButton,

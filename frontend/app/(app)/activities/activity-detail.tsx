@@ -12,6 +12,7 @@ import {
 import CopyButton from "@/components/copy-button";
 import { Detail, DetailSection } from "@/components/detail";
 import { LocalDate } from "@/components/local-date";
+import { TextEditorContent } from "@/components/ui/text-editor";
 import type { ActivityDetail } from "@/lib/activities";
 import {
   ACTIVITY_TYPE_OPTIONS,
@@ -45,8 +46,12 @@ export function ActivityDetails({ activity }: { activity: ActivityDetail }) {
             "—"
           )}
         </Detail>
-        <Detail icon={TextIcon} label="Notes">
-          {activity.notes ?? "—"}
+        <Detail icon={TextIcon} label="Notes" className="col-span-full">
+          {activity.notes ? (
+            <TextEditorContent html={activity.notes} className="w-full font-normal" />
+          ) : (
+            "—"
+          )}
         </Detail>
       </DetailSection>
       <DetailSection title="Record">

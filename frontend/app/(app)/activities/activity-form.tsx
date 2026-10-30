@@ -65,10 +65,7 @@ export function ActivityForm({ activity }: { activity?: ActivityDetail }) {
                 </form.AppField>
                 <form.AppField name="notes">
                   {(field) => (
-                    <field.TextareaField
-                      label="Notes (optional)"
-                      autoComplete="off"
-                    />
+                    <field.TextEditorField label="Notes (optional)" />
                   )}
                 </form.AppField>
               </div>
