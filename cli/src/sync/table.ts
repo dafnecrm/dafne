@@ -28,6 +28,13 @@ export const API_TAGS = [
 ] as const;
 export type ApiTag = (typeof API_TAGS)[number];
 
+/** `@form` tags: the input `dafne sync form` writes for a `text` column. */
+export const FORM_INPUTS = [
+  'plain', // a textarea (TextareaField), the default
+  'editor', // a rich text editor (TextEditorField), saved as HTML
+] as const;
+export type FormInput = (typeof FORM_INPUTS)[number];
+
 export interface Column {
   /** Property name, e.g. createdAt. */
   key: string;
@@ -48,6 +55,8 @@ export interface Column {
   defaultValue?: string;
   references: boolean;
   tags: Set<ApiTag>;
+  /** From `@form editor|plain`; unset means plain. */
+  formInput?: FormInput;
 }
 
 export interface TableInfo {
@@ -118,6 +127,7 @@ export function readTable(path: string, source: string, { s }: ResourceNames): T
       }
       const column = readColumn(prop.getName(), prop.getInitializerOrThrow(), warnings, path);
       column.tags = readTags(prop, warnings, path);
+      column.formInput = readFormInput(prop, column, warnings, path);
       columns.push(column);
     }
     info = { variable: s.camel, columns, relations: readRelations(file, s.camel), warnings };
@@ -196,18 +206,34 @@ function readConfig(column: Column, config: ObjectLiteralExpression, warnings: s
   }
 }
 
-function readTags(prop: Node, warnings: string[], path: string): Set<ApiTag> {
-  const tags = new Set<ApiTag>();
-  const comments = prop
+const leadingComments = (prop: Node) =>
+  prop
     .getLeadingCommentRanges()
     .map((range) => range.getText())
     .join('\n');
-  for (const match of comments.matchAll(/@api\b([^\n*]*)/g))
+
+function readTags(prop: Node, warnings: string[], path: string): Set<ApiTag> {
+  const tags = new Set<ApiTag>();
+  const comments = leadingComments(prop);
+  // Up to the next tag, so `@api detail @form editor` works.
+  for (const match of comments.matchAll(/@api\b([^\n*@]*)/g))
     for (const word of match[1].trim().split(/[\s,]+/).filter(Boolean)) {
       if ((API_TAGS as readonly string[]).includes(word)) tags.add(word as ApiTag);
       else warnings.push(`${path}: unknown tag "@api ${word}"; use ${API_TAGS.join(', ')}.`);
     }
   return tags;
+}
+
+function readFormInput(prop: Node, column: Column, warnings: string[], path: string): FormInput | undefined {
+  let input: FormInput | undefined;
+  for (const match of leadingComments(prop).matchAll(/@form\b([^\n*@]*)/g))
+    for (const word of match[1].trim().split(/[\s,]+/).filter(Boolean)) {
+      if ((FORM_INPUTS as readonly string[]).includes(word)) input = word as FormInput;
+      else warnings.push(`${path}: unknown tag "@form ${word}"; use ${FORM_INPUTS.join(', ')}.`);
+    }
+  if (input && column.kind !== 'text')
+    warnings.push(`${path}: "@form ${input}" on "${column.key}" is ignored: it's only for text columns.`);
+  return input;
 }
 
 /** Names under `<table>: { ... }` in the file's defineRelationsPart. */

@@ -15,6 +15,8 @@ const COLUMNS = `
     dueDate: date('due_date'),
     /** @api detail */
     notes: text('notes'),
+    /** @api detail @form editor */
+    description: text('description'),
     customerId: varchar('customer_id', { length: 36 }).references(() => customer.id),`;
 
 function info() {
@@ -35,6 +37,8 @@ describe('readResponse', () => {
     expect(byKey.budget).toMatchObject({ kind: 'number', optional: true });
     expect(byKey.dueDate).toMatchObject({ kind: 'date' });
     expect(byKey.notes).toMatchObject({ kind: 'text', listed: false });
+    expect(byKey.notes.richText).toBeUndefined();
+    expect(byKey.description).toMatchObject({ kind: 'text', richText: true });
     expect(byKey.customerId).toMatchObject({ kind: 'id', label: 'Customer' });
     expect(sortFields).toContain('type');
     expect(filterFields).toEqual(['name', 'type', 'done']);
@@ -94,6 +98,10 @@ describe('syncDetail', () => {
     expect(content).toMatch(/<Detail icon=\{TagIcon\} label="Type">/);
     expect(content).toMatch(/<Detail icon=\{TextIcon\} label="Notes">\s*\{activity\.notes \?\? "—"\}/);
     expect(content).toContain('<LocalDate value={activity.dueDate} format="longDate" />');
+    expect(content).toMatch(
+      /<Detail icon=\{TextIcon\} label="Description" className="col-span-full">\s*\{activity\.description \? \(?\s*<TextEditorContent\s+html=\{activity\.description\}/,
+    );
+    expect(content).toMatch(/import \{ TextEditorContent \} from "@\/components\/ui\/text-editor"/);
     expect(content).not.toMatch(/label="Deleted at"/);
     expect(content).toMatch(/import \{[^}]*TagIcon[^}]*\} from "lucide-react"/);
   });

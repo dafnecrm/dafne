@@ -41,6 +41,7 @@ interface AddOptions extends CommonOptions {
   index?: boolean;
   default?: string;
   api?: string;
+  editor?: boolean;
   after?: string;
   to?: string;
   relation?: RelationKind;
@@ -206,6 +207,19 @@ async function askAdd(
     );
   }
 
+  if (type === 'text' && options.editor === undefined)
+    options.editor =
+      cancelled<string>(
+        await p.select<string>({
+          message: 'Input in the form',
+          initialValue: 'plain',
+          options: [
+            { value: 'plain', label: 'plain', hint: 'a textarea' },
+            { value: 'editor', label: 'editor', hint: 'rich text, saved as HTML' },
+          ],
+        }),
+      ) === 'editor';
+
   if (options.api === undefined) {
     const tags = cancelled<string[]>(
       await p.multiselect<string>({
@@ -250,7 +264,7 @@ async function finish(changes: Changes, result: FieldResult, options: CommonOpti
     [
       'dafne migration generate   # fixes the foreign keys drizzle-kit 1.0.0-rc.5 gets wrong',
       'cd backend && npx tsc --noEmit && pnpm test',
-      'dafne sync form|table|detail <resource>   # the frontend',
+      'dafne sync frontend <resource>   # form, table and detail',
     ].join('\n'),
     'Next steps',
   );
@@ -284,6 +298,7 @@ export function fieldCommand() {
       .option('--precision <n>', 'decimal: digits (default 10)')
       .option('--scale <n>', 'decimal: digits after the point (default 2)')
       .option('--api <tags>', `@api tags for the contract, comma-separated: ${API_TAGS.join(', ')}`)
+      .option('--editor', 'text: a rich text editor in the form (@form editor) instead of a textarea')
       .option('--after <column>', 'put it after this column (default: before createdAt)')
       .option('--to <resource>', 'ref: the related resource')
       .addOption(new Option('--relation <kind>', 'ref: relation seen from this table').choices(RELATIONS))
@@ -297,6 +312,7 @@ Examples:
   dafne field add activities dueDate datetime
   dafne field add activities status enum --values open,done --required --default open
   dafne field add activities notes text --api internal
+  dafne field add activities description text --editor               # rich text editor in the form
   dafne field add activities customer ref --to customers               # customerId + activity.customer / customer.activities
   dafne field add activities customer ref --to customers --relation one-to-one
   dafne field add customers activities ref --to activities --relation one-to-many
@@ -318,12 +334,14 @@ Examples:
       scale: options.scale === undefined ? undefined : Number(options.scale),
       default: options.default,
       api: list(options.api) ?? [],
+      editor: options.editor,
       after: options.after,
       to: options.to,
       relation: options.relation ?? 'many-to-one',
       onDelete: options.onDelete,
       inverse: options.inverse,
     };
+    if (spec.editor && spec.type !== 'text') throw new Error('--editor is only for text fields.');
     for (const tag of spec.api)
       if (!(API_TAGS as readonly string[]).includes(tag)) throw new Error(`Unknown @api tag "${tag}": use ${API_TAGS.join(', ')}.`);
     const result = addField(changes, resource, spec);

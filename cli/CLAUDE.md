@@ -12,7 +12,10 @@ TypeScript ESM, Node ≥ 22, pnpm. `pnpm dev g ...` runs from source (tsx),
 ## Layout
 
 - `src/commands/generate.ts`: commander commands, prompts (@clack/prompts),
-  summary and next steps. `src/commands/sync.ts` is `dafne sync contract`.
+  summary and next steps. `src/commands/sync.ts` holds the `dafne sync`
+  commands: `contract`, `form`, `table`, `detail`, and `frontend`
+  (`syncFrontend`: form + table + detail, skipping the parts a resource
+  lacks).
 - `src/commands/migration.ts`: `dafne migration generate|fix`. It runs
   drizzle-kit from `backend/node_modules/.bin` with the terminal attached.
 - `src/fields/`: `dafne field add|remove`. `spec.ts` holds the types and
@@ -36,7 +39,7 @@ TypeScript ESM, Node ≥ 22, pnpm. `pnpm dev g ...` runs from source (tsx),
   (`<S>_<FIELD>_OPTIONS`) live in `lib/<plural>-table.ts`: it's plain data
   with type-only contract imports, so client components can import it.
 - `src/sync/`: `table.ts` reads a Drizzle table (columns, `@api` tags,
-  relations); `roles.ts` decides where each column goes (body, list,
+  the `@form plain|editor` input of `text` columns, relations); `roles.ts` decides where each column goes (body, list,
   detail, filter, sort) and its Zod/TS types; `contract.ts` merges that
   into the existing contract.
 - `src/core/`:

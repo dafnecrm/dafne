@@ -11,6 +11,7 @@ import type { TableInfo } from './table.js';
 export type FormKind =
   | 'text'
   | 'textarea'
+  | 'editor'
   | 'email'
   | 'enum'
   | 'boolean'
@@ -82,8 +83,11 @@ function classify(key: string, raw: string, table?: TableInfo): FormField {
   const defaultValue = /\.default\(([^)]*)\)/.exec(zod)?.[1]?.trim() ?? column?.defaultValue;
   const dateKind: FormKind = column?.kind === 'datetime' ? 'datetime' : 'date';
   const base = { key, label, defaultValue };
-  // A `text` column (65535 chars in the contract) gets a multi-line input.
-  const textKind: FormKind = column ? (column.kind === 'text' ? 'textarea' : 'text') : /\b65535\b/.test(zod) ? 'textarea' : 'text';
+  // A `text` column (65535 chars in the contract) gets a multi-line input:
+  // a textarea, or a rich text editor with `@form editor`.
+  const textKind: FormKind = column
+    ? column.kind !== 'text' ? 'text' : column.formInput === 'editor' ? 'editor' : 'textarea'
+    : /\b65535\b/.test(zod) ? 'textarea' : 'text';
 
   if (/^z\.(array|object|strictObject|record|unknown|any)\(/.test(zod)) return { ...base, kind: 'unsupported', optional: true };
   if (zod.startsWith('optionalText(')) {
@@ -278,6 +282,8 @@ function fieldJsx(f: FormField): string {
         return `<field.TextField label="${label}" type="datetime-local" />`;
       case 'textarea':
         return `<field.TextareaField label="${label}" />`;
+      case 'editor':
+        return `<field.TextEditorField label="${label}" />`;
       default:
         return `<field.TextField label="${label}" autoComplete="off" />`;
     }

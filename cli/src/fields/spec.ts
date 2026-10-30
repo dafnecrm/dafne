@@ -43,6 +43,8 @@ export interface FieldSpec {
   default?: string;
   /** @api tags for the comment above the column. */
   api: string[];
+  /** text: the form uses the rich text editor (`@form editor`). */
+  editor?: boolean;
   /** Column to insert after (default: before createdAt). */
   after?: string;
   /** ref: the other resource. */
@@ -142,7 +144,11 @@ function defaultCall(spec: FieldSpec): string {
   return `.default('${value.replace(/'/g, "\\'")}')`;
 }
 
-/** The comment above the column, if it has @api tags. */
+/** The comment above the column, if it has @api or @form tags. */
 export function apiComment(spec: FieldSpec): string {
-  return spec.api.length ? `/** @api ${spec.api.join(' ')} */\n` : '';
+  const tags = [
+    ...(spec.api.length ? [`@api ${spec.api.join(' ')}`] : []),
+    ...(spec.editor && spec.type === 'text' ? ['@form editor'] : []),
+  ];
+  return tags.length ? `/** ${tags.join(' ')} */\n` : '';
 }

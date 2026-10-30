@@ -59,6 +59,11 @@ describe('field add', () => {
     expect(read(`${TABLES}/activities.ts`)).toMatch(/\/\*\* @api internal \*\/\n\s+notes: text\('notes'\)/);
   });
 
+  it('writes @form editor for a text field with editor', async () => {
+    await run((c) => addField(c, 'activities', spec('description', 'text', { api: ['detail'], editor: true })));
+    expect(read(`${TABLES}/activities.ts`)).toMatch(/\/\*\* @api detail @form editor \*\/\n\s+description: text\('description'\)/);
+  });
+
   it('adds a many-to-one key with both relations, in the file that holds the key', async () => {
     await run((c) => addField(c, 'activities', spec('customer', 'ref', { to: 'customers' })));
     const table = read(`${TABLES}/activities.ts`);

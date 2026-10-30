@@ -128,7 +128,18 @@ export function printSync(name: string, report: SyncReport, changed: boolean) {
 }
 
 export function syncCommand() {
-  const sync = new Command('sync').description('Bring code in line with the database tables');
+  const sync = new Command('sync')
+    .description('Bring code in line with the database tables')
+    .addHelpText(
+      'after',
+      `
+After changing a table:
+  dafne sync contract activities    # backend: contract, service queries, specs
+  dafne sync frontend activities    # frontend: form, table and detail together
+
+Or one frontend part at a time: dafne sync form|table|detail activities.
+contract and frontend also take --all; every command takes --dry-run.`,
+    );
 
   sync
     .command('contract')
@@ -182,7 +193,7 @@ id, createdById/updatedById, deletedAt and server-filled columns
       p.note(
         [
           'cd backend && npx tsc --noEmit && pnpm test',
-          'dafne sync form|table|detail <resource>   # the frontend',
+          'dafne sync frontend <resource>   # form, table and detail',
         ].join('\n'),
         'Next steps',
       );
@@ -208,7 +219,14 @@ wherever it is. For a field that must have no input, write in the form:
 
   {/* dafne-ignore: customerId */}
 
-It's still added to the values type and the defaults (the form sends it).`,
+It's still added to the values type and the defaults (the form sends it).
+To sync the table and detail page too, use dafne sync frontend.
+
+A text column gets a textarea; for a rich text editor (HTML), write above
+the column in the table:
+
+  /** @form editor */
+  description: text('description'),`,
     )
     .action(async (name: string | undefined, options: SyncOptions) => {
       p.intro('dafne sync form');
@@ -264,7 +282,9 @@ only adds what's missing. A field counts as present when the file already
 uses it (a column, a filter, <record>.<field> on the detail page), wherever
 it is. To keep a field out, write in that file:
 
-  {/* dafne-ignore: customerId */}    (or // dafne-ignore: … in a .ts file)`,
+  {/* dafne-ignore: customerId */}    (or // dafne-ignore: … in a .ts file)
+
+To sync the form, table and detail page together, use dafne sync frontend.`,
       )
       .action(async (name: string | undefined, options: SyncOptions) => {
         p.intro(`dafne sync ${command}`);
@@ -284,7 +304,88 @@ it is. To keep a field out, write in that file:
         p.outro('Done.');
       });
 
+  sync
+    .command('frontend')
+    .description('Run sync form, table and detail together, for the parts the resource has')
+    .argument('[name]', 'resource name, singular or plural')
+    .option('--all', 'every resource with a table and a contract')
+    .option('--root <dir>', 'Dafne folder (with backend/ and frontend/)')
+    .option('--dry-run', 'show what would change, write nothing')
+    .option('-y, --yes', 'never prompt')
+    .addHelpText(
+      'after',
+      `
+The same as dafne sync form, dafne sync table and dafne sync detail one after
+the other (see their help for what each one adds). A part the resource
+doesn't have (no form, no detail page…) is skipped. Run dafne sync contract
+first if the table changed.`,
+    )
+    .action(async (name: string | undefined, options: SyncOptions) => {
+      p.intro('dafne sync frontend');
+      const changes = new Changes(findRoot(options.root));
+      const withFrontend = () => syncable(changes).filter((r) => frontendParts(changes, r).length);
+      let resources: string[];
+      if (options.all) resources = withFrontend();
+      else if (name) resources = [name];
+      else {
+        const choices = withFrontend();
+        if (options.yes || !process.stdin.isTTY || !choices.length)
+          throw new Error('Missing argument: the resource name, or --all.');
+        const picked = await p.select({ message: 'Which resource?', options: choices.map((value) => ({ value, label: value })) });
+        if (p.isCancel(picked)) return p.cancel('Nothing changed.');
+        resources = [picked];
+      }
+
+      for (const resource of resources) {
+        const before = changes.summary().length;
+        const { reports, skipped } = syncFrontend(changes, resource);
+        if (!reports.length) throw new Error(`${resource}: no form, table or detail page to sync.`);
+        if (changes.summary().length === before) p.log.success(`${resource}: already in sync.`);
+        printFrontendReports(reports);
+        if (skipped.length) p.log.info(`${resource}: no ${skipped.join(', ')}; skipped.`);
+      }
+
+      if (!changes.summary().length) return p.outro('Done: nothing to add.');
+      if (options.dryRun) return p.outro('Dry run: nothing written.');
+      await changes.commit();
+      p.note(
+        ['Check the new inputs, columns and details: their place, labels and defaults.', 'cd frontend && npx tsc --noEmit'].join('\n'),
+        'Next steps',
+      );
+      p.outro('Done.');
+    });
+
   return sync;
+}
+
+type FrontendPart = 'form' | 'table' | 'detail';
+
+/** The frontend parts a resource has, i.e. whose files all exist. */
+function frontendParts(changes: Changes, name: string): FrontendPart[] {
+  const names = resourceNames(name);
+  const files: Record<FrontendPart, string[]> = {
+    form: Object.values(formFiles(names)),
+    table: Object.values(tableFiles(names, changes)),
+    detail: [detailFile(names, changes)],
+  };
+  return (Object.keys(files) as FrontendPart[]).filter((part) => files[part].every((f) => changes.exists(f)));
+}
+
+/** sync form, table and detail for one resource; the parts it lacks are skipped. */
+export function syncFrontend(
+  changes: Changes,
+  name: string,
+): { reports: [string, FormReport][]; skipped: FrontendPart[] } {
+  const run: Record<FrontendPart, (changes: Changes, name: string) => [string, FormReport][]> = {
+    form: syncForm,
+    table: syncTablePage,
+    detail: syncDetailPage,
+  };
+  const present = frontendParts(changes, name);
+  return {
+    reports: present.flatMap((part) => run[part](changes, name)),
+    skipped: (Object.keys(run) as FrontendPart[]).filter((part) => !present.includes(part)),
+  };
 }
 
 function printFrontendReports(reports: [string, FormReport][]) {

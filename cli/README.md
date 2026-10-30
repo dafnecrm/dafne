@@ -67,6 +67,7 @@ with the real fields.
 dafne field add activities dueDate datetime
 dafne field add activities status enum --values open,done --required --default open
 dafne field add activities notes text --api internal        # never in the contract
+dafne field add activities description text --editor      # rich text editor in the form
 dafne field add activities customer ref --to customers     # foreign key + relations
 dafne field remove activities customer
 ```
@@ -81,7 +82,8 @@ error instead.
 Types: `string` (`--length`), `text`, `int`, `bigint`, `float`, `decimal`
 (`--precision`, `--scale`), `boolean`, `date`, `datetime`, `enum`
 (`--values`), `json`, `ref`. Other options: `--required`, `--unique`,
-`--index`, `--default`, `--after <column>`, `--api <tags>`. New columns go
+`--index`, `--default`, `--after <column>`, `--api <tags>`, `--editor`
+(`text` only: see the form below). New columns go
 before `createdAt`. Afterwards the contract is synced (see below; skip it
 with `--no-sync`).
 
@@ -161,7 +163,7 @@ They get the new required fields, with a sample value, and lose the fields
 that left the body. Other unknown keys stay: they may be there on purpose,
 like the `deletedAt` the schema must reject. Assertions aren't changed.
 
-It doesn't touch the frontend: use `dafne sync form|table|detail` there.
+It doesn't touch the frontend: use `dafne sync frontend` (or `sync form|table|detail`) there.
 
 Which column goes where follows the customers contract:
 - `id` and server-filled columns (`defaultNow`, `$onUpdate`…) are in
@@ -200,8 +202,14 @@ It adds the contract body fields that a form lacks, in
   - the default values: dates are cut to what the inputs show, required
     numbers start at the table default (or 0).
 - **`<singular>-form.tsx`:** a `<form.AppField>` after the last one:
-  - text, email, date and datetime-local use `TextField`; `text` columns
-    (long text) use `TextareaField`;
+  - text, email, date and datetime-local use `TextField`;
+  - `text` columns (long text) use `TextareaField`, or `TextEditorField`
+    (rich text, saved as HTML) when the column says so:
+
+    ```ts
+    /** @form editor */          // or @form plain (the default); can follow @api tags
+    description: text('description'),
+    ```
   - enums use `SelectField`, booleans `CheckboxField`, numbers `NumberField`
     (a number, empty = null).
 
@@ -237,12 +245,23 @@ whose field left the contract are reported, not removed.
   actions); what it shows, like the name, isn't added again. It adds a `<Detail>` per field
   the page doesn't read
   (`activity.<field>`), in a "Details" section. The section is created
-  before "Record" if missing.
+  before "Record" if missing. A `text` column with `@form editor` is shown
+  as HTML (`<TextEditorContent>`, sanitized), on a row of its own.
 
 To keep a field out, write `{/* dafne-ignore: firstname, lastname */}` (or
 `// dafne-ignore: …` in a .ts file) in that file. Lists are often curated:
 the users list, for example, leaves out on purpose fields that
 `sync table users` would add.
+
+## Syncing the whole frontend
+
+```sh
+dafne sync frontend activities     # --all for every resource, --dry-run to preview
+```
+
+It runs `sync form`, `sync table` and `sync detail` one after the other,
+with the same rules. A part the resource doesn't have (no form, no detail
+page…) is skipped. Run `dafne sync contract` first if the table changed.
 
 ## Development
 

@@ -40,6 +40,25 @@ describe('readTable', () => {
     expect(info.relations).toEqual(['createdBy', 'updatedBy']);
   });
 
+  it('reads @form next to @api, and warns about misuse', () => {
+    const { info } = sync(
+      activityTable(`
+    /** @api detail @form editor */
+    description: text('description'),
+    /** @form editor */
+    code: varchar('code', { length: 10 }),
+    /** @form fancy */
+    notes: text('notes'),`),
+    );
+    const byKey = Object.fromEntries(info.columns.map((c) => [c.key, c]));
+    expect(byKey.description.formInput).toBe('editor');
+    expect([...byKey.description.tags]).toEqual(['detail']);
+    expect(byKey.notes.formInput).toBeUndefined();
+    const warnings = info.warnings.join('\n');
+    expect(warnings).toMatch(/"@form editor" on "code" is ignored/);
+    expect(warnings).toMatch(/unknown tag "@form fancy"/);
+  });
+
   it('warns about a misspelled option', () => {
     const { info } = sync(activityTable(`    code: varchar('code', { lenght: 10 }),`));
     expect(info.warnings.join()).toMatch(/did you mean "length"/);

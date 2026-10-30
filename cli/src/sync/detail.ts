@@ -28,6 +28,16 @@ function detailCode(names: ResourceNames, record: string, field: ResponseField):
   const value = `${record}.${field.key}`;
   const imports: [string, string][] = [['lucide-react', ICONS[field.kind]]];
   let body: string;
+  if (field.richText) {
+    // Sanitized HTML, on a row of its own: rich text needs the width.
+    imports.push(['@/components/ui/text-editor', 'TextEditorContent']);
+    const html = `<TextEditorContent html={${value}} className="w-full font-normal" />`;
+    body = field.optional ? `{${value} ? ${html} : "—"}` : html;
+    return {
+      code: `<Detail icon={${ICONS[field.kind]}} label="${field.label}" className="col-span-full">\n  ${body}\n</Detail>`,
+      imports,
+    };
+  }
   switch (field.kind) {
     case 'boolean':
       body = field.optional ? `{${value} === null ? "—" : ${value} ? "Yes" : "No"}` : `{${value} ? "Yes" : "No"}`;

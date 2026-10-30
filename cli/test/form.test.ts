@@ -13,7 +13,9 @@ const COLUMNS = `
     dueDate: date('due_date'),
     startsAt: timestamp('starts_at', { fsp: 3 }),
     customerId: varchar('customer_id', { length: 36 }),
-    notes: text('notes'),`;
+    notes: text('notes'),
+    /** @form editor */
+    description: text('description'),`;
 
 /** Contract synced from a table with more columns than the generated one. */
 function setup() {
@@ -42,6 +44,7 @@ describe('readBody', () => {
     expect(byKey.startsAt).toMatchObject({ kind: 'datetime', optional: true });
     expect(byKey.customerId).toMatchObject({ kind: 'text', optional: true });
     expect(byKey.notes).toMatchObject({ kind: 'textarea', optional: true });
+    expect(byKey.description).toMatchObject({ kind: 'editor', optional: true });
   });
 });
 
@@ -93,10 +96,11 @@ describe('syncFormComponent', () => {
     expect(content).toContain('<field.NumberField label="Budget (optional)" />');
     expect(content).toContain('<field.CheckboxField label="Done" />');
     expect(content).toContain('<field.TextareaField label="Notes (optional)" />');
+    expect(content).toContain('<field.TextEditorField label="Description (optional)" />');
     expect(content).toContain('type="datetime-local"');
     expect(content).toMatch(/import \{[^}]*TYPE_OPTIONS[^}]*\} from "\.\/schema"/);
     expect(content.indexOf('name="name"')).toBeLessThan(content.indexOf('name="type"'));
-    expect(report.added).toHaveLength(8);
+    expect(report.added).toHaveLength(9);
   });
 
   it('skips fields marked dafne-ignore and fields already there', () => {

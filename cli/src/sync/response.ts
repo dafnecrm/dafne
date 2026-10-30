@@ -18,6 +18,8 @@ export interface ResponseField {
   label: string;
   /** In Listed<S> (else only in <S>Detail). */
   listed: boolean;
+  /** HTML from the rich text editor (`@form editor` on the column). */
+  richText?: boolean;
   enumConst?: string;
   enumType?: string;
   values?: string[];
@@ -75,6 +77,7 @@ export function readResponse(path: string, contract: string, names: ResourceName
         // customerId → "Customer".
         const label = casings(words(kind === 'id' ? key.replace(/Id$/, '') : key)).title;
         const field: ResponseField = { key, kind, optional, label, listed };
+        if (kind === 'text' && column?.kind === 'text' && column.formInput === 'editor') field.richText = true;
         if (kind === 'enum') {
           const e = enums.get(base)!;
           Object.assign(field, { enumType: base, enumConst: e.constant, values: e.values });
