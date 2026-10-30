@@ -23,6 +23,7 @@ export type ActivityStatus = (typeof ACTIVITY_STATUSES)[number];
 export const activityBodySchema = z.strictObject({
   name: requiredText(255, 'Enter the name'),
   type: z.enum(ACTIVITY_TYPES, { error: 'Choose the type' }),
+  notes: optionalText(z.string().max(65535)),
 });
 
 /** What a client sends: blank optional fields may be "", null or missing. */
@@ -93,6 +94,7 @@ export interface ActivityUser {
 export interface ActivityDetail extends ListedActivity {
   createdBy: ActivityUser | null;
   updatedBy: ActivityUser | null;
+  notes: string | null;
   /** Always null: deleted activities aren't returned. */
   deletedAt: Date | null;
 }

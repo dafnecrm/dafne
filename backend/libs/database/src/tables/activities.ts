@@ -5,6 +5,7 @@ import {
   mysqlTable,
   timestamp,
   varchar,
+  text,
 } from 'drizzle-orm/mysql-core';
 import { user } from './auth.js';
 
@@ -29,6 +30,8 @@ export const activity = mysqlTable(
       () => user.id,
       { onDelete: 'set null' },
     ),
+    /** @api detail */
+    notes: text('notes'),
     createdAt: timestamp('created_at', { fsp: 3 }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { fsp: 3 })
       .defaultNow()
