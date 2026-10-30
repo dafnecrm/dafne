@@ -99,7 +99,7 @@ describe('syncDetail', () => {
     expect(content).toMatch(/<Detail icon=\{TextIcon\} label="Notes">\s*\{activity\.notes \?\? "—"\}/);
     expect(content).toContain('<LocalDate value={activity.dueDate} format="longDate" />');
     expect(content).toMatch(
-      /<Detail icon=\{TextIcon\} label="Description" className="col-span-full">\s*\{activity\.description \? \(?\s*<TextEditorContent\s+html=\{activity\.description\}/,
+      /<Detail icon=\{TextIcon\} label="Description" wide>\s*\{activity\.description \? \(?\s*<TextEditorContent\s+html=\{activity\.description\}/,
     );
     expect(content).toMatch(/import \{ TextEditorContent \} from "@\/components\/ui\/text-editor"/);
     expect(content).not.toMatch(/label="Deleted at"/);

@@ -31,10 +31,10 @@ function detailCode(names: ResourceNames, record: string, field: ResponseField):
   if (field.richText) {
     // Sanitized HTML, on a row of its own: rich text needs the width.
     imports.push(['@/components/ui/text-editor', 'TextEditorContent']);
-    const html = `<TextEditorContent html={${value}} className="w-full font-normal" />`;
+    const html = `<TextEditorContent html={${value}} className="font-normal" />`;
     body = field.optional ? `{${value} ? ${html} : "—"}` : html;
     return {
-      code: `<Detail icon={${ICONS[field.kind]}} label="${field.label}" className="col-span-full">\n  ${body}\n</Detail>`,
+      code: `<Detail icon={${ICONS[field.kind]}} label="${field.label}" wide>\n  ${body}\n</Detail>`,
       imports,
     };
   }
