@@ -23,6 +23,8 @@ const notDeleted = isNull(task.deletedAt);
 /** Only the user's ID and name, for "created by" / "updated by". */
 const userSummary = { columns: { id: true, name: true } } as const;
 
+const activitySummary = { columns: { id: true, name: true }} as const;
+
 @Injectable()
 export class TasksService {
   constructor(private readonly database: DatabaseService) {}
@@ -58,6 +60,7 @@ export class TasksService {
           dueDate: task.dueDate,
           type: task.type,
           activityId: task.activityId,
+          status: task.status,
           createdAt: task.createdAt,
           updatedAt: task.updatedAt,
         })
@@ -80,7 +83,7 @@ export class TasksService {
     const found = await this.database.db.query.task.findFirst({
       where: { id, deletedAt: { isNull: true } },
       columns: { createdById: false, updatedById: false },
-      with: { createdBy: userSummary, updatedBy: userSummary },
+      with: { createdBy: userSummary, updatedBy: userSummary, activity: activitySummary },
     });
     if (!found) throw new NotFoundException('Task not found');
     return found;
@@ -99,6 +102,7 @@ export class TasksService {
       notes: body.notes,
       type: body.type,
       activityId: body.activityId,
+      status: body.status,
       createdAt: now,
       updatedAt: now,
       createdById: userId,
@@ -124,6 +128,7 @@ export class TasksService {
         notes: body.notes,
         type: body.type,
         activityId: body.activityId,
+        status: body.status,
         updatedById: userId,
         // Set explicitly so the row always changes and is counted below.
         updatedAt: new Date(),

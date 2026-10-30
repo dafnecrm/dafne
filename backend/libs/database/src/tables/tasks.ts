@@ -27,6 +27,7 @@ export const task = mysqlTable(
     activityId: varchar('activity_id', { length: 36 })
       .notNull()
       .references(() => activity.id, { onDelete: 'cascade' }),
+    status: mysqlEnum('status', ['open', 'closed']).notNull().default('open'),
     createdAt: timestamp('created_at', { fsp: 3 }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { fsp: 3 })
       .defaultNow()

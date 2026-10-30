@@ -7,6 +7,10 @@ import { pageQuery, requiredText, SORT_DIRECTIONS } from './common.ts';
 export const TASK_TYPES = ['email', 'phone', 'other'] as const;
 export type TaskType = (typeof TASK_TYPES)[number];
 
+/** Values of task status. */
+export const TASK_STATUSES = ['open', 'closed'] as const;
+export type TaskStatus = (typeof TASK_STATUSES)[number];
+
 /**
  * Body of POST /tasks and PUT /tasks/:id. PUT replaces the
  * whole task: omitted optional fields are cleared.
@@ -17,6 +21,7 @@ export const taskBodySchema = z.strictObject({
   notes: requiredText(65535, 'Enter the notes'),
   type: z.enum(TASK_TYPES, { error: 'Choose the type' }),
   activityId: requiredText(36, 'Enter the activity id'),
+  status: z.enum(TASK_STATUSES, { error: 'Choose the status' }).optional(),
 });
 
 /** What a client sends: blank optional fields may be "", null or missing. */
@@ -29,6 +34,7 @@ export const TASK_SORT_FIELDS = [
   'name',
   'dueDate',
   'type',
+  'status',
   'createdAt',
   'updatedAt',
 ] as const;
@@ -38,7 +44,12 @@ export type TaskSortField = (typeof TASK_SORT_FIELDS)[number];
  * Task fields the list can be filtered by, each a query param of
  * its own. Filters combine with AND and match text the field contains.
  */
-export const TASK_FILTER_FIELDS = ['name', 'type', 'activityId'] as const;
+export const TASK_FILTER_FIELDS = [
+  'name',
+  'type',
+  'activityId',
+  'status',
+] as const;
 export type TaskFilterField = (typeof TASK_FILTER_FIELDS)[number];
 
 /** Query string of GET /tasks. Deleted tasks are never listed. */
@@ -47,6 +58,7 @@ export const listTasksQuerySchema = z.strictObject({
   name: z.string().max(255).optional(),
   type: z.enum(TASK_TYPES).optional(),
   activityId: z.string().max(36).optional(),
+  status: z.enum(TASK_STATUSES).optional(),
   /** Defaults to name. */
   sortBy: z.enum(TASK_SORT_FIELDS).optional(),
   /** Defaults to asc. */
@@ -63,6 +75,7 @@ export interface ListedTask {
   dueDate: Date;
   type: TaskType;
   activityId: string;
+  status: TaskStatus;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -81,6 +94,12 @@ export interface TaskUser {
   name: string;
 }
 
+/** The activity of the task; null if since removed. */
+export interface TaskActivity {
+  id: string;
+  name: string;
+}
+
 /** Response of GET /tasks/:id, POST /tasks and PUT /tasks/:id. */
 export interface TaskDetail extends ListedTask {
   createdBy: TaskUser | null;
@@ -88,4 +107,5 @@ export interface TaskDetail extends ListedTask {
   notes: string;
   /** Always null: deleted tasks aren't returned. */
   deletedAt: Date | null;
+  activity: TaskActivity | null;
 }
