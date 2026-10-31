@@ -94,15 +94,13 @@ function AddressForm({
 
   /** Copies a found place into the address fields (blank where it has none). */
   function fillFrom(place: GeoPlace) {
-    const street = [place.street, place.houseNumber]
-      .filter(Boolean)
-      .join(" ");
+    const street = [place.street, place.houseNumber].filter(Boolean).join(" ");
     form.setFieldValue("street", street);
     form.setFieldValue("postalCode", place.postalCode ?? "");
     form.setFieldValue("city", place.city ?? "");
     // In Italy the county is the province, which an address shows.
     form.setFieldValue("region", place.county ?? place.region ?? "");
-    form.setFieldValue("country", place.country ?? "");
+    form.setFieldValue("countryCode", place.countryCode ?? "");
   }
 
   return (
@@ -160,8 +158,8 @@ function AddressForm({
               <field.TextField label="State / province" autoComplete="off" />
             )}
           </form.AppField>
-          <form.AppField name="country">
-            {(field) => <field.TextField label="Country" autoComplete="off" />}
+          <form.AppField name="countryCode">
+            {(field) => <field.CountrySelectField label="Country" />}
           </form.AppField>
         </FieldGroup>
         <SheetFooter>

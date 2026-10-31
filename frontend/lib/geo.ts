@@ -5,6 +5,7 @@ import type { Json } from "@backend/contracts";
 import { BackendError, backendFetch } from "./backend";
 
 export type GeoPlace = Json<contracts.GeoPlace>;
+export type ListedCountry = Json<contracts.ListedCountry>;
 
 /** Searches shorter than this aren't sent: they'd match half the world. */
 const MIN_LENGTH = 3;
@@ -34,4 +35,13 @@ export async function searchPlaces(
           : error.message || "The search failed.",
     };
   }
+}
+
+/**
+ * Every country (ISO code and name, by name), from the backend's
+ * GET /geo/countries. A server action, so client components can load them.
+ */
+export async function listCountries(): Promise<ListedCountry[]> {
+  const res = await backendFetch("/geo/countries");
+  return ((await res.json()) as Json<contracts.CountriesList>).countries;
 }

@@ -67,7 +67,7 @@ export const emptyAddress = (
   city: "",
   postalCode: "",
   region: "",
-  country: "",
+  countryCode: "",
 });
 
 export const TYPE_OPTIONS = [
@@ -89,7 +89,7 @@ export function customerFormOpts(customer?: CustomerDetail) {
           city: a.city,
           postalCode: a.postalCode ?? "",
           region: a.region ?? "",
-          country: a.country,
+          countryCode: a.countryCode,
         })) ?? [],
       type: customer?.type ?? "company",
       birthDate: customer?.birthDate?.slice(0, 10) ?? "",

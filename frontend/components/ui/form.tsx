@@ -1,6 +1,7 @@
 'use client'
 
 import { useFieldContext, useFormContext } from '@/lib/app-form/form-context'
+import { CountrySelect } from '@/components/country-select'
 import { cn } from 'cn'
 import { Checkbox } from './checkbox'
 import { DatePicker, type DatePickerProps } from './date-picker'
@@ -383,6 +384,51 @@ function DateTimePickerField({
  * A choice from a fixed list; the field's value is the option's `value`.
  * With `emptyLabel` the choice is optional: that item sets the value to null.
  */
+/**
+ * A country, picked by typing part of its name (see CountrySelect). The
+ * value is the ISO code ("IT"), "" when none is chosen.
+ */
+function CountrySelectField({
+  label,
+  placeholder,
+  disabled,
+  className,
+  controlClassName,
+  orientation,
+}: BaseFieldProps & {
+  placeholder?: string
+  disabled?: boolean
+}) {
+  const field = useFieldContext<string>()
+
+  return (
+    <Field
+      className={className}
+      orientation={orientation}
+      data-invalid={!field.state.meta.isValid}
+    >
+      <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
+      <CountrySelect
+        id={field.name}
+        name={field.name}
+        value={field.state.value}
+        onValueChange={field.handleChange}
+        onBlur={field.handleBlur}
+        placeholder={placeholder}
+        disabled={disabled}
+        className={cn('w-full', controlClassName)}
+        aria-invalid={!field.state.meta.isValid}
+      />
+      <FieldError>
+        {field.state.meta.errors.length > 0 &&
+          [...new Set(errorMessages(field.state.meta.errors))].map(
+            (message, i) => <p key={i}>{message}</p>
+          )}
+      </FieldError>
+    </Field>
+  )
+}
+
 function SelectField({
   label,
   options,
@@ -561,6 +607,7 @@ export {
   DateTimePickerField,
   CheckboxField,
   SelectField,
+  CountrySelectField,
   SubmitButton,
   FormErrors,
 }

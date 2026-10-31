@@ -4,6 +4,7 @@ import { revalidateLogic } from "@tanstack/react-form-nextjs";
 import { MapPinPlusIcon, PencilIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
+import { CountryName } from "@/components/country-select";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -244,7 +245,9 @@ export function CustomerForm({ customer }: { customer?: CustomerDetail }) {
                                 </TableCell>
                                 <TableCell>{address.city}</TableCell>
                                 <TableCell>{address.region || "—"}</TableCell>
-                                <TableCell>{address.country}</TableCell>
+                                <TableCell>
+                                  <CountryName code={address.countryCode} />
+                                </TableCell>
                                 <TableCell>
                                   <div className="flex justify-end gap-1">
                                     <Button

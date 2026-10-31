@@ -118,7 +118,7 @@ export function CustomerDetails({ customer }: { customer: CustomerDetail }) {
                     <TableCell>{address.postalCode ?? "—"}</TableCell>
                     <TableCell>{address.city}</TableCell>
                     <TableCell>{address.region ?? "—"}</TableCell>
-                    <TableCell>{address.country}</TableCell>
+                    <TableCell>{address.country.name}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

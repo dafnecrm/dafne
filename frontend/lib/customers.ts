@@ -50,5 +50,5 @@ export async function listCustomers({
 export function formatAddress(address: Omit<CustomerAddress, "id" | "type">) {
   const place = [address.postalCode, address.city].filter(Boolean).join(" ");
   const region = address.region ? ` (${address.region})` : "";
-  return `${address.street}, ${place}${region}, ${address.country}`;
+  return `${address.street}, ${place}${region}, ${address.country.name}`;
 }
