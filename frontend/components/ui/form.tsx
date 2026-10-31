@@ -25,7 +25,7 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from './input-group'
-import { Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff, TriangleAlertIcon } from 'lucide-react'
 import React, { useState } from 'react'
 
 /** Props every field takes. */
@@ -536,6 +536,7 @@ function FormErrors() {
   return (
     messages.length > 0 && (
       <Alert variant="destructive">
+        <TriangleAlertIcon />
         <AlertTitle>
           {formErrors.onServer ? 'Something went wrong' : 'Form has errors!'}
         </AlertTitle>

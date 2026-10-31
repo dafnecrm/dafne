@@ -137,7 +137,7 @@ export function CustomerForm({ customer }: { customer?: CustomerDetail }) {
                 <form.AppField name="email">
                   {(field) => (
                     <field.TextField
-                      label="Email (optional)"
+                      label="Email"
                       type="email"
                       autoComplete="off"
                       placeholder="name@example.com"
