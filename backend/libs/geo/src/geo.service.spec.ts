@@ -10,6 +10,8 @@ const feature = {
   properties: {
     osm_type: 'N',
     osm_id: 5977935196,
+    osm_key: 'place',
+    osm_value: 'house',
     type: 'house',
     housenumber: '1',
     street: 'Via Roma',
@@ -61,7 +63,7 @@ describe('GeoService', () => {
       places: [
         {
           id: 'N5977935196',
-          label: "Via Roma 1, 20051 Cassina de' Pecchi (Lombardia), Italia",
+          label: "Via Roma 1, 20051 Cassina de' Pecchi, Lombardia, Italia",
           kind: 'house',
           name: null,
           street: 'Via Roma',
@@ -80,14 +82,114 @@ describe('GeoService', () => {
     });
   });
 
-  it('asks the public instance for the search and the limit (5 by default)', async () => {
+  it('asks the public instance for addresses and areas only, with room for filtering', async () => {
     fetch.mockResolvedValue(photon([]));
 
     await service.search({ q: 'via roma & co' });
 
     const [url, init] = fetch.mock.calls[0];
-    expect(url).toBe('https://photon.komoot.io/api/?q=via+roma+%26+co&limit=5');
+    expect(url).toBe(
+      'https://photon.komoot.io/api/?q=via+roma+%26+co&limit=15&osm_tag=place&osm_tag=highway&osm_tag=boundary',
+    );
     expect(init?.headers).toEqual({ 'User-Agent': 'dafne-crm' });
+  });
+
+  it('leaves out points of interest and bus stops, and repeated road segments', async () => {
+    const street = (osm_id: number, osm_value = 'primary') => ({
+      ...feature,
+      properties: {
+        osm_type: 'W',
+        osm_id,
+        osm_key: 'highway',
+        osm_value,
+        type: 'street',
+        name: 'Viale Monza',
+        city: 'Milano',
+        country: 'Italia',
+      },
+    });
+    fetch.mockResolvedValue(
+      photon([
+        {
+          ...feature,
+          properties: {
+            ...feature.properties,
+            osm_key: 'leisure',
+            osm_value: 'sports_centre',
+            name: 'Autodromo Nazionale di Monza',
+          },
+        },
+        street(1),
+        street(2),
+        street(3, 'bus_stop'),
+      ]),
+    );
+
+    const { places } = await service.search({ q: 'viale monza' });
+
+    expect(places).toEqual([
+      expect.objectContaining({
+        id: 'W1',
+        kind: 'street',
+        street: 'Viale Monza',
+        label: 'Viale Monza, Milano, Italia',
+      }),
+    ]);
+  });
+
+  it('returns an OSM object once, even when Photon repeats it', async () => {
+    const quarter = (city: string) => ({
+      ...feature,
+      properties: {
+        osm_type: 'W',
+        osm_id: 404140258,
+        osm_key: 'place',
+        osm_value: 'quarter',
+        type: 'locality',
+        name: 'Viale Monza',
+        city,
+      },
+    });
+    fetch.mockResolvedValue(
+      photon([quarter('Milano'), quarter('Sesto San Giovanni')]),
+    );
+
+    const { places } = await service.search({ q: 'viale monz' });
+
+    expect(places.map((p) => [p.id, p.city])).toEqual([
+      ['W404140258', 'Milano'],
+    ]);
+  });
+
+  it('puts the name of a city in city, not in a street', async () => {
+    fetch.mockResolvedValue(
+      photon([
+        {
+          ...feature,
+          properties: {
+            osm_type: 'R',
+            osm_id: 45319,
+            osm_key: 'place',
+            osm_value: 'city',
+            type: 'city',
+            name: 'Monza',
+            county: 'Monza e della Brianza',
+            state: 'Lombardia',
+            country: 'Italia',
+            postcode: '20900',
+          },
+        },
+      ]),
+    );
+
+    const { places } = await service.search({ q: 'monza' });
+
+    expect(places[0]).toMatchObject({
+      label: '20900 Monza, Lombardia, Italia',
+      street: null,
+      city: 'Monza',
+      county: 'Monza e della Brianza',
+    });
   });
 
   it('answers the same search from the cache', async () => {

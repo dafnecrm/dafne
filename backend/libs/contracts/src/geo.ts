@@ -15,17 +15,20 @@ export type GeoSearchQuery = z.output<typeof geoSearchQuerySchema>;
 /* ---------- Responses ---------- */
 
 /**
- * A place found by GET /geo/search (OpenStreetMap data). The address
- * fields are named like a customer address, so a form can copy them.
+ * An address or an area found by GET /geo/search (OpenStreetMap data): a
+ * house number, a street, a quarter, a city, a province, a region or a
+ * country. Points of interest (shops, sights…) are never returned. The
+ * address fields are named like a customer address, so a form can copy
+ * them; a city's or a province's own name is in `city` or `county`.
  */
 export interface GeoPlace {
   /** OSM type and id, e.g. "N5977935196". */
   id: string;
-  /** The place as one line, e.g. "Via Roma 1, 20051 Cassina de' Pecchi (Lombardia), Italia". */
+  /** The place as one line, e.g. "Via Roma 1, 20051 Cassina de' Pecchi, Lombardia, Italia". */
   label: string;
-  /** What it is: house, street, city, country… */
+  /** What it is: house, street, locality, district, city, county, state, country. */
   kind: string;
-  /** The place's own name (a building, a shop…), if it has one. */
+  /** The OpenStreetMap name (of the street, the city, the quarter…). */
   name: string | null;
   street: string | null;
   houseNumber: string | null;
@@ -44,7 +47,7 @@ export interface GeoPlace {
   longitude: number;
 }
 
-/** Response of GET /geo/search, best match first. */
+/** Response of GET /geo/search, best match first, one per label. */
 export interface GeoSearchResult {
   places: GeoPlace[];
 }
