@@ -65,7 +65,7 @@ describe('a resource with fields', () => {
     expect(contract).toContain('INVOICE_STATUSES');
     expect(read('backend/libs/invoices/src/invoices.service.ts')).toContain('number: invoice.number');
 
-    expect(read(`${DIR}/invoice-form.tsx`)).toContain('<field.TextEditorField label="Notes (optional)" />');
+    expect(read(`${DIR}/invoice-form.tsx`)).toContain('<field.TextEditorField label="Notes" />');
     expect(read(`${DIR}/invoice-form.tsx`)).toContain('<form.AppField name="status">');
     expect(read(`${DIR}/invoices-table.tsx`)).toContain('number');
     expect(read(`${DIR}/invoice-detail.tsx`)).toMatch(/<Detail icon=\{TextIcon\} label="Notes" wide>/);

@@ -87,7 +87,10 @@ export async function syncOne(
   // are dropped from them; other unknown keys may be there on purpose
   // (e.g. a test that the schema rejects deletedAt).
   const bodyNow = readBody(contractPath, formatted, names, info);
-  const bodyBefore = new Set(readBody(contractPath, source, names, info).map((f) => f.key));
+  const fieldsBefore = readBody(contractPath, source, names, info);
+  const bodyBefore = new Set(fieldsBefore.map((f) => f.key));
+  // Samples only get the fields that become required now (see syncSpecSamples).
+  const requiredBefore = new Set(fieldsBefore.filter((f) => !f.optional && f.defaultValue === undefined).map((f) => f.key));
   const leftBody = new Set([...dropped, ...[...bodyBefore].filter((k) => !bodyNow.some((f) => f.key === k))]);
 
   // The service's queries: list select, detail columns, insert and update.
@@ -111,7 +114,7 @@ export async function syncOne(
     const specPath = servicePath.replace(/\.ts$/, '.spec.ts');
     const specSource = changes.read(specPath);
     if (specSource !== undefined) {
-      const spec = syncServiceSpec(specPath, specSource, bodyNow, leftBody);
+      const spec = syncServiceSpec(specPath, specSource, bodyNow, leftBody, requiredBefore);
       changes.update(specPath, () => spec.content);
       report.added.push(...spec.report.added.map((key) => `service spec body samples: ${key}`));
       report.removed.push(...spec.report.removed.map((key) => `service spec body samples: ${key}`));
@@ -121,7 +124,7 @@ export async function syncOne(
   const contractSpecPath = contractPath.replace(/\.ts$/, '.spec.ts');
   const contractSpec = changes.read(contractSpecPath);
   if (contractSpec !== undefined) {
-    const spec = syncContractSpec(contractSpecPath, contractSpec, `${names.s.camel}BodySchema`, bodyNow, leftBody);
+    const spec = syncContractSpec(contractSpecPath, contractSpec, `${names.s.camel}BodySchema`, bodyNow, leftBody, requiredBefore);
     changes.update(contractSpecPath, () => spec.content);
     report.added.push(...spec.report.added.map((key) => `contract spec samples: ${key}`));
     report.removed.push(...spec.report.removed.map((key) => `contract spec samples: ${key}`));

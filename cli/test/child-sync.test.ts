@@ -60,6 +60,22 @@ describe('child tables (customer addresses)', () => {
     expect(service.report.warnings.join()).toMatch(/label isn't a column of the table: kept/);
   });
 
+  it('follows a column that became NOT NULL, and back', () => {
+    // The contract as it was with a nullable type.
+    const nullable = TABLE.replace(LABEL, TYPE);
+    const before = sync(nullable).contract.content;
+    const notNull = readTable('customers.ts', TABLE.replace(LABEL, TYPE.replace('),', ').notNull(),')), address);
+    const { content, report } = syncChildContract('customers.ts', before, address, notNull, 'customer');
+    expect(content).toMatch(/type: z\.enum\(CUSTOMER_ADDRESS_TYPES, \{ error: 'Choose the type' \}\),/);
+    expect(content).toMatch(/interface CustomerAddress \{[^}]*type: CustomerAddressType;/);
+    expect(report.required).toEqual(['customerAddress.type']);
+    expect(report.warnings.join()).toMatch(/type was generated again because its column is now NOT NULL/);
+
+    const back = syncChildContract('customers.ts', content, address, readTable('customers.ts', nullable, address), 'customer');
+    expect(back.content).toMatch(/type: z\.enum\(CUSTOMER_ADDRESS_TYPES, \{ error: 'Choose the type' \}\)\.nullish\(\)/);
+    expect(back.content).toMatch(/interface CustomerAddress \{[^}]*type: CustomerAddressType \| null;/);
+  });
+
   it('hides a new internal column from the relation in the detail', () => {
     const table = TABLE.replace(LABEL, `${LABEL}\n    /** @api internal */\n    note: varchar('note', { length: 10 }),`);
     const { service } = sync(table);

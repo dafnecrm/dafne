@@ -5,9 +5,13 @@ import type { FormField } from './form.js';
 /*
  * Keeps the sample bodies of a service spec valid for the contract: every
  * `body({...})` (the spec's helper, `const body = (input) =>
- * <s>BodySchema.parse(input)`) gets the required fields it lacks, with a
- * sample value, and loses the fields that left the body (the schema is
- * strict, so they'd make the test throw). Assertions are left alone.
+ * <s>BodySchema.parse(input)`) gets the fields that just became required
+ * (new, or no longer optional), with a sample value, and loses the fields
+ * that left the body (the schema is strict, so they'd make the test throw).
+ * Fields that were already required are never added: a sample without one
+ * is deliberate (e.g. a test that the schema asks for it). Samples with a
+ * spread (`{ ...base, phone }`) are left alone too, since the spread may
+ * already hold the field. Assertions are left alone.
  */
 
 export interface SpecReport {
@@ -48,16 +52,29 @@ function parsed(field: FormField): string | undefined {
 }
 
 /** Service spec: the `body({...})` calls (body = the parse helper). */
-export function syncServiceSpec(path: string, source: string, fields: FormField[], removable: Set<string>) {
-  return syncSpecSamples(path, source, fields, removable, {
+export function syncServiceSpec(
+  path: string,
+  source: string,
+  fields: FormField[],
+  removable: Set<string>,
+  wasRequired: Set<string> = new Set(),
+) {
+  return syncSpecSamples(path, source, fields, removable, wasRequired, {
     enabled: (file) => /\.parse\(/.test(file.getVariableDeclaration('body')?.getInitializer()?.getText() ?? ''),
     callees: ['body'],
   });
 }
 
 /** Contract spec: `failedFields({...})` and `<s>BodySchema.parse({...})` / `.safeParse({...})`. */
-export function syncContractSpec(path: string, source: string, schema: string, fields: FormField[], removable: Set<string>) {
-  return syncSpecSamples(path, source, fields, removable, {
+export function syncContractSpec(
+  path: string,
+  source: string,
+  schema: string,
+  fields: FormField[],
+  removable: Set<string>,
+  wasRequired: Set<string> = new Set(),
+) {
+  return syncSpecSamples(path, source, fields, removable, wasRequired, {
     enabled: () => true,
     callees: ['failedFields', `${schema}.parse`, `${schema}.safeParse`],
   });
@@ -69,11 +86,13 @@ function syncSpecSamples(
   fields: FormField[],
   /** Keys to drop from the samples: columns that aren't (any more) in the body. */
   removable: Set<string>,
+  /** Body fields that were required before the sync: never added. */
+  wasRequired: Set<string>,
   options: { enabled: (file: SourceFile) => boolean; callees: string[] },
 ): { content: string; report: SpecReport } {
   const report: SpecReport = { added: [], removed: [] };
   const bodyKeys = new Set(fields.map((f) => f.key));
-  const needed = fields.filter(required);
+  const needed = fields.filter((f) => required(f) && !wasRequired.has(f.key));
 
   const isHelper = options.enabled;
   const calls = (file: SourceFile) =>
@@ -123,7 +142,7 @@ function syncSpecSamples(
     for (let i = 0; i < count; i++)
       for (const field of needed) {
         const object = samples(file)[i];
-        if (object.getProperties().some((p) => keyOf(p) === field.key)) continue;
+        if (object.getProperties().some((p) => keyOf(p) === field.key || Node.isSpreadAssignment(p))) continue;
         appendToList(file, object, object.getProperties(), `${field.key}: ${sample(field)}`);
         if (!report.added.includes(field.key)) report.added.push(field.key);
         // What parse returns for it, when the test compares the whole result.

@@ -52,6 +52,8 @@ interface Wanted {
   name: string;
   /** Text for a new member. */
   text: string;
+  /** The column it comes from: lets an existing member follow its nullability. */
+  column?: Column;
 }
 
 export function syncContract(
@@ -86,11 +88,11 @@ export function syncContract(
     if (!object) return missing(`${s.camel}BodySchema`);
     const wanted = pick('body').map((column) => {
       const zod = bodyZod(names, column);
-      return { name: column.key, text: `${column.key}: ${zod}` };
+      return { name: column.key, text: `${column.key}: ${zod}`, column };
     });
     // Relations (e.g. addresses) can be part of the body too.
-    const merged = merge('body', objectMembers(object), wanted, isColumn, report, { known: relations });
-    for (const name of merged.added) {
+    const merged = merge('body', objectMembers(object), wanted, isColumn, report, { known: relations, refresh: refreshBody });
+    for (const name of [...merged.added, ...merged.refreshed]) {
       const column = table.columns.find((c) => c.key === name)!;
       if (column.notNull && !column.hasDefault) report.required.push(name);
     }
@@ -120,6 +122,7 @@ export function syncContract(
   const member = (column: Column) => ({
     name: column.key,
     text: `${column.key}: ${responseType(names, column)};`,
+    column,
   });
   step((file) => syncInterface(path, file, `Listed${s.pascal}`, pick('listed').map(member), isColumn, report, { known: new Set() }));
   step((file) =>
@@ -176,9 +179,9 @@ export function syncChildContract(
     const name = `${s.camel}BodySchema`;
     const object = schemaObject(file, name);
     if (!object) return report.warnings.push(`${path}: "${name}" not found, so it wasn't synced.`);
-    const wanted = columns.filter(({ roles }) => roles.body).map(({ column }) => ({ name: column.key, text: `${column.key}: ${bodyZod(names, column)}` }));
-    const merged = merge(name, objectMembers(object), wanted, isColumn, report);
-    for (const key of merged.added) {
+    const wanted = columns.filter(({ roles }) => roles.body).map(({ column }) => ({ name: column.key, text: `${column.key}: ${bodyZod(names, column)}`, column }));
+    const merged = merge(name, objectMembers(object), wanted, isColumn, report, { refresh: refreshBody });
+    for (const key of [...merged.added, ...merged.refreshed]) {
       const column = table.columns.find((c) => c.key === key)!;
       if (column.notNull && !column.hasDefault) report.required.push(`${s.camel}.${key}`);
     }
@@ -188,7 +191,7 @@ export function syncChildContract(
   // One interface for the items, whatever the list/detail split says.
   const response = columns
     .filter(({ roles }) => roles.listed || roles.detail)
-    .map(({ column }) => ({ name: column.key, text: `${column.key}: ${responseType(names, column)};` }));
+    .map(({ column }) => ({ name: column.key, text: `${column.key}: ${responseType(names, column)};`, column }));
   step((file) => syncInterface(path, file, s.pascal, response, isColumn, report, { known: new Set(table.relations) }));
   step(importHelpers);
   return { content: source, report };
@@ -247,7 +250,7 @@ function syncInterface(
     name: Node.isPropertySignature(m) ? m.getName() : m.getText(),
     text: memberText(m),
   }));
-  const merged = merge(name, members, wanted, isColumn, report, options);
+  const merged = merge(name, members, wanted, isColumn, report, { ...options, refresh: refreshResponse });
   const text = iface.getText();
   const open = iface.getStart() + text.indexOf('{', iface.getNameNode().getEnd() - iface.getStart());
   const body = merged.members.map((t) => (/[;,]$/.test(t) ? t : `${t};`)).join('\n');
@@ -293,12 +296,24 @@ function merge(
   wanted: Wanted[],
   isColumn: Set<string>,
   report: SyncReport,
-  options: { quietUnknown?: boolean; known?: Set<string>; inherited?: Set<string> } = {},
-): { members: string[]; added: string[] } {
-  const wantedNames = new Set(wanted.map((w) => w.name));
+  options: {
+    quietUnknown?: boolean;
+    known?: Set<string>;
+    inherited?: Set<string>;
+    /** New text for a kept member that no longer fits its column, or undefined. */
+    refresh?: (member: Member, wanted: Wanted, report: SyncReport, where: string) => string | undefined;
+  } = {},
+): { members: string[]; added: string[]; refreshed: string[] } {
+  const wantedByName = new Map(wanted.map((w) => [w.name, w]));
   const kept: Member[] = [];
+  const refreshed: string[] = [];
   for (const member of existing) {
-    if (wantedNames.has(member.name)) kept.push(member);
+    const want = wantedByName.get(member.name);
+    if (want) {
+      const text = options.refresh?.(member, want, report, where);
+      if (text !== undefined) refreshed.push(member.name);
+      kept.push(text === undefined ? member : { ...member, text });
+    }
     else if (isColumn.has(member.name) && !options.inherited?.has(member.name)) {
       report.removed.push(`${where}: ${member.name}`);
     } else {
@@ -332,5 +347,41 @@ function merge(
     added.push(w);
   });
   for (const w of added) report.added.push(`${where}: ${w.name}`);
-  return { members: result.map((m) => m.text), added: added.map((w) => w.name) };
+  return { members: result.map((m) => m.text), added: added.map((w) => w.name), refreshed };
+}
+
+/** A member's leading comments, and the rest (`key: value`). */
+function splitComments(text: string) {
+  const comments = /^(?:\s*(?:\/\*[\s\S]*?\*\/|\/\/[^\n]*))*\s*/.exec(text)![0];
+  return { comments, code: text.slice(comments.length) };
+}
+
+/** Whether a body member's Zod accepts null (optionalText, .nullish()…). */
+const acceptsNull = (code: string) => /\boptional(Text|Date)\(|\.nullish\(|\.nullable\(/.test(code);
+
+/**
+ * A body member whose nullability no longer matches its column (e.g. the
+ * column became NOT NULL) is generated again, keeping its comments: any
+ * other hand-written validation in it is lost, so the report says so.
+ */
+function refreshBody(member: Member, wanted: Wanted, report: SyncReport, where: string) {
+  if (!wanted.column) return undefined;
+  const { comments, code } = splitComments(member.text);
+  if (acceptsNull(code) === !wanted.column.notNull) return undefined;
+  report.added.push(`${where}: ${member.name} (now ${wanted.column.notNull ? 'required' : 'optional'})`);
+  report.warnings.push(
+    `${where}: ${member.name} was generated again because its column is now ${wanted.column.notNull ? 'NOT NULL' : 'nullable'}; add back any custom validation it had.`,
+  );
+  return comments + wanted.text;
+}
+
+/** Adds or removes `| null` in a response member, keeping the rest of its type. */
+function refreshResponse(member: Member, wanted: Wanted, report: SyncReport, where: string) {
+  if (!wanted.column) return undefined;
+  const hasNull = /\|\s*null\b/.test(member.text);
+  if (hasNull === !wanted.column.notNull) return undefined;
+  report.added.push(`${where}: ${member.name} (${wanted.column.notNull ? 'not null' : '| null'})`);
+  return wanted.column.notNull
+    ? member.text.replace(/\s*\|\s*null\b/, '')
+    : member.text.replace(/\s*;?\s*$/, ' | null;');
 }

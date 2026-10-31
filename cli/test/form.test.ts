@@ -93,12 +93,12 @@ describe('syncFormComponent', () => {
     expect(content).toContain('label="Title"');
     expect(content).toContain('<field.SelectField label="Type" options={TYPE_OPTIONS} />');
     expect(content).toContain('<field.NumberField label="Priority" />');
-    expect(content).toContain('<field.NumberField label="Budget (optional)" />');
+    expect(content).toContain('<field.NumberField label="Budget" />');
     expect(content).toContain('<field.CheckboxField label="Done" />');
-    expect(content).toContain('<field.TextareaField label="Notes (optional)" />');
-    expect(content).toContain('<field.TextEditorField label="Description (optional)" />');
-    expect(content).toContain('<field.DatePickerField label="Due date (optional)" />');
-    expect(content).toContain('<field.DateTimePickerField label="Starts at (optional)" />');
+    expect(content).toContain('<field.TextareaField label="Notes" />');
+    expect(content).toContain('<field.TextEditorField label="Description" />');
+    expect(content).toContain('<field.DatePickerField label="Due date" />');
+    expect(content).toContain('<field.DateTimePickerField label="Starts at" />');
     expect(content).toMatch(/import \{[^}]*TYPE_OPTIONS[^}]*\} from "\.\/schema"/);
     expect(content.indexOf('name="name"')).toBeLessThan(content.indexOf('name="type"'));
     expect(report.added).toHaveLength(9);

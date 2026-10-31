@@ -95,7 +95,7 @@ function classify(key: string, raw: string, table?: TableInfo): FormField {
     if (/z\.iso\.date\(/.test(zod)) return { ...base, kind: 'date', optional: true };
     return { ...base, kind: /z\.email\(/.test(zod) ? 'email' : textKind, optional: true };
   }
-  if (zod.startsWith('requiredText(')) return { ...base, kind: textKind, optional: false };
+  if (zod.startsWith('requiredText(')) return { ...base, kind: /z\.email\(/.test(zod) ? 'email' : textKind, optional: false };
   if (zod.startsWith('optionalDate(')) return { ...base, kind: dateKind, optional: true };
   const enumConst = /^z\.enum\((\w+)/.exec(zod)?.[1];
   if (enumConst) return { ...base, kind: 'enum', optional: nullable, enumConst };
@@ -263,7 +263,7 @@ function freshDefaults(file: SourceFile, singular: string) {
 
 /** The JSX of a new field. */
 function fieldJsx(f: FormField): string {
-  const label = `${f.label}${f.optional && f.kind !== 'boolean' ? ' (optional)' : ''}`;
+  const label = f.label;
   const component = (() => {
     switch (f.kind) {
       case 'enum':

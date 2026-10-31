@@ -56,4 +56,13 @@ describe('syncContractSpec', () => {
     expect(content).toContain("failedFields({ name: '   ', type: 'email', priority: 1, done: false })");
     expect(content).toContain("deletedAt: '2026-01-01'");
   });
+
+  it('leaves samples with a spread, and fields that were already required, alone', () => {
+    const source = render('backend/contract.spec.ts', names).replace("failedFields({ name: '   ' })", "failedFields({ ...base, name: '   ' })");
+    // type was already required: a sample without it is deliberate.
+    const { content, report } = syncContractSpec('c.ts', source, 'activityBodySchema', fields(REQUIRED), new Set(), new Set(['type']));
+    expect(content).toContain("failedFields({ ...base, name: '   ' })");
+    expect(content).not.toContain("type: 'email'");
+    expect(report.added).toEqual(['priority', 'done']);
+  });
 });
