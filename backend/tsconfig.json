@@ -25,35 +25,17 @@
       "node"
     ],
     "paths": {
+      "@app/activities": [
+        "./libs/activities/src/index.ts"
+      ],
+      "@app/activities/*": [
+        "./libs/activities/src/*"
+      ],
       "@app/auth": [
         "./libs/auth/src/index.ts"
       ],
       "@app/auth/*": [
         "./libs/auth/src/*"
-      ],
-      "@app/database": [
-        "./libs/database/src/index.ts"
-      ],
-      "@app/database/*": [
-        "./libs/database/src/*"
-      ],
-      "@app/notifications": [
-        "./libs/notifications/src/index.ts"
-      ],
-      "@app/notifications/*": [
-        "./libs/notifications/src/*"
-      ],
-      "@app/users": [
-        "./libs/users/src/index.ts"
-      ],
-      "@app/users/*": [
-        "./libs/users/src/*"
-      ],
-      "@app/customers": [
-        "./libs/customers/src/index.ts"
-      ],
-      "@app/customers/*": [
-        "./libs/customers/src/*"
       ],
       "@app/common": [
         "./libs/common/src/index.ts"
@@ -67,11 +49,35 @@
       "@app/contracts/*": [
         "./libs/contracts/src/*"
       ],
-      "@app/activities": [
-        "./libs/activities/src/index.ts"
+      "@app/customers": [
+        "./libs/customers/src/index.ts"
       ],
-      "@app/activities/*": [
-        "./libs/activities/src/*"
+      "@app/customers/*": [
+        "./libs/customers/src/*"
+      ],
+      "@app/database": [
+        "./libs/database/src/index.ts"
+      ],
+      "@app/database/*": [
+        "./libs/database/src/*"
+      ],
+      "@app/geo": [
+        "./libs/geo/src/index.ts"
+      ],
+      "@app/geo/*": [
+        "./libs/geo/src/*"
+      ],
+      "@app/notifications": [
+        "./libs/notifications/src/index.ts"
+      ],
+      "@app/notifications/*": [
+        "./libs/notifications/src/*"
+      ],
+      "@app/users": [
+        "./libs/users/src/index.ts"
+      ],
+      "@app/users/*": [
+        "./libs/users/src/*"
       ]
     }
   },

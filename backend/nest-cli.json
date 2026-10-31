@@ -10,6 +10,15 @@
   "monorepo": true,
   "root": "apps/api",
   "projects": {
+    "activities": {
+      "type": "library",
+      "root": "libs/activities",
+      "entryFile": "index",
+      "sourceRoot": "libs/activities/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/activities/tsconfig.lib.json"
+      }
+    },
     "api": {
       "type": "application",
       "root": "apps/api",
@@ -26,42 +35,6 @@
       "sourceRoot": "libs/auth/src",
       "compilerOptions": {
         "tsConfigPath": "libs/auth/tsconfig.lib.json"
-      }
-    },
-    "database": {
-      "type": "library",
-      "root": "libs/database",
-      "entryFile": "index",
-      "sourceRoot": "libs/database/src",
-      "compilerOptions": {
-        "tsConfigPath": "libs/database/tsconfig.lib.json"
-      }
-    },
-    "notifications": {
-      "type": "library",
-      "root": "libs/notifications",
-      "entryFile": "index",
-      "sourceRoot": "libs/notifications/src",
-      "compilerOptions": {
-        "tsConfigPath": "libs/notifications/tsconfig.lib.json"
-      }
-    },
-    "users": {
-      "type": "library",
-      "root": "libs/users",
-      "entryFile": "index",
-      "sourceRoot": "libs/users/src",
-      "compilerOptions": {
-        "tsConfigPath": "libs/users/tsconfig.lib.json"
-      }
-    },
-    "customers": {
-      "type": "library",
-      "root": "libs/customers",
-      "entryFile": "index",
-      "sourceRoot": "libs/customers/src",
-      "compilerOptions": {
-        "tsConfigPath": "libs/customers/tsconfig.lib.json"
       }
     },
     "common": {
@@ -82,13 +55,49 @@
         "tsConfigPath": "libs/contracts/tsconfig.lib.json"
       }
     },
-    "activities": {
+    "customers": {
       "type": "library",
-      "root": "libs/activities",
+      "root": "libs/customers",
       "entryFile": "index",
-      "sourceRoot": "libs/activities/src",
+      "sourceRoot": "libs/customers/src",
       "compilerOptions": {
-        "tsConfigPath": "libs/activities/tsconfig.lib.json"
+        "tsConfigPath": "libs/customers/tsconfig.lib.json"
+      }
+    },
+    "database": {
+      "type": "library",
+      "root": "libs/database",
+      "entryFile": "index",
+      "sourceRoot": "libs/database/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/database/tsconfig.lib.json"
+      }
+    },
+    "geo": {
+      "type": "library",
+      "root": "libs/geo",
+      "entryFile": "index",
+      "sourceRoot": "libs/geo/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/geo/tsconfig.lib.json"
+      }
+    },
+    "notifications": {
+      "type": "library",
+      "root": "libs/notifications",
+      "entryFile": "index",
+      "sourceRoot": "libs/notifications/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/notifications/tsconfig.lib.json"
+      }
+    },
+    "users": {
+      "type": "library",
+      "root": "libs/users",
+      "entryFile": "index",
+      "sourceRoot": "libs/users/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/users/tsconfig.lib.json"
       }
     }
   }
