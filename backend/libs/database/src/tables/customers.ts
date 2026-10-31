@@ -10,6 +10,7 @@ import {
   date,
 } from 'drizzle-orm/mysql-core';
 import { user } from './auth.js';
+import { country } from './countries.js';
 
 /**
  * A customer managed by the users. Deletion is logical: `deletedAt` is set
@@ -74,7 +75,10 @@ export const customerAddress = mysqlTable(
     postalCode: varchar('postal_code', { length: 20 }),
     /** State, province or region. */
     region: varchar('region', { length: 100 }),
-    country: varchar('country', { length: 100 }).notNull(),
+    /** ISO 3166-1 alpha-2 code of the country, e.g. "IT". */
+    countryCode: varchar('country_code', { length: 2 })
+      .notNull()
+      .references(() => country.code),
   },
   (table) => [
     index('customer_address_customerId_idx').on(table.customerId),
@@ -87,7 +91,7 @@ export const customerAddress = mysqlTable(
 );
 
 export const customerRelations = defineRelationsPart(
-  { user, customer, customerAddress },
+  { user, customer, customerAddress, country },
   (r) => ({
     customer: {
       addresses: r.many.customerAddress({
@@ -109,6 +113,11 @@ export const customerRelations = defineRelationsPart(
       customer: r.one.customer({
         from: r.customerAddress.customerId,
         to: r.customer.id,
+        optional: false,
+      }),
+      country: r.one.country({
+        from: r.customerAddress.countryCode,
+        to: r.country.code,
         optional: false,
       }),
     },

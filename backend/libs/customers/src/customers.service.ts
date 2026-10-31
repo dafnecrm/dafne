@@ -28,17 +28,21 @@ const escapeLike = (value: string) => value.replace(/[\\%_]/g, '\\$&');
 const notDeleted = isNull(customer.deletedAt);
 
 /**
- * Turns MySQL's duplicate key error on the email (drizzle wraps it as the
- * cause) into a 409; rethrows anything else.
+ * Turns the MySQL errors a body can cause (drizzle wraps them as the cause)
+ * into client errors: a taken email (409), an address country that isn't in
+ * the countries table (400). Rethrows anything else.
  */
-function rethrowDuplicateEmail(error: unknown): never {
+function rethrowConstraint(error: unknown): never {
   const cause = error instanceof Error && error.cause ? error.cause : error;
-  if (
-    cause instanceof Error &&
-    (cause as { code?: unknown }).code === 'ER_DUP_ENTRY' &&
-    cause.message.includes('customer_email_unique_idx')
-  )
+  const code =
+    cause instanceof Error ? (cause as { code?: unknown }).code : undefined;
+  const message = cause instanceof Error ? cause.message : '';
+  if (code === 'ER_DUP_ENTRY' && message.includes('customer_email_unique_idx'))
     throw new ConflictException('A customer with this email already exists');
+  if (code === 'ER_NO_REFERENCED_ROW_2' && message.includes('country_code'))
+    throw new BadRequestException([
+      'addresses: Choose the country from the list',
+    ]);
   throw error;
 }
 
@@ -107,6 +111,7 @@ export class CustomersService {
         addresses: {
           columns: { customerId: false, position: false },
           orderBy: { position: 'asc' },
+          with: { country: { columns: { name: true } } },
         },
         createdBy: userSummary,
         updatedBy: userSummary,
@@ -145,7 +150,7 @@ export class CustomersService {
         });
         await insertAddresses(tx, id, body.addresses);
       })
-      .catch(rethrowDuplicateEmail);
+      .catch(rethrowConstraint);
     return this.getCustomer(id);
   }
 
@@ -197,7 +202,7 @@ export class CustomersService {
           .where(eq(customerAddress.customerId, id));
         await insertAddresses(tx, id, body.addresses);
       })
-      .catch(rethrowDuplicateEmail);
+      .catch(rethrowConstraint);
     return this.getCustomer(id);
   }
 
@@ -232,7 +237,7 @@ async function insertAddresses(
       city: address.city,
       postalCode: address.postalCode,
       region: address.region,
-      country: address.country,
+      countryCode: address.countryCode,
     })),
   );
 }

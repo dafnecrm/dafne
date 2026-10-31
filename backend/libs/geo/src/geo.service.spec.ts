@@ -253,7 +253,7 @@ describe('GeoService', () => {
     expect(cache.set).toHaveBeenCalledWith(
       'geo:countries',
       countries,
-      60 * 60 * 1000,
+      24 * 60 * 60 * 1000,
     );
   });
 });

@@ -164,12 +164,12 @@ describe('CustomersService', () => {
                 type: 'billing',
                 street: 'Via Roma 1',
                 city: 'Milano',
-                country: 'Italy',
+                countryCode: 'IT',
               },
               {
                 street: 'Main St 2',
                 city: 'Boston',
-                country: 'USA',
+                countryCode: 'US',
                 type: 'head_office',
               },
             ],
@@ -216,6 +216,39 @@ describe('CustomersService', () => {
       ).rejects.toBeInstanceOf(ConflictException);
     });
 
+    it('throws 400 when an address country is not in the countries table', async () => {
+      // The customer row goes in; its address fails the foreign key.
+      insert.values.mockResolvedValueOnce(undefined).mockRejectedValueOnce(
+        new Error('Failed query', {
+          cause: Object.assign(
+            new Error(
+              'Cannot add or update a child row: a foreign key constraint fails (`customer_address_country_code_country_id_fkey` FOREIGN KEY (`country_code`) REFERENCES `country` (`id`))',
+            ),
+            { code: 'ER_NO_REFERENCED_ROW_2' },
+          ),
+        }),
+      );
+
+      await expect(
+        service.createCustomer(
+          body({
+            type: 'company',
+            name: 'Acme',
+            email: 'info@acme.test',
+            addresses: [
+              {
+                type: 'billing',
+                street: 'Via Roma 1',
+                city: 'Milano',
+                countryCode: 'XX',
+              },
+            ],
+          }),
+          'u1',
+        ),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
     it('skips the address insert when there are none', async () => {
       await service.createCustomer(
         body({ type: 'company', name: 'Acme', email: 'info@acme.test' }),
@@ -239,7 +272,7 @@ describe('CustomersService', () => {
               type: 'billing',
               street: 'Via Roma 1',
               city: 'Milano',
-              country: 'Italy',
+              countryCode: 'IT',
             },
           ],
         }),

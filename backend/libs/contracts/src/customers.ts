@@ -39,7 +39,12 @@ export const customerAddressBodySchema = z.strictObject({
   postalCode: optionalText(z.string().max(20)),
   /** State, province or region. */
   region: optionalText(z.string().max(100)),
-  country: requiredText(100, 'Enter the country'),
+  /** ISO 3166-1 alpha-2 code of one of the countries, e.g. "IT". */
+  countryCode: z
+    .string({ error: 'Choose the country' })
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z]{2}$/, { error: 'Choose the country' }),
 });
 
 /** Values of customer type: a natural person or a company. */
@@ -181,7 +186,13 @@ export interface CustomerAddress {
   postalCode: string | null;
   /** State, province or region. */
   region: string | null;
-  country: string;
+  countryCode: string;
+  country: CustomerAddressCountry;
+}
+
+/** The country of an address. */
+export interface CustomerAddressCountry {
+  name: string;
 }
 
 /** A user who created or last updated a customer; null if since removed. */

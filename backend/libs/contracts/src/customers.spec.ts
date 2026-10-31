@@ -24,7 +24,7 @@ describe('customerBodySchema', () => {
           type: 'billing',
           street: ' Via Roma 1 ',
           city: 'Milano',
-          country: 'Italy',
+          countryCode: 'IT',
           region: '',
         },
       ],
@@ -77,14 +77,19 @@ describe('customerBodySchema', () => {
       failedFields({
         ...company,
         addresses: [
-          { type: 'billing', street: 'Via Roma 1', city: '', country: 'Italy' },
+          {
+            type: 'billing',
+            street: 'Via Roma 1',
+            city: '',
+            countryCode: 'IT',
+          },
         ],
       }),
     ).toEqual(['addresses.0.city']);
   });
 
   it('allows one address of each type', () => {
-    const address = { street: 'Via Roma 1', city: 'Milano', country: 'Italy' };
+    const address = { street: 'Via Roma 1', city: 'Milano', countryCode: 'IT' };
     expect(
       failedFields({
         ...company,
