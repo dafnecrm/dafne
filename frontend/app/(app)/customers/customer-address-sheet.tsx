@@ -2,7 +2,13 @@
 
 import { revalidateLogic } from "@tanstack/react-form-nextjs";
 import { Button } from "@/components/ui/button";
-import { FieldGroup } from "@/components/ui/field";
+import { PlaceSearch } from "@/components/place-search";
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import {
   Sheet,
   SheetClose,
@@ -13,6 +19,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { useAppForm } from "@/lib/app-form/app-form";
+import type { GeoPlace } from "@/lib/geo";
 import {
   addressSchema,
   addressTypeOptions,
@@ -85,6 +92,19 @@ function AddressForm({
     onSubmit: ({ value }) => onSave(value),
   });
 
+  /** Copies a found place into the address fields (blank where it has none). */
+  function fillFrom(place: GeoPlace) {
+    const street = [place.street, place.houseNumber]
+      .filter(Boolean)
+      .join(" ");
+    form.setFieldValue("street", street);
+    form.setFieldValue("postalCode", place.postalCode ?? "");
+    form.setFieldValue("city", place.city ?? "");
+    // In Italy the county is the province, which an address shows.
+    form.setFieldValue("region", place.county ?? place.region ?? "");
+    form.setFieldValue("country", place.country ?? "");
+  }
+
   return (
     <form
       noValidate
@@ -106,10 +126,18 @@ function AddressForm({
               />
             )}
           </form.AppField>
+          <Field>
+            <FieldLabel htmlFor="address-search">Search</FieldLabel>
+            <PlaceSearch
+              id="address-search"
+              onSelect={(place) => fillFrom(place)}
+            />
+            <FieldDescription>
+              Pick a place to fill in the fields below, then check them.
+            </FieldDescription>
+          </Field>
           <form.AppField name="street">
-            {(field) => (
-              <field.TextField label="Street" autoComplete="off" autoFocus />
-            )}
+            {(field) => <field.TextField label="Street" autoComplete="off" />}
           </form.AppField>
           <div className="grid grid-cols-3 gap-4">
             <form.AppField name="postalCode">
