@@ -28,7 +28,7 @@ export const API_TAGS = [
 ] as const;
 export type ApiTag = (typeof API_TAGS)[number];
 
-/** `@form` tags: the input `dafne sync form` writes for a `text` column. */
+/** `@form` tags: the input `dafne sync frontend form` writes for a `text` column. */
 export const FORM_INPUTS = [
   'plain', // a textarea (TextareaField), the default
   'editor', // a rich text editor (TextEditorField), saved as HTML

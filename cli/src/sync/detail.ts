@@ -5,7 +5,7 @@ import type { FormReport as Report } from './form.js';
 import { enumOptionsName, ignoredKeys, type ResponseField, type ResponseInfo } from './response.js';
 
 /*
- * `sync detail`: a <Detail> for each response field the detail page
+ * `sync frontend detail`: a <Detail> for each response field the detail page
  * doesn't show, in its "Details" section (created before "Record" if
  * missing). A field counts as shown when the page reads `<record>.<field>`
  * anywhere. Nothing that's there changes.

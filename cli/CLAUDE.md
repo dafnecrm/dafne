@@ -16,9 +16,10 @@ TypeScript ESM, Node ≥ 22, pnpm. `pnpm dev g ...` runs from source (tsx),
   new table (`--field`, parsed by `parseFieldSpec`, or asked by
   `askNewFields` in `field.ts`): it adds them with `addField`, then runs
   `syncOne` and `syncFrontend` on the same in-memory change set.
-- `src/commands/sync.ts` holds the `dafne sync` commands: `contract`,
-  `form`, `table`, `detail`, and `frontend` (`syncFrontend`: form + table
-  + detail, skipping the parts a resource lacks).
+- `src/commands/sync.ts` holds the `dafne sync` commands: `contract` and
+  `frontend` (`syncFrontend`: form + table + detail, skipping the parts a
+  resource lacks), with `frontend form|table|detail` for one part.
+  `frontend` uses positional options, so options after a part go to it.
 - `src/commands/migration.ts`: `dafne migration generate|fix`. It runs
   drizzle-kit from `backend/node_modules/.bin` with the terminal attached.
 - `src/commands/run.ts`: `dafne run`, package scripts as child processes
@@ -39,10 +40,10 @@ TypeScript ESM, Node ≥ 22, pnpm. `pnpm dev g ...` runs from source (tsx),
   service spec's `body({...})`, and the contract spec's `failedFields` and
   `parse` calls. It only removes keys that were in the body before the sync
   (or were dropped columns), never other unknown keys.
-- `src/sync/form.ts` is `dafne sync form`. It reads the contract body
+- `src/sync/form.ts` is `dafne sync frontend form`. It reads the contract body
   (`readBody`, which classifies each Zod expression) and adds what's
   missing to the form's `schema.ts` and `<singular>-form.tsx`.
-- `src/sync/table-page.ts` and `detail.ts` are `dafne sync table|detail`. They
+- `src/sync/table-page.ts` and `detail.ts` are `dafne sync frontend table|detail`. They
   read the contract's response with `response.ts` (`readResponse`, plus
   `ignoredKeys` for `dafne-ignore`). The enum labels
   (`<S>_<FIELD>_OPTIONS`) live in `lib/<plural>-table.ts`: it's plain data

@@ -5,7 +5,7 @@ import type { FormReport as Report } from './form.js';
 import { enumOptionsName, ignoredKeys, optionLabel, type ResponseField, type ResponseInfo } from './response.js';
 
 /*
- * `sync table`: adds what the contract has and the table lacks, in
+ * `sync frontend table`: adds what the contract has and the table lacks, in
  * lib/<plural>-table.ts (sort fields, filters, enum labels) and in
  * app/(app)/<plural>/columns.tsx (columns). Nothing that's there changes.
  */
@@ -31,7 +31,7 @@ export function ensureEnumOptions(file: SourceFile, names: ResourceNames, field:
 
 /**
  * The enum labels other pages use (the detail page), in lib/<plural>-table.ts,
- * for a resource without a table page: `sync table` would add them otherwise.
+ * for a resource without a table page: `sync frontend table` would add them otherwise.
  */
 export function syncEnumOptions(path: string, source: string, names: ResourceNames, fields: ResponseField[]): { content: string; report: Report } {
   const report = newReport();

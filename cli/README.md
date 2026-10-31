@@ -196,7 +196,7 @@ otherwise; in the service, the `with.<relation>.columns` of `get<S>` and the
 `.insert(<child>).values(list.map(...))` members shaped `key: item.key`
 are kept in line. A renamed or dropped column is reported, not removed.
 
-It doesn't touch the frontend: use `dafne sync frontend` (or `sync form|table|detail`) there.
+It doesn't touch the frontend: use `dafne sync frontend` (or `sync frontend form|table|detail`) there.
 
 Which column goes where follows the customers contract:
 - `id` and server-filled columns (`defaultNow`, `$onUpdate`…) are in
@@ -223,7 +223,7 @@ testinternal: varchar('testinternal', { length: 10 }),
 ## Syncing a form with its contract
 
 ```sh
-dafne sync form activities     # --dry-run to preview
+dafne sync frontend form activities     # --dry-run to preview
 ```
 
 It adds the contract body fields that a form lacks, in
@@ -258,16 +258,16 @@ field left the contract are reported, not removed.
 ## Syncing a table and a detail page with the contract
 
 ```sh
-dafne sync table activities     # lib/<plural>-table.ts and <plural>-table.tsx
-dafne sync detail activities    # <singular>-detail.tsx
+dafne sync frontend table activities     # lib/<plural>-table.ts and <plural>-table.tsx
+dafne sync frontend detail activities    # <singular>-detail.tsx
 ```
 
-Both work like `sync form`. They read `Listed<S>`, `<S>Detail` and the
+Both work like `sync frontend form`. They read `Listed<S>`, `<S>Detail` and the
 sort/filter fields of the contract and only add what's missing. A field
 counts as present when the file already uses it, wherever it is. Things
 whose field left the contract are reported, not removed.
 
-- **`sync table`:**
+- **`sync frontend table`:**
   - in `lib/<plural>-table.ts`: sort fields in contract order, and filters
     (enum and boolean ones as pick-lists);
   - enum labels (`ACTIVITY_TYPE_OPTIONS`), shared with the columns and the
@@ -276,7 +276,7 @@ whose field left the contract are reported, not removed.
     column per listed field, before "Added". `id`,
     `updatedAt` and foreign key ids are never added. Fields that aren't
     sortable get `enableSorting: false`.
-- **`sync detail`:** in `<singular>-detail.tsx`, the detail sections. The
+- **`sync frontend detail`:** in `<singular>-detail.tsx`, the detail sections. The
   `[id]/page.tsx` page loads the record and keeps `PageContent` (title,
   actions); what it shows, like the name, isn't added again. It adds a `<Detail>` per field
   the page doesn't read
@@ -287,7 +287,7 @@ whose field left the contract are reported, not removed.
 To keep a field out, write `{/* dafne-ignore: firstname, lastname */}` (or
 `// dafne-ignore: …` in a .ts file) in that file. Lists are often curated:
 the users list, for example, leaves out on purpose fields that
-`sync table users` would add.
+`sync frontend table users` would add.
 
 ## Syncing the whole frontend
 
@@ -295,7 +295,7 @@ the users list, for example, leaves out on purpose fields that
 dafne sync frontend activities     # --all for every resource, --dry-run to preview
 ```
 
-It runs `sync form`, `sync table` and `sync detail` one after the other,
+It runs `sync frontend form`, `table` and `detail` one after the other,
 with the same rules. A part the resource doesn't have (no form, no detail
 page…) is skipped. Run `dafne sync contract` first if the table changed.
 
