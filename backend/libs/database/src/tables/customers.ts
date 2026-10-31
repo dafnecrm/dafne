@@ -62,7 +62,7 @@ export const customerAddress = mysqlTable(
       .references(() => customer.id, { onDelete: 'cascade' }),
     position: int('position').notNull(),
     /** e.g. "Billing", "Shipping", "Head office". */
-    type: mysqlEnum(['head_office', 'shipping', 'billing']),
+    type: mysqlEnum(['residence', 'domicile', 'head_office', 'shipping', 'billing']).notNull(),
     street: varchar('street', { length: 255 }).notNull(),
     city: varchar('city', { length: 100 }).notNull(),
     postalCode: varchar('postal_code', { length: 20 }),

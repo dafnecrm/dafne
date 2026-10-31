@@ -24,6 +24,8 @@ export const VAT_NUMBER_PATTERN = /^(IT)?[0-9]{11}$/;
 
 /** Values of customer address type. */
 export const CUSTOMER_ADDRESS_TYPES = [
+  'residence',
+  'domicile',
   'head_office',
   'shipping',
   'billing',
@@ -31,10 +33,7 @@ export const CUSTOMER_ADDRESS_TYPES = [
 export type CustomerAddressType = (typeof CUSTOMER_ADDRESS_TYPES)[number];
 
 export const customerAddressBodySchema = z.strictObject({
-  type: z
-    .enum(CUSTOMER_ADDRESS_TYPES, { error: 'Choose the type' })
-    .nullish()
-    .transform((value) => value ?? null),
+  type: z.enum(CUSTOMER_ADDRESS_TYPES, { error: 'Choose the type' }),
   street: requiredText(255, 'Enter the street'),
   city: requiredText(100, 'Enter the city'),
   postalCode: optionalText(z.string().max(20)),
@@ -163,7 +162,7 @@ export interface CustomersList {
 
 export interface CustomerAddress {
   id: string;
-  type: CustomerAddressType | null;
+  type: CustomerAddressType;
   street: string;
   city: string;
   postalCode: string | null;

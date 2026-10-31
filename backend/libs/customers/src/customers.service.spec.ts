@@ -159,7 +159,12 @@ describe('CustomersService', () => {
             name: 'Acme',
             email: 'info@acme.test',
             addresses: [
-              { street: 'Via Roma 1', city: 'Milano', country: 'Italy' },
+              {
+                type: 'billing',
+                street: 'Via Roma 1',
+                city: 'Milano',
+                country: 'Italy',
+              },
               {
                 street: 'Main St 2',
                 city: 'Boston',
@@ -183,7 +188,12 @@ describe('CustomersService', () => {
 
       const [addressRows] = insert.values.mock.calls[1];
       expect(addressRows).toMatchObject([
-        { customerId: customerRow.id, position: 0, city: 'Milano', type: null },
+        {
+          customerId: customerRow.id,
+          position: 0,
+          city: 'Milano',
+          type: 'billing',
+        },
         {
           customerId: customerRow.id,
           position: 1,
@@ -224,7 +234,12 @@ describe('CustomersService', () => {
           name: 'Acme Inc',
           email: 'info@acme.test',
           addresses: [
-            { street: 'Via Roma 1', city: 'Milano', country: 'Italy' },
+            {
+              type: 'billing',
+              street: 'Via Roma 1',
+              city: 'Milano',
+              country: 'Italy',
+            },
           ],
         }),
         'u2',

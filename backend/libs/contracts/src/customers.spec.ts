@@ -21,6 +21,7 @@ describe('customerBodySchema', () => {
       phone: '',
       addresses: [
         {
+          type: 'billing',
           street: ' Via Roma 1 ',
           city: 'Milano',
           country: 'Italy',
@@ -37,7 +38,7 @@ describe('customerBodySchema', () => {
     expect(body.addresses[0]).toMatchObject({
       street: 'Via Roma 1',
       region: null,
-      type: null,
+      type: 'billing',
     });
   });
 
@@ -75,7 +76,9 @@ describe('customerBodySchema', () => {
     expect(
       failedFields({
         ...company,
-        addresses: [{ street: 'Via Roma 1', city: '', country: 'Italy' }],
+        addresses: [
+          { type: 'billing', street: 'Via Roma 1', city: '', country: 'Italy' },
+        ],
       }),
     ).toEqual(['addresses.0.city']);
   });
