@@ -8,12 +8,16 @@ function failedFields(body: unknown) {
     : result.error.issues.map((issue) => issue.path.join('.') || issue.code);
 }
 
+// The fields every body needs, so each test only lists what it checks.
+const company = { type: 'company', name: 'Acme', email: 'info@acme.test' };
+const person = { ...company, type: 'person' };
+
 describe('customerBodySchema', () => {
   it('trims values and turns blank optional fields into null', () => {
     const body = customerBodySchema.parse({
       type: 'company',
       name: '  Acme  ',
-      email: ' ',
+      email: ' info@acme.test ',
       phone: '',
       addresses: [
         {
@@ -25,7 +29,11 @@ describe('customerBodySchema', () => {
       ],
     });
 
-    expect(body).toMatchObject({ name: 'Acme', email: null, phone: null });
+    expect(body).toMatchObject({
+      name: 'Acme',
+      email: 'info@acme.test',
+      phone: null,
+    });
     expect(body.addresses[0]).toMatchObject({
       street: 'Via Roma 1',
       region: null,
@@ -34,18 +42,16 @@ describe('customerBodySchema', () => {
   });
 
   it('turns missing optional fields into null and addresses into []', () => {
-    expect(customerBodySchema.parse({ type: 'company', name: 'Acme' })).toEqual(
-      {
-        type: 'company',
-        name: 'Acme',
-        birthDate: null,
-        fiscalCode: null,
-        vatNumber: null,
-        email: null,
-        phone: null,
-        addresses: [],
-      },
-    );
+    expect(customerBodySchema.parse(company)).toEqual({
+      type: 'company',
+      name: 'Acme',
+      birthDate: null,
+      fiscalCode: null,
+      vatNumber: null,
+      email: 'info@acme.test',
+      phone: null,
+      addresses: [],
+    });
   });
 
   it('rejects a blank name, a bad email and a bad phone', () => {
@@ -61,28 +67,30 @@ describe('customerBodySchema', () => {
 
   it('accepts common phone formats', () => {
     for (const phone of ['+39 02 1234 5678', '(555) 123-4567', '02.123.456']) {
-      expect(failedFields({ type: 'company', name: 'A', phone })).toEqual([]);
+      expect(failedFields({ ...company, phone })).toEqual([]);
     }
   });
 
   it('validates each address', () => {
     expect(
       failedFields({
-        type: 'company',
-        name: 'Acme',
+        ...company,
         addresses: [{ street: 'Via Roma 1', city: '', country: 'Italy' }],
       }),
     ).toEqual(['addresses.0.city']);
   });
 
   it('rejects unknown properties such as deletedAt', () => {
-    expect(
-      failedFields({ type: 'company', name: 'Acme', deletedAt: '2026-01-01' }),
-    ).toEqual(['unrecognized_keys']);
+    expect(failedFields({ ...company, deletedAt: '2026-01-01' })).toEqual([
+      'unrecognized_keys',
+    ]);
   });
 
-  it('requires the type', () => {
-    expect(failedFields({ name: 'Acme' })).toEqual(['type']);
+  it('requires the type and the email', () => {
+    expect(failedFields({ name: 'Acme', email: 'info@acme.test' })).toEqual([
+      'type',
+    ]);
+    expect(failedFields({ type: 'company', name: 'Acme' })).toEqual(['email']);
   });
 
   it('checks the fiscal code and the VAT number, in upper case', () => {
@@ -90,6 +98,7 @@ describe('customerBodySchema', () => {
       customerBodySchema.parse({
         type: 'person',
         name: 'Mario Rossi',
+        email: 'info@acme.test',
         fiscalCode: 'rssmra80a01h501u',
       }),
     ).toMatchObject({ fiscalCode: 'RSSMRA80A01H501U' });
@@ -97,15 +106,16 @@ describe('customerBodySchema', () => {
       customerBodySchema.parse({
         type: 'company',
         name: 'Acme',
+        email: 'info@acme.test',
         vatNumber: 'it12345678901',
       }),
     ).toMatchObject({ vatNumber: 'IT12345678901' });
-    expect(
-      failedFields({ type: 'person', name: 'A', fiscalCode: 'RSSMRA80' }),
-    ).toEqual(['fiscalCode']);
-    expect(
-      failedFields({ type: 'company', name: 'A', vatNumber: '1234' }),
-    ).toEqual(['vatNumber']);
+    expect(failedFields({ ...person, fiscalCode: 'RSSMRA80' })).toEqual([
+      'fiscalCode',
+    ]);
+    expect(failedFields({ ...company, vatNumber: '1234' })).toEqual([
+      'vatNumber',
+    ]);
   });
 
   it("clears the other type's fields", () => {
@@ -113,6 +123,7 @@ describe('customerBodySchema', () => {
       customerBodySchema.parse({
         type: 'person',
         name: 'Mario Rossi',
+        email: 'info@acme.test',
         birthDate: '1980-01-01',
         fiscalCode: 'RSSMRA80A01H501U',
         vatNumber: '12345678901',
@@ -126,6 +137,7 @@ describe('customerBodySchema', () => {
       customerBodySchema.parse({
         type: 'company',
         name: 'Acme',
+        email: 'info@acme.test',
         birthDate: '1980-01-01',
         fiscalCode: 'RSSMRA80A01H501U',
         vatNumber: '12345678901',

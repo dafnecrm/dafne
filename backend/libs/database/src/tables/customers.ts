@@ -1,6 +1,7 @@
 import { defineRelationsPart } from 'drizzle-orm';
 import {
   index,
+  uniqueIndex,
   int,
   mysqlEnum,
   mysqlTable,
@@ -18,12 +19,12 @@ export const customer = mysqlTable(
   'customer',
   {
     id: varchar('id', { length: 36 }).primaryKey(),
-    type: mysqlEnum('type', ['person', 'company']).notNull().default('company'),
+    type: mysqlEnum('type', ['person', 'company']).notNull(),
     name: varchar('name', { length: 255 }).notNull(),
     birthDate: date('birth_date'),
     fiscalCode: varchar('fiscal_code', { length: 16 }),
     vatNumber: varchar('vat_number', { length: 13 }),
-    email: varchar('email', { length: 255 }),
+    email: varchar('email', { length: 255 }).notNull(),
     phone: varchar('phone', { length: 32 }),
     createdAt: timestamp('created_at', { fsp: 3 }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { fsp: 3 })
@@ -44,6 +45,7 @@ export const customer = mysqlTable(
   (table) => [
     index('customer_deletedAt_idx').on(table.deletedAt),
     index('customer_name_idx').on(table.name),
+    uniqueIndex('customer_email_unique_idx').on(table.email),
   ],
 );
 

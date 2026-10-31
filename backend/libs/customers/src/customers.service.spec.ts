@@ -1,5 +1,9 @@
 import { DatabaseService, schema } from '@app/database';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { and, asc, desc, eq, isNull, like } from 'drizzle-orm';
 import { customerBodySchema, type CustomerBodyInput } from '@app/contracts';
@@ -37,6 +41,15 @@ describe('CustomersService', () => {
     query: { customer: { findFirst } },
   };
   const found = { id: 'c1', name: 'Acme', addresses: [] };
+  // What drizzle throws when the unique email index rejects a row.
+  const duplicateEmail = new Error('Failed query', {
+    cause: Object.assign(
+      new Error(
+        "Duplicate entry 'info@acme.test' for key 'customer.customer_email_unique_idx'",
+      ),
+      { code: 'ER_DUP_ENTRY' },
+    ),
+  });
 
   beforeEach(async () => {
     vi.resetAllMocks();
@@ -181,9 +194,20 @@ describe('CustomersService', () => {
       expect(findFirst.mock.calls[0][0].where.id).toBe(customerRow.id);
     });
 
+    it('throws 409 when another customer has the email', async () => {
+      insert.values.mockRejectedValue(duplicateEmail);
+
+      await expect(
+        service.createCustomer(
+          body({ type: 'company', name: 'Acme', email: 'info@acme.test' }),
+          'u1',
+        ),
+      ).rejects.toBeInstanceOf(ConflictException);
+    });
+
     it('skips the address insert when there are none', async () => {
       await service.createCustomer(
-        body({ type: 'company', name: 'Acme' }),
+        body({ type: 'company', name: 'Acme', email: 'info@acme.test' }),
         'u1',
       );
 
@@ -198,6 +222,7 @@ describe('CustomersService', () => {
         body({
           type: 'company',
           name: 'Acme Inc',
+          email: 'info@acme.test',
           addresses: [
             { street: 'Via Roma 1', city: 'Milano', country: 'Italy' },
           ],
@@ -207,7 +232,7 @@ describe('CustomersService', () => {
 
       expect(update.set.mock.calls[0][0]).toMatchObject({
         name: 'Acme Inc',
-        email: null,
+        email: 'info@acme.test',
         phone: null,
         updatedById: 'u2',
       });
@@ -223,6 +248,19 @@ describe('CustomersService', () => {
       ]);
     });
 
+    it('throws 409 when another customer has the email', async () => {
+      update.where.mockRejectedValue(duplicateEmail);
+
+      await expect(
+        service.updateCustomer(
+          'c1',
+          body({ type: 'company', name: 'Acme', email: 'info@acme.test' }),
+          'u2',
+        ),
+      ).rejects.toBeInstanceOf(ConflictException);
+      expect(db.delete).not.toHaveBeenCalled();
+    });
+
     it('throws 400 and changes nothing when the type changes', async () => {
       update.where.mockResolvedValue([{ affectedRows: 0 }]);
       findFirst.mockResolvedValue({ id: 'c1' });
@@ -230,7 +268,11 @@ describe('CustomersService', () => {
       await expect(
         service.updateCustomer(
           'c1',
-          body({ type: 'person', name: 'Mario Rossi' }),
+          body({
+            type: 'person',
+            name: 'Mario Rossi',
+            email: 'info@acme.test',
+          }),
           'u2',
         ),
       ).rejects.toBeInstanceOf(BadRequestException);
@@ -245,7 +287,7 @@ describe('CustomersService', () => {
       await expect(
         service.updateCustomer(
           'nope',
-          body({ type: 'company', name: 'X' }),
+          body({ type: 'company', name: 'X', email: 'info@acme.test' }),
           'u2',
         ),
       ).rejects.toBeInstanceOf(NotFoundException);

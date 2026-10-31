@@ -70,8 +70,9 @@ export const customerBodySchema = z
         .toUpperCase()
         .regex(VAT_NUMBER_PATTERN, { error: 'Enter a valid VAT number' }),
     ),
-    email: optionalText(
-      z.email({ error: 'Enter a valid email address' }).max(255),
+    /** Unique among customers, deleted ones included. */
+    email: requiredText(255, 'Enter the email').pipe(
+      z.email({ error: 'Enter a valid email address' }),
     ),
     phone: optionalText(
       z.string().regex(PHONE_PATTERN, { error: 'Enter a valid phone number' }),
@@ -146,7 +147,7 @@ export interface ListedCustomer {
   birthDate: Date | null;
   fiscalCode: string | null;
   vatNumber: string | null;
-  email: string | null;
+  email: string;
   phone: string | null;
   createdAt: Date;
   updatedAt: Date;

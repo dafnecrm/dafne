@@ -1,6 +1,7 @@
 import { DatabaseService, schema } from '@app/database';
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -24,6 +25,21 @@ const escapeLike = (value: string) => value.replace(/[\\%_]/g, '\\$&');
 
 /** Customers that haven't been deleted. */
 const notDeleted = isNull(customer.deletedAt);
+
+/**
+ * Turns MySQL's duplicate key error on the email (drizzle wraps it as the
+ * cause) into a 409; rethrows anything else.
+ */
+function rethrowDuplicateEmail(error: unknown): never {
+  const cause = error instanceof Error && error.cause ? error.cause : error;
+  if (
+    cause instanceof Error &&
+    (cause as { code?: unknown }).code === 'ER_DUP_ENTRY' &&
+    cause.message.includes('customer_email_unique_idx')
+  )
+    throw new ConflictException('A customer with this email already exists');
+  throw error;
+}
 
 /** Only the user's ID and name, for "created by" / "updated by". */
 const userSummary = { columns: { id: true, name: true } } as const;
@@ -101,7 +117,9 @@ export class CustomersService {
     return found;
   }
 
-  /** Creates a customer and their addresses; `userId` is the creator. */
+  /**
+   * Creates a customer and their addresses; `userId` is the creator. Throws 409 if another customer (deleted ones included) has the email.
+   */
   async createCustomer(
     body: CustomerBody,
     userId: string,
@@ -110,41 +128,10 @@ export class CustomersService {
     // Set here, not by the column default: MySQL's now() and the driver can
     // disagree on the time zone, while dates written from JS round-trip.
     const now = new Date();
-    await this.database.db.transaction(async (tx) => {
-      await tx.insert(customer).values({
-        id,
-        type: body.type,
-        name: body.name,
-        birthDate: body.birthDate,
-        fiscalCode: body.fiscalCode,
-        vatNumber: body.vatNumber,
-        email: body.email,
-        phone: body.phone,
-        createdAt: now,
-        updatedAt: now,
-        createdById: userId,
-        updatedById: userId,
-      });
-      await insertAddresses(tx, id, body.addresses);
-    });
-    return this.getCustomer(id);
-  }
-
-  /**
-   * Replaces a customer's fields and addresses; `userId` is the editor.
-   * Throws 404 if the customer doesn't exist or is deleted, 400 if the body
-   * changes the type (it's chosen when the customer is created).
-   */
-  async updateCustomer(
-    id: string,
-    body: CustomerBody,
-    userId: string,
-  ): Promise<CustomerDetail> {
-    await this.database.db.transaction(async (tx) => {
-      const [result] = await tx
-        .update(customer)
-        .set({
-          // Same as before: the where below only matches the saved type.
+    await this.database.db
+      .transaction(async (tx) => {
+        await tx.insert(customer).values({
+          id,
           type: body.type,
           name: body.name,
           birthDate: body.birthDate,
@@ -152,30 +139,66 @@ export class CustomersService {
           vatNumber: body.vatNumber,
           email: body.email,
           phone: body.phone,
+          createdAt: now,
+          updatedAt: now,
+          createdById: userId,
           updatedById: userId,
-          // Set explicitly so the row always changes and is counted below.
-          updatedAt: new Date(),
-        })
-        .where(
-          and(eq(customer.id, id), notDeleted, eq(customer.type, body.type)),
-        );
-      if (result.affectedRows === 0) {
-        // Missing (404), or there with another type (400).
-        const found = await tx.query.customer.findFirst({
-          where: { id, deletedAt: { isNull: true } },
-          columns: { id: true },
         });
-        if (!found) throw new NotFoundException('Customer not found');
-        throw new BadRequestException([
-          "type: The type can't be changed after the customer is created",
-        ]);
-      }
+        await insertAddresses(tx, id, body.addresses);
+      })
+      .catch(rethrowDuplicateEmail);
+    return this.getCustomer(id);
+  }
 
-      await tx
-        .delete(customerAddress)
-        .where(eq(customerAddress.customerId, id));
-      await insertAddresses(tx, id, body.addresses);
-    });
+  /**
+   * Replaces a customer's fields and addresses; `userId` is the editor.
+   * Throws 404 if the customer doesn't exist or is deleted, 400 if the body
+   * changes the type (it's chosen when the customer is created), 409 if
+   * another customer has the email.
+   */
+  async updateCustomer(
+    id: string,
+    body: CustomerBody,
+    userId: string,
+  ): Promise<CustomerDetail> {
+    await this.database.db
+      .transaction(async (tx) => {
+        const [result] = await tx
+          .update(customer)
+          .set({
+            // Same as before: the where below only matches the saved type.
+            type: body.type,
+            name: body.name,
+            birthDate: body.birthDate,
+            fiscalCode: body.fiscalCode,
+            vatNumber: body.vatNumber,
+            email: body.email,
+            phone: body.phone,
+            updatedById: userId,
+            // Set explicitly so the row always changes and is counted below.
+            updatedAt: new Date(),
+          })
+          .where(
+            and(eq(customer.id, id), notDeleted, eq(customer.type, body.type)),
+          );
+        if (result.affectedRows === 0) {
+          // Missing (404), or there with another type (400).
+          const found = await tx.query.customer.findFirst({
+            where: { id, deletedAt: { isNull: true } },
+            columns: { id: true },
+          });
+          if (!found) throw new NotFoundException('Customer not found');
+          throw new BadRequestException([
+            "type: The type can't be changed after the customer is created",
+          ]);
+        }
+
+        await tx
+          .delete(customerAddress)
+          .where(eq(customerAddress.customerId, id));
+        await insertAddresses(tx, id, body.addresses);
+      })
+      .catch(rethrowDuplicateEmail);
     return this.getCustomer(id);
   }
 
