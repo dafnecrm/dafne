@@ -11,3 +11,4 @@ export * from './customers.ts';
 export * from './users.ts';
 export * from './activities.ts';
 export * from './geo.ts';
+export * from './countries.ts';

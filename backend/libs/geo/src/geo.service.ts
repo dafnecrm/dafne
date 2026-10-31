@@ -6,7 +6,18 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import type { GeoPlace, GeoSearchQuery, GeoSearchResult } from '@app/contracts';
+import type {
+  CountriesList,
+  GeoPlace,
+  GeoSearchQuery,
+  GeoSearchResult,
+  ListedCountry,
+} from '@app/contracts';
+import { asc, isNull } from 'drizzle-orm';
+import { InjectDrizzle } from '@nestjs/drizzle';
+import { schema, type Database } from '@app/database';
+
+const { country } = schema;
 
 /** Komoot's public Photon instance; set PHOTON_URL to use another one. */
 const DEFAULT_PHOTON_URL = 'https://photon.komoot.io';
@@ -14,6 +25,7 @@ const DEFAULT_LIMIT = 5;
 const TIMEOUT_MS = 5000;
 /** The public instance is shared: the same search is asked once in a while. */
 const CACHE_TTL_MS = 60 * 60 * 1000;
+const CACHE_TTL_MS_ONE_DAY = 24 * 60 * 60 * 1000;
 
 /**
  * Only addresses and areas: house numbers, quarters, cities… (place), roads
@@ -63,6 +75,7 @@ export class GeoService {
     config: ConfigService,
     /** The app's cache (Redis, see ApiModule): results by search. */
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
+    @InjectDrizzle() private readonly db: Database,
   ) {
     this.baseUrl = (
       config.get<string>('PHOTON_URL') ?? DEFAULT_PHOTON_URL
@@ -79,7 +92,7 @@ export class GeoService {
     limit = DEFAULT_LIMIT,
   }: GeoSearchQuery): Promise<GeoSearchResult> {
     const key = `geo:search:${limit}:${q.trim().toLowerCase()}`;
-    const cached = await this.fromCache(key);
+    const cached = await this.fromCache<GeoPlace[]>(key);
     if (cached) return { places: cached };
 
     const params = new URLSearchParams({ q, limit: String(limit * OVERFETCH) });
@@ -113,10 +126,30 @@ export class GeoService {
     return { places };
   }
 
+  /** The countries (not deleted), by name; cached, as they rarely change. */
+  async listCountries(): Promise<CountriesList> {
+    const key = 'geo:countries';
+    const cached = await this.fromCache<ListedCountry[]>(key);
+    if (cached) return { countries: cached };
+
+    const countries = await this.db
+      .select({ code: country.code, name: country.name })
+      .from(country)
+      .where(isNull(country.deletedAt))
+      .orderBy(asc(country.name));
+
+    await this.cache
+      .set(key, countries, CACHE_TTL_MS_ONE_DAY)
+      .catch((error: unknown) =>
+        this.logger.warn(`Cache write failed: ${String(error)}`),
+      );
+    return { countries };
+  }
+
   /** A cached result; a cache that's down counts as a miss. */
-  private async fromCache(key: string) {
+  private async fromCache<T>(key: string) {
     try {
-      return await this.cache.get<GeoPlace[]>(key);
+      return await this.cache.get<T>(key);
     } catch (error) {
       this.logger.warn(`Cache read failed: ${String(error)}`);
       return undefined;

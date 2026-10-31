@@ -1,6 +1,7 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { getDrizzleToken } from '@nestjs/drizzle';
 import { Test, TestingModule } from '@nestjs/testing';
 import { GeoService } from './geo.service.js';
 
@@ -41,15 +42,30 @@ describe('GeoService', () => {
     }),
   };
 
+  // Chainable stand-in for db.select().from().where().orderBy()
+  const query = {
+    from: vi.fn(),
+    where: vi.fn(),
+    orderBy: vi.fn(),
+  };
+  const db = { select: vi.fn() };
+  const countries = [{ code: 'IT', name: 'Italy' }];
+
   beforeEach(async () => {
     fetch.mockReset();
     store.clear();
+    vi.clearAllMocks();
+    db.select.mockReturnValue(query);
+    query.from.mockReturnValue(query);
+    query.where.mockReturnValue(query);
+    query.orderBy.mockResolvedValue(countries);
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         GeoService,
         { provide: ConfigService, useValue: { get: () => undefined } },
         // The app's cache, in memory.
         { provide: CACHE_MANAGER, useValue: cache },
+        { provide: getDrizzleToken(), useValue: db },
       ],
     }).compile();
 
@@ -203,7 +219,7 @@ describe('GeoService', () => {
     expect(cache.set).toHaveBeenCalledWith(
       'geo:search:5:via roma 1',
       again.places,
-      10 * 60 * 1000,
+      60 * 60 * 1000,
     );
   });
 
@@ -226,6 +242,18 @@ describe('GeoService', () => {
     fetch.mockRejectedValueOnce(new TypeError('fetch failed'));
     await expect(service.search({ q: 'b' })).rejects.toBeInstanceOf(
       ServiceUnavailableException,
+    );
+  });
+
+  it('lists the countries once, then from the cache', async () => {
+    await expect(service.listCountries()).resolves.toEqual({ countries });
+    await expect(service.listCountries()).resolves.toEqual({ countries });
+
+    expect(db.select).toHaveBeenCalledTimes(1);
+    expect(cache.set).toHaveBeenCalledWith(
+      'geo:countries',
+      countries,
+      60 * 60 * 1000,
     );
   });
 });
