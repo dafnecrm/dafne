@@ -10,3 +10,4 @@ export * from './common.ts';
 export * from './customers.ts';
 export * from './users.ts';
 export * from './activities.ts';
+export * from './geo.ts';
