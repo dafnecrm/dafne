@@ -43,17 +43,6 @@ export function CustomerDetailActions({ customer }: { customer: CustomerRef }) {
             <PencilIcon />
             Edit
           </DropdownMenuItem>
-          {email && (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(email)}
-              >
-                <CopyIcon />
-                Copy email
-              </DropdownMenuItem>
-            </>
-          )}
           <DropdownMenuSeparator />
           <DropdownMenuItem
             variant="destructive"

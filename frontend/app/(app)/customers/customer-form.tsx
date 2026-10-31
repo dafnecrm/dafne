@@ -65,7 +65,7 @@ export function CustomerForm({ customer }: { customer?: CustomerDetail }) {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              <FieldGroup className="grid grid-cols-2 gap-6">
                 <form.AppField name="type">
                   {(field) => (
                     <field.SelectField
@@ -122,6 +122,18 @@ export function CustomerForm({ customer }: { customer?: CustomerDetail }) {
                     </>
                   )}
                 </form.Subscribe>
+              </FieldGroup>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                <h2>Contact</h2>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <FieldGroup className="grid grid-cols-2 gap-6">
                 <form.AppField name="email">
                   {(field) => (
                     <field.TextField
@@ -142,7 +154,7 @@ export function CustomerForm({ customer }: { customer?: CustomerDetail }) {
                     />
                   )}
                 </form.AppField>
-              </div>
+              </FieldGroup>
             </CardContent>
           </Card>
 
