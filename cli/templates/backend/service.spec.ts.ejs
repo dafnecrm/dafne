@@ -1,4 +1,5 @@
-import { DatabaseService, schema } from '@app/database';
+import { schema } from '@app/database';
+import { getDrizzleToken } from '@nestjs/drizzle';
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { and, asc, desc, eq, isNull, like } from 'drizzle-orm';
@@ -55,7 +56,7 @@ describe('<%= p.pascal %>Service', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         <%= p.pascal %>Service,
-        { provide: DatabaseService, useValue: { db } },
+        { provide: getDrizzleToken(), useValue: db },
       ],
     }).compile();
 

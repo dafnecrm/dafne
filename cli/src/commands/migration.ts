@@ -101,7 +101,7 @@ export function migrationCommand() {
       p.note(
         [
           options.custom ? 'Write the SQL in migration.sql.' : 'Review migration.sql.',
-          'The backend applies pending migrations when it starts (DatabaseService).',
+          'The backend applies pending migrations when it starts (DatabaseModule).',
         ].join('\n'),
         'Next steps',
       );
