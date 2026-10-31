@@ -54,6 +54,54 @@ function report(folder: string, fixes: string[], relative: string) {
     );
 }
 
+/**
+ * Runs drizzle-kit generate in backend/: a migration from the table changes,
+ * or an empty one (`custom`) for SQL written by hand.
+ */
+async function generate(nameArg: string | undefined, options: MigrationOptions) {
+  p.intro(options.custom ? 'dafne migration custom' : 'dafne migration generate');
+  const root = findRoot(options.root);
+  const backend = join(root, BACKEND);
+  const bin = join(backend, 'node_modules', '.bin', 'drizzle-kit');
+  if (!existsSync(bin)) throw new Error('drizzle-kit not found: run "pnpm install" in backend/.');
+
+  let name = nameArg?.trim();
+  if (!name && !options.yes && process.stdin.isTTY) {
+    const answer = await p.text({
+      message: 'Migration name (empty: drizzle-kit picks one)',
+      placeholder: options.custom ? 'backfill-countries' : 'add-activity-customer',
+      validate: (v) => (!v || /^[\w-]+$/.test(v) ? undefined : 'Letters, digits, - and _ only'),
+    });
+    if (p.isCancel(answer)) return p.cancel('Nothing generated.');
+    name = answer?.trim() || undefined;
+  }
+  if (name && !/^[\w-]+$/.test(name)) throw new Error('The name can only have letters, digits, - and _.');
+
+  const dir = migrationsDir(backend);
+  const before = new Set(folders(dir));
+  const args = ['generate', ...(name ? ['--name', name] : []), ...(options.custom ? ['--custom'] : [])];
+  p.log.step(`drizzle-kit ${args.join(' ')}`);
+  // Inherit the terminal: drizzle-kit may ask whether a column was renamed.
+  const run = spawnSync(bin, args, { cwd: backend, stdio: 'inherit' });
+  if (run.status !== 0) throw new Error(`drizzle-kit failed (exit code ${run.status ?? run.signal}).`);
+
+  const created = folders(dir).filter((f) => !before.has(f));
+  if (!created.length)
+    return p.outro(options.custom ? 'Nothing generated.' : 'No changes in the tables: nothing generated.');
+  for (const folder of created) {
+    const path = join(dir, folder);
+    report(path, options.fix === false || options.custom ? [] : fixFolder(path), `${BACKEND}/${path.slice(backend.length + 1)}/migration.sql`);
+  }
+  p.note(
+    [
+      options.custom ? 'Write the SQL in migration.sql.' : 'Review migration.sql.',
+      'The backend applies pending migrations when it starts (DatabaseModule).',
+    ].join('\n'),
+    'Next steps',
+  );
+  p.outro('Done.');
+}
+
 export function migrationCommand() {
   const migration = new Command('migration').description('Database migrations (drizzle-kit, in backend/)');
 
@@ -65,48 +113,22 @@ export function migrationCommand() {
     .option('--no-fix', "don't put back the foreign key actions drizzle-kit drops")
     .option('--root <dir>', 'Dafne folder (with backend/ and frontend/)')
     .option('-y, --yes', 'never prompt (drizzle-kit names the migration)')
-    .action(async (nameArg: string | undefined, options: MigrationOptions) => {
-      p.intro('dafne migration generate');
-      const root = findRoot(options.root);
-      const backend = join(root, BACKEND);
-      const bin = join(backend, 'node_modules', '.bin', 'drizzle-kit');
-      if (!existsSync(bin)) throw new Error('drizzle-kit not found: run "pnpm install" in backend/.');
+    .action((name: string | undefined, options: MigrationOptions) => generate(name, options));
 
-      let name = nameArg?.trim();
-      if (!name && !options.yes && process.stdin.isTTY) {
-        const answer = await p.text({
-          message: 'Migration name (empty: drizzle-kit picks one)',
-          placeholder: 'add-activity-customer',
-          validate: (v) => (!v || /^[\w-]+$/.test(v) ? undefined : 'Letters, digits, - and _ only'),
-        });
-        if (p.isCancel(answer)) return p.cancel('Nothing generated.');
-        name = answer?.trim() || undefined;
-      }
-      if (name && !/^[\w-]+$/.test(name)) throw new Error('The name can only have letters, digits, - and _.');
-
-      const dir = migrationsDir(backend);
-      const before = new Set(folders(dir));
-      const args = ['generate', ...(name ? ['--name', name] : []), ...(options.custom ? ['--custom'] : [])];
-      p.log.step(`drizzle-kit ${args.join(' ')}`);
-      // Inherit the terminal: drizzle-kit may ask whether a column was renamed.
-      const run = spawnSync(bin, args, { cwd: backend, stdio: 'inherit' });
-      if (run.status !== 0) throw new Error(`drizzle-kit failed (exit code ${run.status ?? run.signal}).`);
-
-      const created = folders(dir).filter((f) => !before.has(f));
-      if (!created.length) return p.outro('No changes in the tables: nothing generated.');
-      for (const folder of created) {
-        const path = join(dir, folder);
-        report(path, options.fix === false || options.custom ? [] : fixFolder(path), `${BACKEND}/${path.slice(backend.length + 1)}/migration.sql`);
-      }
-      p.note(
-        [
-          options.custom ? 'Write the SQL in migration.sql.' : 'Review migration.sql.',
-          'The backend applies pending migrations when it starts (DatabaseModule).',
-        ].join('\n'),
-        'Next steps',
-      );
-      p.outro('Done.');
-    });
+  migration
+    .command('custom')
+    .description('Create an empty migration, for SQL written by hand (data fixes, backfills…)')
+    .argument('[name]', 'migration name, e.g. backfill-countries (asked if missing)')
+    .option('--root <dir>', 'Dafne folder (with backend/ and frontend/)')
+    .option('-y, --yes', 'never prompt (drizzle-kit names the migration)')
+    .addHelpText(
+      'after',
+      `
+The same as dafne migration generate --custom. Write the SQL in the new
+migration.sql, with a --> statement-breakpoint line between statements.
+The backend applies it when it starts, after the migrations before it.`,
+    )
+    .action((name: string | undefined, options: MigrationOptions) => generate(name, { ...options, custom: true }));
 
   migration
     .command('fix')

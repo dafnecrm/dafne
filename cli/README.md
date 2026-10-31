@@ -138,13 +138,18 @@ junction table. `auth.ts` is never edited (Better Auth generates it).
 
 ```sh
 dafne migration generate add-activity-customer   # name asked if missing
-dafne migration generate --custom backfill       # empty, for SQL by hand
+dafne migration custom backfill-countries        # empty, for SQL by hand
 dafne migration fix [folder]                     # default: the latest
 ```
 
 `generate` runs drizzle-kit in `backend/`, with the terminal attached, so you
 can answer when it asks whether a column was renamed. It then prints the
 statements of the new migration.
+
+`custom` (or `generate --custom`) creates an empty `migration.sql` for SQL
+the tables can't express: data fixes, backfills, renaming enum values in
+steps. Put a `--> statement-breakpoint` line between statements. It runs in
+order with the others, when the backend starts.
 
 drizzle-kit 1.0.0-rc.5 drops `ON DELETE`/`ON UPDATE` from foreign keys inside
 `CREATE TABLE`. `generate` puts them back from the migration's
