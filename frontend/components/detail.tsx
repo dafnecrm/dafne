@@ -72,6 +72,7 @@ export function DetailSection({
   className,
   groupClassName,
   defaultOpen = true,
+  isCollapsible = true,
   children,
 }: {
   /** Also the button that collapses the section. */
@@ -86,12 +87,15 @@ export function DetailSection({
   groupClassName?: string;
   /** Whether the details show at first; the title toggles them. */
   defaultOpen?: boolean;
+  /** Wheter the details section is collapsible. */
+  isCollapsible?: boolean,
   children: ReactNode;
 } & VariantProps<typeof detailSectionVariants>) {
   return (
     <Collapsible
       // Without a title there is nothing to click: it stays open.
       defaultOpen={defaultOpen || !title}
+      disabled={!isCollapsible}
       render={
         <Card
           data-slot="detail-section"
@@ -105,8 +109,8 @@ export function DetailSection({
           {title && (
             <CardTitle>
               <h2>
-                <CollapsibleTrigger className="group/trigger -ml-1 flex items-center gap-1 rounded-md px-1 text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
-                  <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-data-panel-open/trigger:rotate-90" />
+                <CollapsibleTrigger className={cn("group/trigger -ml-1 flex items-center gap-1 rounded-md px-1 text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50", isCollapsible && "cursor-pointer")}>
+                  {isCollapsible && <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-data-panel-open/trigger:rotate-90" />}
                   {title}
                 </CollapsibleTrigger>
               </h2>
