@@ -1,4 +1,5 @@
-import { DatabaseService, schema } from '@app/database';
+import { schema } from '@app/database';
+import { getDrizzleToken } from '@nestjs/drizzle';
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { and, asc, desc, eq, isNull, like, ne } from 'drizzle-orm';
@@ -57,7 +58,7 @@ describe('ActivitiesService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ActivitiesService,
-        { provide: DatabaseService, useValue: { db } },
+        { provide: getDrizzleToken(), useValue: db },
       ],
     }).compile();
 
@@ -140,7 +141,6 @@ describe('ActivitiesService', () => {
       });
       expect(findFirst.mock.calls[0][0].where.id).toBe(row.id);
     });
-
   });
 
   describe('updateActivity', () => {

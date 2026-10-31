@@ -1,4 +1,5 @@
-import { DatabaseService, schema } from '@app/database';
+import { schema } from '@app/database';
+import { getDrizzleToken } from '@nestjs/drizzle';
 import { AuthService } from '@app/auth';
 import { createUserBodySchema } from '@app/contracts';
 import { ConflictException, NotFoundException } from '@nestjs/common';
@@ -40,7 +41,7 @@ describe('UsersService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersService,
-        { provide: DatabaseService, useValue: { db } },
+        { provide: getDrizzleToken(), useValue: db },
         { provide: AuthService, useValue: auth },
       ],
     }).compile();

@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthModule as BetterAuthModule } from '@thallesp/nestjs-better-auth';
-import { DatabaseModule, DatabaseService } from '@app/database';
+import { DatabaseModule, type Database } from '@app/database';
+import { getDrizzleToken } from '@nestjs/drizzle';
 import { createAuth } from './auth.js';
 import { AuthService } from './auth.service.js';
 
@@ -10,9 +11,9 @@ import { AuthService } from './auth.service.js';
     DatabaseModule,
     BetterAuthModule.forRootAsync({
       imports: [DatabaseModule],
-      inject: [DatabaseService, ConfigService],
-      useFactory: (database: DatabaseService, config: ConfigService) => ({
-        auth: createAuth(database.db, {
+      inject: [getDrizzleToken(), ConfigService],
+      useFactory: (db: Database, config: ConfigService) => ({
+        auth: createAuth(db, {
           secret: config.getOrThrow<string>('BETTER_AUTH_SECRET'),
           baseURL: config.get<string>('BETTER_AUTH_URL'),
           trustedOrigins: config.get<string>('TRUSTED_ORIGINS')?.split(','),

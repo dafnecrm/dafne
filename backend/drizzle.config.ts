@@ -6,7 +6,7 @@ import { defineConfig } from 'drizzle-kit';
 const ENV_FILE = 'apps/api/.env';
 if (!process.env.DATABASE_URL && existsSync(ENV_FILE)) process.loadEnvFile(ENV_FILE);
 
-// Migrations of the tables in libs/database/src/tables. DatabaseService also
+// Migrations of the tables in libs/database/src/tables. DatabaseModule also
 // applies them when the backend starts: same folder, same migrations table.
 export default defineConfig({
   out: './libs/database/src/migrations',

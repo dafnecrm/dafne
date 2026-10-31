@@ -1,4 +1,5 @@
-import { DatabaseService, schema } from '@app/database';
+import { schema, type Database } from '@app/database';
+import { InjectDrizzle } from '@nestjs/drizzle';
 import {
   BadRequestException,
   ConflictException,
@@ -44,13 +45,11 @@ function rethrowDuplicateEmail(error: unknown): never {
 /** Only the user's ID and name, for "created by" / "updated by". */
 const userSummary = { columns: { id: true, name: true } } as const;
 
-type Transaction = Parameters<
-  Parameters<DatabaseService['db']['transaction']>[0]
->[0];
+type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0];
 
 @Injectable()
 export class CustomersService {
-  constructor(private readonly database: DatabaseService) {}
+  constructor(@InjectDrizzle() private readonly db: Database) {}
 
   /**
    * Lists customers that aren't deleted, paged and sorted, filtered by every
@@ -63,7 +62,7 @@ export class CustomersService {
       sortBy = 'name',
       sortDirection = 'asc',
     } = query;
-    const { db } = this.database;
+    const { db } = this;
     const filters = CUSTOMER_FILTER_FIELDS.flatMap((field) => {
       const value = query[field]?.trim();
       return value ? [like(customer[field], `%${escapeLike(value)}%`)] : [];
@@ -101,7 +100,7 @@ export class CustomersService {
    * and last updated them. Throws 404 otherwise.
    */
   async getCustomer(id: string): Promise<CustomerDetail> {
-    const found = await this.database.db.query.customer.findFirst({
+    const found = await this.db.query.customer.findFirst({
       where: { id, deletedAt: { isNull: true } },
       columns: { createdById: false, updatedById: false },
       with: {
@@ -128,7 +127,7 @@ export class CustomersService {
     // Set here, not by the column default: MySQL's now() and the driver can
     // disagree on the time zone, while dates written from JS round-trip.
     const now = new Date();
-    await this.database.db
+    await this.db
       .transaction(async (tx) => {
         await tx.insert(customer).values({
           id,
@@ -161,7 +160,7 @@ export class CustomersService {
     body: CustomerBody,
     userId: string,
   ): Promise<CustomerDetail> {
-    await this.database.db
+    await this.db
       .transaction(async (tx) => {
         const [result] = await tx
           .update(customer)
@@ -208,7 +207,7 @@ export class CustomersService {
    */
   async deleteCustomer(id: string, userId: string) {
     const now = new Date();
-    const [result] = await this.database.db
+    const [result] = await this.db
       .update(customer)
       .set({ deletedAt: now, updatedAt: now, updatedById: userId })
       .where(and(eq(customer.id, id), notDeleted));

@@ -21,8 +21,8 @@ export class AuthService implements OnModuleInit {
   ) {}
 
   /**
-   * Runs after DatabaseService has applied the migrations
-   * (AuthModule imports DatabaseModule, so it is initialised first).
+   * Runs after the migrations: DatabaseModule applies them before the
+   * database can be injected.
    */
   async onModuleInit() {
     await this.createAdminUser();

@@ -1,4 +1,5 @@
-import { DatabaseService, schema } from '@app/database';
+import { schema } from '@app/database';
+import { getDrizzleToken } from '@nestjs/drizzle';
 import {
   BadRequestException,
   ConflictException,
@@ -76,7 +77,7 @@ describe('CustomersService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CustomersService,
-        { provide: DatabaseService, useValue: { db } },
+        { provide: getDrizzleToken(), useValue: db },
       ],
     }).compile();
 

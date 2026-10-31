@@ -1,4 +1,5 @@
-import { DatabaseService, schema } from '@app/database';
+import { schema, type Database } from '@app/database';
+import { InjectDrizzle } from '@nestjs/drizzle';
 import { AuthService } from '@app/auth';
 import {
   ConflictException,
@@ -41,7 +42,7 @@ export class UsersService {
   private readonly logger = new Logger(UsersService.name);
 
   constructor(
-    private readonly database: DatabaseService,
+    @InjectDrizzle() private readonly db: Database,
     private readonly auth: AuthService,
   ) {}
 
@@ -79,7 +80,7 @@ export class UsersService {
       sortBy = 'createdAt',
       sortDirection = 'desc',
     } = query;
-    const { db } = this.database;
+    const { db } = this;
     const conditions = USER_FILTER_FIELDS.flatMap((field) => {
       const value = query[field];
       return value ? [USER_FILTERS[field](value)] : [];
@@ -107,7 +108,7 @@ export class UsersService {
    * active. Tokens and passwords are never selected.
    */
   async getUser(id: string): Promise<UserDetail> {
-    const found = await this.database.db.query.user.findFirst({
+    const found = await this.db.query.user.findFirst({
       where: { id },
       with: {
         accounts: {

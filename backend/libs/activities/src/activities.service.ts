@@ -1,4 +1,5 @@
-import { DatabaseService, schema } from '@app/database';
+import { schema, type Database } from '@app/database';
+import { InjectDrizzle } from '@nestjs/drizzle';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { and, asc, desc, eq, isNull, like, ne, type SQL } from 'drizzle-orm';
@@ -26,7 +27,7 @@ const userSummary = { columns: { id: true, name: true } } as const;
 
 @Injectable()
 export class ActivitiesService {
-  constructor(private readonly database: DatabaseService) {}
+  constructor(@InjectDrizzle() private readonly db: Database) {}
 
   /**
    * Lists activities that aren't deleted, paged and sorted, filtered by
@@ -41,7 +42,7 @@ export class ActivitiesService {
       sortBy = 'name',
       sortDirection = 'asc',
     } = query;
-    const { db } = this.database;
+    const { db } = this;
     const filters = ACTIVITY_FILTER_FIELDS.flatMap((field) => {
       const value = query[field]?.trim();
       return value ? [like(activity[field], `%${escapeLike(value)}%`)] : [];
@@ -78,7 +79,7 @@ export class ActivitiesService {
    * it. Throws 404 otherwise.
    */
   async getActivity(id: string): Promise<ActivityDetail> {
-    const found = await this.database.db.query.activity.findFirst({
+    const found = await this.db.query.activity.findFirst({
       where: { id, deletedAt: { isNull: true } },
       columns: { createdById: false, updatedById: false },
       with: {
@@ -99,7 +100,7 @@ export class ActivitiesService {
     // Set here, not by the column default: MySQL's now() and the driver can
     // disagree on the time zone, while dates written from JS round-trip.
     const now = new Date();
-    await this.database.db.insert(activity).values({
+    await this.db.insert(activity).values({
       id,
       name: body.name,
       type: body.type,
@@ -122,7 +123,7 @@ export class ActivitiesService {
     body: ActivityBody,
     userId: string,
   ): Promise<ActivityDetail> {
-    const [result] = await this.database.db
+    const [result] = await this.db
       .update(activity)
       .set({
         name: body.name,
@@ -145,7 +146,7 @@ export class ActivitiesService {
    */
   async deleteActivity(id: string, userId: string) {
     const now = new Date();
-    const [result] = await this.database.db
+    const [result] = await this.db
       .update(activity)
       .set({ deletedAt: now, updatedAt: now, updatedById: userId })
       .where(and(eq(activity.id, id), notDeleted));
@@ -156,7 +157,7 @@ export class ActivitiesService {
   /** Completes an activity */
   async closeActivity(id: string, userId: string) {
     const now = new Date();
-    const [result] = await this.database.db
+    const [result] = await this.db
       .update(activity)
       .set({ status: 'closed', completedAt: now, completedById: userId })
       .where(and(eq(activity.id, id), notDeleted, notClosed));
@@ -169,7 +170,7 @@ export class ActivitiesService {
    * 404 if the activity doesn't exist, is deleted or isn't closed.
    */
   async reopenActivity(id: string) {
-    const [result] = await this.database.db
+    const [result] = await this.db
       .update(activity)
       .set({ status: 'open', completedAt: null, completedById: null })
       .where(
