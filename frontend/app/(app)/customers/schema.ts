@@ -1,5 +1,6 @@
 import { formOptions } from "@tanstack/react-form-nextjs";
 import {
+  customerAddressBodySchema,
   customerBodySchema,
   type CustomerType,
   type CustomerAddressBody,
@@ -7,16 +8,17 @@ import {
   type CustomerBody,
 } from "@backend/contracts";
 import { formSchema } from "@/lib/app-form/form-schema";
+import { CUSTOMER_ADDRESS_TYPE_OPTIONS } from "@/lib/customers-table";
 import type { CustomerDetail } from "@/lib/customers";
 
 /**
- * Form values: every field is text, "" when blank, except the address type
- * (picked from a list, null when not set). Keys follow the contract.
+ * Form values: every field is text, "" when blank, except the types
+ * (picked from a list). Keys follow the contract.
  */
 export type AddressFormValues = Record<
   Exclude<keyof CustomerAddressBody, "type">,
   string
-> & { type: CustomerAddressType | null };
+> & { type: CustomerAddressType };
 export type CustomerFormValues = Record<
   Exclude<keyof CustomerBody, "addresses" | "type">,
   string
@@ -32,14 +34,24 @@ export type CustomerFormValues = Record<
 export const customerSchema =
   formSchema<CustomerFormValues>()(customerBodySchema);
 
-export const emptyAddress: AddressFormValues = {
-  type: null,
+/** Validates one address, in the sheet that adds or edits it. */
+export const addressSchema = formSchema<AddressFormValues>()(
+  customerAddressBodySchema,
+);
+
+/** A new address of a `customerType` customer: its first address type. */
+export const emptyAddress = (
+  customerType: CustomerType,
+): AddressFormValues => ({
+  type: CUSTOMER_ADDRESS_TYPE_OPTIONS.find((option) =>
+    option.customerType.includes(customerType),
+  )!.value,
   street: "",
   city: "",
   postalCode: "",
   region: "",
   country: "",
-};
+});
 
 export const TYPE_OPTIONS = [
   { value: "person", label: "Person" },

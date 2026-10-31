@@ -3,7 +3,6 @@ import {
   FingerprintIcon,
   HistoryIcon,
   MailIcon,
-  MapPinIcon,
   PhoneIcon,
   UserPenIcon,
   UserPlusIcon,
@@ -16,7 +15,15 @@ import Link from "next/link";
 import CopyButton from "@/components/copy-button";
 import { Detail, DetailSection } from "@/components/detail";
 import { LocalDate } from "@/components/local-date";
-import { formatAddress, type CustomerDetail } from "@/lib/customers";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import type { CustomerDetail } from "@/lib/customers";
 import {
   CUSTOMER_ADDRESS_TYPE_OPTIONS,
   CUSTOMER_TYPE_OPTIONS,
@@ -82,21 +89,41 @@ export function CustomerDetails({ customer }: { customer: CustomerDetail }) {
         </Detail>
       </DetailSection>
 
-      <DetailSection title={`Addresses (${customer.addresses.length})`}>
+      <DetailSection
+        title={`Addresses (${customer.addresses.length})`}
+        groupClassName="flex"
+      >
         {customer.addresses.length ? (
-          customer.addresses.map((address, i) => (
-            <Detail
-              key={address.id}
-              icon={MapPinIcon}
-              label={
-                CUSTOMER_ADDRESS_TYPE_OPTIONS.find(
-                  (o) => o.value === address.type,
-                )?.label ?? `Address ${i + 1}`
-              }
-            >
-              <span className="font-normal">{formatAddress(address)}</span>
-            </Detail>
-          ))
+          <div className="rounded-lg border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Street</TableHead>
+                  <TableHead>Postal code</TableHead>
+                  <TableHead>City</TableHead>
+                  <TableHead>State / province</TableHead>
+                  <TableHead>Country</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {customer.addresses.map((address) => (
+                  <TableRow key={address.id}>
+                    <TableCell>
+                      {CUSTOMER_ADDRESS_TYPE_OPTIONS.find(
+                        (o) => o.value === address.type,
+                      )?.label ?? "—"}
+                    </TableCell>
+                    <TableCell>{address.street}</TableCell>
+                    <TableCell>{address.postalCode ?? "—"}</TableCell>
+                    <TableCell>{address.city}</TableCell>
+                    <TableCell>{address.region ?? "—"}</TableCell>
+                    <TableCell>{address.country}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         ) : (
           <p className="text-sm text-muted-foreground">
             No addresses.{" "}

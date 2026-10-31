@@ -6,12 +6,21 @@ import type {
 } from "@backend/contracts";
 import { defineDataTable } from "./data-table";
 
-/** Labels of an address's type, for the form and the detail page. */
-export const CUSTOMER_ADDRESS_TYPE_OPTIONS = [
-  { value: "head_office", label: "Head office" },
-  { value: "shipping", label: "Shipping" },
-  { value: "billing", label: "Billing" },
-] as const satisfies readonly { value: CustomerAddressType; label: string }[];
+/**
+ * Labels of an address's type, for the form and the detail page, with the
+ * customer types each one is offered to.
+ */
+export const CUSTOMER_ADDRESS_TYPE_OPTIONS: readonly {
+  value: CustomerAddressType;
+  label: string;
+  customerType: readonly CustomerType[];
+}[] = [
+  { value: "residence", label: "Residence", customerType: ["person"] },
+  { value: "domicile", label: "Domicile", customerType: ["person"] },
+  { value: "head_office", label: "Head office", customerType: ["company"] },
+  { value: "shipping", label: "Shipping", customerType: ["company"] },
+  { value: "billing", label: "Billing", customerType: ["company"] },
+];
 
 /** Labels of the type values. */
 export const CUSTOMER_TYPE_OPTIONS = [

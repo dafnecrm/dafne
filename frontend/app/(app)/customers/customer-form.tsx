@@ -1,7 +1,8 @@
 "use client";
 
 import { revalidateLogic } from "@tanstack/react-form-nextjs";
-import { MapPinPlusIcon, Trash2Icon } from "lucide-react";
+import { MapPinPlusIcon, PencilIcon, Trash2Icon } from "lucide-react";
+import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,17 +14,21 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { FieldGroup } from "@/components/ui/field";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { setServerError, useAppForm } from "@/lib/app-form/app-form";
 import { useResetOnLeave } from "@/lib/app-form/reset-on-leave";
 import type { CustomerDetail } from "@/lib/customers";
 import { CUSTOMER_ADDRESS_TYPE_OPTIONS } from "@/lib/customers-table";
 import { saveCustomer } from "./actions";
-import {
-  customerFormOpts,
-  customerSchema,
-  emptyAddress,
-  TYPE_OPTIONS,
-} from "./schema";
+import { CustomerAddressSheet } from "./customer-address-sheet";
+import { customerFormOpts, customerSchema, TYPE_OPTIONS } from "./schema";
 
 /**
  * Creates a customer, or edits `customer`. Saving opens the customer's
@@ -43,6 +48,12 @@ export function CustomerForm({ customer }: { customer?: CustomerDetail }) {
   });
   // The page stays mounted (hidden) after leaving it: start fresh next time.
   useResetOnLeave(form);
+  // The sheet that adds an address (index null) or edits addresses[index].
+  // The index stays while it closes, so the content doesn't change mid-animation.
+  const [addressSheet, setAddressSheet] = useState<{
+    open: boolean;
+    index: number | null;
+  }>({ open: false, index: null });
   const cancelHref = customer
     ? `/customers/${encodeURIComponent(customer.id)}`
     : "/customers";
@@ -93,13 +104,13 @@ export function CustomerForm({ customer }: { customer?: CustomerDetail }) {
                         <>
                           <form.AppField name="birthDate">
                             {(field) => (
-                              <field.DatePickerField label="Birth date (optional)" />
+                              <field.DatePickerField label="Birth date" />
                             )}
                           </form.AppField>
                           <form.AppField name="fiscalCode">
                             {(field) => (
                               <field.TextField
-                                label="Fiscal code (optional)"
+                                label="Fiscal code"
                                 autoComplete="off"
                                 maxLength={16}
                                 controlClassName="[&_input]:uppercase"
@@ -111,7 +122,7 @@ export function CustomerForm({ customer }: { customer?: CustomerDetail }) {
                         <form.AppField name="vatNumber">
                           {(field) => (
                             <field.TextField
-                              label="VAT number (optional)"
+                              label="VAT number"
                               autoComplete="off"
                               maxLength={13}
                               controlClassName="[&_input]:uppercase"
@@ -147,7 +158,7 @@ export function CustomerForm({ customer }: { customer?: CustomerDetail }) {
                 <form.AppField name="phone">
                   {(field) => (
                     <field.TextField
-                      label="Phone (optional)"
+                      label="Phone"
                       type="tel"
                       autoComplete="off"
                       placeholder="+39 02 1234 5678"
@@ -158,116 +169,128 @@ export function CustomerForm({ customer }: { customer?: CustomerDetail }) {
             </CardContent>
           </Card>
 
-          <form.AppField name="addresses" mode="array">
-            {(addresses) => (
-              <Card>
-                <CardHeader>
-                  <CardTitle>
-                    <h2>Addresses</h2>
-                  </CardTitle>
-                  <CardDescription>
-                    {addresses.state.value.length
-                      ? "In the order they're shown on the customer's page."
-                      : "No addresses yet."}
-                  </CardDescription>
-                  <CardAction>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => addresses.pushValue({ ...emptyAddress })}
-                    >
-                      <MapPinPlusIcon data-icon="inline-start" />
-                      Add address
-                    </Button>
-                  </CardAction>
-                </CardHeader>
-                {addresses.state.value.length > 0 && (
-                  <CardContent className="flex flex-col gap-6">
-                    {addresses.state.value.map((_, i) => (
-                      // TanStack Form tracks array items by index.
-                      <fieldset
-                        key={i}
-                        className="flex flex-col gap-4 rounded-lg border p-4"
+          {!!customer && (
+            <form.AppField name="addresses" mode="array">
+              {(addresses) => (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>
+                      <h2>Addresses</h2>
+                    </CardTitle>
+                    <CardDescription>
+                      {addresses.state.value.length
+                        ? "In the order they're shown on the customer's page."
+                        : "No addresses yet."}
+                    </CardDescription>
+                    <CardAction>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setAddressSheet({ open: true, index: null })
+                        }
                       >
-                        <div className="flex items-center justify-between gap-2">
-                          <legend className="font-medium">
-                            Address {i + 1}
-                          </legend>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => addresses.removeValue(i)}
-                          >
-                            <Trash2Icon data-icon="inline-start" />
-                            Remove
-                          </Button>
-                        </div>
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
-                          <form.AppField name={`addresses[${i}].type`}>
-                            {(field) => (
-                              <field.SelectField
-                                label="Type (optional)"
-                                options={CUSTOMER_ADDRESS_TYPE_OPTIONS}
-                                emptyLabel="None"
-                                className="md:col-span-2"
-                              />
-                            )}
-                          </form.AppField>
-                          <form.AppField name={`addresses[${i}].street`}>
-                            {(field) => (
-                              <field.TextField
-                                label="Street"
-                                autoComplete="off"
-                                className="md:col-span-4"
-                              />
-                            )}
-                          </form.AppField>
-                          <form.AppField name={`addresses[${i}].postalCode`}>
-                            {(field) => (
-                              <field.TextField
-                                label="Postal code (optional)"
-                                autoComplete="off"
-                                className="md:col-span-2"
-                              />
-                            )}
-                          </form.AppField>
-                          <form.AppField name={`addresses[${i}].city`}>
-                            {(field) => (
-                              <field.TextField
-                                label="City"
-                                autoComplete="off"
-                                className="md:col-span-4"
-                              />
-                            )}
-                          </form.AppField>
-                          <form.AppField name={`addresses[${i}].region`}>
-                            {(field) => (
-                              <field.TextField
-                                label="State / province (optional)"
-                                autoComplete="off"
-                                className="md:col-span-3"
-                              />
-                            )}
-                          </form.AppField>
-                          <form.AppField name={`addresses[${i}].country`}>
-                            {(field) => (
-                              <field.TextField
-                                label="Country"
-                                autoComplete="off"
-                                className="md:col-span-3"
-                              />
-                            )}
-                          </form.AppField>
-                        </div>
-                      </fieldset>
-                    ))}
-                  </CardContent>
-                )}
-              </Card>
-            )}
-          </form.AppField>
+                        <MapPinPlusIcon data-icon="inline-start" />
+                        Add address
+                      </Button>
+                    </CardAction>
+                  </CardHeader>
+                  {addresses.state.value.length > 0 && (
+                    <CardContent>
+                      <div className="rounded-lg border">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Type</TableHead>
+                              <TableHead>Street</TableHead>
+                              <TableHead>Postal code</TableHead>
+                              <TableHead>City</TableHead>
+                              <TableHead>State / province</TableHead>
+                              <TableHead>Country</TableHead>
+                              <TableHead className="w-0">
+                                <span className="sr-only">Actions</span>
+                              </TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {addresses.state.value.map((address, i) => (
+                              // TanStack Form tracks array items by index.
+                              <TableRow key={i}>
+                                <TableCell>
+                                  {CUSTOMER_ADDRESS_TYPE_OPTIONS.find(
+                                    (o) => o.value === address.type,
+                                  )?.label ?? "—"}
+                                </TableCell>
+                                <TableCell>{address.street}</TableCell>
+                                <TableCell>
+                                  {address.postalCode || "—"}
+                                </TableCell>
+                                <TableCell>{address.city}</TableCell>
+                                <TableCell>{address.region || "—"}</TableCell>
+                                <TableCell>{address.country}</TableCell>
+                                <TableCell>
+                                  <div className="flex justify-end gap-1">
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon-sm"
+                                      aria-label={`Edit address ${i + 1}`}
+                                      onClick={() =>
+                                        setAddressSheet({
+                                          open: true,
+                                          index: i,
+                                        })
+                                      }
+                                    >
+                                      <PencilIcon />
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon-sm"
+                                      aria-label={`Remove address ${i + 1}`}
+                                      onClick={() => addresses.removeValue(i)}
+                                    >
+                                      <Trash2Icon />
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </CardContent>
+                  )}
+                  <form.Subscribe selector={(state) => state.values.type}>
+                    {(customerType) => (
+                      <CustomerAddressSheet
+                        open={addressSheet.open}
+                        onOpenChange={(open) =>
+                          setAddressSheet((sheet) => ({ ...sheet, open }))
+                        }
+                        customerType={customerType}
+                        address={
+                          addressSheet.index === null
+                            ? undefined
+                            : addresses.state.value[addressSheet.index]
+                        }
+                        onSave={(address) =>
+                          addressSheet.index === null
+                            ? addresses.pushValue(address)
+                            : addresses.replaceValue(
+                                addressSheet.index,
+                                address,
+                              )
+                        }
+                      />
+                    )}
+                  </form.Subscribe>
+                </Card>
+              )}
+            </form.AppField>
+          )}
 
           <div className="flex justify-end gap-2">
             <Button

@@ -65,12 +65,12 @@ export function ActivityForm({ activity }: { activity?: ActivityDetail }) {
                 </form.AppField>
                 <form.AppField name="dueDate">
                   {(field) => (
-                    <field.DateTimePickerField label="Due date (optional)" />
+                    <field.DateTimePickerField label="Due date" />
                   )}
                 </form.AppField>
                 <form.AppField name="notes">
                   {(field) => (
-                    <field.TextEditorField label="Notes (optional)" controlClassName="col-span-2" />
+                    <field.TextEditorField label="Notes" controlClassName="col-span-2" />
                   )}
                 </form.AppField>
               </FieldGroup>
