@@ -83,6 +83,20 @@ describe('customerBodySchema', () => {
     ).toEqual(['addresses.0.city']);
   });
 
+  it('allows one address of each type', () => {
+    const address = { street: 'Via Roma 1', city: 'Milano', country: 'Italy' };
+    expect(
+      failedFields({
+        ...company,
+        addresses: [
+          { ...address, type: 'billing' },
+          { ...address, type: 'shipping' },
+          { ...address, type: 'billing' },
+        ],
+      }),
+    ).toEqual(['addresses.2.type']);
+  });
+
   it('rejects unknown properties such as deletedAt', () => {
     expect(failedFields({ ...company, deletedAt: '2026-01-01' })).toEqual([
       'unrecognized_keys',

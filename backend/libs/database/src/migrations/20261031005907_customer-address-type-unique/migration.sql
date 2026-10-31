@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `customer_address_customerId_type_idx` ON `customer_address` (`customer_id`,`type`);

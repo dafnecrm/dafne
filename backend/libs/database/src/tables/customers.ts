@@ -62,7 +62,13 @@ export const customerAddress = mysqlTable(
       .references(() => customer.id, { onDelete: 'cascade' }),
     position: int('position').notNull(),
     /** e.g. "Billing", "Shipping", "Head office". */
-    type: mysqlEnum(['residence', 'domicile', 'head_office', 'shipping', 'billing']).notNull(),
+    type: mysqlEnum([
+      'residence',
+      'domicile',
+      'head_office',
+      'shipping',
+      'billing',
+    ]).notNull(),
     street: varchar('street', { length: 255 }).notNull(),
     city: varchar('city', { length: 100 }).notNull(),
     postalCode: varchar('postal_code', { length: 20 }),
@@ -70,7 +76,14 @@ export const customerAddress = mysqlTable(
     region: varchar('region', { length: 100 }),
     country: varchar('country', { length: 100 }).notNull(),
   },
-  (table) => [index('customer_address_customerId_idx').on(table.customerId)],
+  (table) => [
+    index('customer_address_customerId_idx').on(table.customerId),
+    // A customer has at most one address of each type.
+    uniqueIndex('customer_address_customerId_type_idx').on(
+      table.customerId,
+      table.type,
+    ),
+  ],
 );
 
 export const customerRelations = defineRelationsPart(

@@ -76,8 +76,21 @@ export const customerBodySchema = z
     phone: optionalText(
       z.string().regex(PHONE_PATTERN, { error: 'Enter a valid phone number' }),
     ),
-    /** In display order. */
-    addresses: z.array(customerAddressBodySchema).max(20).default([]),
+    /** In display order; at most one address of each type. */
+    addresses: z
+      .array(customerAddressBodySchema)
+      .max(20)
+      .default([])
+      .superRefine((addresses, ctx) =>
+        addresses.forEach((address, i) => {
+          if (addresses.findIndex((a) => a.type === address.type) < i)
+            ctx.addIssue({
+              code: 'custom',
+              path: [i, 'type'],
+              message: 'Another address already has this type',
+            });
+        }),
+      ),
   })
   .transform((body) =>
     // Each type keeps only its own fields: the other type's are cleared.
