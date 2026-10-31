@@ -13,9 +13,13 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { useAppForm } from "@/lib/app-form/app-form";
-import { CUSTOMER_ADDRESS_TYPE_OPTIONS } from "@/lib/customers-table";
-import { addressSchema, emptyAddress, type AddressFormValues } from "./schema";
-import type { CustomerType } from "@backend/contracts";
+import {
+  addressSchema,
+  addressTypeOptions,
+  emptyAddress,
+  type AddressFormValues,
+} from "./schema";
+import type { CustomerAddressType, CustomerType } from "@backend/contracts";
 
 /**
  * Adds an address (no `address`) or edits one, in a sheet. Saving only
@@ -25,6 +29,7 @@ export function CustomerAddressSheet({
   open,
   onOpenChange,
   customerType,
+  usedTypes,
   address,
   onSave,
 }: {
@@ -32,6 +37,8 @@ export function CustomerAddressSheet({
   onOpenChange: (open: boolean) => void;
   /** The type chosen in the customer form: it decides the address types offered. */
   customerType: CustomerType;
+  /** The types of the customer's other addresses: not offered (one of each). */
+  usedTypes: CustomerAddressType[];
   address?: AddressFormValues;
   onSave: (address: AddressFormValues) => void;
 }) {
@@ -45,6 +52,7 @@ export function CustomerAddressSheet({
         {/* The content unmounts when the sheet closes, so each opening starts from `address`. */}
         <AddressForm
           customerType={customerType}
+          usedTypes={usedTypes}
           address={address}
           onSave={(value) => {
             onSave(value);
@@ -58,16 +66,19 @@ export function CustomerAddressSheet({
 
 function AddressForm({
   customerType,
+  usedTypes,
   address,
   onSave,
 }: {
   /** The type chosen in the customer form: it decides the address types offered. */
   customerType: CustomerType;
+  /** The types of the customer's other addresses: not offered (one of each). */
+  usedTypes: CustomerAddressType[];
   address?: AddressFormValues;
   onSave: (address: AddressFormValues) => void;
 }) {
   const form = useAppForm({
-    defaultValues: address ?? emptyAddress(customerType),
+    defaultValues: address ?? emptyAddress(customerType, usedTypes),
     // Validate on submit, then on every change.
     validationLogic: revalidateLogic(),
     validators: { onDynamic: addressSchema },
@@ -91,9 +102,7 @@ function AddressForm({
             {(field) => (
               <field.SelectField
                 label="Type"
-                options={CUSTOMER_ADDRESS_TYPE_OPTIONS.filter((option) =>
-                  option.customerType.includes(customerType),
-                )}
+                options={addressTypeOptions(customerType, usedTypes)}
               />
             )}
           </form.AppField>

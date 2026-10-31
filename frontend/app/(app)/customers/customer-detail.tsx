@@ -134,7 +134,7 @@ export function CustomerDetails({ customer }: { customer: CustomerDetail }) {
         )}
       </DetailSection>
 
-      <DetailSection title="Record">
+      <DetailSection title="Record" defaultOpen={false}>
         <Detail icon={FingerprintIcon} label="Customer ID">
           <div className="flex items-center gap-2">
             <code className="truncate font-mono text-xs">{customer.id}</code>

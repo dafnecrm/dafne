@@ -1,6 +1,6 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
-import type { LucideIcon } from "lucide-react";
+import { ChevronRightIcon, type LucideIcon } from "lucide-react";
 import { Children, Fragment, type ReactNode } from "react";
 import {
   Item,
@@ -12,6 +12,11 @@ import {
   ItemTitle
 } from "@/components/ui/item";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "./ui/card";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "./ui/collapsible";
 
 /*
  * Read-only detail lists, e.g. on a record's page:
@@ -53,6 +58,9 @@ const DETAIL_GRID =
  *
  * `actions` (e.g. buttons) go at the end of the header, in CardAction.
  *
+ * With a title, the section collapses: clicking the title hides the
+ * details (open at first, unless `defaultOpen={false}`).
+ *
  * Variants: `default` frames the details like a Card; `plain` has no
  * frame and no padding around the details.
  */
@@ -63,8 +71,10 @@ export function DetailSection({
   separator,
   className,
   groupClassName,
+  defaultOpen = true,
   children,
 }: {
+  /** Also the button that collapses the section. */
   title?: string;
   /** Shown at the end of the header, in CardAction. */
   actions?: ReactNode;
@@ -74,24 +84,40 @@ export function DetailSection({
   className?: string;
   /** Extra classes for the item group, merged with the grid. */
   groupClassName?: string;
+  /** Whether the details show at first; the title toggles them. */
+  defaultOpen?: boolean;
   children: ReactNode;
 } & VariantProps<typeof detailSectionVariants>) {
   return (
-    <Card
-      data-slot="detail-section"
-      data-variant={variant}
-      className={cn(detailSectionVariants({ variant }), className)}>
+    <Collapsible
+      // Without a title there is nothing to click: it stays open.
+      defaultOpen={defaultOpen || !title}
+      render={
+        <Card
+          data-slot="detail-section"
+          data-variant={variant}
+          className={cn(detailSectionVariants({ variant }), className)}
+        />
+      }
+    >
       {(title || actions) && (
         <CardHeader className={cn(variant === "plain" && "px-0")}>
           {title && (
             <CardTitle>
-              <h2>{title}</h2>
+              <h2>
+                <CollapsibleTrigger className="group/trigger -ml-1 flex items-center gap-1 rounded-md px-1 text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
+                  <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-data-panel-open/trigger:rotate-90" />
+                  {title}
+                </CollapsibleTrigger>
+              </h2>
             </CardTitle>
           )}
           {actions && <CardAction>{actions}</CardAction>}
         </CardHeader>
       )}
-      <CardContent className={cn(variant === "plain" && "px-0")}>
+      <CollapsibleContent
+        render={<CardContent className={cn(variant === "plain" && "px-0")} />}
+      >
         <ItemGroup
           // Details read the variant from here (see Detail).
           data-variant={variant}
@@ -104,8 +130,8 @@ export function DetailSection({
             </Fragment>
           ))}
         </ItemGroup>
-      </CardContent>
-    </Card>
+      </CollapsibleContent>
+    </Collapsible>
   );
 }
 

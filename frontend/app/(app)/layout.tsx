@@ -68,7 +68,7 @@ function UserSkeleton() {
 /** Admin-only sidebar sections; nothing for other users. */
 async function AdminNav() {
   if (!isAdmin(await getCurrentUser())) return null;
-  return NAV_SECTIONS.filter((section) => section.adminOnly).map((section) => (
+  return NAV_SECTIONS.filter((section) => section.adminOnly && !section.hidden).map((section) => (
     <NavSectionItems key={section.title} title={section.title} />
   ));
 }

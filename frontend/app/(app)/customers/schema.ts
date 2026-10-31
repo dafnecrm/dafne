@@ -39,13 +39,30 @@ export const addressSchema = formSchema<AddressFormValues>()(
   customerAddressBodySchema,
 );
 
-/** A new address of a `customerType` customer: its first address type. */
+/**
+ * The address types a `customerType` customer can still pick: the ones of
+ * its type, minus those `used` by its other addresses (one of each).
+ */
+export function addressTypeOptions(
+  customerType: CustomerType,
+  used: readonly CustomerAddressType[],
+) {
+  return CUSTOMER_ADDRESS_TYPE_OPTIONS.filter(
+    (option) =>
+      option.customerType.includes(customerType) &&
+      !used.includes(option.value),
+  );
+}
+
+/** A new address: the first type still free (the form offers none when all are used). */
 export const emptyAddress = (
   customerType: CustomerType,
+  used: readonly CustomerAddressType[],
 ): AddressFormValues => ({
-  type: CUSTOMER_ADDRESS_TYPE_OPTIONS.find((option) =>
-    option.customerType.includes(customerType),
-  )!.value,
+  type: (
+    addressTypeOptions(customerType, used)[0] ??
+    addressTypeOptions(customerType, [])[0]
+  ).value,
   street: "",
   city: "",
   postalCode: "",

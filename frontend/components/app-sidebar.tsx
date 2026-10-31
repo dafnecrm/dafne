@@ -83,7 +83,7 @@ export function AppSidebar({
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu className={isRail ? undefined : "gap-2"}>
-            {NAV_SECTIONS.filter((section) => !section.adminOnly).map(
+            {NAV_SECTIONS.filter((section) => !section.adminOnly && !section.hidden).map(
               (section) => (
                 <NavSectionItems key={section.title} title={section.title} />
               ),

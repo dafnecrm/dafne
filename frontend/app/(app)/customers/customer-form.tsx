@@ -28,7 +28,12 @@ import type { CustomerDetail } from "@/lib/customers";
 import { CUSTOMER_ADDRESS_TYPE_OPTIONS } from "@/lib/customers-table";
 import { saveCustomer } from "./actions";
 import { CustomerAddressSheet } from "./customer-address-sheet";
-import { customerFormOpts, customerSchema, TYPE_OPTIONS } from "./schema";
+import {
+  addressTypeOptions,
+  customerFormOpts,
+  customerSchema,
+  TYPE_OPTIONS,
+} from "./schema";
 
 /**
  * Creates a customer, or edits `customer`. Saving opens the customer's
@@ -183,17 +188,28 @@ export function CustomerForm({ customer }: { customer?: CustomerDetail }) {
                         : "No addresses yet."}
                     </CardDescription>
                     <CardAction>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          setAddressSheet({ open: true, index: null })
-                        }
-                      >
-                        <MapPinPlusIcon data-icon="inline-start" />
-                        Add address
-                      </Button>
+                      <form.Subscribe selector={(state) => state.values.type}>
+                        {(customerType) => (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            // One address of each type: none left to add.
+                            disabled={
+                              !addressTypeOptions(
+                                customerType,
+                                addresses.state.value.map((a) => a.type),
+                              ).length
+                            }
+                            onClick={() =>
+                              setAddressSheet({ open: true, index: null })
+                            }
+                          >
+                            <MapPinPlusIcon data-icon="inline-start" />
+                            Add address
+                          </Button>
+                        )}
+                      </form.Subscribe>
                     </CardAction>
                   </CardHeader>
                   {addresses.state.value.length > 0 && (
@@ -271,6 +287,9 @@ export function CustomerForm({ customer }: { customer?: CustomerDetail }) {
                           setAddressSheet((sheet) => ({ ...sheet, open }))
                         }
                         customerType={customerType}
+                        usedTypes={addresses.state.value
+                          .filter((_, i) => i !== addressSheet.index)
+                          .map((a) => a.type)}
                         address={
                           addressSheet.index === null
                             ? undefined

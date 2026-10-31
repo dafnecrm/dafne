@@ -20,6 +20,8 @@ export interface NavSection {
   items: NavItem[];
   /** Only shown to users with the `admin` role. */
   adminOnly?: boolean;
+  /** Only used to show breadcrumb. */
+  hidden?: boolean;
 }
 
 /** Sidebar navigation: sections with their pages. */
@@ -47,6 +49,7 @@ export const NAV_SECTIONS: NavSection[] = [
     title: "Account",
     href: "/account",
     items: [{ title: "Account", href: "/account", icon: UserIcon }],
+    hidden: true,
   },
 ];
 
