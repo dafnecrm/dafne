@@ -236,7 +236,7 @@ function TextEditorField({
       </FieldLabel>
       <TextEditor
         id={field.name}
-        contentClassName={controlClassName}
+        contentClassName={cn("min-h-40", controlClassName)}
         value={field.state.value ?? ''}
         aria-invalid={!field.state.meta.isValid}
         onChange={field.handleChange}

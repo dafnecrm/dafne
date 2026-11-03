@@ -3,7 +3,8 @@ import {
   HouseIcon,
   UserIcon,
   UsersIcon, type LucideIcon,
-  ListClockIcon
+  ListClockIcon,
+  GroceriesIcon
 } from "lucide-react";
 
 export interface NavItem {
@@ -37,6 +38,7 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { title: "Customers", href: "/customers", icon: ContactIcon },
       { title: "Activities", href: "/activities", icon: ListClockIcon },
+      { title: "Products", href: "/products", icon: GroceriesIcon },
     ],
   },
   {
