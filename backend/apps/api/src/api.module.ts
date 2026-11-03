@@ -10,6 +10,7 @@ import { UsersModule } from '@app/users';
 import { CustomersModule } from '@app/customers';
 import { ActivitiesModule } from '@app/activities';
 import { GeoModule } from '@app/geo';
+import { ProductsModule } from '@app/products';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { GeoModule } from '@app/geo';
     CustomersModule,
     ActivitiesModule,
     GeoModule,
+    ProductsModule,
   ],
   controllers: [ApiController],
   providers: [ApiService],

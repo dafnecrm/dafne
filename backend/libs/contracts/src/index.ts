@@ -12,3 +12,4 @@ export * from './users.ts';
 export * from './activities.ts';
 export * from './geo.ts';
 export * from './countries.ts';
+export * from './products.ts';
