@@ -6,6 +6,7 @@ import { CalendarIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
+import { useDateLocale } from "@/components/local-date"
 import {
   Popover,
   PopoverContent,
@@ -57,6 +58,7 @@ function DatePicker({
   ...buttonProps
 }: DatePickerProps) {
   const [open, setOpen] = React.useState(false)
+  const locale = useDateLocale()
 
   return (
     <Popover
@@ -82,7 +84,7 @@ function DatePicker({
         }
       >
         <CalendarIcon />
-        {value ? formatDate(value, format) : <span>{placeholder}</span>}
+        {value ? formatDate(value, format, { locale }) : <span>{placeholder}</span>}
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
         <Calendar

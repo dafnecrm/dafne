@@ -1,7 +1,12 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { formatDate, type DateFormat } from "@/lib/dates";
+import {
+  DEFAULT_LOCALE,
+  formatDate,
+  localeFor,
+  type DateFormat,
+} from "@/lib/dates";
 
 const subscribe = () => () => {};
 
@@ -18,7 +23,20 @@ export function useTimeZone() {
 }
 
 /**
- * A date in the viewer's time zone. The server renders a hidden UTC
+ * The date-fns locale for the browser's languages, or Italian when none is
+ * supported. Italian on the server and during hydration, so the server's
+ * HTML matches, then the browser's on the next render.
+ */
+export function useDateLocale() {
+  return useSyncExternalStore(
+    subscribe,
+    () => localeFor(navigator.languages),
+    () => DEFAULT_LOCALE,
+  );
+}
+
+/**
+ * A date in the viewer's locale and time zone. The server renders a hidden UTC
  * placeholder (same size, no hydration mismatch), replaced in the browser.
  */
 export function LocalDate({
@@ -31,6 +49,7 @@ export function LocalDate({
   format?: DateFormat;
   className?: string;
 }) {
+  const locale = useDateLocale();
   const timeZone = useTimeZone();
   const iso = new Date(value).toISOString();
 
@@ -40,7 +59,7 @@ export function LocalDate({
       title={timeZone ? undefined : iso}
       className={timeZone ? className : `invisible ${className ?? ""}`}
     >
-      {formatDate(value, format, timeZone ?? "UTC")}
+      {formatDate(value, format, { locale, timeZone: timeZone ?? "UTC" })}
     </time>
   );
 }
