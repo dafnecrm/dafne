@@ -4,12 +4,14 @@ import { join } from 'node:path';
 import { parseFieldSpec } from '../src/commands/field.js';
 import { generateResource } from '../src/commands/generate.js';
 import { Changes } from '../src/core/changes.js';
+import { resourceNames } from '../src/core/names.js';
+import { resourceMessages, syncMessages } from '../src/wiring/messages.js';
 import { BACKEND_RESOURCE } from '../src/generators/backend.js';
 import { FRONTEND_RESOURCE } from '../src/generators/frontend.js';
 
 const FIXTURE = join(import.meta.dirname, 'fixtures', 'project');
 const options = { icon: 'FileIcon', section: 'CRM', admin: false };
-const DIR = 'frontend/app/(app)/invoices';
+const DIR = 'frontend/app/[locale]/(app)/invoices';
 let root: string;
 const read = (path: string) => readFileSync(join(root, path), 'utf8');
 
@@ -65,10 +67,43 @@ describe('a resource with fields', () => {
     expect(contract).toContain('INVOICE_STATUSES');
     expect(read('backend/libs/invoices/src/invoices.service.ts')).toContain('number: invoice.number');
 
-    expect(read(`${DIR}/invoice-form.tsx`)).toContain('<field.TextEditorField label="Notes" />');
+    expect(read(`${DIR}/invoice-form.tsx`)).toContain('<field.TextEditorField label={t("invoices.fields.notes")} />');
     expect(read(`${DIR}/invoice-form.tsx`)).toContain('<form.AppField name="status">');
     expect(read(`${DIR}/invoices-table.tsx`)).toContain('number');
-    expect(read(`${DIR}/invoice-detail.tsx`)).toMatch(/<Detail icon=\{TextIcon\} label="Notes" wide>/);
+    expect(read(`${DIR}/invoice-detail.tsx`)).toMatch(/<Detail icon=\{TextIcon\} label=\{t\("invoices.fields.notes"\)\} wide>/);
+
+    // The keys the new files use have texts in both languages' catalogs.
+    expect(contract).toContain("msg('invoices.number.required')");
+    const en = read('backend/libs/contracts/src/messages/en.ts');
+    expect(en).toMatch(/invoices: \{[^]*notFound: 'Invoice not found'/);
+    expect(en).toMatch(/number: \{ required: 'Enter the number' \}/);
+    expect(en).toMatch(/status: \{ required: 'Choose the status' \}/);
+    expect(read('backend/libs/contracts/src/messages/it.ts')).toMatch(/number: \{ required: 'Enter the number' \}/);
+    for (const locale of ['en', 'it']) {
+      const messages = JSON.parse(read(`frontend/messages/${locale}.json`));
+      expect(messages.invoices).toMatchObject({
+        title: 'Invoices',
+        fields: { name: 'Name', number: 'Number', status: 'Status', notes: 'Notes', createdAt: 'Added' },
+        status: { draft: 'Draft', paid: 'Paid' },
+      });
+      expect(messages.nav.invoices).toBe('Invoices');
+    }
+    // Existing texts are kept.
+    expect(JSON.parse(read('frontend/messages/it.json')).nav.customers).toBe('Clienti');
+    expect(changes.warnings.join()).toMatch(/still in English: translate them/);
+  });
+
+  it('adds the messages once', async () => {
+    const changes = new Changes(root);
+    await generateResource(changes, 'invoice', { backend: BACKEND_RESOURCE, frontend: FRONTEND_RESOURCE }, options);
+    await changes.commit();
+    const en = read('frontend/messages/en.json');
+    const contracts = read('backend/libs/contracts/src/messages/en.ts');
+    const again = new Changes(root);
+    syncMessages(again, resourceMessages(resourceNames('invoice')));
+    await again.commit();
+    expect(read('frontend/messages/en.json')).toBe(en);
+    expect(read('backend/libs/contracts/src/messages/en.ts')).toBe(contracts);
   });
 
   it('refuses fields for a table that already exists', async () => {

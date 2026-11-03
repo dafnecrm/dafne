@@ -1,3 +1,4 @@
+import { syncMessages } from '../wiring/messages.js';
 import * as p from '@clack/prompts';
 import { Command, Option } from 'commander';
 import { Changes } from '../core/changes.js';
@@ -361,7 +362,11 @@ async function finish(changes: Changes, result: FieldResult, options: CommonOpti
     }
 
   if (options.dryRun) return p.outro('Dry run: nothing written.');
-  await changes.commit();
+  {
+        const note = syncMessages(changes);
+        if (note) p.log.warn(note);
+      }
+      await changes.commit();
   p.note(
     [
       'dafne migration generate   # fixes the foreign keys drizzle-kit 1.0.0-rc.5 gets wrong',

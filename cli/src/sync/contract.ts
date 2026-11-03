@@ -15,13 +15,16 @@ import type { Column, TableInfo } from './table.js';
 /** Helpers from contracts/src/common.ts the generated fields use. */
 export const COMMON_HELPERS = ['requiredText', 'optionalText', 'optionalDate'];
 
+/** Imported by common.ts for OPTIONAL_DATE_HELPER. */
+export const MESSAGE_KEY_IMPORT = "import type { ContractMessageKey } from './messages/index.ts';";
+
 /** Added to common.ts the first time a contract uses it. */
 export const OPTIONAL_DATE_HELPER = `
 /**
  * Optional date: blank, null or missing all become null, so a form can send
  * "" for an empty date field. Anything else must be a valid date.
  */
-export const optionalDate = (error: string) =>
+export const optionalDate = (error: ContractMessageKey) =>
   z
     .preprocess(
       (value) => (value === '' || value == null ? null : value),
@@ -233,6 +236,8 @@ function syncEnums(step: (edit: (file: SourceFile) => void) => void, names: Reso
 function importHelpers(file: SourceFile) {
   const text = file.getFullText();
   for (const helper of COMMON_HELPERS) if (text.includes(`${helper}(`)) ensureNamedImport(file, './common.ts', helper);
+  // Message keys (see wiring/messages.ts).
+  if (/\bmsg\(/.test(text)) ensureNamedImport(file, './messages/index.ts', 'msg');
 }
 
 function syncInterface(

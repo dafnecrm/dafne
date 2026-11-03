@@ -1,3 +1,4 @@
+import { syncMessages } from '../wiring/messages.js';
 import * as p from '@clack/prompts';
 import { Command } from 'commander';
 import { readdirSync } from 'node:fs';
@@ -7,7 +8,7 @@ import { formatSource } from '../core/format.js';
 import { resourceNames, type ResourceNames } from '../core/names.js';
 import { findRoot } from '../core/workspace.js';
 import { contractFile } from '../generators/backend.js';
-import { childRoles, OPTIONAL_DATE_HELPER, syncChildContract, syncContract, type SyncReport } from '../sync/contract.js';
+import { childRoles, MESSAGE_KEY_IMPORT, OPTIONAL_DATE_HELPER, syncChildContract, syncContract, type SyncReport } from '../sync/contract.js';
 import { syncChildService, syncService } from '../sync/service.js';
 import { syncContractSpec, syncServiceSpec } from '../sync/service-spec.js';
 import { API_TAGS, foreignRelations, readTable, tablesIn, type TableInfo } from '../sync/table.js';
@@ -77,9 +78,13 @@ export async function syncOne(
   if (formatted !== source) changes.update(contractPath, () => formatted);
   if (formatted.includes('optionalDate(')) {
     const common = `${BACKEND}/libs/contracts/src/common.ts`;
-    changes.update(common, (text) =>
-      /export const optionalDate\b/.test(text) ? text : text.replace(/\n*$/, '\n') + OPTIONAL_DATE_HELPER,
-    );
+    changes.update(common, (text) => {
+      if (/export const optionalDate\b/.test(text)) return text;
+      // Its error is a message key.
+      if (!text.includes('ContractMessageKey'))
+        text = text.replace(/^(import [^\n]*\n)/, `$1${MESSAGE_KEY_IMPORT}\n`);
+      return text.replace(/\n*$/, '\n') + OPTIONAL_DATE_HELPER;
+    });
   }
   report.warnings.unshift(...info.warnings);
 
@@ -253,6 +258,10 @@ id, createdById/updatedById, deletedAt and server-filled columns
       }
 
       if (!changes.summary().length || options.dryRun) return p.outro(options.dryRun ? 'Dry run: nothing written.' : 'Done.');
+      {
+        const note = syncMessages(changes);
+        if (note) p.log.warn(note);
+      }
       await changes.commit();
       p.note(
         [
@@ -309,6 +318,10 @@ table changed.`,
 
       if (!changes.summary().length) return p.outro('Done: nothing to add.');
       if (options.dryRun) return p.outro('Dry run: nothing written.');
+      {
+        const note = syncMessages(changes);
+        if (note) p.log.warn(note);
+      }
       await changes.commit();
       p.note(
         ['Check the new inputs, columns and details: their place, labels and defaults.', 'cd frontend && npx tsc --noEmit'].join('\n'),
@@ -330,7 +343,7 @@ table changed.`,
       'after',
       `
 It reads <singular>BodySchema in backend/libs/contracts/src/<plural>.ts and
-edits frontend/app/(app)/<plural>/schema.ts and <singular>-form.tsx. A field
+edits frontend/app/[locale]/(app)/<plural>/schema.ts and <singular>-form.tsx. A field
 counts as present when the form has a <form.AppField name="…"> for it,
 wherever it is. For a field that must have no input, write in the form:
 
@@ -359,6 +372,10 @@ the column in the table:
       printFrontendReports(syncForm(changes, name));
       if (!changes.summary().length) return p.outro(`${name}: the form already has every field.`);
       if (options.dryRun) return p.outro('Dry run: nothing written.');
+      {
+        const note = syncMessages(changes);
+        if (note) p.log.warn(note);
+      }
       await changes.commit();
       p.note(
         [
@@ -373,7 +390,7 @@ the column in the table:
   for (const [command, description, files, run] of [
     [
       'table',
-      'Add the contract fields the table lacks: sort fields, filters, enum labels (lib/<plural>-table.ts) and columns (app/(app)/<plural>/<plural>-table.tsx)',
+      'Add the contract fields the table lacks: sort fields, filters, enum labels (lib/<plural>-table.ts) and columns (app/[locale]/(app)/<plural>/<plural>-table.tsx)',
       (n: ResourceNames) => [tableFiles(n).table, tableFiles(n).columns],
       syncTablePage,
     ],
@@ -416,7 +433,11 @@ To sync the form, table and detail page together, use dafne sync frontend <resou
         printFrontendReports(run(changes, name));
         if (!changes.summary().length) return p.outro(`${name}: the ${command} already has every field.`);
         if (options.dryRun) return p.outro('Dry run: nothing written.');
-        await changes.commit();
+        {
+        const note = syncMessages(changes);
+        if (note) p.log.warn(note);
+      }
+      await changes.commit();
         p.note(['Check the new entries: their place, labels and formatting.', 'cd frontend && npx tsc --noEmit'].join('\n'), 'Next steps');
         p.outro('Done.');
       });
@@ -467,7 +488,7 @@ export function printFrontendReports(reports: [string, FormReport][]) {
 
 /** The columns are in <plural>-table.tsx; older resources have a columns.tsx. */
 const tableFiles = ({ p }: ResourceNames, changes?: Changes) => {
-  const dir = `${FRONTEND}/app/(app)/${p.kebab}`;
+  const dir = `${FRONTEND}/app/[locale]/(app)/${p.kebab}`;
   const legacy = `${dir}/columns.tsx`;
   return {
     table: `${FRONTEND}/lib/${p.kebab}-table.ts`,
@@ -476,8 +497,8 @@ const tableFiles = ({ p }: ResourceNames, changes?: Changes) => {
 };
 /** The <singular>-detail component; older resources have it in [id]/page.tsx. */
 const detailFiles = ({ s, p }: ResourceNames) => ({
-  component: `${FRONTEND}/app/(app)/${p.kebab}/${s.kebab}-detail.tsx`,
-  page: `${FRONTEND}/app/(app)/${p.kebab}/[id]/page.tsx`,
+  component: `${FRONTEND}/app/[locale]/(app)/${p.kebab}/${s.kebab}-detail.tsx`,
+  page: `${FRONTEND}/app/[locale]/(app)/${p.kebab}/[id]/page.tsx`,
 });
 const detailFile = (names: ResourceNames, changes?: Changes) => {
   const { component, page } = detailFiles(names);
@@ -541,7 +562,7 @@ export function syncDetailPage(changes: Changes, name: string): [string, FormRep
 }
 
 const formFiles = ({ s, p }: ResourceNames) => {
-  const dir = `${FRONTEND}/app/(app)/${p.kebab}`;
+  const dir = `${FRONTEND}/app/[locale]/(app)/${p.kebab}`;
   return { schema: `${dir}/schema.ts`, form: `${dir}/${s.kebab}-form.tsx` };
 };
 
@@ -561,7 +582,7 @@ export function syncForm(changes: Changes, name: string): [string, FormReport][]
   const reports: [string, FormReport][] = [];
   for (const [path, sync] of [
     [files.schema, (source: string) => syncFormSchema(files.schema, source, names, fields, responseKeys)],
-    [files.form, (source: string) => syncFormComponent(files.form, source, fields)],
+    [files.form, (source: string) => syncFormComponent(files.form, source, fields, names)],
   ] as const) {
     const source = changes.read(path);
     if (source === undefined) throw new Error(`${path} not found: generate the form with "dafne g frontend form ${names.p.kebab}".`);

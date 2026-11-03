@@ -60,50 +60,54 @@ export function enumNames({ s }: ResourceNames, column: Column) {
   };
 }
 
-const label = (column: Column) => casings(words(column.key)).lower;
+/** A message key of the contracts' catalog, e.g. msg('invoices.name.required'). */
+const msgKey = (names: ResourceNames, column: Column, rule: 'required' | 'invalid') =>
+  `msg('${names.p.camel}.${column.key}.${rule}')`;
+const DATE_INVALID = "msg('common.date.invalid')";
+const NUMBER_INVALID = "msg('common.number.invalid')";
 
 /** Zod for the body: required, optional with a default, or nullable. */
 export function bodyZod(names: ResourceNames, column: Column): string {
   const required = column.notNull && !column.hasDefault;
   const optionalDefault = column.notNull && column.hasDefault;
-  const what = label(column);
+  const required_ = msgKey(names, column, 'required');
 
   if (column.kind === 'string' || column.kind === 'text') {
     const max = column.length ?? (column.kind === 'text' ? 65535 : 255);
-    if (required) return `requiredText(${max}, 'Enter the ${what}')`;
-    if (optionalDefault) return `requiredText(${max}, 'Enter the ${what}').optional()`;
+    if (required) return `requiredText(${max}, ${required_})`;
+    if (optionalDefault) return `requiredText(${max}, ${required_}).optional()`;
     return `optionalText(z.string().max(${max}))`;
   }
 
   // A form sends "" for an empty date: optionalDate turns it into null.
   if ((column.kind === 'datetime' || column.kind === 'date') && !column.stringMode && !required && !optionalDefault)
-    return `optionalDate('Enter a valid date')`;
+    return `optionalDate(${DATE_INVALID})`;
   if ((column.kind === 'datetime' || column.kind === 'date') && column.stringMode && !required && !optionalDefault)
-    return `optionalText(${column.kind === 'date' ? 'z.iso.date' : 'z.iso.datetime'}({ error: 'Enter a valid date' }))`;
+    return `optionalText(${column.kind === 'date' ? 'z.iso.date' : 'z.iso.datetime'}({ error: ${DATE_INVALID} }))`;
 
-  const base = baseZod(names, column, what);
+  const base = baseZod(names, column, required_);
   if (required) return base;
   if (optionalDefault) return `${base}.optional()`;
   // Blank, null or missing all become null, like optionalText.
   return `${base}.nullish().transform((value) => value ?? null)`;
 }
 
-function baseZod(names: ResourceNames, column: Column, what: string): string {
+function baseZod(names: ResourceNames, column: Column, required: string): string {
   switch (column.kind) {
     case 'int':
-      return `z.number({ error: 'Enter the ${what}' }).int()`;
+      return `z.number({ error: ${required} }).int()`;
     case 'float':
-      return `z.number({ error: 'Enter the ${what}' })`;
+      return `z.number({ error: ${required} })`;
     case 'decimal':
-      return `z.string().regex(/^-?\\d+(\\.\\d+)?$/, { error: 'Enter a number' })`;
+      return `z.string().regex(/^-?\\d+(\\.\\d+)?$/, { error: ${NUMBER_INVALID} })`;
     case 'boolean':
       return 'z.boolean()';
     case 'datetime':
-      return column.stringMode ? `z.iso.datetime({ error: 'Enter a valid date' })` : `z.coerce.date({ error: 'Enter a valid date' })`;
+      return column.stringMode ? `z.iso.datetime({ error: ${DATE_INVALID} })` : `z.coerce.date({ error: ${DATE_INVALID} })`;
     case 'date':
-      return column.stringMode ? `z.iso.date({ error: 'Enter a valid date' })` : `z.coerce.date({ error: 'Enter a valid date' })`;
+      return column.stringMode ? `z.iso.date({ error: ${DATE_INVALID} })` : `z.coerce.date({ error: ${DATE_INVALID} })`;
     case 'enum':
-      return `z.enum(${enumNames(names, column).constant}, { error: 'Choose the ${what}' })`;
+      return `z.enum(${enumNames(names, column).constant}, { error: ${required} })`;
     case 'json':
       return 'z.unknown()';
     default:

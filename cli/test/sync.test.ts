@@ -98,7 +98,7 @@ describe('syncContract', () => {
     );
     expect(content).not.toContain('testinternal');
     expect(content).toContain("export const ACTIVITY_TYPES = ['email', 'phone'] as const;");
-    expect(content).toContain("type: z.enum(ACTIVITY_TYPES, { error: 'Choose the type' })");
+    expect(content).toContain("type: z.enum(ACTIVITY_TYPES, { error: msg('activities.type.required') })");
     expect(content).toContain("['name', 'type', 'createdAt', 'updatedAt']");
     expect(content).toContain("['name', 'type'] as const");
     expect(content).toContain('type: z.enum(ACTIVITY_TYPES).optional()');
@@ -108,7 +108,7 @@ describe('syncContract', () => {
 
   it('keeps hand-written validation and drops columns that became internal', () => {
     const contract = render('backend/contract.ts', activity)
-      .replace("requiredText(255, 'Enter the name')", "requiredText(100, 'Name it')")
+      .replace("requiredText(255, msg('activities.name.required'))", "requiredText(100, 'Name it')")
       .replace("name: requiredText(100, 'Name it'),", "name: requiredText(100, 'Name it'),\n  code: optionalText(z.string().max(10)),");
     const { content, report } = sync(
       activityTable(`    /** @api internal */\n    code: varchar('code', { length: 10 }),`),

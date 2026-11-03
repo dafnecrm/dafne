@@ -2,6 +2,7 @@
 
 import { EllipsisVerticalIcon, PencilIcon, Trash2Icon } from "lucide-react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +17,7 @@ import { Delete<%= s.pascal %>Dialog, type <%= s.pascal %>Ref } from "./<%= s.ke
 /** Actions on the <%= s.lower %>'s page, in a menu. */
 export function <%= s.pascal %>DetailActions({ <%= s.camel %> }: { <%= s.camel %>: <%= s.pascal %>Ref }) {
   const [deleting, setDeleting] = useState(false);
+  const t = useTranslations();
   const href = `/<%= p.kebab %>/${encodeURIComponent(<%= s.camel %>.id)}`;
 
   return (
@@ -26,7 +28,7 @@ export function <%= s.pascal %>DetailActions({ <%= s.camel %> }: { <%= s.camel %
             <Button
               variant="outline"
               size="icon-sm"
-              aria-label={`Actions for ${<%= s.camel %>.name}`}
+              aria-label={t("common.actionsFor", { name: <%= s.camel %>.name })}
             />
           }
         >
@@ -35,7 +37,7 @@ export function <%= s.pascal %>DetailActions({ <%= s.camel %> }: { <%= s.camel %
         <DropdownMenuContent align="end">
           <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
             <PencilIcon />
-            Edit
+            {t("common.edit")}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
@@ -43,7 +45,7 @@ export function <%= s.pascal %>DetailActions({ <%= s.camel %> }: { <%= s.camel %
             onClick={() => setDeleting(true)}
           >
             <Trash2Icon />
-            Delete
+            {t("common.delete")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

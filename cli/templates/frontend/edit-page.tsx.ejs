@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import { BreadcrumbLabel } from "@/components/page-breadcrumb";
 import {
@@ -12,11 +13,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { <%= s.pascal %>Form } from "../../<%= s.kebab %>-form";
 import { load<%= s.pascal %> } from "../load-<%= s.kebab %>";
 
-export const metadata: Metadata = { title: "Edit <%= s.lower %>" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations();
+  return { title: t("<%= p.camel %>.editMeta") };
+}
 
 export default function Edit<%= s.pascal %>Page({
   params,
-}: PageProps<"/<%= p.kebab %>/[id]/edit">) {
+}: PageProps<"/[locale]/<%= p.kebab %>/[id]/edit">) {
   return (
     <Suspense fallback={<Skeleton className="h-96 w-full" />}>
       <Edit<%= s.pascal %> params={params} />
@@ -26,8 +30,9 @@ export default function Edit<%= s.pascal %>Page({
 
 async function Edit<%= s.pascal %>({
   params,
-}: Pick<PageProps<"/<%= p.kebab %>/[id]/edit">, "params">) {
+}: Pick<PageProps<"/[locale]/<%= p.kebab %>/[id]/edit">, "params">) {
   const <%= s.camel %> = await load<%= s.pascal %>((await params).id);
+  const t = await getTranslations();
 
   return (
     <PageContent>
@@ -36,9 +41,11 @@ async function Edit<%= s.pascal %>({
         label={<%= s.camel %>.name}
       />
       <PageContentHeader>
-        <PageContentTitle>Edit {<%= s.camel %>.name}</PageContentTitle>
+        <PageContentTitle>
+          {t("common.editTitle", { name: <%= s.camel %>.name })}
+        </PageContentTitle>
         <PageContentDescription>
-          Saving replaces the <%= s.lower %>&apos;s details.
+          {t("<%= p.camel %>.editDescription")}
         </PageContentDescription>
       </PageContentHeader>
       <PageContentBody>

@@ -63,7 +63,8 @@ TypeScript ESM, Node ≥ 22, pnpm. `pnpm dev g ...` runs from source (tsx),
 - `src/wiring/`: edits to existing files. `backend.ts` handles
   nest-cli.json, the tsconfig paths, ApiModule, the database schema, the
   contracts index and the lib's @Module/index. `frontend.ts` handles the
-  sidebar. Shared AST helpers are in `ast.ts`.
+  sidebar (nav titles are keys of the `nav` messages). `messages.ts`
+  fills the message catalogs. Shared AST helpers are in `ast.ts`.
 - `templates/backend`, `templates/frontend`: one `.ejs` per generated file.
 
 ## Rules
@@ -129,6 +130,19 @@ TypeScript ESM, Node ≥ 22, pnpm. `pnpm dev g ...` runs from source (tsx),
 - **Table files are always formatted** after a field edit
   (`Changes.update(..., { format: true })`), even when they weren't
   Prettier-clean before.
+- **Generated code holds message keys, never text** (English and
+  Italian). Frontend: `t("<plural>.fields.<key>")`, enum labels
+  `"<plural>.<field>.<value>"`, from a root `useTranslations()`. Contracts
+  and services: `msg('<plural>.<field>.required|invalid')`,
+  `msg('<plural>.notFound')`. Before every commit, `syncMessages`
+  (`wiring/messages.ts`) adds the keys the run's files use to
+  `frontend/messages/*.json` and `contracts/src/messages/*.ts`, with an
+  English text derived from the key (`resourceMessages` seeds a new
+  resource's titles). Italian gets the English text and a warning. Hooks
+  for options (`useOptionLabels`) go after the component's
+  `const t = useTranslations()` (`ensureHookLine`), not in render props.
+- **Pages live under `frontend/app/[locale]/(app)/`** (the locale is a
+  hidden root segment), so route types are `PageProps<"/[locale]/…">`.
 - **`frontend` and `backend` are fixed folder names** under the root
   (`BACKEND`/`FRONTEND` constants).
 

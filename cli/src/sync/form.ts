@@ -1,6 +1,6 @@
 import { Node, type SourceFile, SyntaxKind } from 'ts-morph';
 import { casings, words, type ResourceNames } from '../core/names.js';
-import { appendToList, editSource, ensureNamedImport } from '../wiring/ast.js';
+import { appendToList, editSource, ensureHookLine, ensureNamedImport } from '../wiring/ast.js';
 import type { TableInfo } from './table.js';
 
 /*
@@ -215,12 +215,14 @@ export function syncFormSchema(
     step((file) => {
       const name = optionsName(f);
       if (file.getVariableDeclaration(name)) return;
-      const options = f.values!.map((v) => `{ value: "${v}", label: "${casings(words(v)).title}" }`).join(',\n  ');
-      const code = `export const ${name} = [\n  ${options},\n] satisfies { value: ${f.enumType}; label: string }[];\n\n`;
+      // Labels are message keys, translated by the form (useOptionLabels).
+      const options = f.values!.map((v) => `{ value: "${v}", label: "${names.p.camel}.${f.key}.${v}" }`).join(',\n  ');
+      const code = `export const ${name} = [\n  ${options},\n] satisfies { value: ${f.enumType}; label: MessageKey }[];\n\n`;
       const opts = formOptsNode(file, s.camel);
       const statement = opts?.getFirstAncestor((a) => a.getParent() === file) ?? opts;
       file.insertText(statement ? statement.getStart(true) : file.getEnd(), code);
       ensureNamedImport(file, '@backend/contracts', f.enumType!, { typeOnly: true });
+      ensureNamedImport(file, '@/i18n/keys', 'MessageKey', { typeOnly: true });
       report.added.push(name);
     });
   }
@@ -261,31 +263,34 @@ function freshDefaults(file: SourceFile, singular: string) {
   return Node.isObjectLiteralExpression(values) ? values : values.getFirstDescendantByKindOrThrow(SyntaxKind.ObjectLiteralExpression);
 }
 
-/** The JSX of a new field. */
-function fieldJsx(f: FormField): string {
-  const label = f.label;
+/** The translated options of an enum field, made at the top of the form. */
+const optionsVar = (f: FormField) => `${casings(words(f.key)).camel}Options`;
+
+/** The JSX of a new field; `ns` is the resource's messages (`invoices`). */
+function fieldJsx(f: FormField, ns: string): string {
+  const label = `{t("${ns}.fields.${f.key}")}`;
   const component = (() => {
     switch (f.kind) {
       case 'enum':
-        return `<field.SelectField label="${label}" options={${optionsName(f)}} />`;
+        return `<field.SelectField label=${label} options={${optionsVar(f)}} />`;
       case 'boolean':
-        return `<field.CheckboxField label="${label}" />`;
+        return `<field.CheckboxField label=${label} />`;
       case 'number':
-        return `<field.NumberField label="${label}" />`;
+        return `<field.NumberField label=${label} />`;
       case 'decimal':
-        return `<field.TextField label="${label}" inputMode="decimal" autoComplete="off" />`;
+        return `<field.TextField label=${label} inputMode="decimal" autoComplete="off" />`;
       case 'email':
-        return `<field.TextField label="${label}" type="email" autoComplete="off" />`;
+        return `<field.TextField label=${label} type="email" autoComplete="off" />`;
       case 'date':
-        return `<field.DatePickerField label="${label}" />`;
+        return `<field.DatePickerField label=${label} />`;
       case 'datetime':
-        return `<field.DateTimePickerField label="${label}" />`;
+        return `<field.DateTimePickerField label=${label} />`;
       case 'textarea':
-        return `<field.TextareaField label="${label}" />`;
+        return `<field.TextareaField label=${label} />`;
       case 'editor':
-        return `<field.TextEditorField label="${label}" />`;
+        return `<field.TextEditorField label=${label} />`;
       default:
-        return `<field.TextField label="${label}" autoComplete="off" />`;
+        return `<field.TextField label=${label} autoComplete="off" />`;
     }
   })();
   return `<form.AppField name="${f.key}">\n  {(field) => ${component}}\n</form.AppField>`;
@@ -296,7 +301,12 @@ function fieldJsx(f: FormField): string {
  * after the last one, unless a `{/* dafne-ignore: key *\/}` comment says
  * the field has no input on purpose.
  */
-export function syncFormComponent(path: string, source: string, fields: FormField[]): { content: string; report: FormReport } {
+export function syncFormComponent(
+  path: string,
+  source: string,
+  fields: FormField[],
+  names: ResourceNames,
+): { content: string; report: FormReport } {
   const report = newReport();
   const ignored = new Set(
     [...source.matchAll(/dafne-ignore:\s*([\w\s,]+?)\s*\*\//g)].flatMap((m) => m[1].split(/[\s,]+/).filter(Boolean)),
@@ -330,8 +340,12 @@ export function syncFormComponent(path: string, source: string, fields: FormFiel
       const text = file.getFullText();
       const lineStart = text.lastIndexOf('\n', last.getStart() - 1) + 1;
       const indent = /^[ \t]*/.exec(text.slice(lineStart))![0];
-      file.insertText(last.getEnd(), `\n${indent}${fieldJsx(f).replace(/\n/g, `\n${indent}`)}`);
-      if (f.kind === 'enum') ensureNamedImport(file, './schema', optionsName(f));
+      file.insertText(last.getEnd(), `\n${indent}${fieldJsx(f, names.p.camel).replace(/\n/g, `\n${indent}`)}`);
+      if (f.kind === 'enum') {
+        ensureNamedImport(file, './schema', optionsName(f));
+        if (ensureHookLine(file, `const ${optionsVar(f)} = useOptionLabels(${optionsName(f)});`))
+          ensureNamedImport(file, '@/i18n/options', 'useOptionLabels');
+      }
       report.added.push(`<form.AppField name="${f.key}">`);
     }
   });

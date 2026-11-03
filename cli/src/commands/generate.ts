@@ -1,3 +1,4 @@
+import { resourceMessages, syncMessages } from '../wiring/messages.js';
 import * as p from '@clack/prompts';
 import { Command, Option } from 'commander';
 import { Changes } from '../core/changes.js';
@@ -40,7 +41,7 @@ interface FrontendOptions {
 type Target = 'fullstack' | 'backend' | 'frontend';
 
 const FRONTEND_EXTRA = {
-  page: 'Blank page at app/(app)/<route>/page.tsx',
+  page: 'Blank page at app/[locale]/(app)/<route>/page.tsx',
   component: 'Component at components/<name>.tsx',
 };
 
@@ -182,6 +183,14 @@ export async function generateResource(
   const frontendDeps = generatePieces(frontendPieces, requested.frontend, ctx);
   if (fields.length && [...requested.frontend, ...frontendDeps].some((piece) => piece !== 'nav'))
     printFrontendReports(syncFrontend(changes, names.p.kebab).reports.map(([path, report]) => [path, { ...report, added: [] }]));
+
+  // The texts of the keys the new files use, in every language's catalog.
+  const seed = resourceMessages(names);
+  const pages = [...requested.frontend, ...frontendDeps].some((piece) => piece !== 'nav');
+  syncMessages(changes, {
+    frontend: pages ? seed.frontend : undefined,
+    contracts: [...requested.backend, ...backendDeps].length ? seed.contracts : undefined,
+  });
 
   return {
     dependencies: [

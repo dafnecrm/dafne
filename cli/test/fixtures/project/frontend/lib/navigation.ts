@@ -1,3 +1,4 @@
+import type { Messages } from "next-intl";
 import {
   ContactIcon,
   HouseIcon,
@@ -6,15 +7,18 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+/** A title: a key of the `nav` messages, translated where it's shown. */
+export type NavTitle = keyof Messages["nav"];
+
 export interface NavItem {
-  title: string;
+  title: NavTitle;
   href: string;
   /** Shown when the sidebar is minimized to a rail. */
   icon: LucideIcon;
 }
 
 export interface NavSection {
-  title: string;
+  title: NavTitle;
   /** Where the section title links to (usually its first page). */
   href: string;
   items: NavItem[];
@@ -25,25 +29,25 @@ export interface NavSection {
 /** Sidebar navigation: sections with their pages. */
 export const NAV_SECTIONS: NavSection[] = [
   {
-    title: "Home",
+    title: "home",
     href: "/",
-    items: [{ title: "Dashboard", href: "/", icon: HouseIcon }],
+    items: [{ title: "dashboard", href: "/", icon: HouseIcon }],
   },
   {
-    title: "CRM",
+    title: "crm",
     href: "/customers",
-    items: [{ title: "Customers", href: "/customers", icon: ContactIcon }],
+    items: [{ title: "customers", href: "/customers", icon: ContactIcon }],
   },
   {
-    title: "Admin",
+    title: "admin",
     href: "/users",
     adminOnly: true,
-    items: [{ title: "Users", href: "/users", icon: UsersIcon }],
+    items: [{ title: "users", href: "/users", icon: UsersIcon }],
   },
   {
-    title: "Account",
+    title: "account",
     href: "/account",
-    items: [{ title: "Account", href: "/account", icon: UserIcon }],
+    items: [{ title: "account", href: "/account", icon: UserIcon }],
   },
 ];
 

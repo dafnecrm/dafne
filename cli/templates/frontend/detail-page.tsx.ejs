@@ -1,6 +1,7 @@
 import { ArrowLeftIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import { BreadcrumbLabel } from "@/components/page-breadcrumb";
 import {
@@ -16,9 +17,12 @@ import { <%= s.pascal %>DetailActions } from "../<%= s.kebab %>-detail-actions";
 import { <%= s.pascal %>Details } from "../<%= s.kebab %>-detail";
 import { load<%= s.pascal %> } from "./load-<%= s.kebab %>";
 
-export const metadata: Metadata = { title: "<%= s.title %>" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations();
+  return { title: t("<%= p.camel %>.singular") };
+}
 
-export default function <%= s.pascal %>Page({ params }: PageProps<"/<%= p.kebab %>/[id]">) {
+export default function <%= s.pascal %>Page({ params }: PageProps<"/[locale]/<%= p.kebab %>/[id]">) {
   return (
     <Suspense fallback={<Skeleton className="h-96 w-full" />}>
       <<%= s.pascal %>Profile params={params} />
@@ -29,8 +33,9 @@ export default function <%= s.pascal %>Page({ params }: PageProps<"/<%= p.kebab 
 /** Loads the <%= s.lower %>: its name and actions, then its details. */
 async function <%= s.pascal %>Profile({
   params,
-}: Pick<PageProps<"/<%= p.kebab %>/[id]">, "params">) {
+}: Pick<PageProps<"/[locale]/<%= p.kebab %>/[id]">, "params">) {
   const <%= s.camel %> = await load<%= s.pascal %>((await params).id);
+  const t = await getTranslations();
 
   return (
     <PageContent>
@@ -48,7 +53,7 @@ async function <%= s.pascal %>Profile({
             render={<Link href="/<%= p.kebab %>" />}
           >
             <ArrowLeftIcon data-icon="inline-start" />
-            All <%= p.lower %>
+            {t("<%= p.camel %>.all")}
           </Button>
           <<%= s.pascal %>DetailActions <%= s.camel %>={<%= s.camel %>} />
         </PageContentAction>

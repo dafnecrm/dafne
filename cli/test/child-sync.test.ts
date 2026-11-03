@@ -50,7 +50,7 @@ describe('child tables (customer addresses)', () => {
     const content = contract.content;
     expect(content).toContain("export const CUSTOMER_ADDRESS_TYPES = ['head_office', 'shipping', 'billing'] as const;");
     expect(content).toContain('export type CustomerAddressType = (typeof CUSTOMER_ADDRESS_TYPES)[number];');
-    expect(content).toMatch(/type: z\.enum\(CUSTOMER_ADDRESS_TYPES, \{ error: 'Choose the type' \}\)\s*\.nullish\(\)/);
+    expect(content).toMatch(/type: z\.enum\(CUSTOMER_ADDRESS_TYPES, \{ error: msg\('customerAddresses.type.required'\) \}\)\s*\.nullish\(\)/);
     expect(content).toMatch(/interface CustomerAddress \{[^}]*type: CustomerAddressType \| null;/);
     // label isn't a column any more, but the CLI can't tell a rename from hand-written code.
     expect(contract.report.unknown).toEqual(['customerAddressBodySchema: label', 'CustomerAddress: label']);
@@ -66,13 +66,13 @@ describe('child tables (customer addresses)', () => {
     const before = sync(nullable).contract.content;
     const notNull = readTable('customers.ts', TABLE.replace(LABEL, TYPE.replace('),', ').notNull(),')), address);
     const { content, report } = syncChildContract('customers.ts', before, address, notNull, 'customer');
-    expect(content).toMatch(/type: z\.enum\(CUSTOMER_ADDRESS_TYPES, \{ error: 'Choose the type' \}\),/);
+    expect(content).toMatch(/type: z\.enum\(CUSTOMER_ADDRESS_TYPES, \{ error: msg\('customerAddresses.type.required'\) \}\),/);
     expect(content).toMatch(/interface CustomerAddress \{[^}]*type: CustomerAddressType;/);
     expect(report.required).toEqual(['customerAddress.type']);
     expect(report.warnings.join()).toMatch(/type was generated again because its column is now NOT NULL/);
 
     const back = syncChildContract('customers.ts', content, address, readTable('customers.ts', nullable, address), 'customer');
-    expect(back.content).toMatch(/type: z\.enum\(CUSTOMER_ADDRESS_TYPES, \{ error: 'Choose the type' \}\)\.nullish\(\)/);
+    expect(back.content).toMatch(/type: z\.enum\(CUSTOMER_ADDRESS_TYPES, \{ error: msg\('customerAddresses.type.required'\) \}\)\.nullish\(\)/);
     expect(back.content).toMatch(/interface CustomerAddress \{[^}]*type: CustomerAddressType \| null;/);
   });
 

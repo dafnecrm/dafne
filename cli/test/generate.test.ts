@@ -54,9 +54,9 @@ describe('a fullstack resource', () => {
         'backend/libs/contracts/src/invoices.ts',
         'backend/libs/database/src/tables/invoices.ts',
         'frontend/lib/invoices-table.ts',
-        'frontend/app/(app)/invoices/[id]/edit/page.tsx',
-        'frontend/app/(app)/invoices/invoice-form.tsx',
-        'frontend/app/(app)/invoices/invoice-detail.tsx',
+        'frontend/app/[locale]/(app)/invoices/[id]/edit/page.tsx',
+        'frontend/app/[locale]/(app)/invoices/invoice-form.tsx',
+        'frontend/app/[locale]/(app)/invoices/invoice-detail.tsx',
       ]),
     );
     expect(read('backend/libs/invoices/src/invoices.controller.ts')).toContain(
@@ -90,7 +90,10 @@ describe('a fullstack resource', () => {
     );
     const nav = read('frontend/lib/navigation.ts');
     expect(nav).toContain('  FileIcon,\n  type LucideIcon,');
-    expect(nav).toContain('{ title: "Invoices", href: "/invoices", icon: FileIcon }');
+    // Titles are keys of the `nav` messages, whose texts are added too.
+    expect(nav).toContain('{ title: "invoices", href: "/invoices", icon: FileIcon }');
+    expect(JSON.parse(read('frontend/messages/en.json')).nav.invoices).toBe('Invoices');
+    expect(JSON.parse(read('frontend/messages/it.json')).nav.invoices).toBe('Invoices');
   });
 
   it('refuses to overwrite, unless forced', async () => {
@@ -145,8 +148,9 @@ describe('single pieces', () => {
     generatePieces(frontendPieces, ['nav'], c);
     await c.changes.commit();
     const nav = read('frontend/lib/navigation.ts');
-    expect(nav.indexOf('title: "Insights"')).toBeLessThan(nav.indexOf('title: "Admin"'));
-    expect(nav).toContain('items: [{ title: "Reports", href: "/reports", icon: ChartBarIcon }]');
+    expect(nav.indexOf('title: "insights"')).toBeLessThan(nav.indexOf('title: "admin"'));
+    expect(nav).toContain('items: [{ title: "reports", href: "/reports", icon: ChartBarIcon }]');
+    expect(JSON.parse(read('frontend/messages/en.json')).nav).toMatchObject({ insights: 'Insights', reports: 'Reports' });
   });
 
   it('only creates files with --skip-wiring', () => {
@@ -159,10 +163,10 @@ describe('single pieces', () => {
   it('generates a blank page at a route', async () => {
     const changes = new Changes(root);
     expect(generatePage(changes, 'reports/monthly')).toBe(
-      'frontend/app/(app)/reports/monthly/page.tsx',
+      'frontend/app/[locale]/(app)/reports/monthly/page.tsx',
     );
     await changes.commit();
-    expect(read('frontend/app/(app)/reports/monthly/page.tsx')).toContain(
+    expect(read('frontend/app/[locale]/(app)/reports/monthly/page.tsx')).toContain(
       'export default function MonthlyPage()',
     );
     expect(() => generatePage(new Changes(root), 'Bad Route')).toThrow();

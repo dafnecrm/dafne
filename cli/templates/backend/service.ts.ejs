@@ -9,6 +9,7 @@ import {
   type <%= s.pascal %>Detail,
   type <%= p.pascal %>List,
   type List<%= p.pascal %>Query,
+  msg,
 } from '@app/contracts';
 
 export const DEFAULT_PAGE_SIZE = 20;
@@ -76,7 +77,7 @@ export class <%= p.pascal %>Service {
       columns: { createdById: false, updatedById: false },
       with: { createdBy: userSummary, updatedBy: userSummary },
     });
-    if (!found) throw new NotFoundException('<%= s.title %> not found');
+    if (!found) throw new NotFoundException(msg('<%= p.camel %>.notFound'));
     return found;
   }
 
@@ -116,7 +117,7 @@ export class <%= p.pascal %>Service {
       })
       .where(and(eq(<%= s.camel %>.id, id), notDeleted));
     if (result.affectedRows === 0)
-      throw new NotFoundException('<%= s.title %> not found');
+      throw new NotFoundException(msg('<%= p.camel %>.notFound'));
     return this.get<%= s.pascal %>(id);
   }
 
@@ -131,6 +132,6 @@ export class <%= p.pascal %>Service {
       .set({ deletedAt: now, updatedAt: now, updatedById: userId })
       .where(and(eq(<%= s.camel %>.id, id), notDeleted));
     if (result.affectedRows === 0)
-      throw new NotFoundException('<%= s.title %> not found');
+      throw new NotFoundException(msg('<%= p.camel %>.notFound'));
   }
 }

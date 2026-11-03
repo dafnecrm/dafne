@@ -10,7 +10,7 @@ import { generatePieces } from '../src/generators/pieces.js';
 
 const FIXTURE = join(import.meta.dirname, 'fixtures', 'project');
 const TABLE = 'backend/libs/database/src/tables/invoices.ts';
-const DIR = 'frontend/app/(app)/invoices';
+const DIR = 'frontend/app/[locale]/(app)/invoices';
 let root: string;
 const read = (path: string) => readFileSync(join(root, path), 'utf8');
 

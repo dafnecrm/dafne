@@ -1,13 +1,15 @@
 import { Node, type ObjectLiteralExpression, type SourceFile, SyntaxKind } from 'ts-morph';
 import type { ResourceNames } from '../core/names.js';
-import { appendToList, editSource, ensureNamedImport, insertListElement } from '../wiring/ast.js';
+import { appendToList, editSource, ensureHookLine, ensureNamedImport, insertListElement } from '../wiring/ast.js';
 import type { FormReport as Report } from './form.js';
 import { enumOptionsName, ignoredKeys, optionLabel, type ResponseField, type ResponseInfo } from './response.js';
 
 /*
  * `sync frontend table`: adds what the contract has and the table lacks, in
  * lib/<plural>-table.ts (sort fields, filters, enum labels) and in
- * app/(app)/<plural>/columns.tsx (columns). Nothing that's there changes.
+ * app/[locale]/(app)/<plural>/<plural>-table.tsx (columns). Nothing that's there
+ * changes. Labels are message keys (`<plural>.fields.<key>`), whose texts
+ * syncMessages adds to the catalogs.
  */
 
 const newReport = (): Report => ({ added: [], stale: [], warnings: [] });
@@ -15,17 +17,18 @@ const newReport = (): Report => ({ added: [], stale: [], warnings: [] });
 /** Never added as columns: the id is in the link, the update date on the detail page. */
 const NO_COLUMN = new Set(['id', 'updatedAt']);
 
-/** The `{ value, label }` list of an enum, shared by filters, columns and the detail page. */
+/** The `{ value, label }` list of an enum, shared by filters, columns and the detail page; labels are message keys. */
 export function ensureEnumOptions(file: SourceFile, names: ResourceNames, field: ResponseField, before: string, report: Report) {
   const name = enumOptionsName(names, field);
   if (file.getVariableDeclaration(name)) return;
-  const options = field.values!.map((v) => `{ value: "${v}", label: "${optionLabel(v)}" }`).join(',\n  ');
+  const options = field.values!.map((v) => `{ value: "${v}", label: "${names.p.camel}.${field.key}.${v}" }`).join(',\n  ');
   const statement = file.getVariableStatement(before);
   file.insertText(
     statement ? statement.getStart(true) : file.getEnd(),
-    `/** Labels of the ${field.label.toLowerCase()} values. */\nexport const ${name} = [\n  ${options},\n] satisfies { value: ${field.enumType}; label: string }[];\n\n`,
+    `/** Labels (message keys) of the ${field.label.toLowerCase()} values. */\nexport const ${name} = [\n  ${options},\n] satisfies { value: ${field.enumType}; label: MessageKey }[];\n\n`,
   );
   ensureNamedImport(file, '@backend/contracts', field.enumType!, { typeOnly: true });
+  ensureNamedImport(file, '@/i18n/keys', 'MessageKey', { typeOnly: true });
   report.added.push(name);
 }
 
@@ -102,11 +105,11 @@ export function syncTableConfig(path: string, source: string, names: ResourceNam
     for (const key of present) if (!info.filterFields.includes(key)) report.stale.push(`filters: ${key}`);
     for (const key of info.filterFields.filter((k) => !present.includes(k) && !ignored.has(k))) {
       const field = byKey.get(key);
-      const label = field?.label ?? key;
-      const parts = [`field: "${key}" satisfies ${s.pascal}FilterField`, `label: "${label}"`];
-      if (field?.kind === 'enum') parts.push(`placeholder: "Any ${label.toLowerCase()}"`, `options: ${enumOptionsName(names, field)}`);
+      // A message key; the filter shows "Any <label>" when empty.
+      const parts = [`field: "${key}" satisfies ${s.pascal}FilterField`, `label: "${names.p.camel}.fields.${key}"`];
+      if (field?.kind === 'enum') parts.push(`options: ${enumOptionsName(names, field)}`);
       if (field?.kind === 'boolean')
-        parts.push(`placeholder: "Any"`, `options: [{ value: "true", label: "Yes" }, { value: "false", label: "No" }]`);
+        parts.push(`options: [{ value: "true", label: "common.yes" }, { value: "false", label: "common.no" }]`);
       const fresh = arrayOf(tableConfig(file, variable)!, 'filters')!;
       appendToList(file, fresh, fresh.getElements(), `{ ${parts.join(', ')} }`);
       report.added.push(`filters: ${key}`);
@@ -121,7 +124,7 @@ export function syncTableConfig(path: string, source: string, names: ResourceNam
 /** The cell of a column, by kind. */
 function columnCode(names: ResourceNames, field: ResponseField, sortable: boolean): { code: string; imports: [string, string][] } {
   const imports: [string, string][] = [];
-  const options: string[] = [`header: "${field.label}"`];
+  const options: string[] = [`header: t("${names.p.camel}.fields.${field.key}")`];
   if (field.kind === 'number') options.push('meta: { className: "text-right" }');
   if (!sortable) options.push('enableSorting: false');
   const dash = '"—"';
@@ -129,14 +132,14 @@ function columnCode(names: ResourceNames, field: ResponseField, sortable: boolea
     case 'boolean':
       options.push(
         field.optional
-          ? `cell: (info) => (info.getValue() === null ? ${dash} : info.getValue() ? "Yes" : "No")`
-          : `cell: (info) => (info.getValue() ? "Yes" : "No")`,
+          ? `cell: (info) => (info.getValue() === null ? ${dash} : t(info.getValue() ? "common.yes" : "common.no"))`
+          : `cell: (info) => t(info.getValue() ? "common.yes" : "common.no")`,
       );
       break;
     case 'enum': {
       const name = enumOptionsName(names, field);
       imports.push([`@/lib/${names.p.kebab}-table`, name]);
-      options.push(`cell: (info) => ${name}.find((o) => o.value === info.getValue())?.label ?? ${dash}`);
+      options.push(`cell: (info) => optionLabel(${name}, info.getValue())`);
       break;
     }
     case 'date':
@@ -192,6 +195,8 @@ export function syncColumns(path: string, source: string, names: ResourceNames, 
       else if (at === 0) file.insertText(elements[0].getStart(), `${code},\n  `);
       else appendToList(file, fresh, elements, code);
       for (const [module, name] of imports) ensureNamedImport(file, module, name);
+      if (field.kind === 'enum' && ensureHookLine(file, 'const optionLabel = useOptionLabel();'))
+        ensureNamedImport(file, '@/i18n/options', 'useOptionLabel');
       report.added.push(`column ${field.key}`);
     }
   });

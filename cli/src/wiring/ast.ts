@@ -235,3 +235,18 @@ export function removeUnusedImports(file: SourceFile, module: (specifier: string
     } else removeListElement(file, named, unused.n);
   }
 }
+
+/**
+ * Adds a hook call (e.g. `const optionLabel = useOptionLabel();`) to the
+ * component that translates, after its `const t = useTranslations(…);`,
+ * unless the file already has it. Hooks can't go in the JSX's callbacks
+ * (TanStack's render props), so options and helpers are made here.
+ */
+export function ensureHookLine(file: SourceFile, line: string): boolean {
+  const text = file.getFullText();
+  if (text.includes(line)) return true;
+  const t = /\n([ \t]*)const t = (?:await get|use)Translations\([^)]*\);?\n/.exec(text);
+  if (!t) return false;
+  file.insertText(t.index + t[0].length, `${t[1]}${line}\n`);
+  return true;
+}

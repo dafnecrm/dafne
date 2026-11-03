@@ -19,7 +19,7 @@ dafne g resource invoice              # backend + frontend
 dafne g resource invoice --backend    # or --frontend
 dafne g backend <piece> invoice       # contract | table | lib (module) | service | controller
 dafne g frontend <piece> invoice      # data | actions | table | detail | form | nav
-dafne g frontend page reports/monthly # blank page at app/(app)/reports/monthly
+dafne g frontend page reports/monthly # blank page at app/[locale]/(app)/reports/monthly
 dafne g frontend component status-badge --client [--dir components]
 ```
 
@@ -65,7 +65,7 @@ Backend:
 
 Frontend:
 - `lib/<plural>.ts` and `lib/<plural>-table.ts`.
-- `app/(app)/<plural>/`: list, detail, new and edit pages, table
+- `app/[locale]/(app)/<plural>/`: list, detail, new and edit pages, table
   (`<plural>-table.tsx`: table and columns), the action menus
   (`<singular>-table-actions.tsx` for the rows,
   `<singular>-detail-actions.tsx` for the detail page, each with its own
@@ -232,7 +232,7 @@ dafne sync frontend form activities     # --dry-run to preview
 ```
 
 It adds the contract body fields that a form lacks, in
-`frontend/app/(app)/<plural>/`. It never changes what's already there.
+`frontend/app/[locale]/(app)/<plural>/`. It never changes what's already there.
 - **`schema.ts`:**
   - the values type: enums, booleans and numbers get their own type, e.g.
     `Record<Exclude<keyof ActivityBody, "type">, string> & { type: ActivityType }`;
@@ -277,7 +277,7 @@ whose field left the contract are reported, not removed.
     (enum and boolean ones as pick-lists);
   - enum labels (`ACTIVITY_TYPE_OPTIONS`), shared with the columns and the
     detail page;
-  - in `app/(app)/<plural>/<plural>-table.tsx` (table and columns): a
+  - in `app/[locale]/(app)/<plural>/<plural>-table.tsx` (table and columns): a
     column per listed field, before "Added". `id`,
     `updatedAt` and foreign key ids are never added. Fields that aren't
     sortable get `enableSorting: false`.

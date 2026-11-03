@@ -1,6 +1,6 @@
 import { Node, type SourceFile, SyntaxKind } from 'ts-morph';
 import type { ResourceNames } from '../core/names.js';
-import { editSource, ensureNamedImport } from '../wiring/ast.js';
+import { editSource, ensureHookLine, ensureNamedImport } from '../wiring/ast.js';
 import type { FormReport as Report } from './form.js';
 import { enumOptionsName, ignoredKeys, type ResponseField, type ResponseInfo } from './response.js';
 
@@ -8,7 +8,8 @@ import { enumOptionsName, ignoredKeys, type ResponseField, type ResponseInfo } f
  * `sync frontend detail`: a <Detail> for each response field the detail page
  * doesn't show, in its "Details" section (created before "Record" if
  * missing). A field counts as shown when the page reads `<record>.<field>`
- * anywhere. Nothing that's there changes.
+ * anywhere. Nothing that's there changes. Labels are message keys
+ * (`<plural>.fields.<key>`), translated with the page's `t`.
  */
 
 /** Shown by the generated "Record" section, or never shown. */
@@ -26,6 +27,7 @@ const ICONS: Record<ResponseField['kind'], string> = {
 
 function detailCode(names: ResourceNames, record: string, field: ResponseField): { code: string; imports: [string, string][] } {
   const value = `${record}.${field.key}`;
+  const label = `{t("${names.p.camel}.fields.${field.key}")}`;
   const imports: [string, string][] = [['lucide-react', ICONS[field.kind]]];
   let body: string;
   if (field.richText) {
@@ -34,18 +36,20 @@ function detailCode(names: ResourceNames, record: string, field: ResponseField):
     const html = `<TextEditorContent html={${value}} className="font-normal" />`;
     body = field.optional ? `{${value} ? ${html} : "—"}` : html;
     return {
-      code: `<Detail icon={${ICONS[field.kind]}} label="${field.label}" wide>\n  ${body}\n</Detail>`,
+      code: `<Detail icon={${ICONS[field.kind]}} label=${label} wide>\n  ${body}\n</Detail>`,
       imports,
     };
   }
   switch (field.kind) {
     case 'boolean':
-      body = field.optional ? `{${value} === null ? "—" : ${value} ? "Yes" : "No"}` : `{${value} ? "Yes" : "No"}`;
+      body = field.optional
+        ? `{${value} === null ? "—" : t(${value} ? "common.yes" : "common.no")}`
+        : `{t(${value} ? "common.yes" : "common.no")}`;
       break;
     case 'enum': {
       const name = enumOptionsName(names, field);
       imports.push([`@/lib/${names.p.kebab}-table`, name]);
-      body = `{${name}.find((o) => o.value === ${value})?.label ?? "—"}`;
+      body = `{optionLabel(${name}, ${value})}`;
       break;
     }
     case 'date':
@@ -63,14 +67,19 @@ function detailCode(names: ResourceNames, record: string, field: ResponseField):
     default:
       body = field.optional ? `{${value} ?? "—"}` : `{${value}}`;
   }
-  return { code: `<Detail icon={${ICONS[field.kind]}} label="${field.label}">\n  ${body}\n</Detail>`, imports };
+  return { code: `<Detail icon={${ICONS[field.kind]}} label=${label}>\n  ${body}\n</Detail>`, imports };
 }
 
+/** "Details" or "Record": a section's title, as text or as its message key. */
 const titleOf = (e: Node) => {
   if (!Node.isJsxElement(e)) return undefined;
   const attr = e.getOpeningElement().getAttribute('title');
   const init = attr && Node.isJsxAttribute(attr) ? attr.getInitializer() : undefined;
-  return init && Node.isStringLiteral(init) ? init.getLiteralValue() : undefined;
+  if (init && Node.isStringLiteral(init)) return init.getLiteralValue();
+  const key = init && /\bt\(\s*"([^"]+)"/.exec(init.getText())?.[1];
+  if (key?.endsWith('.sections.details')) return 'Details';
+  if (key === 'common.record.title') return 'Record';
+  return undefined;
 };
 
 const sections = (file: SourceFile) =>
@@ -120,10 +129,12 @@ export function syncDetail(
           continue;
         }
         const indent = indentAt(file, anchor.getStart());
-        const section = `<DetailSection title="Details">\n  ${code.replace(/\n/g, '\n  ')}\n</DetailSection>`;
+        const section = `<DetailSection title={t("${names.p.camel}.sections.details")}>\n  ${code.replace(/\n/g, '\n  ')}\n</DetailSection>`;
         file.insertText(anchor.getStart(), `${section.replace(/\n/g, `\n${indent}`)}\n${indent}`);
       }
       for (const [module, name] of imports) ensureNamedImport(file, module, name);
+      if (field.kind === 'enum' && ensureHookLine(file, 'const optionLabel = useOptionLabel();'))
+        ensureNamedImport(file, '@/i18n/options', 'useOptionLabel');
       report.added.push(`<Detail> ${field.key}`);
     }
   });

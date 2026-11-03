@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import {
   PageContent,
   PageContentBody,
@@ -8,14 +10,18 @@ import {
 } from "@/components/page-content";
 import { <%= s.pascal %>Form } from "../<%= s.kebab %>-form";
 
-export const metadata: Metadata = { title: "New <%= s.lower %>" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations();
+  return { title: t("<%= p.camel %>.new") };
+}
 
 export default function New<%= s.pascal %>Page() {
+  const t = useTranslations();
   return (
     <PageContent>
       <PageContentHeader>
-        <PageContentTitle>New <%= s.lower %></PageContentTitle>
-        <PageContentDescription>Only the name is required.</PageContentDescription>
+        <PageContentTitle>{t("<%= p.camel %>.new")}</PageContentTitle>
+        <PageContentDescription>{t("<%= p.camel %>.newDescription")}</PageContentDescription>
       </PageContentHeader>
       <PageContentBody>
         <<%= s.pascal %>Form />

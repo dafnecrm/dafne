@@ -56,7 +56,7 @@ describe('syncFormSchema', () => {
     expect(content).toContain('name: activity?.name ?? "Untitled"');
     expect(content).toMatch(/Record<Exclude<keyof ActivityBody, "type" \| "priority" \| "budget" \| "done">, string> & \{\s*type: ActivityType;\s*priority: number;\s*budget: number \| null;\s*done: boolean;\s*\}/);
     expect(content).toContain('export const TYPE_OPTIONS = [');
-    expect(content).toContain('{ value: "phone", label: "Phone" }');
+    expect(content).toContain('{ value: "phone", label: "activities.type.phone" }');
     expect(content).toMatch(/import \{[^}]*type ActivityType[^}]*\} from "@backend\/contracts"/);
     expect(content).toContain('priority: activity?.priority ?? 1');
     expect(content).toContain('budget: activity?.budget ?? null');
@@ -88,18 +88,21 @@ describe('syncFormSchema', () => {
 describe('syncFormComponent', () => {
   it('adds the missing inputs after the last one, leaving the others alone', () => {
     const { fields } = setup();
-    const source = render('frontend/form.tsx', view).replace('label="Name"', 'label="Title"');
-    const { content, report } = syncFormComponent('form.tsx', source, fields);
+    const source = render('frontend/form.tsx', view).replace('label={t("activities.fields.name")}', 'label="Title"');
+    const { content, report } = syncFormComponent('form.tsx', source, fields, names);
     expect(content).toContain('label="Title"');
-    expect(content).toContain('<field.SelectField label="Type" options={TYPE_OPTIONS} />');
-    expect(content).toContain('<field.NumberField label="Priority" />');
-    expect(content).toContain('<field.NumberField label="Budget" />');
-    expect(content).toContain('<field.CheckboxField label="Done" />');
-    expect(content).toContain('<field.TextareaField label="Notes" />');
-    expect(content).toContain('<field.TextEditorField label="Description" />');
-    expect(content).toContain('<field.DatePickerField label="Due date" />');
-    expect(content).toContain('<field.DateTimePickerField label="Starts at" />');
+    expect(content).toContain('<field.SelectField label={t("activities.fields.type")} options={typeOptions} />');
+    expect(content).toContain('<field.NumberField label={t("activities.fields.priority")} />');
+    expect(content).toContain('<field.NumberField label={t("activities.fields.budget")} />');
+    expect(content).toContain('<field.CheckboxField label={t("activities.fields.done")} />');
+    expect(content).toContain('<field.TextareaField label={t("activities.fields.notes")} />');
+    expect(content).toContain('<field.TextEditorField label={t("activities.fields.description")} />');
+    expect(content).toContain('<field.DatePickerField label={t("activities.fields.dueDate")} />');
+    expect(content).toContain('<field.DateTimePickerField label={t("activities.fields.startsAt")} />');
     expect(content).toMatch(/import \{[^}]*TYPE_OPTIONS[^}]*\} from "\.\/schema"/);
+    // Translated options are made at the top of the component, not in a render prop.
+    expect(content).toContain('  const t = useTranslations();\n  const typeOptions = useOptionLabels(TYPE_OPTIONS);\n');
+    expect(content).toMatch(/import \{ useOptionLabels \} from "@\/i18n\/options"/);
     expect(content.indexOf('name="name"')).toBeLessThan(content.indexOf('name="type"'));
     expect(report.added).toHaveLength(9);
   });
@@ -110,15 +113,15 @@ describe('syncFormComponent', () => {
       '<form.FormErrors />',
       '<form.FormErrors />\n          {/* dafne-ignore: customerId, budget */}',
     );
-    const once = syncFormComponent('form.tsx', source, fields).content;
+    const once = syncFormComponent('form.tsx', source, fields, names).content;
     expect(once).not.toContain('name="customerId"');
     expect(once).not.toContain('name="budget"');
-    expect(syncFormComponent('form.tsx', once, fields).report.added).toEqual([]);
+    expect(syncFormComponent('form.tsx', once, fields, names).report.added).toEqual([]);
   });
 
   it('reports inputs whose field left the contract', () => {
     const { fields } = setup();
     const source = render('frontend/form.tsx', view).replace('name="name"', 'name="title"');
-    expect(syncFormComponent('form.tsx', source, fields).report.stale).toEqual(['<form.AppField name="title">']);
+    expect(syncFormComponent('form.tsx', source, fields, names).report.stale).toEqual(['<form.AppField name="title">']);
   });
 });

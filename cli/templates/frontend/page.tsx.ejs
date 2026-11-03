@@ -1,6 +1,8 @@
 import { PlusIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import {
   PageContent,
@@ -18,22 +20,26 @@ import { <%= p.camel %>Table } from "@/lib/<%= p.kebab %>-table";
 import { requireUser } from "@/lib/session";
 import { <%= p.pascal %>Table } from "./<%= p.kebab %>-table";
 
-export const metadata: Metadata = { title: "<%= p.title %>" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations();
+  return { title: t("<%= p.camel %>.title") };
+}
 
 export default function <%= p.pascal %>Page({
   searchParams,
-}: PageProps<"/<%= p.kebab %>">) {
+}: PageProps<"/[locale]/<%= p.kebab %>">) {
+  const t = useTranslations();
   return (
     <PageContent>
       <PageContentHeader>
-        <PageContentTitle><%= p.title %></PageContentTitle>
+        <PageContentTitle>{t("<%= p.camel %>.title")}</PageContentTitle>
         <PageContentDescription>
-          Filter by a field, or click a column to sort.
+          {t("common.listHint")}
         </PageContentDescription>
         <PageContentAction>
           <Button nativeButton={false} render={<Link href="/<%= p.kebab %>/new" />}>
             <PlusIcon data-icon="inline-start" />
-            New <%= s.lower %>
+            {t("<%= p.camel %>.new")}
           </Button>
         </PageContentAction>
       </PageContentHeader>
@@ -50,7 +56,7 @@ export default function <%= p.pascal %>Page({
 /** Fetches one page; the client table renders it. */
 async function <%= p.pascal %>List({
   searchParams,
-}: Pick<PageProps<"/<%= p.kebab %>">, "searchParams">) {
+}: Pick<PageProps<"/[locale]/<%= p.kebab %>">, "searchParams">) {
   await requireUser();
   const params = getTableParams(await searchParams, <%= p.camel %>Table);
   const data = await list<%= p.pascal %>({

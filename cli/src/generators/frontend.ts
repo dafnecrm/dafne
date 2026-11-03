@@ -5,7 +5,7 @@ import { FRONTEND, wireNav } from '../wiring/frontend.js';
 import { contractFile } from './backend.js';
 import type { Ctx, Piece } from './pieces.js';
 
-const routeDir = ({ p }: ResourceNames) => `${FRONTEND}/app/(app)/${p.kebab}`;
+const routeDir = ({ p }: ResourceNames) => `${FRONTEND}/app/[locale]/(app)/${p.kebab}`;
 
 const create = (ctx: Ctx, path: string, template: string) =>
   ctx.changes.create(
@@ -96,7 +96,7 @@ export const frontendPieces: Record<string, Piece> = {
 /** Every frontend piece of a resource, in generation order. */
 export const FRONTEND_RESOURCE = ['data', 'actions', 'table', 'detail', 'form', 'nav'];
 
-/** A blank page at app/(app)/<route>/page.tsx, e.g. "reports/monthly". */
+/** A blank page at app/[locale]/(app)/<route>/page.tsx, e.g. "reports/monthly". */
 export function generatePage(changes: Changes, route: string) {
   const segments = route
     .split('/')
@@ -110,7 +110,7 @@ export function generatePage(changes: Changes, route: string) {
       );
   const last = segments.filter((segment) => /^[a-z0-9-]+$/.test(segment)).pop();
   const name = casings(words(last ?? 'page'));
-  const path = `${FRONTEND}/app/(app)/${segments.join('/')}/page.tsx`;
+  const path = `${FRONTEND}/app/[locale]/(app)/${segments.join('/')}/page.tsx`;
   changes.create(path, render('frontend/blank-page.tsx', { title: name.title, component: name.pascal }));
   return path;
 }
