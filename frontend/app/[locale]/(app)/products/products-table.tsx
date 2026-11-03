@@ -1,9 +1,12 @@
 "use client";
 
+import { useMemo } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { FileIcon } from "lucide-react";
 import Link from "next/link";
 import {
   createDataTableColumnHelper,
+  useDescribeFilters,
   DataTable,
 } from "@/components/data-table";
 import { LocalDate } from "@/components/local-date";
@@ -14,7 +17,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { describeFilters, type TableParams } from "@/lib/data-table";
+import type { TableParams } from "@/lib/data-table";
 import type { ListedProduct } from "@/lib/products";
 import { productsTable } from "@/lib/products-table";
 import { ProductTableActions } from "./product-table-actions";
@@ -28,31 +31,42 @@ import { formatCurrency } from "@/lib/currencies";
 
 const col = createDataTableColumnHelper<ListedProduct>();
 
-// Module scope, so the table sees the same columns on every render.
-const productColumns = col.columns([
-  col.accessor("name", {
-    header: "Name",
-    cell: ({ row }) => (
-      <Link
-        href={`/products/${encodeURIComponent(row.original.id)}`}
-        className="font-medium underline-offset-4 hover:underline"
-      >
-        {row.original.name}
-      </Link>
-    ),
-  }),
-  col.accessor("price", { 
-    header: "Price",
-    cell: (info) => formatCurrency(info.getValue())
-  }),
-  col.accessor("createdAt", {
-    header: "Added",
-    meta: { className: "text-right" },
-    cell: (info) => (
-      <LocalDate value={info.getValue()} className="text-muted-foreground" />
-    ),
-  }),
-]);
+/** Translated per language; memoized, so the table sees the same columns on every render. */
+function useProductColumns() {
+  const t = useTranslations("products.fields");
+  const locale = useLocale();
+  return useMemo(
+    () =>
+      col.columns([
+        col.accessor("name", {
+          header: t("name"),
+          cell: ({ row }) => (
+            <Link
+              href={`/products/${encodeURIComponent(row.original.id)}`}
+              className="font-medium underline-offset-4 hover:underline"
+            >
+              {row.original.name}
+            </Link>
+          ),
+        }),
+        col.accessor("price", {
+          header: t("price"),
+          cell: (info) => formatCurrency(info.getValue(), locale),
+        }),
+        col.accessor("createdAt", {
+          header: t("createdAt"),
+          meta: { className: "text-right" },
+          cell: (info) => (
+            <LocalDate
+              value={info.getValue()}
+              className="text-muted-foreground"
+            />
+          ),
+        }),
+      ]),
+    [t, locale],
+  );
+}
 
 // Module scope, so the table sees the same function on every render.
 const productActions = (product: ListedProduct) => (
@@ -71,27 +85,35 @@ export function ProductsTable({
   total: number;
   params: TableParams;
 }) {
+  const t = useTranslations("products");
+  const describeFilters = useDescribeFilters();
+  const columns = useProductColumns();
   return (
     <DataTable
-      columns={productColumns}
+      columns={columns}
       data={products}
       getRowId={getRowId}
       config={productsTable}
       rowActions={productActions}
       params={params}
       total={total}
-      noun="products"
+      noun={t("noun")}
       empty={
         <Empty>
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <FileIcon />
             </EmptyMedia>
-            <EmptyTitle>No products found</EmptyTitle>
+            <EmptyTitle>{t("empty.title")}</EmptyTitle>
             <EmptyDescription>
               {Object.keys(params.filters).length
-                ? `No product where ${describeFilters(params.filters, productsTable.filters)}.`
-                : "Add your first product to get started."}
+                ? t("empty.filtered", {
+                    filter: describeFilters(
+                      params.filters,
+                      productsTable.filters,
+                    ),
+                  })
+                : t("empty.none")}
             </EmptyDescription>
           </EmptyHeader>
         </Empty>

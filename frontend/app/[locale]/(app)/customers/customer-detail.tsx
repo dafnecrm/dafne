@@ -1,3 +1,6 @@
+import { useLocale, useTranslations } from "next-intl";
+import { useOptionLabel } from "@/i18n/options";
+import { countryName } from "@/lib/country-name";
 import {
   CalendarPlusIcon,
   FingerprintIcon,
@@ -31,18 +34,20 @@ import {
 
 /** The details of a customer: type and tax data, contact, addresses, then who created and updated it. */
 export function CustomerDetails({ customer }: { customer: CustomerDetail }) {
+  const t = useTranslations();
+  const locale = useLocale();
+  const optionLabel = useOptionLabel();
   const editHref = `/customers/${encodeURIComponent(customer.id)}/edit`;
 
   return (
     <>
-      <DetailSection title="Details">
-        <Detail icon={TagIcon} label="Type">
-          {CUSTOMER_TYPE_OPTIONS.find((o) => o.value === customer.type)
-            ?.label ?? "—"}
+      <DetailSection title={t("customers.sections.details")}>
+        <Detail icon={TagIcon} label={t("customers.fields.type")}>
+          {optionLabel(CUSTOMER_TYPE_OPTIONS, customer.type)}
         </Detail>
         {/* Each type has its own fields (the other type's are always empty). */}
         {customer.type === "person" && (
-          <Detail icon={CalendarIcon} label="Birth date">
+          <Detail icon={CalendarIcon} label={t("customers.fields.birthDate")}>
             {customer.birthDate ? (
               <LocalDate value={customer.birthDate} format="longDate" />
             ) : (
@@ -51,19 +56,19 @@ export function CustomerDetails({ customer }: { customer: CustomerDetail }) {
           </Detail>
         )}
         {customer.type === "person" && (
-          <Detail icon={IdCardIcon} label="Fiscal code">
+          <Detail icon={IdCardIcon} label={t("customers.fields.fiscalCode")}>
             {customer.fiscalCode ?? "—"}
           </Detail>
         )}
         {customer.type === "company" && (
-          <Detail icon={Building2Icon} label="VAT number">
+          <Detail icon={Building2Icon} label={t("customers.fields.vatNumber")}>
             {customer.vatNumber ?? "—"}
           </Detail>
         )}
       </DetailSection>
 
-      <DetailSection title="Contact">
-        <Detail icon={MailIcon} label="Email">
+      <DetailSection title={t("customers.sections.contact")}>
+        <Detail icon={MailIcon} label={t("customers.fields.email")}>
           {customer.email ? (
             <a
               href={`mailto:${customer.email}`}
@@ -75,7 +80,7 @@ export function CustomerDetails({ customer }: { customer: CustomerDetail }) {
             "—"
           )}
         </Detail>
-        <Detail icon={PhoneIcon} label="Phone">
+        <Detail icon={PhoneIcon} label={t("customers.fields.phone")}>
           {customer.phone ? (
             <a
               href={`tel:${customer.phone}`}
@@ -90,7 +95,9 @@ export function CustomerDetails({ customer }: { customer: CustomerDetail }) {
       </DetailSection>
 
       <DetailSection
-        title={`Addresses (${customer.addresses.length})`}
+        title={t("customers.sections.addressesCount", {
+          count: customer.addresses.length,
+        })}
         groupClassName="flex"
       >
         {customer.addresses.length ? (
@@ -98,27 +105,39 @@ export function CustomerDetails({ customer }: { customer: CustomerDetail }) {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Street</TableHead>
-                  <TableHead>Postal code</TableHead>
-                  <TableHead>City</TableHead>
-                  <TableHead>State / province</TableHead>
-                  <TableHead>Country</TableHead>
+                  <TableHead>{t("customers.addresses.fields.type")}</TableHead>
+                  <TableHead>
+                    {t("customers.addresses.fields.street")}
+                  </TableHead>
+                  <TableHead>
+                    {t("customers.addresses.fields.postalCode")}
+                  </TableHead>
+                  <TableHead>{t("customers.addresses.fields.city")}</TableHead>
+                  <TableHead>
+                    {t("customers.addresses.fields.region")}
+                  </TableHead>
+                  <TableHead>
+                    {t("customers.addresses.fields.country")}
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {customer.addresses.map((address) => (
                   <TableRow key={address.id}>
                     <TableCell>
-                      {CUSTOMER_ADDRESS_TYPE_OPTIONS.find(
-                        (o) => o.value === address.type,
-                      )?.label ?? "—"}
+                      {optionLabel(CUSTOMER_ADDRESS_TYPE_OPTIONS, address.type)}
                     </TableCell>
                     <TableCell>{address.street}</TableCell>
                     <TableCell>{address.postalCode ?? "—"}</TableCell>
                     <TableCell>{address.city}</TableCell>
                     <TableCell>{address.region ?? "—"}</TableCell>
-                    <TableCell>{address.country.name}</TableCell>
+                    <TableCell>
+                      {countryName(
+                        address.countryCode,
+                        locale,
+                        address.country.name,
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -126,31 +145,31 @@ export function CustomerDetails({ customer }: { customer: CustomerDetail }) {
           </div>
         ) : (
           <p className="text-sm text-muted-foreground">
-            No addresses.{" "}
+            {t("customers.addresses.noneDetail")}{" "}
             <Link href={editHref} className="underline underline-offset-4">
-              Add one
+              {t("customers.addresses.addOne")}
             </Link>
           </p>
         )}
       </DetailSection>
 
-      <DetailSection title="Record" defaultOpen={false}>
-        <Detail icon={FingerprintIcon} label="Customer ID">
+      <DetailSection title={t("common.record.title")} defaultOpen={false}>
+        <Detail icon={FingerprintIcon} label={t("customers.fields.id")}>
           <div className="flex items-center gap-2">
             <code className="truncate font-mono text-xs">{customer.id}</code>
             <CopyButton variant="ghost" value={customer.id} />
           </div>
         </Detail>
-        <Detail icon={CalendarPlusIcon} label="Created">
+        <Detail icon={CalendarPlusIcon} label={t("common.record.created")}>
           <LocalDate value={customer.createdAt} format="dateTime" />
         </Detail>
-        <Detail icon={UserPlusIcon} label="Created by">
+        <Detail icon={UserPlusIcon} label={t("common.record.createdBy")}>
           {customer.createdBy?.name ?? "—"}
         </Detail>
-        <Detail icon={HistoryIcon} label="Updated">
+        <Detail icon={HistoryIcon} label={t("common.record.updated")}>
           <LocalDate value={customer.updatedAt} format="dateTime" />
         </Detail>
-        <Detail icon={UserPenIcon} label="Updated by">
+        <Detail icon={UserPenIcon} label={t("common.record.updatedBy")}>
           {customer.updatedBy?.name ?? "—"}
         </Detail>
       </DetailSection>

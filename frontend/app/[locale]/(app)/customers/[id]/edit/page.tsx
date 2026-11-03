@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import {
   PageContent,
@@ -12,11 +13,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { CustomerForm } from "../../customer-form";
 import { loadCustomer } from "../load-customer";
 
-export const metadata: Metadata = { title: "Edit customer" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("customers");
+  return { title: t("editMeta") };
+}
 
 export default function EditCustomerPage({
   params,
-}: PageProps<"/customers/[id]/edit">) {
+}: PageProps<"/[locale]/customers/[id]/edit">) {
   return (
     <Suspense fallback={<Skeleton className="h-96 w-full" />}>
       <EditCustomer params={params} />
@@ -26,8 +30,9 @@ export default function EditCustomerPage({
 
 async function EditCustomer({
   params,
-}: Pick<PageProps<"/customers/[id]/edit">, "params">) {
+}: Pick<PageProps<"/[locale]/customers/[id]/edit">, "params">) {
   const customer = await loadCustomer((await params).id);
+  const t = await getTranslations();
 
   return (
     <PageContent>
@@ -36,9 +41,11 @@ async function EditCustomer({
         label={customer.name}
       />
       <PageContentHeader>
-        <PageContentTitle>Edit {customer.name}</PageContentTitle>
+        <PageContentTitle>
+          {t("common.editTitle", { name: customer.name })}
+        </PageContentTitle>
         <PageContentDescription>
-          Saving replaces the customer&apos;s details and addresses.
+          {t("customers.editDescription")}
         </PageContentDescription>
       </PageContentHeader>
       <PageContentBody>

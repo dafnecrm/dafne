@@ -1,18 +1,21 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { revalidateLogic } from "@tanstack/react-form-nextjs";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { FieldGroup } from "@/components/ui/field";
 import { setServerError, useAppForm } from "@/lib/app-form/app-form";
 import { useResetOnLeave } from "@/lib/app-form/reset-on-leave";
-import { authClient, authErrorMessage } from "@/lib/auth-client";
+import { authClient, useAuthErrorMessage } from "@/lib/auth-client";
 import { signInFormOpts, signInSchema } from "../schemas";
 import { VERIFY_EMAIL_PATH } from "../verify-email/verify-email";
 
 export function SignInForm() {
   const router = useRouter();
   const [navigating, startTransition] = useTransition();
+  const t = useTranslations("auth");
+  const authErrorMessage = useAuthErrorMessage();
 
   const form = useAppForm({
     ...signInFormOpts,
@@ -64,26 +67,26 @@ export function SignInForm() {
           <form.AppField name="email">
             {(field) => (
               <field.TextField
-                label="Email"
+                label={t("fields.email")}
                 type="email"
                 autoComplete="email"
-                placeholder="you@example.com"
+                placeholder={t("fields.emailPlaceholder")}
               />
             )}
           </form.AppField>
           <form.AppField name="password">
             {(field) => (
               <field.PasswordField
-                label="Password"
+                label={t("fields.password")}
                 autoComplete="current-password"
               />
             )}
           </form.AppField>
           <form.AppField name="rememberMe">
-            {(field) => <field.CheckboxField label="Remember me" />}
+            {(field) => <field.CheckboxField label={t("fields.rememberMe")} />}
           </form.AppField>
           <form.SubmitButton
-            label="Sign in"
+            label={t("signIn.submit")}
             pending={navigating}
             className="w-full"
           />

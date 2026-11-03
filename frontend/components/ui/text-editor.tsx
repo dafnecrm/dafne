@@ -1,6 +1,7 @@
 'use client'
 
 import { Placeholder } from '@tiptap/extensions'
+import { useTranslations, type Messages } from 'next-intl'
 import {
   EditorContent,
   useEditor,
@@ -145,35 +146,39 @@ function TiptapEditor({
   )
 }
 
+type EditorMessages = Messages['editor']
+
 type Action = {
-  label: string
+  /** A key of the `editor` messages. */
+  label: Exclude<keyof EditorMessages, 'toolbar' | 'linkPrompt'>
   icon: LucideIcon
   isActive?: (editor: Editor) => boolean
-  run: (editor: Editor) => void
+  /** `text` gives the editor's translated messages (for prompts). */
+  run: (editor: Editor, text: (key: keyof EditorMessages) => string) => void
 }
 
 const ACTION_GROUPS: Action[][] = [
   [
     {
-      label: 'Bold',
+      label: 'bold',
       icon: BoldIcon,
       isActive: (e) => e.isActive('bold'),
       run: (e) => e.chain().focus().toggleBold().run(),
     },
     {
-      label: 'Italic',
+      label: 'italic',
       icon: ItalicIcon,
       isActive: (e) => e.isActive('italic'),
       run: (e) => e.chain().focus().toggleItalic().run(),
     },
     {
-      label: 'Underline',
+      label: 'underline',
       icon: UnderlineIcon,
       isActive: (e) => e.isActive('underline'),
       run: (e) => e.chain().focus().toggleUnderline().run(),
     },
     {
-      label: 'Strikethrough',
+      label: 'strikethrough',
       icon: StrikethroughIcon,
       isActive: (e) => e.isActive('strike'),
       run: (e) => e.chain().focus().toggleStrike().run(),
@@ -181,31 +186,31 @@ const ACTION_GROUPS: Action[][] = [
   ],
   [
     {
-      label: 'Heading',
+      label: 'heading',
       icon: Heading2Icon,
       isActive: (e) => e.isActive('heading', { level: 2 }),
       run: (e) => e.chain().focus().toggleHeading({ level: 2 }).run(),
     },
     {
-      label: 'Subheading',
+      label: 'subheading',
       icon: Heading3Icon,
       isActive: (e) => e.isActive('heading', { level: 3 }),
       run: (e) => e.chain().focus().toggleHeading({ level: 3 }).run(),
     },
     {
-      label: 'Bullet list',
+      label: 'bulletList',
       icon: ListIcon,
       isActive: (e) => e.isActive('bulletList'),
       run: (e) => e.chain().focus().toggleBulletList().run(),
     },
     {
-      label: 'Numbered list',
+      label: 'numberedList',
       icon: ListOrderedIcon,
       isActive: (e) => e.isActive('orderedList'),
       run: (e) => e.chain().focus().toggleOrderedList().run(),
     },
     {
-      label: 'Quote',
+      label: 'quote',
       icon: QuoteIcon,
       isActive: (e) => e.isActive('blockquote'),
       run: (e) => e.chain().focus().toggleBlockquote().run(),
@@ -217,12 +222,12 @@ const ACTION_GROUPS: Action[][] = [
     //   run: (e) => e.chain().focus().toggleCode().run(),
     // },
     {
-      label: 'Link',
+      label: 'link',
       icon: LinkIcon,
       isActive: (e) => e.isActive('link'),
-      run: (e) => {
+      run: (e, text) => {
         const previous = e.getAttributes('link').href as string | undefined
-        const href = window.prompt('Link URL (empty to remove)', previous ?? 'https://')
+        const href = window.prompt(text('linkPrompt'), previous ?? 'https://')
         if (href === null) return
         const chain = e.chain().focus().extendMarkRange('link')
         if (href.trim() === '') chain.unsetLink().run()
@@ -232,12 +237,12 @@ const ACTION_GROUPS: Action[][] = [
   ],
   [
     {
-      label: 'Undo',
+      label: 'undo',
       icon: Undo2Icon,
       run: (e) => e.chain().focus().undo().run(),
     },
     {
-      label: 'Redo',
+      label: 'redo',
       icon: Redo2Icon,
       run: (e) => e.chain().focus().redo().run(),
     },
@@ -253,6 +258,7 @@ function TextEditorToolbar({
   editor: Editor
   disabled?: boolean
 }) {
+  const t = useTranslations('editor')
   // Re-render the buttons when the selection or the content changes.
   const active = useEditorState({
     editor,
@@ -263,7 +269,7 @@ function TextEditorToolbar({
   return (
     <div
       role="toolbar"
-      aria-label="Formatting"
+      aria-label={t('toolbar')}
       className="flex flex-wrap items-center gap-0.5 border-b border-input p-1"
     >
       {ACTION_GROUPS.map((group, g) => (
@@ -277,11 +283,11 @@ function TextEditorToolbar({
               <Toggle
                 key={action.label}
                 size="sm"
-                aria-label={action.label}
-                title={action.label}
+                aria-label={t(action.label)}
+                title={t(action.label)}
                 disabled={disabled}
                 pressed={active[ACTIONS.indexOf(action)]}
-                onPressedChange={() => action.run(editor)}
+                onPressedChange={() => action.run(editor, (key) => t(key))}
                 // Keep the editor's selection when a button is clicked.
                 onMouseDown={(e) => e.preventDefault()}
               >

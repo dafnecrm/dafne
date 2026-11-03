@@ -1,8 +1,11 @@
 "use client";
 
+import { useMemo } from "react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import {
   createDataTableColumnHelper,
+  useDescribeFilters,
   DataTable,
 } from "@/components/data-table";
 import { LocalDate } from "@/components/local-date";
@@ -21,7 +24,8 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { describeFilters, type TableParams } from "@/lib/data-table";
+import type { TableParams } from "@/lib/data-table";
+import { useOptionLabel } from "@/i18n/options";
 import { Badge } from "@/components/ui/badge";
 
 /*
@@ -32,66 +36,68 @@ import { Badge } from "@/components/ui/badge";
 
 const col = createDataTableColumnHelper<ListedActivity>();
 
-// Module scope, so the table sees the same columns on every render.
+/** Translated per language; memoized, so the table sees the same columns on every render. */
 // dafne-ignore: completedAt
-const activityColumns = col.columns([
-  col.accessor("name", {
-    header: "Name",
-    cell: ({ row }) => (
-      <Link
-        href={`/activities/${encodeURIComponent(row.original.id)}`}
-        className="font-medium underline-offset-4 hover:underline"
-      >
-        {row.original.name}
-      </Link>
-    ),
-  }),
-  col.accessor("type", {
-    header: "Type",
-    cell: (info) => {
-      console.log(info.row);
-      return (
-        ACTIVITY_TYPE_OPTIONS.find((o) => o.value === info.getValue())?.label ??
-        "—"
-      );
-    },
-  }),
-  col.accessor("status", {
-    header: "Status",
-    cell: (info) => {
-      const status = ACTIVITY_STATUS_OPTIONS.find(
-        (o) => o.value === info.getValue(),
-      );
-      if (!status) return "—";
-      // A component, not an element: render it with a capitalized name.
-      const Icon = status.icon;
-      return (
-        <Badge variant="outline">
-          <Icon className="size-4 text-muted-foreground" />
-          {status.label}
-        </Badge>
-      );
-    },
-  }),
-  col.accessor("dueDate", {
-    header: "Due date",
-    cell: (info) => {
-      const value = info.getValue();
-      return value ? <LocalDate value={value} format="dateTime" /> : "—";
-    },
-  }),
-  col.accessor("createdAt", {
-    header: "Added",
-    meta: { className: "text-right" },
-    cell: (info) => (
-      <LocalDate
-        value={info.getValue()}
-        format="dateTime"
-        className="text-muted-foreground"
-      />
-    ),
-  }),
-]);
+function useActivityColumns() {
+  const t = useTranslations();
+  const optionLabel = useOptionLabel();
+  return useMemo(
+    () =>
+      col.columns([
+        col.accessor("name", {
+          header: t("activities.fields.name"),
+          cell: ({ row }) => (
+            <Link
+              href={`/activities/${encodeURIComponent(row.original.id)}`}
+              className="font-medium underline-offset-4 hover:underline"
+            >
+              {row.original.name}
+            </Link>
+          ),
+        }),
+        col.accessor("type", {
+          header: t("activities.fields.type"),
+          cell: (info) => optionLabel(ACTIVITY_TYPE_OPTIONS, info.getValue()),
+        }),
+        col.accessor("status", {
+          header: t("activities.fields.status"),
+          cell: (info) => {
+            const status = ACTIVITY_STATUS_OPTIONS.find(
+              (o) => o.value === info.getValue(),
+            );
+            if (!status) return "—";
+            // A component, not an element: render it with a capitalized name.
+            const Icon = status.icon;
+            return (
+              <Badge variant="outline">
+                <Icon className="size-4 text-muted-foreground" />
+                {t(status.label)}
+              </Badge>
+            );
+          },
+        }),
+        col.accessor("dueDate", {
+          header: t("activities.fields.dueDate"),
+          cell: (info) => {
+            const value = info.getValue();
+            return value ? <LocalDate value={value} format="dateTime" /> : "—";
+          },
+        }),
+        col.accessor("createdAt", {
+          header: t("activities.fields.createdAt"),
+          meta: { className: "text-right" },
+          cell: (info) => (
+            <LocalDate
+              value={info.getValue()}
+              format="dateTime"
+              className="text-muted-foreground"
+            />
+          ),
+        }),
+      ]),
+    [t, optionLabel],
+  );
+}
 
 // Module scope, so the table sees the same function on every render.
 const activityActions = (activity: ListedActivity) => (
@@ -110,27 +116,35 @@ export function ActivitiesTable({
   total: number;
   params: TableParams;
 }) {
+  const t = useTranslations("activities");
+  const describeFilters = useDescribeFilters();
+  const columns = useActivityColumns();
   return (
     <DataTable
-      columns={activityColumns}
+      columns={columns}
       data={activities}
       getRowId={getRowId}
       config={activitiesTable}
       rowActions={activityActions}
       params={params}
       total={total}
-      noun="activities"
+      noun={t("noun")}
       empty={
         <Empty>
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <FileIcon />
             </EmptyMedia>
-            <EmptyTitle>No activities found</EmptyTitle>
+            <EmptyTitle>{t("empty.title")}</EmptyTitle>
             <EmptyDescription>
               {Object.keys(params.filters).length
-                ? `No activity where ${describeFilters(params.filters, activitiesTable.filters)}.`
-                : "Add your first activity to get started."}
+                ? t("empty.filtered", {
+                    filter: describeFilters(
+                      params.filters,
+                      activitiesTable.filters,
+                    ),
+                  })
+                : t("empty.none")}
             </EmptyDescription>
           </EmptyHeader>
         </Empty>

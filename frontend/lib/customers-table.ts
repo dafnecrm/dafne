@@ -4,29 +4,50 @@ import type {
   CustomerSortField,
   CustomerType,
 } from "@backend/contracts";
+import type { MessageKey } from "@/i18n/keys";
 import { defineDataTable } from "./data-table";
 
 /**
- * Labels of an address's type, for the form and the detail page, with the
- * customer types each one is offered to.
+ * Labels (message keys) of an address's type, for the form and the detail
+ * page, with the customer types each one is offered to.
  */
 export const CUSTOMER_ADDRESS_TYPE_OPTIONS: readonly {
   value: CustomerAddressType;
-  label: string;
+  label: MessageKey;
   customerType: readonly CustomerType[];
 }[] = [
-  { value: "residence", label: "Residence", customerType: ["person"] },
-  { value: "domicile", label: "Domicile", customerType: ["person"] },
-  { value: "head_office", label: "Head office", customerType: ["company"] },
-  { value: "shipping", label: "Shipping", customerType: ["company"] },
-  { value: "billing", label: "Billing", customerType: ["company"] },
+  {
+    value: "residence",
+    label: "customers.addressType.residence",
+    customerType: ["person"],
+  },
+  {
+    value: "domicile",
+    label: "customers.addressType.domicile",
+    customerType: ["person"],
+  },
+  {
+    value: "head_office",
+    label: "customers.addressType.head_office",
+    customerType: ["company"],
+  },
+  {
+    value: "shipping",
+    label: "customers.addressType.shipping",
+    customerType: ["company"],
+  },
+  {
+    value: "billing",
+    label: "customers.addressType.billing",
+    customerType: ["company"],
+  },
 ];
 
-/** Labels of the type values. */
+/** Labels (message keys) of the type values. */
 export const CUSTOMER_TYPE_OPTIONS = [
-  { value: "person", label: "Person" },
-  { value: "company", label: "Company" },
-] satisfies { value: CustomerType; label: string }[];
+  { value: "person", label: "customers.type.person" },
+  { value: "company", label: "customers.type.company" },
+] satisfies { value: CustomerType; label: MessageKey }[];
 
 /**
  * The customers table: plain data with no server-only imports (unlike
@@ -53,16 +74,30 @@ export const customersTable = defineDataTable({
   ] satisfies CustomerSortField[],
   defaultSort: { id: "name", desc: false },
   filters: [
-    { field: "name" satisfies CustomerFilterField, label: "Name" },
-    { field: "email" satisfies CustomerFilterField, label: "Email" },
-    { field: "phone" satisfies CustomerFilterField, label: "Phone" },
+    {
+      field: "name" satisfies CustomerFilterField,
+      label: "customers.fields.name",
+    },
+    {
+      field: "email" satisfies CustomerFilterField,
+      label: "customers.fields.email",
+    },
+    {
+      field: "phone" satisfies CustomerFilterField,
+      label: "customers.fields.phone",
+    },
     {
       field: "type" satisfies CustomerFilterField,
-      label: "Type",
-      placeholder: "Any type",
+      label: "customers.fields.type",
       options: CUSTOMER_TYPE_OPTIONS,
     },
-    { field: "fiscalCode" satisfies CustomerFilterField, label: "Fiscal code" },
-    { field: "vatNumber" satisfies CustomerFilterField, label: "VAT number" },
+    {
+      field: "fiscalCode" satisfies CustomerFilterField,
+      label: "customers.fields.fiscalCode",
+    },
+    {
+      field: "vatNumber" satisfies CustomerFilterField,
+      label: "customers.fields.vatNumber",
+    },
   ],
 });

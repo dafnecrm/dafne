@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   CopyIcon,
   EllipsisVerticalIcon,
@@ -21,6 +22,7 @@ import { DeleteCustomerDialog, type CustomerRef } from "./customer-dialogs";
 /** Actions on the customer's page, in a menu. */
 export function CustomerDetailActions({ customer }: { customer: CustomerRef }) {
   const [deleting, setDeleting] = useState(false);
+  const t = useTranslations("common");
   const href = `/customers/${encodeURIComponent(customer.id)}`;
   const { email } = customer;
 
@@ -32,7 +34,7 @@ export function CustomerDetailActions({ customer }: { customer: CustomerRef }) {
             <Button
               variant="outline"
               size="icon-sm"
-              aria-label={`Actions for ${customer.name}`}
+              aria-label={t("actionsFor", { name: customer.name })}
             />
           }
         >
@@ -41,7 +43,7 @@ export function CustomerDetailActions({ customer }: { customer: CustomerRef }) {
         <DropdownMenuContent align="end">
           <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
             <PencilIcon />
-            Edit
+            {t("edit")}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
@@ -49,7 +51,7 @@ export function CustomerDetailActions({ customer }: { customer: CustomerRef }) {
             onClick={() => setDeleting(true)}
           >
             <Trash2Icon />
-            Delete
+            {t("delete")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -13,7 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { authClient, authErrorMessage } from "@/lib/auth-client";
+import { authClient, useAuthErrorMessage } from "@/lib/auth-client";
 
 /** Where verification links send the user (back to this page). */
 export const VERIFY_EMAIL_PATH = "/verify-email";
@@ -33,6 +34,8 @@ export function VerifyEmail() {
 
 function CheckInbox({ email }: { email: string | null }) {
   const [resend, setResend] = useState<ResendState>({ status: "idle" });
+  const t = useTranslations("auth.verify");
+  const authErrorMessage = useAuthErrorMessage();
 
   async function resendEmail() {
     if (!email) return;
@@ -51,22 +54,23 @@ function CheckInbox({ email }: { email: string | null }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl">Check your inbox</CardTitle>
+        <CardTitle className="text-xl">{t("checkInbox")}</CardTitle>
         <CardDescription>
-          We sent a verification link to{" "}
-          {email ? (
-            <span className="font-medium text-foreground">{email}</span>
-          ) : (
-            "your email address"
-          )}
-          . Click it to activate your account and sign in.
+          {t.rich("sentTo", {
+            email: () =>
+              email ? (
+                <span className="font-medium text-foreground">{email}</span>
+              ) : (
+                t("yourEmail")
+              ),
+          })}
         </CardDescription>
       </CardHeader>
       {email && (
         <CardContent className="flex flex-col gap-3">
           {resend.status === "sent" && (
             <Alert>
-              <AlertDescription>A new link is on its way.</AlertDescription>
+              <AlertDescription>{t("resent")}</AlertDescription>
             </Alert>
           )}
           {resend.status === "error" && (
@@ -80,7 +84,7 @@ function CheckInbox({ email }: { email: string | null }) {
             disabled={resend.status === "sending"}
             onClick={resendEmail}
           >
-            {resend.status === "sending" ? "Sending…" : "Resend email"}
+            {resend.status === "sending" ? t("sending") : t("resend")}
           </Button>
         </CardContent>
       )}
@@ -90,16 +94,14 @@ function CheckInbox({ email }: { email: string | null }) {
 }
 
 function LinkFailed({ expired }: { expired: boolean }) {
+  const t = useTranslations("auth.verify");
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-xl">
-          {expired ? "This link has expired" : "This link doesn't work"}
+          {expired ? t("expired") : t("broken")}
         </CardTitle>
-        <CardDescription>
-          Sign in with your email and password and we&apos;ll send you a new
-          verification link.
-        </CardDescription>
+        <CardDescription>{t("signInForNewLink")}</CardDescription>
       </CardHeader>
       <CardContent>
         <Button
@@ -107,7 +109,7 @@ function LinkFailed({ expired }: { expired: boolean }) {
           nativeButton={false}
           render={<Link href="/sign-in" />}
         >
-          Sign in
+          {t("signIn")}
         </Button>
       </CardContent>
     </Card>
@@ -115,13 +117,14 @@ function LinkFailed({ expired }: { expired: boolean }) {
 }
 
 function BackToSignIn() {
+  const t = useTranslations("auth.verify");
   return (
     <CardFooter className="justify-center text-muted-foreground">
       <Link
         href="/sign-in"
         className="text-foreground underline underline-offset-4"
       >
-        Back to sign in
+        {t("backToSignIn")}
       </Link>
     </CardFooter>
   );

@@ -1,6 +1,7 @@
 import { ArrowLeftIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import {
   PageContent,
@@ -16,9 +17,14 @@ import { CustomerDetails } from "../customer-detail";
 import { CustomerDetailActions } from "../customer-detail-actions";
 import { loadCustomer } from "./load-customer";
 
-export const metadata: Metadata = { title: "Customer" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("customers");
+  return { title: t("singular") };
+}
 
-export default function CustomerPage({ params }: PageProps<"/customers/[id]">) {
+export default function CustomerPage({
+  params,
+}: PageProps<"/[locale]/customers/[id]">) {
   return (
     <Suspense fallback={<Skeleton className="h-96 w-full" />}>
       <CustomerProfile params={params} />
@@ -29,8 +35,9 @@ export default function CustomerPage({ params }: PageProps<"/customers/[id]">) {
 /** Loads the customer: their name and actions, then their details. */
 async function CustomerProfile({
   params,
-}: Pick<PageProps<"/customers/[id]">, "params">) {
+}: Pick<PageProps<"/[locale]/customers/[id]">, "params">) {
   const customer = await loadCustomer((await params).id);
+  const t = await getTranslations("customers");
 
   return (
     <PageContent>
@@ -48,7 +55,7 @@ async function CustomerProfile({
             render={<Link href="/customers" />}
           >
             <ArrowLeftIcon data-icon="inline-start" />
-            All customers
+            {t("all")}
           </Button>
           <CustomerDetailActions customer={customer} />
         </PageContentAction>

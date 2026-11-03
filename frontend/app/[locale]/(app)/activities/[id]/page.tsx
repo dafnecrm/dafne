@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { ArrowLeftIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -16,11 +17,14 @@ import { ActivityDetails } from "../activity-detail";
 import { ActivityDetailActions } from "../activity-detail-actions";
 import { loadActivity } from "./load-activity";
 
-export const metadata: Metadata = { title: "Activity" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("activities");
+  return { title: t("singular") };
+}
 
 export default function ActivityPage({
   params,
-}: PageProps<"/activities/[id]">) {
+}: PageProps<"/[locale]/activities/[id]">) {
   return (
     <Suspense fallback={<Skeleton className="h-96 w-full" />}>
       <ActivityProfile params={params} />
@@ -31,8 +35,9 @@ export default function ActivityPage({
 /** Loads the activity: its name and actions, then its details. */
 async function ActivityProfile({
   params,
-}: Pick<PageProps<"/activities/[id]">, "params">) {
+}: Pick<PageProps<"/[locale]/activities/[id]">, "params">) {
   const activity = await loadActivity((await params).id);
+  const t = await getTranslations("activities");
 
   return (
     <PageContent>
@@ -50,7 +55,7 @@ async function ActivityProfile({
             render={<Link href="/activities" />}
           >
             <ArrowLeftIcon data-icon="inline-start" />
-            All activities
+            {t("all")}
           </Button>
           <ActivityDetailActions activity={activity} />
         </PageContentAction>

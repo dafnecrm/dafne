@@ -70,10 +70,8 @@ export const emptyAddress = (
   countryCode: "",
 });
 
-export const TYPE_OPTIONS = [
-  { value: "person", label: "Person" },
-  { value: "company", label: "Company" },
-] satisfies { value: CustomerType; label: string }[];
+/** The customer types, for the form's select (labels are message keys). */
+export { CUSTOMER_TYPE_OPTIONS as TYPE_OPTIONS } from "@/lib/customers-table";
 
 /** Form values for a new customer, or for editing `customer`. */
 export function customerFormOpts(customer?: CustomerDetail) {

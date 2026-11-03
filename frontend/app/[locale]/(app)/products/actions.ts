@@ -1,5 +1,6 @@
 "use server";
 
+import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { BackendError, backendFetch } from "@/lib/backend";
 import type { ProductDetail } from "@/lib/products";
@@ -14,11 +15,13 @@ export interface ActionError {
   error: string;
 }
 
-function errorMessage(error: unknown) {
+/** The error to show; the backend's own message is already translated. */
+async function errorMessage(error: unknown) {
   if (!(error instanceof BackendError)) throw error;
-  if (error.status === 401) return "Your session has expired. Sign in again.";
-  if (error.status === 404) return "This product no longer exists.";
-  return error.message || "Something went wrong. Please try again.";
+  const t = await getTranslations();
+  if (error.status === 401) return t("common.errors.sessionExpired");
+  if (error.status === 404) return t("products.notFound");
+  return error.message || t("common.errors.generic");
 }
 
 /**
@@ -30,7 +33,8 @@ export async function saveProduct(
   values: ProductFormValues,
 ): Promise<ActionError> {
   const parsed = productSchema.safeParse(values);
-  if (!parsed.success) return { error: "Some fields are not valid." };
+  if (!parsed.success)
+    return { error: (await getTranslations())("common.errors.invalid") };
 
   let savedId: string;
   try {
@@ -43,7 +47,7 @@ export async function saveProduct(
     );
     savedId = ((await res.json()) as ProductDetail).id;
   } catch (error) {
-    return { error: errorMessage(error) };
+    return { error: await errorMessage(error) };
   }
   // Outside the try: redirect works by throwing.
   redirect(`/products/${encodeURIComponent(savedId)}`);
@@ -60,6 +64,6 @@ export async function deleteProduct(id: string): Promise<ActionError | null> {
     });
     return null;
   } catch (error) {
-    return { error: errorMessage(error) };
+    return { error: await errorMessage(error) };
   }
 }

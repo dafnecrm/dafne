@@ -4,6 +4,7 @@ import { Check, Copy } from "lucide-react";
 import { Button } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 export default function CopyButton({
     value,
@@ -14,6 +15,7 @@ export default function CopyButton({
     closeAfter?: number
 } & React.ComponentProps<typeof Button>) {
     const [open, setOpen] = useState(false)
+    const t = useTranslations("common")
 
     function copyValue() {
         navigator.clipboard.writeText(value)
@@ -29,7 +31,7 @@ export default function CopyButton({
             </PopoverTrigger>
             <PopoverContent className="flex flex-row gap-2 items-center text-sm w-fit">
                 <Check className="size-4" />
-                Copied!
+                {t("copied")}
             </PopoverContent>
         </Popover>
     )

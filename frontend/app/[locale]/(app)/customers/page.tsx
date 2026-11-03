@@ -1,6 +1,8 @@
 import { PlusIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import {
   PageContent,
@@ -18,22 +20,24 @@ import { getTableParams } from "@/lib/data-table";
 import { requireUser } from "@/lib/session";
 import { CustomersTable } from "./customers-table";
 
-export const metadata: Metadata = { title: "Customers" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("customers");
+  return { title: t("title") };
+}
 
 export default function CustomersPage({
   searchParams,
-}: PageProps<"/customers">) {
+}: PageProps<"/[locale]/customers">) {
+  const t = useTranslations();
   return (
     <PageContent>
       <PageContentHeader>
-        <PageContentTitle>Customers</PageContentTitle>
-        <PageContentDescription>
-          Filter by a field, or click a column to sort.
-        </PageContentDescription>
+        <PageContentTitle>{t("customers.title")}</PageContentTitle>
+        <PageContentDescription>{t("common.listHint")}</PageContentDescription>
         <PageContentAction>
           <Button nativeButton={false} render={<Link href="/customers/new" />}>
             <PlusIcon data-icon="inline-start" />
-            New customer
+            {t("customers.new")}
           </Button>
         </PageContentAction>
       </PageContentHeader>
@@ -50,7 +54,7 @@ export default function CustomersPage({
 /** Fetches one page; the client table renders it. */
 async function CustomersList({
   searchParams,
-}: Pick<PageProps<"/customers">, "searchParams">) {
+}: Pick<PageProps<"/[locale]/customers">, "searchParams">) {
   await requireUser();
   const params = getTableParams(await searchParams, customersTable);
   const data = await listCustomers({

@@ -1,6 +1,7 @@
 "use client";
 
 import { MonitorIcon, MoonIcon, SunIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,21 +12,22 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { setTheme, useTheme, type Theme } from "@/lib/theme";
 
-const OPTIONS: { value: Theme; label: string; icon: typeof SunIcon }[] = [
-  { value: "light", label: "Light", icon: SunIcon },
-  { value: "dark", label: "Dark", icon: MoonIcon },
-  { value: "system", label: "System", icon: MonitorIcon },
+const OPTIONS: { value: Theme; icon: typeof SunIcon }[] = [
+  { value: "light", icon: SunIcon },
+  { value: "dark", icon: MoonIcon },
+  { value: "system", icon: MonitorIcon },
 ];
 
 /** Light / dark / system theme switcher. */
 export function ThemeToggle({ className }: { className?: string }) {
   const theme = useTheme();
+  const t = useTranslations("theme");
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         render={<Button variant="ghost" size="icon-sm" className={className} />}
-        aria-label="Change theme"
+        aria-label={t("change")}
       >
         {/* Driven by the `dark` class, so it's right before hydration too. */}
         <SunIcon className="dark:hidden" />
@@ -43,7 +45,7 @@ export function ThemeToggle({ className }: { className?: string }) {
               closeOnClick
             >
               <option.icon />
-              {option.label}
+              {t(option.value)}
             </DropdownMenuRadioItem>
           ))}
         </DropdownMenuRadioGroup>

@@ -1,8 +1,11 @@
 "use client";
 
+import { useMemo } from "react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import {
   createDataTableColumnHelper,
+  useDescribeFilters,
   DataTable,
 } from "@/components/data-table";
 import { LocalDate } from "@/components/local-date";
@@ -30,7 +33,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { describeFilters, type TableParams } from "@/lib/data-table";
+import type { TableParams } from "@/lib/data-table";
 import { usersTable } from "@/lib/users-table";
 
 /*
@@ -42,79 +45,92 @@ const col = createDataTableColumnHelper<ListedUser>();
 
 const empty = <span className="text-muted-foreground">—</span>;
 
-// Module scope, so the table sees the same columns on every render.
-const userColumns = col.columns([
-  col.accessor("name", {
-    header: "Name",
-    cell: ({ row }) => {
-      const user = row.original;
-      return (
-        <div className="flex items-center gap-2">
-          <Avatar size="sm">
-            {user.image && <AvatarImage src={user.image} alt="" />}
-            <AvatarFallback>
-              {`${user.firstname?.[0] ?? ""}${user.lastname?.[0] ?? ""}`.toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <Link
-            href={`/users/${encodeURIComponent(user.id)}`}
-            className="font-medium underline-offset-4 hover:underline"
-          >
-            {user.name}
-          </Link>
-        </div>
-      );
-    },
-  }),
-  col.accessor("email", {
-    header: "Email",
-    cell: (info) => {
-      const email = info.getValue();
-      return email ? (
-        <a
-          href={`mailto:${email}`}
-          className="underline-offset-4 hover:underline"
-        >
-          {email}
-        </a>
-      ) : (
-        empty
-      );
-    },
-  }),
-  col.accessor("role", {
-    header: "Role",
-    enableSorting: false,
-    cell: (info) => {
-      const role = info.getValue() ?? "user";
-      return (
-        <Badge variant={role === "admin" ? "default" : "secondary"}>
-          {role}
-        </Badge>
-      );
-    },
-  }),
-  col.accessor("banned", {
-    header: "Status",
-    enableSorting: false,
-    cell: (info) =>
-      info.getValue() ? (
-        <Badge variant="destructive">Banned</Badge>
-      ) : (
-        <Badge variant="outline">Active</Badge>
-      ),
-  }),
-  col.accessor("createdAt", {
-    header: "Joined",
-    meta: { className: "text-right" },
-    cell: (info) => (
-      <LocalDate value={info.getValue()} className="text-muted-foreground" />
-    ),
-  }),
-]);
+/** Translated per language; memoized, so the table sees the same columns on every render. */
+function useUserColumns() {
+  const t = useTranslations("users");
+  return useMemo(
+    () =>
+      col.columns([
+        col.accessor("name", {
+          header: t("fields.name"),
+          cell: ({ row }) => {
+            const user = row.original;
+            return (
+              <div className="flex items-center gap-2">
+                <Avatar size="sm">
+                  {user.image && <AvatarImage src={user.image} alt="" />}
+                  <AvatarFallback>
+                    {`${user.firstname?.[0] ?? ""}${user.lastname?.[0] ?? ""}`.toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <Link
+                  href={`/users/${encodeURIComponent(user.id)}`}
+                  className="font-medium underline-offset-4 hover:underline"
+                >
+                  {user.name}
+                </Link>
+              </div>
+            );
+          },
+        }),
+        col.accessor("email", {
+          header: t("fields.email"),
+          cell: (info) => {
+            const email = info.getValue();
+            return email ? (
+              <a
+                href={`mailto:${email}`}
+                className="underline-offset-4 hover:underline"
+              >
+                {email}
+              </a>
+            ) : (
+              empty
+            );
+          },
+        }),
+        col.accessor("role", {
+          header: t("fields.role"),
+          enableSorting: false,
+          cell: (info) => {
+            const role = info.getValue() ?? "user";
+            return (
+              <Badge variant={role === "admin" ? "default" : "secondary"}>
+                {t.has(`role.${role}` as never)
+                  ? t(`role.${role}` as "role.user")
+                  : role}
+              </Badge>
+            );
+          },
+        }),
+        col.accessor("banned", {
+          header: t("fields.status"),
+          enableSorting: false,
+          cell: (info) =>
+            info.getValue() ? (
+              <Badge variant="destructive">{t("status.banned")}</Badge>
+            ) : (
+              <Badge variant="outline">{t("status.active")}</Badge>
+            ),
+        }),
+        col.accessor("createdAt", {
+          header: t("fields.createdAt"),
+          meta: { className: "text-right" },
+          cell: (info) => (
+            <LocalDate
+              value={info.getValue()}
+              className="text-muted-foreground"
+            />
+          ),
+        }),
+      ]),
+    [t],
+  );
+}
 
-/** Row actions of the users table (DataTable `rowActions`). */
-function userActions(user: ListedUser) {
+/** Row actions of the users table, in a menu. */
+function UserTableActions({ user }: { user: ListedUser }) {
+  const t = useTranslations("common");
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -122,7 +138,7 @@ function userActions(user: ListedUser) {
           <Button
             variant="ghost"
             size="icon-sm"
-            aria-label={`Actions for ${user.email}`}
+            aria-label={t("actionsFor", { name: user.email })}
           />
         }
       >
@@ -133,18 +149,21 @@ function userActions(user: ListedUser) {
           render={<Link href={`/users/${encodeURIComponent(user.id)}`} />}
         >
           <UserIcon />
-          View details
+          {t("viewDetails")}
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => navigator.clipboard.writeText(user.email)}
         >
           <CopyIcon />
-          Copy email
+          {t("copyEmail")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
 }
+
+// Module scope, so the table sees the same function on every render.
+const userActions = (user: ListedUser) => <UserTableActions user={user} />;
 
 const getRowId = (user: ListedUser) => user.id;
 
@@ -158,27 +177,32 @@ export function UsersTable({
   total: number;
   params: TableParams;
 }) {
+  const t = useTranslations("users");
+  const describeFilters = useDescribeFilters();
+  const columns = useUserColumns();
   return (
     <DataTable
-      columns={userColumns}
+      columns={columns}
       data={users}
       getRowId={getRowId}
       config={usersTable}
       rowActions={userActions}
       params={params}
       total={total}
-      noun="users"
+      noun={t("noun")}
       empty={
         <Empty>
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <UsersIcon />
             </EmptyMedia>
-            <EmptyTitle>No users found</EmptyTitle>
+            <EmptyTitle>{t("empty.title")}</EmptyTitle>
             <EmptyDescription>
               {Object.keys(params.filters).length
-                ? `No user where ${describeFilters(params.filters, usersTable.filters)}.`
-                : "Nobody has signed up yet."}
+                ? t("empty.filtered", {
+                    filter: describeFilters(params.filters, usersTable.filters),
+                  })
+                : t("empty.none")}
             </EmptyDescription>
           </EmptyHeader>
         </Empty>

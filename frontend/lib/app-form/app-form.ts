@@ -15,8 +15,11 @@ import {
 } from "@/components/ui/form"
 import { fieldContext, formContext } from "@/lib/app-form/form-context"
 import { createFormHook, type AnyFormApi } from "@tanstack/react-form-nextjs"
+import { useLocale } from "next-intl"
+import { z } from "zod"
+import { en, it } from "zod/locales"
 
-const { useAppForm } = createFormHook({
+const { useAppForm: useBaseAppForm } = createFormHook({
   fieldContext,
   formContext,
   fieldComponents: {
@@ -37,6 +40,19 @@ const { useAppForm } = createFormHook({
     FormErrors,
   },
 })
+
+const ZOD_LOCALES = { en, it }
+
+/**
+ * TanStack's form hook, with Zod's own messages (too long, wrong type…) in
+ * the user's language. Contract messages are keys, translated where they're
+ * shown (components/ui/form.tsx).
+ */
+const useAppForm: typeof useBaseAppForm = (options) => {
+  const locale = useLocale() as keyof typeof ZOD_LOCALES
+  z.config((ZOD_LOCALES[locale] ?? en)())
+  return useBaseAppForm(options)
+}
 
 export { useAppForm }
 

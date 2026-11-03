@@ -18,6 +18,7 @@ import {
   InboxIcon,
   XIcon,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
@@ -54,7 +55,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  describeFilters,
   tableHref,
   type DataTableConfig,
   type TableFilterDef,
@@ -112,13 +112,38 @@ export function createDataTableColumnHelper<TData extends RowData>() {
   return createColumnHelper<DataTableFeatures, TData>();
 }
 
+/**
+ * Describes the active filters, e.g. `Email contains “ada” and Role is
+ * “Admin”`, in the user's language. Empty when no filter is active.
+ */
+export function useDescribeFilters() {
+  const t = useTranslations();
+  return (active: TableFilters, filters: readonly TableFilterDef[]) =>
+    filters
+      .flatMap((def) => {
+        const value = active[def.field];
+        if (!value) return [];
+        const label = t(def.label);
+        const option = def.options?.find((o) => o.value === value);
+        return option
+          ? t("dataTable.filterIs", { label, value: t(option.label) })
+          : t("dataTable.filterContains", { label, value });
+      })
+      .join(t("dataTable.and"));
+}
+
+function ActionsHeader() {
+  const t = useTranslations("dataTable");
+  return <span className="sr-only">{t("actions")}</span>;
+}
+
 /** The column `rowActions` adds: not sortable, as narrow as its content. */
 function actionsColumn<TData extends RowData>(
   render: (row: TData) => ReactNode,
 ): DataTableColumnDef<TData> {
   return createDataTableColumnHelper<TData>().display({
     id: "actions",
-    header: () => <span className="sr-only">Actions</span>,
+    header: () => <ActionsHeader />,
     enableSorting: false,
     meta: { className: "w-0 text-right" },
     cell: ({ row }) => (
@@ -147,7 +172,7 @@ export interface DataTableProps<TData extends RowData> {
   rowActions?: (row: TData) => ReactNode;
   /** Shown instead of the table when there are no rows. */
   empty?: ReactNode;
-  /** Unit for the count, e.g. "users" ("1–20 of 42 users"). */
+  /** Unit for the count, already translated, e.g. "users" ("1–20 of 42 users"). */
   noun?: string;
 }
 
@@ -164,6 +189,8 @@ export function DataTable<TData extends RowData>({
 }: DataTableProps<TData>) {
   const router = useRouter();
   const [navigating, startTransition] = useTransition();
+  const t = useTranslations("dataTable");
+  const describeFilters = useDescribeFilters();
 
   // The URL owns page and sort; the table only asks to change them.
   const pagination = useMemo<PaginationState>(
@@ -214,7 +241,7 @@ export function DataTable<TData extends RowData>({
   const rows = table.getRowModel().rows;
   const first = total ? pagination.pageIndex * pagination.pageSize + 1 : 0;
   const last = Math.min(first + rows.length - 1, total);
-  const unit = noun ? ` ${noun}` : "";
+  const unit = noun ?? t("results");
 
   return (
     <div className="flex flex-col gap-4">
@@ -312,8 +339,8 @@ export function DataTable<TData extends RowData>({
       <div className="flex items-center justify-between gap-2 text-sm text-muted-foreground">
         <span className="flex items-center gap-2">
           {total
-            ? `${first}–${last} of ${total}${unit}`
-            : `0${unit || " results"}`}
+            ? t("range", { first, last, total, unit })
+            : t("none", { unit })}
           {navigating && <Spinner />}
         </span>
         <div className="flex items-center gap-2">
@@ -321,19 +348,19 @@ export function DataTable<TData extends RowData>({
             <Select
               items={config.pageSizes.map((size) => ({
                 value: size,
-                label: `${size} / page`,
+                label: t("perPage", { size }),
               }))}
               value={pagination.pageSize}
               onValueChange={(size) => size && table.setPageSize(size)}
               disabled={navigating}
             >
-              <SelectTrigger size="sm" aria-label="Rows per page">
+              <SelectTrigger size="sm" aria-label={t("rowsPerPage")}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 {config.pageSizes.map((size) => (
                   <SelectItem key={size} value={size}>
-                    {size} / page
+                    {t("perPage", { size })}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -345,7 +372,7 @@ export function DataTable<TData extends RowData>({
             disabled={!table.getCanPreviousPage() || navigating}
             onClick={() => table.previousPage()}
           >
-            Previous
+            {t("previous")}
           </Button>
           <Button
             variant="outline"
@@ -353,7 +380,7 @@ export function DataTable<TData extends RowData>({
             disabled={!table.getCanNextPage() || navigating}
             onClick={() => table.nextPage()}
           >
-            Next
+            {t("next")}
           </Button>
         </div>
       </div>
@@ -378,6 +405,10 @@ export function DataTableFilters({
   onChange: (filters: TableFilters) => void;
 }) {
   const [values, setValues] = useState<TableFilters>(active);
+  const t = useTranslations();
+  // Options with their label translated: the combobox shows and filters it.
+  const optionsOf = (def: TableFilterDef) =>
+    def.options?.map((o) => ({ value: o.value, label: t(o.label) }));
   const set = (field: string, value: string) =>
     setValues((current) => ({ ...current, [field]: value }));
 
@@ -389,25 +420,28 @@ export function DataTableFilters({
         onChange(values);
       }}
     >
-      {filters.map((def) =>
-        def.options ? (
+      {filters.map((def) => {
+        const options = optionsOf(def);
+        return options ? (
           <Combobox
             key={def.field}
-            items={def.options}
+            items={options}
             // Items are { value, label }, so the input shows the label.
-            value={
-              def.options.find((o) => o.value === values[def.field]) ?? null
-            }
+            value={options.find((o) => o.value === values[def.field]) ?? null}
             onValueChange={(option) => set(def.field, option?.value ?? "")}
           >
             <ComboboxInput
               className="w-40"
-              placeholder={def.placeholder ?? `Any ${def.label.toLowerCase()}`}
-              aria-label={def.label}
+              placeholder={
+                def.placeholder
+                  ? t(def.placeholder)
+                  : t("dataTable.any", { label: t(def.label).toLowerCase() })
+              }
+              aria-label={t(def.label)}
               showClear={Boolean(values[def.field])}
             />
             <ComboboxContent>
-              <ComboboxEmpty>No matches</ComboboxEmpty>
+              <ComboboxEmpty>{t("dataTable.noMatches")}</ComboboxEmpty>
               <ComboboxList>
                 {(option: { value: string; label: string }) => (
                   <ComboboxItem key={option.value} value={option}>
@@ -424,15 +458,15 @@ export function DataTableFilters({
             className="w-52"
             value={values[def.field] ?? ""}
             onChange={(event) => set(def.field, event.target.value)}
-            placeholder={def.placeholder ?? def.label}
-            aria-label={def.label}
+            placeholder={t(def.placeholder ?? def.label)}
+            aria-label={t(def.label)}
           />
-        ),
-      )}
+        );
+      })}
 
       <Button type="submit" variant="default" disabled={disabled}>
         <FilterIcon data-icon="inline-start" />
-        Filter
+        {t("dataTable.filter")}
       </Button>
       {Object.keys(active).length > 0 && (
         <Button
@@ -442,7 +476,7 @@ export function DataTableFilters({
           onClick={() => onChange({})}
         >
           <XIcon data-icon="inline-start" />
-          Clear
+          {t("dataTable.clear")}
         </Button>
       )}
     </form>
@@ -452,15 +486,16 @@ export function DataTableFilters({
 /** Default empty state. */
 /** `filter` describes the active filters (see describeFilters). */
 export function DataTableEmpty({ filter }: { filter?: string }) {
+  const t = useTranslations("dataTable");
   return (
     <Empty>
       <EmptyHeader>
         <EmptyMedia variant="icon">
           <InboxIcon />
         </EmptyMedia>
-        <EmptyTitle>No results</EmptyTitle>
+        <EmptyTitle>{t("noResults")}</EmptyTitle>
         <EmptyDescription>
-          {filter ? `Nothing where ${filter}.` : "There's nothing here yet."}
+          {filter ? t("nothingWhere", { filter }) : t("nothingYet")}
         </EmptyDescription>
       </EmptyHeader>
     </Empty>

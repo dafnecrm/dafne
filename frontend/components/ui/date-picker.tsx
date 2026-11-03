@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useTranslations } from "next-intl"
 import { cn } from "cn"
 import { CalendarIcon } from "lucide-react"
 
@@ -46,7 +47,7 @@ type DatePickerProps = {
 function DatePicker({
   value,
   onChange,
-  placeholder = "Pick a date",
+  placeholder,
   format = "longDate",
   disabled,
   disabledDays,
@@ -59,6 +60,7 @@ function DatePicker({
 }: DatePickerProps) {
   const [open, setOpen] = React.useState(false)
   const locale = useDateLocale()
+  const t = useTranslations("form")
 
   return (
     <Popover
@@ -84,7 +86,7 @@ function DatePicker({
         }
       >
         <CalendarIcon />
-        {value ? formatDate(value, format, { locale }) : <span>{placeholder}</span>}
+        {value ? formatDate(value, format, { locale }) : <span>{placeholder ?? t("pickDate")}</span>}
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
         <Calendar
@@ -99,6 +101,7 @@ function DatePicker({
           captionLayout={captionLayout}
           startMonth={startMonth}
           endMonth={endMonth}
+          locale={locale}
           autoFocus
         />
       </PopoverContent>

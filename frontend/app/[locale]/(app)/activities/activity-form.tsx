@@ -1,5 +1,7 @@
 "use client";
 
+import { useOptionLabels } from "@/i18n/options";
+import { useTranslations } from "next-intl";
 import { revalidateLogic } from "@tanstack/react-form-nextjs";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -13,6 +15,8 @@ import { activityFormOpts, activitySchema, TYPE_OPTIONS } from "./schema";
 
 /** Creates a activity, or edits `activity`. Saving opens its page. */
 export function ActivityForm({ activity }: { activity?: ActivityDetail }) {
+  const t = useTranslations();
+  const typeOptions = useOptionLabels(TYPE_OPTIONS);
   const form = useAppForm({
     ...activityFormOpts(activity),
     // Validate on submit, then on every change.
@@ -44,7 +48,7 @@ export function ActivityForm({ activity }: { activity?: ActivityDetail }) {
           <Card>
             <CardHeader>
               <CardTitle>
-                <h2>Details</h2>
+                <h2>{t("activities.sections.details")}</h2>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -52,7 +56,7 @@ export function ActivityForm({ activity }: { activity?: ActivityDetail }) {
                 <form.AppField name="name">
                   {(field) => (
                     <field.TextField
-                      label="Name"
+                      label={t("activities.fields.name")}
                       autoComplete="off"
                       autoFocus
                     />
@@ -60,17 +64,26 @@ export function ActivityForm({ activity }: { activity?: ActivityDetail }) {
                 </form.AppField>
                 <form.AppField name="type">
                   {(field) => (
-                    <field.SelectField label="Type" options={TYPE_OPTIONS} disabled={!!activity} />
+                    <field.SelectField
+                      label={t("activities.fields.type")}
+                      options={typeOptions}
+                      disabled={!!activity}
+                    />
                   )}
                 </form.AppField>
                 <form.AppField name="dueDate">
                   {(field) => (
-                    <field.DateTimePickerField label="Due date" />
+                    <field.DateTimePickerField
+                      label={t("activities.fields.dueDate")}
+                    />
                   )}
                 </form.AppField>
                 <form.AppField name="notes">
                   {(field) => (
-                    <field.TextEditorField label="Notes" controlClassName="col-span-2" />
+                    <field.TextEditorField
+                      label={t("activities.fields.notes")}
+                      controlClassName="col-span-2"
+                    />
                   )}
                 </form.AppField>
               </FieldGroup>
@@ -83,10 +96,10 @@ export function ActivityForm({ activity }: { activity?: ActivityDetail }) {
               nativeButton={false}
               render={<Link href={cancelHref} />}
             >
-              Cancel
+              {t("common.cancel")}
             </Button>
             <form.SubmitButton
-              label={activity ? "Save changes" : "Create activity"}
+              label={t(activity ? "common.saveChanges" : "activities.create")}
             />
           </div>
         </FieldGroup>

@@ -22,12 +22,8 @@ export type ActivityFormValues = Record<
 export const activitySchema =
   formSchema<ActivityFormValues>()(activityBodySchema);
 
-export const TYPE_OPTIONS = [
-  { value: "call", label: "Call" },
-  { value: "email", label: "Email" },
-  { value: "meeting", label: "Meeting" },
-  { value: "task", label: "Task" },
-] satisfies { value: ActivityType; label: string }[];
+/** The activity types, for the form's select (labels are message keys). */
+export { ACTIVITY_TYPE_OPTIONS as TYPE_OPTIONS } from "@/lib/activities-table";
 
 /** Form values for a new activity, or for editing `activity`. */
 export function activityFormOpts(activity?: ActivityDetail) {

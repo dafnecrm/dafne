@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { useEffect, useMemo, useState } from "react";
 import {
   Combobox,
   ComboboxContent,
@@ -9,6 +10,7 @@ import {
   ComboboxItem,
   ComboboxList,
 } from "@/components/ui/combobox";
+import { countryName } from "@/lib/country-name";
 import { listCountries, type ListedCountry } from "@/lib/geo";
 
 /*
@@ -27,9 +29,13 @@ function loadCountries() {
   return countriesPromise;
 }
 
-/** The countries, by name; undefined while they load (or if that failed). */
+/**
+ * The countries, named and sorted in the user's language (Intl.DisplayNames,
+ * else the backend's name); undefined while they load (or if that failed).
+ */
 export function useCountries() {
-  const [countries, setCountries] = useState<ListedCountry[]>();
+  const locale = useLocale();
+  const [loaded, setCountries] = useState<ListedCountry[]>();
   useEffect(() => {
     let current = true;
     loadCountries().then(
@@ -40,10 +46,18 @@ export function useCountries() {
       current = false;
     };
   }, []);
-  return countries;
+  return useMemo(() => {
+    if (!loaded) return undefined;
+    return loaded
+      .map((country) => ({
+        ...country,
+        name: countryName(country.code, locale, country.name),
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name, locale));
+  }, [loaded, locale]);
 }
 
-/** A country's name from its ISO code, e.g. "IT" → "Italy" (the code until the list loads). */
+/** A country's name from its ISO code, e.g. "IT" → "Italia" (the code until the list loads). */
 export function CountryName({ code }: { code: string }) {
   const countries = useCountries();
   return <>{countries?.find((c) => c.code === code)?.name ?? code}</>;
@@ -58,7 +72,7 @@ export function CountrySelect({
   onValueChange,
   id,
   name,
-  placeholder = "Choose a country…",
+  placeholder,
   disabled,
   className,
   onBlur,
@@ -74,6 +88,7 @@ export function CountrySelect({
   onBlur?: () => void;
   "aria-invalid"?: boolean;
 }) {
+  const t = useTranslations("geo");
   const countries = useCountries();
   const selected = countries?.find((c) => c.code === value) ?? null;
 
@@ -93,14 +108,16 @@ export function CountrySelect({
     >
       <ComboboxInput
         id={id}
-        placeholder={countries ? placeholder : "Loading countries…"}
+        placeholder={
+          countries ? (placeholder ?? t("countryPlaceholder")) : t("loadingCountries")
+        }
         className={className}
         disabled={disabled}
         aria-invalid={ariaInvalid}
         onBlur={onBlur}
       />
       <ComboboxContent>
-        <ComboboxEmpty>No countries found.</ComboboxEmpty>
+        <ComboboxEmpty>{t("noCountries")}</ComboboxEmpty>
         <ComboboxList>
           {(country: ListedCountry) => (
             <ComboboxItem key={country.code} value={country}>

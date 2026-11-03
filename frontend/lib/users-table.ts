@@ -22,24 +22,22 @@ export const usersTable = defineDataTable({
   ] satisfies UserSortField[],
   defaultSort: { id: "name", desc: false },
   filters: [
-    { field: "email" satisfies UserFilterField, label: "Email" },
-    { field: "name" satisfies UserFilterField, label: "Name" },
+    { field: "email" satisfies UserFilterField, label: "users.fields.email" },
+    { field: "name" satisfies UserFilterField, label: "users.fields.name" },
     {
       field: "role" satisfies UserFilterField,
-      label: "Role",
-      placeholder: "Any role",
+      label: "users.fields.role",
       options: [
-        { value: "admin", label: "Admin" },
-        { value: "user", label: "User" },
+        { value: "admin", label: "users.role.admin" },
+        { value: "user", label: "users.role.user" },
       ],
     },
     {
       field: "banned" satisfies UserFilterField,
-      label: "Status",
-      placeholder: "Any status",
+      label: "users.fields.status",
       options: [
-        { value: "false", label: "Active" },
-        { value: "true", label: "Banned" },
+        { value: "false", label: "users.status.active" },
+        { value: "true", label: "users.status.banned" },
       ],
     },
   ],

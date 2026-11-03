@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { revalidateLogic } from "@tanstack/react-form-nextjs";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import { InputGroupAddon } from "@/components/ui/input-group";
 
 /** Creates a product, or edits `product`. Saving opens its page. */
 export function ProductForm({ product }: { product?: ProductDetail }) {
+  const t = useTranslations();
   const form = useAppForm({
     ...productFormOpts(product),
     // Validate on submit, then on every change.
@@ -45,7 +47,7 @@ export function ProductForm({ product }: { product?: ProductDetail }) {
           <Card>
             <CardHeader>
               <CardTitle>
-                <h2>Details</h2>
+                <h2>{t("products.sections.details")}</h2>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -53,24 +55,33 @@ export function ProductForm({ product }: { product?: ProductDetail }) {
                 <form.AppField name="name">
                   {(field) => (
                     <field.TextField
-                      label="Name"
+                      label={t("products.fields.name")}
                       autoComplete="off"
                       autoFocus
                     />
                   )}
-                </form.AppField>                
+                </form.AppField>
                 <form.AppField name="price">
                   {(field) => (
                     <field.TextField
-                      label="Price"
+                      label={t("products.fields.price")}
                       inputMode="decimal"
                       autoComplete="off"
-                      addons={[<InputGroupAddon align="inline-start">€</InputGroupAddon>]}
+                      addons={[
+                        <InputGroupAddon align="inline-start">
+                          €
+                        </InputGroupAddon>,
+                      ]}
                     />
                   )}
                 </form.AppField>
                 <form.AppField name="description">
-                  {(field) => <field.TextEditorField label="Description" className="col-span-2" />}
+                  {(field) => (
+                    <field.TextEditorField
+                      label={t("products.fields.description")}
+                      className="col-span-2"
+                    />
+                  )}
                 </form.AppField>
               </div>
             </CardContent>
@@ -82,10 +93,10 @@ export function ProductForm({ product }: { product?: ProductDetail }) {
               nativeButton={false}
               render={<Link href={cancelHref} />}
             >
-              Cancel
+              {t("common.cancel")}
             </Button>
             <form.SubmitButton
-              label={product ? "Save changes" : "Create product"}
+              label={t(product ? "common.saveChanges" : "products.create")}
             />
           </div>
         </FieldGroup>

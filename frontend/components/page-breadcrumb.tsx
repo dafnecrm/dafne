@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useParams, usePathname } from "next/navigation";
 import {
   createContext,
@@ -99,17 +100,26 @@ interface Level {
   label: string | undefined;
 }
 
-/** "new" → "New", "audit-log" → "Audit log". */
-const segmentLabel = (segment: string) => {
-  const words = decodeURIComponent(segment).replace(/[-_]+/g, " ");
-  return words.charAt(0).toUpperCase() + words.slice(1);
-};
+/**
+ * The label of a fixed segment: its `breadcrumb` message ("new", "edit"),
+ * else the segment itself ("audit-log" → "Audit log").
+ */
+function useSegmentLabel() {
+  const t = useTranslations("breadcrumb");
+  return (segment: string) => {
+    if (t.has(segment as never)) return t(segment as never);
+    const words = decodeURIComponent(segment).replace(/[-_]+/g, " ");
+    return words.charAt(0).toUpperCase() + words.slice(1);
+  };
+}
 
 function ActiveBreadcrumb() {
   const pathname = usePathname();
   const params = useParams();
   const { labels } = useContext(LabelsContext);
   const active = findNavItem(pathname);
+  const t = useTranslations("nav");
+  const segmentLabel = useSegmentLabel();
   if (!active) return null;
 
   const dynamic = new Set(
@@ -119,8 +129,8 @@ function ActiveBreadcrumb() {
   );
   const levels: Level[] = [];
   if (active.section.href !== active.item.href || active.section.title !== active.item.title)
-    levels.push({ href: active.section.href, label: active.section.title });
-  levels.push({ href: active.item.href, label: active.item.title });
+    levels.push({ href: active.section.href, label: t(active.section.title) });
+  levels.push({ href: active.item.href, label: t(active.item.title) });
 
   // Segments after the page, e.g. "/customers" + "/abc" + "/edit".
   const rest = pathname

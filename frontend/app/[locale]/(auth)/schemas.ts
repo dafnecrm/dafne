@@ -3,12 +3,13 @@ import { z } from "zod";
 
 // Validation for the sign-in and sign-up forms.
 
-const email = z.email({ error: "Enter a valid email address" }).max(255);
+// Messages are message keys, translated where they are shown.
+const email = z.email({ error: "auth.validation.email" }).max(255);
 
 export const signInSchema = z.object({
   email,
   // No strength rules here: existing accounts may have older passwords.
-  password: z.string().min(1, { error: "Enter your password" }),
+  password: z.string().min(1, { error: "auth.validation.password" }),
   rememberMe: z.boolean().optional(),
 });
 
@@ -17,20 +18,19 @@ export const signUpSchema = z.object({
   firstname: z
     .string()
     .trim()
-    .min(1, { error: "Enter your first name" })
+    .min(1, { error: "auth.validation.firstname" })
     .max(127),
   lastname: z
     .string()
     .trim()
-    .min(1, { error: "Enter your last name" })
+    .min(1, { error: "auth.validation.lastname" })
     .max(127),
   email,
   password: z
     .string()
     .max(128) // backend limit
     .regex(/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}$/, {
-      error:
-        "Password must contain minimum 8 characters, at least one uppercase letter, one lowercase letter, one number and one special character",
+      error: "auth.validation.passwordRules",
     }),
 });
 

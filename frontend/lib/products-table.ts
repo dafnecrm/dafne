@@ -20,5 +20,10 @@ export const productsTable = defineDataTable({
     "updatedAt",
   ] satisfies ProductSortField[],
   defaultSort: { id: "name", desc: false },
-  filters: [{ field: "name" satisfies ProductFilterField, label: "Name" }],
+  filters: [
+    {
+      field: "name" satisfies ProductFilterField,
+      label: "products.fields.name",
+    },
+  ],
 });

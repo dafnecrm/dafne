@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { BreadcrumbLabel } from "@/components/page-breadcrumb";
@@ -12,11 +13,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ProductForm } from "../../product-form";
 import { loadProduct } from "../load-product";
 
-export const metadata: Metadata = { title: "Edit product" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("products");
+  return { title: t("editMeta") };
+}
 
 export default function EditProductPage({
   params,
-}: PageProps<"/products/[id]/edit">) {
+}: PageProps<"/[locale]/products/[id]/edit">) {
   return (
     <Suspense fallback={<Skeleton className="h-96 w-full" />}>
       <EditProduct params={params} />
@@ -26,8 +30,9 @@ export default function EditProductPage({
 
 async function EditProduct({
   params,
-}: Pick<PageProps<"/products/[id]/edit">, "params">) {
+}: Pick<PageProps<"/[locale]/products/[id]/edit">, "params">) {
   const product = await loadProduct((await params).id);
+  const t = await getTranslations();
 
   return (
     <PageContent>
@@ -36,9 +41,11 @@ async function EditProduct({
         label={product.name}
       />
       <PageContentHeader>
-        <PageContentTitle>Edit {product.name}</PageContentTitle>
+        <PageContentTitle>
+          {t("common.editTitle", { name: product.name })}
+        </PageContentTitle>
         <PageContentDescription>
-          Saving replaces the product&apos;s details.
+          {t("products.editDescription")}
         </PageContentDescription>
       </PageContentHeader>
       <PageContentBody>

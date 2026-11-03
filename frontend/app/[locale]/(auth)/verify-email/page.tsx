@@ -1,9 +1,13 @@
+import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { VerifyEmail } from "./verify-email";
 
-export const metadata: Metadata = { title: "Verify your email" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("auth.verify");
+  return { title: t("meta") };
+}
 
 /**
  * Shown after sign-up, after signing in with an unverified email, and when a

@@ -1,5 +1,7 @@
 "use client";
 
+import { useOptionLabels } from "@/i18n/options";
+import { useTranslations } from "next-intl";
 import { revalidateLogic } from "@tanstack/react-form-nextjs";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -18,6 +20,8 @@ import { ROLE_OPTIONS, userFormOpts, userSchema } from "./schema";
 
 /** Creates a user (admins only). Saving opens the new user's page. */
 export function UserForm() {
+  const t = useTranslations();
+  const roleOptions = useOptionLabels(ROLE_OPTIONS);
   const form = useAppForm({
     ...userFormOpts,
     // Validate on submit, then on every change.
@@ -47,7 +51,7 @@ export function UserForm() {
           <Card>
             <CardHeader>
               <CardTitle>
-                <h2>Details</h2>
+                <h2>{t("users.sections.details")}</h2>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -55,7 +59,7 @@ export function UserForm() {
                 <form.AppField name="firstname">
                   {(field) => (
                     <field.TextField
-                      label="First name"
+                      label={t("users.fields.firstname")}
                       autoComplete="off"
                       autoFocus
                     />
@@ -63,22 +67,28 @@ export function UserForm() {
                 </form.AppField>
                 <form.AppField name="lastname">
                   {(field) => (
-                    <field.TextField label="Last name" autoComplete="off" />
+                    <field.TextField
+                      label={t("users.fields.lastname")}
+                      autoComplete="off"
+                    />
                   )}
                 </form.AppField>
                 <form.AppField name="email">
                   {(field) => (
                     <field.TextField
-                      label="Email"
+                      label={t("users.fields.email")}
                       type="email"
                       autoComplete="off"
-                      placeholder="name@example.com"
+                      placeholder={t("common.emailPlaceholder")}
                     />
                   )}
                 </form.AppField>
                 <form.AppField name="role">
                   {(field) => (
-                    <field.SelectField label="Role" options={ROLE_OPTIONS} />
+                    <field.SelectField
+                      label={t("users.fields.role")}
+                      options={roleOptions}
+                    />
                   )}
                 </form.AppField>
               </div>
@@ -88,18 +98,15 @@ export function UserForm() {
           <Card>
             <CardHeader>
               <CardTitle>
-                <h2>Password</h2>
+                <h2>{t("users.sections.password")}</h2>
               </CardTitle>
-              <CardDescription>
-                The user signs in with this password once they verify their
-                email: share it with them securely.
-              </CardDescription>
+              <CardDescription>{t("users.passwordHint")}</CardDescription>
             </CardHeader>
             <CardContent>
               <form.AppField name="password">
                 {(field) => (
                   <field.PasswordField
-                    label="Password"
+                    label={t("users.fields.password")}
                     autoComplete="new-password"
                     className="md:max-w-sm"
                   />
@@ -114,9 +121,9 @@ export function UserForm() {
               nativeButton={false}
               render={<Link href="/users" />}
             >
-              Cancel
+              {t("common.cancel")}
             </Button>
-            <form.SubmitButton label="Create user" />
+            <form.SubmitButton label={t("users.create")} />
           </div>
         </FieldGroup>
       </form.AppForm>

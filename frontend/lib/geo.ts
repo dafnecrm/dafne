@@ -1,6 +1,7 @@
 "use server";
 
 import type * as contracts from "@backend/contracts";
+import { getTranslations } from "next-intl/server";
 import type { Json } from "@backend/contracts";
 import { BackendError, backendFetch } from "./backend";
 
@@ -27,13 +28,9 @@ export async function searchPlaces(
     return (await res.json()) as Json<contracts.GeoSearchResult>;
   } catch (error) {
     if (!(error instanceof BackendError)) throw error;
-    return {
-      places: [],
-      error:
-        error.status === 503
-          ? "Address search is unavailable. Try again later."
-          : error.message || "The search failed.",
-    };
+    // The backend's message is already in the user's language.
+    const t = await getTranslations("geo");
+    return { places: [], error: error.message || t("searchFailed") };
   }
 }
 

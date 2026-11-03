@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
+import { NextIntlClientProvider } from "next-intl";
+import { getTranslations } from "next-intl/server";
+import { locale as rootLocale } from "next/root-params";
 import { Geist, Geist_Mono, Inter, Figtree } from "next/font/google";
-import "./globals.css";
+import "../globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { THEME_SCRIPT } from "@/lib/theme";
 import { cn } from "@/lib/utils";
+import { routing } from "@/i18n/routing";
 
 const figtree = Figtree({subsets:['latin'],variable:'--font-sans'});
 
@@ -17,15 +21,22 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Dafne",
-  description: "A purrfect journey",
-};
+/** One prerendered shell per language. */
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }));
+}
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("app");
+  return { title: t("title"), description: t("description") };
+}
+
+export default async function RootLayout({
+  children,
+}: LayoutProps<"/[locale]">) {
   return (
     <html
-      lang="en"
+      lang={await rootLocale()}
       className={cn(
         "h-full",
         "antialiased",
@@ -41,7 +52,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
       <body className="min-h-full flex flex-col">
-        <TooltipProvider>{children}</TooltipProvider>
+        <NextIntlClientProvider>
+          <TooltipProvider>{children}</TooltipProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

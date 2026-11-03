@@ -2,6 +2,7 @@
 
 import { Combobox as ComboboxPrimitive } from "@base-ui/react";
 import { MapPinIcon, SearchIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import {
   Combobox,
@@ -30,13 +31,14 @@ const MIN_LENGTH = 3;
  */
 export function PlaceSearch({
   id,
-  placeholder = "Search an address…",
+  placeholder,
   onSelect,
 }: {
   id?: string;
   placeholder?: string;
   onSelect: (place: GeoPlace) => void;
 }) {
+  const t = useTranslations("geo");
   const [query, setQuery] = useState("");
   const [places, setPlaces] = useState<GeoPlace[]>([]);
   const [error, setError] = useState<string>();
@@ -67,10 +69,10 @@ export function PlaceSearch({
   const empty = error
     ? error
     : loading
-      ? "Searching…"
+      ? t("searching")
       : query.trim().length < MIN_LENGTH
-        ? "Type at least 3 characters."
-        : "No places found.";
+        ? t("tooShort", { min: MIN_LENGTH })
+        : t("noPlaces");
 
   return (
     <Combobox
@@ -95,7 +97,7 @@ export function PlaceSearch({
         </InputGroupAddon>
         <ComboboxPrimitive.Input
           id={id}
-          placeholder={placeholder}
+          placeholder={placeholder ?? t("searchPlaceholder")}
           render={<InputGroupInput />}
         />
       </InputGroup>

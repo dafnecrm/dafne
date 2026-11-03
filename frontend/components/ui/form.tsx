@@ -28,6 +28,7 @@ import {
 } from './input-group'
 import { Eye, EyeOff, TriangleAlertIcon } from 'lucide-react'
 import React, { useState } from 'react'
+import { useTranslations } from 'next-intl'
 
 /** Props every field takes. */
 type BaseFieldProps = {
@@ -63,6 +64,7 @@ function TextField({
   ...props
 }: TextFieldProps) {
   const field = useFieldContext<string>()
+  const errorText = useErrorText()
 
   return (
     <Field
@@ -88,7 +90,7 @@ function TextField({
       </InputGroup>
       <FieldError>
         {field.state.meta.errors.length > 0 &&
-          [...new Set(errorMessages(field.state.meta.errors))].map(
+          [...new Set(errorText(field.state.meta.errors))].map(
             (message, i) => <p key={i}>{message}</p>
           )}
       </FieldError>
@@ -98,10 +100,11 @@ function TextField({
 
 function PasswordField({ label, ...props }: Omit<TextFieldProps, 'type'>) {
   const [showPassword, setShowPassword] = useState(false)
+  const t = useTranslations('form')
   const showPasswordAddon = [
     <InputGroupAddon key={2} align={'inline-end'}>
       <InputGroupButton
-        aria-label={showPassword ? 'Hide password' : 'Show password'}
+        aria-label={showPassword ? t('hidePassword') : t('showPassword')}
         onClick={() => setShowPassword((show) => !show)}
       >
         {showPassword ? <EyeOff /> : <Eye />}
@@ -138,6 +141,7 @@ function NumberField({
   ...props
 }: Omit<TextFieldProps, 'type' | 'uncontrolled'>) {
   const field = useFieldContext<number | null>()
+  const errorText = useErrorText()
 
   return (
     <Field
@@ -167,7 +171,7 @@ function NumberField({
       </InputGroup>
       <FieldError>
         {field.state.meta.errors.length > 0 &&
-          [...new Set(errorMessages(field.state.meta.errors))].map(
+          [...new Set(errorText(field.state.meta.errors))].map(
             (message, i) => <p key={i}>{message}</p>
           )}
       </FieldError>
@@ -184,6 +188,7 @@ function TextareaField({
   ...props
 }: BaseFieldProps & Omit<React.ComponentProps<typeof Textarea>, OwnProps>) {
   const field = useFieldContext<string>()
+  const errorText = useErrorText()
 
   return (
     <Field
@@ -206,7 +211,7 @@ function TextareaField({
       />
       <FieldError>
         {field.state.meta.errors.length > 0 &&
-          [...new Set(errorMessages(field.state.meta.errors))].map(
+          [...new Set(errorText(field.state.meta.errors))].map(
             (message, i) => <p key={i}>{message}</p>
           )}
       </FieldError>
@@ -224,6 +229,7 @@ function TextEditorField({
 }: BaseFieldProps &
   Omit<React.ComponentProps<typeof TextEditor>, OwnProps | 'contentClassName'>) {
   const field = useFieldContext<string>()
+  const errorText = useErrorText()
 
   return (
     <Field
@@ -245,7 +251,7 @@ function TextEditorField({
       />
       <FieldError>
         {field.state.meta.errors.length > 0 &&
-          [...new Set(errorMessages(field.state.meta.errors))].map(
+          [...new Set(errorText(field.state.meta.errors))].map(
             (message, i) => <p key={i}>{message}</p>
           )}
       </FieldError>
@@ -278,6 +284,7 @@ function DatePickerField({
   ...props
 }: BaseFieldProps & Omit<DatePickerProps, OwnProps>) {
   const field = useFieldContext<string>()
+  const errorText = useErrorText()
 
   return (
     <Field
@@ -300,7 +307,7 @@ function DatePickerField({
       />
       <FieldError>
         {field.state.meta.errors.length > 0 &&
-          [...new Set(errorMessages(field.state.meta.errors))].map(
+          [...new Set(errorText(field.state.meta.errors))].map(
             (message, i) => <p key={i}>{message}</p>
           )}
       </FieldError>
@@ -327,6 +334,8 @@ function DateTimePickerField({
   ...props
 }: BaseFieldProps & Omit<DatePickerProps, OwnProps>) {
   const field = useFieldContext<string>()
+  const errorText = useErrorText()
+  const t = useTranslations('form')
   const { date, time } = splitDateTimeValue(field.state.value)
   const invalid = !field.state.meta.isValid
 
@@ -356,7 +365,7 @@ function DateTimePickerField({
         />
         <Input
           type="time"
-          aria-label={`${label} (time)`}
+          aria-label={t('timeOf', { label })}
           className="w-28 appearance-none [&::-webkit-calendar-picker-indicator]:hidden"
           value={time}
           disabled={!date || props.disabled}
@@ -372,7 +381,7 @@ function DateTimePickerField({
       </div>
       <FieldError>
         {field.state.meta.errors.length > 0 &&
-          [...new Set(errorMessages(field.state.meta.errors))].map(
+          [...new Set(errorText(field.state.meta.errors))].map(
             (message, i) => <p key={i}>{message}</p>
           )}
       </FieldError>
@@ -400,6 +409,7 @@ function CountrySelectField({
   disabled?: boolean
 }) {
   const field = useFieldContext<string>()
+  const errorText = useErrorText()
 
   return (
     <Field
@@ -421,7 +431,7 @@ function CountrySelectField({
       />
       <FieldError>
         {field.state.meta.errors.length > 0 &&
-          [...new Set(errorMessages(field.state.meta.errors))].map(
+          [...new Set(errorText(field.state.meta.errors))].map(
             (message, i) => <p key={i}>{message}</p>
           )}
       </FieldError>
@@ -444,6 +454,7 @@ function SelectField({
   disabled?: boolean
 }) {
   const field = useFieldContext<string | null>()
+  const errorText = useErrorText()
   const items =
     emptyLabel === undefined
       ? options
@@ -484,7 +495,7 @@ function SelectField({
       </Select>
       <FieldError>
         {field.state.meta.errors.length > 0 &&
-          [...new Set(errorMessages(field.state.meta.errors))].map(
+          [...new Set(errorText(field.state.meta.errors))].map(
             (message, i) => <p key={i}>{message}</p>
           )}
       </FieldError>
@@ -557,6 +568,21 @@ function SubmitButton({
 }
 
 /** Flattens a validation error (string, issue, list or map of them) into messages. */
+/**
+ * The messages of field or form errors, translated: contract keys
+ * ("customers.name.required") and frontend keys ("auth.validation.email")
+ * become text in the user's language; other text is shown as is.
+ */
+function useErrorText() {
+  const t = useTranslations()
+  return (error: unknown) =>
+    errorMessages(error).map((message) => {
+      const contract = `contracts.${message}`
+      if (t.has(contract as never)) return t(contract as never)
+      return t.has(message as never) ? t(message as never) : message
+    })
+}
+
 function errorMessages(error: unknown): string[] {
   if (!error) return []
   if (typeof error === 'string') return [error]
@@ -571,11 +597,13 @@ function errorMessages(error: unknown): string[] {
 
 function FormErrors() {
   const form = useFormContext()
+  const errorText = useErrorText()
+  const t = useTranslations('form')
   const formErrors = useSelector(form.store, (formState) => formState.errorMap)
   const messages = [
     ...new Set([
-      ...errorMessages(formErrors.onServer),
-      ...errorMessages(formErrors.onSubmit),
+      ...errorText(formErrors.onServer),
+      ...errorText(formErrors.onSubmit),
     ]),
   ]
 
@@ -584,7 +612,7 @@ function FormErrors() {
       <Alert variant="destructive">
         <TriangleAlertIcon />
         <AlertTitle>
-          {formErrors.onServer ? 'Something went wrong' : 'Form has errors!'}
+          {formErrors.onServer ? t('serverError') : t('hasErrors')}
         </AlertTitle>
         <AlertDescription>
           {messages.map((message, i) => (

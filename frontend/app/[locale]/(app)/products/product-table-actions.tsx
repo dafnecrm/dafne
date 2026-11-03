@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   EllipsisVerticalIcon,
   EyeIcon,
@@ -21,6 +22,7 @@ import { DeleteProductDialog, type ProductRef } from "./product-dialogs";
 /** Actions of a row of the products table, in a menu. */
 export function ProductTableActions({ product }: { product: ProductRef }) {
   const [deleting, setDeleting] = useState(false);
+  const t = useTranslations("common");
   const href = `/products/${encodeURIComponent(product.id)}`;
 
   return (
@@ -31,7 +33,7 @@ export function ProductTableActions({ product }: { product: ProductRef }) {
             <Button
               variant="ghost"
               size="icon-sm"
-              aria-label={`Actions for ${product.name}`}
+              aria-label={t("actionsFor", { name: product.name })}
             />
           }
         >
@@ -40,11 +42,11 @@ export function ProductTableActions({ product }: { product: ProductRef }) {
         <DropdownMenuContent align="end">
           <DropdownMenuItem render={<Link href={href} />}>
             <EyeIcon />
-            View details
+            {t("viewDetails")}
           </DropdownMenuItem>
           <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
             <PencilIcon />
-            Edit
+            {t("edit")}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
@@ -52,7 +54,7 @@ export function ProductTableActions({ product }: { product: ProductRef }) {
             onClick={() => setDeleting(true)}
           >
             <Trash2Icon />
-            Delete
+            {t("delete")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

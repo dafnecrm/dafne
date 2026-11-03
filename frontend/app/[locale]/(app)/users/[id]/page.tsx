@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { ArrowLeftIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -21,9 +22,14 @@ import { getUser } from "@/lib/users";
 import { NotAllowed } from "../not-allowed";
 import { UserDetails } from "../user-detail";
 
-export const metadata: Metadata = { title: "User" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("users");
+  return { title: t("singular") };
+}
 
-export default function UserPage({ params }: PageProps<"/users/[id]">) {
+export default function UserPage({
+  params,
+}: PageProps<"/[locale]/users/[id]">) {
   return (
     <Suspense fallback={<Skeleton className="h-96 w-full" />}>
       <UserProfile params={params} />
@@ -34,11 +40,10 @@ export default function UserPage({ params }: PageProps<"/users/[id]">) {
 /** Checks the role and fetches the user: name and avatar, then the details. */
 async function UserProfile({
   params,
-}: Pick<PageProps<"/users/[id]">, "params">) {
+}: Pick<PageProps<"/[locale]/users/[id]">, "params">) {
+  const t = await getTranslations("users");
   if (!isAdmin(await requireUser()))
-    return (
-      <NotAllowed>You need the admin role to see user details.</NotAllowed>
-    );
+    return <NotAllowed>{t("notAllowed.detail")}</NotAllowed>;
 
   const { id } = await params;
   let user;
@@ -48,9 +53,7 @@ async function UserProfile({
     if (error instanceof BackendError && error.status === 404) notFound();
     // The backend checks the role too (e.g. it changed since sign-in).
     if (error instanceof BackendError && error.status === 403)
-      return (
-        <NotAllowed>You need the admin role to see user details.</NotAllowed>
-      );
+      return <NotAllowed>{t("notAllowed.detail")}</NotAllowed>;
     throw error;
   }
 
@@ -83,7 +86,7 @@ async function UserProfile({
             render={<Link href="/users" />}
           >
             <ArrowLeftIcon data-icon="inline-start" />
-            All users
+            {t("all")}
           </Button>
         </PageContentAction>
       </PageContentHeader>

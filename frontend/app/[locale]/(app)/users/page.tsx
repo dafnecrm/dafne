@@ -1,3 +1,5 @@
+import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 import { PlusIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -20,21 +22,24 @@ import { usersTable } from "@/lib/users-table";
 import { NotAllowed } from "./not-allowed";
 import { UsersTable } from "./users-table";
 
-export const metadata: Metadata = { title: "Users" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("users");
+  return { title: t("title") };
+}
 
-export default function UsersPage({ searchParams }: PageProps<"/users">) {
+export default function UsersPage({
+  searchParams,
+}: PageProps<"/[locale]/users">) {
+  const t = useTranslations("users");
   return (
     <PageContent>
       <PageContentHeader>
-        <PageContentTitle>Users</PageContentTitle>
-        <PageContentDescription>
-          Everyone with an account. Filter by a field, or click a column to
-          sort.
-        </PageContentDescription>
+        <PageContentTitle>{t("title")}</PageContentTitle>
+        <PageContentDescription>{t("listDescription")}</PageContentDescription>
         <PageContentAction>
           <Button nativeButton={false} render={<Link href="/users/new" />}>
             <PlusIcon data-icon="inline-start" />
-            New user
+            {t("new")}
           </Button>
         </PageContentAction>
       </PageContentHeader>
@@ -51,7 +56,7 @@ export default function UsersPage({ searchParams }: PageProps<"/users">) {
 /** Checks the role and fetches one page; the client table renders it. */
 async function UsersList({
   searchParams,
-}: Pick<PageProps<"/users">, "searchParams">) {
+}: Pick<PageProps<"/[locale]/users">, "searchParams">) {
   if (!isAdmin(await requireUser())) return <NotAllowed />;
 
   const params = getTableParams(await searchParams, usersTable);

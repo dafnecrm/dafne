@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { EllipsisVerticalIcon, PencilIcon, Trash2Icon } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -16,6 +17,7 @@ import { DeleteProductDialog, type ProductRef } from "./product-dialogs";
 /** Actions on the product's page, in a menu. */
 export function ProductDetailActions({ product }: { product: ProductRef }) {
   const [deleting, setDeleting] = useState(false);
+  const t = useTranslations("common");
   const href = `/products/${encodeURIComponent(product.id)}`;
 
   return (
@@ -26,7 +28,7 @@ export function ProductDetailActions({ product }: { product: ProductRef }) {
             <Button
               variant="outline"
               size="icon-sm"
-              aria-label={`Actions for ${product.name}`}
+              aria-label={t("actionsFor", { name: product.name })}
             />
           }
         >
@@ -35,7 +37,7 @@ export function ProductDetailActions({ product }: { product: ProductRef }) {
         <DropdownMenuContent align="end">
           <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
             <PencilIcon />
-            Edit
+            {t("edit")}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
@@ -43,7 +45,7 @@ export function ProductDetailActions({ product }: { product: ProductRef }) {
             onClick={() => setDeleting(true)}
           >
             <Trash2Icon />
-            Delete
+            {t("delete")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

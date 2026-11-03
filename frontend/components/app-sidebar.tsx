@@ -7,6 +7,7 @@ import {
   PawPrint,
 } from "lucide-react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 import { Suspense, type ReactNode } from "react";
 import {
@@ -29,7 +30,7 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { findNavItem, NAV_SECTIONS } from "@/lib/navigation";
+import { findNavItem, NAV_SECTIONS, type NavTitle } from "@/lib/navigation";
 
 /** Active page uses the primary color (also on hover), icon included. */
 const ACTIVE_CLASSES =
@@ -57,6 +58,7 @@ export function AppSidebar({
   // On mobile the sidebar floats over the page: close it after picking a page.
   const closeOnMobile = () => isMobile && setOpenMobile(false);
   const isRail = useIsRail();
+  const t = useTranslations("nav");
 
   return (
     <Sidebar variant="floating" collapsible="icon">
@@ -73,7 +75,7 @@ export function AppSidebar({
               <div className="flex flex-col gap-0.5 leading-none">
                 <span className="font-medium">Dafne</span>
                 <span className="text-xs text-muted-foreground">
-                  A purrfect crm
+                  {t("tagline")}
                 </span>
               </div>
             </SidebarMenuButton>
@@ -106,7 +108,7 @@ export function AppSidebar({
  * routes such as /users/[id], so it's read behind a Suspense boundary; until
  * then the section shows with no active page.
  */
-export function NavSectionItems({ title }: { title: string }) {
+export function NavSectionItems({ title }: { title: NavTitle }) {
   return (
     <Suspense fallback={<NavSection title={title} pathname={null} />}>
       <ActiveNavSection title={title} />
@@ -114,7 +116,7 @@ export function NavSectionItems({ title }: { title: string }) {
   );
 }
 
-function ActiveNavSection({ title }: { title: string }) {
+function ActiveNavSection({ title }: { title: NavTitle }) {
   return <NavSection title={title} pathname={usePathname()} />;
 }
 
@@ -122,9 +124,10 @@ function NavSection({
   title,
   pathname,
 }: {
-  title: string;
+  title: NavTitle;
   pathname: string | null;
 }) {
+  const t = useTranslations("nav");
   const section = NAV_SECTIONS.find((s) => s.title === title);
   const active = pathname ? findNavItem(pathname) : undefined;
   const { isMobile, setOpenMobile } = useSidebar();
@@ -137,12 +140,12 @@ function NavSection({
       <SidebarMenuItem key={item.href}>
         <SidebarMenuButton
           isActive={item === active?.item}
-          tooltip={item.title}
+          tooltip={t(item.title)}
           className={ACTIVE_CLASSES}
           render={<Link href={item.href} />}
         >
           <item.icon />
-          <span>{item.title}</span>
+          <span>{t(item.title)}</span>
         </SidebarMenuButton>
       </SidebarMenuItem>
     ));
@@ -153,7 +156,7 @@ function NavSection({
       <CollapsibleTrigger
         render={<SidebarMenuButton className="font-medium" />}
       >
-        {section.title}
+        {t(section.title)}
         <ChevronRightIcon className="ml-auto transition-transform duration-200 group-data-panel-open/menu-button:rotate-90" />
       </CollapsibleTrigger>
       {section.items.length ? (
@@ -167,7 +170,7 @@ function NavSection({
                   render={<Link href={item.href} onClick={closeOnMobile} />}
                 >
                   <item.icon />
-                  <span>{item.title}</span>
+                  <span>{t(item.title)}</span>
                 </SidebarMenuSubButton>
               </SidebarMenuSubItem>
             ))}

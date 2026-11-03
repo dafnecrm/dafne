@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   EllipsisVerticalIcon,
   EyeIcon,
@@ -25,6 +26,7 @@ import {
 /** Actions of a row of the activities table, in a menu. */
 export function ActivityTableActions({ activity }: { activity: ActivityRef }) {
   const [deleting, setDeleting] = useState(false);
+  const t = useTranslations("common");
   const href = `/activities/${encodeURIComponent(activity.id)}`;
 
   return (
@@ -35,7 +37,7 @@ export function ActivityTableActions({ activity }: { activity: ActivityRef }) {
             <Button
               variant="ghost"
               size="icon-sm"
-              aria-label={`Actions for ${activity.name}`}
+              aria-label={t("actionsFor", { name: activity.name })}
             />
           }
         >
@@ -44,12 +46,12 @@ export function ActivityTableActions({ activity }: { activity: ActivityRef }) {
         <DropdownMenuContent align="end">
           <DropdownMenuItem render={<Link href={href} />}>
             <EyeIcon />
-            View details
+            {t("viewDetails")}
           </DropdownMenuItem>
           {ACTIVITY_STATUSES_ALLOW_EDIT.includes(activity.status) && (
             <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
               <PencilIcon />
-              Edit
+              {t("edit")}
             </DropdownMenuItem>
           )}
           <DropdownMenuSeparator />
@@ -58,7 +60,7 @@ export function ActivityTableActions({ activity }: { activity: ActivityRef }) {
             onClick={() => setDeleting(true)}
           >
             <Trash2Icon />
-            Delete
+            {t("delete")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

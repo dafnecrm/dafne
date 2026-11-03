@@ -1,3 +1,4 @@
+import { getLocale } from "next-intl/server";
 import { headers } from "next/headers";
 
 /** Base URL of the Nest API. */
@@ -26,7 +27,8 @@ export class BackendError extends Error {
 }
 
 /**
- * Calls the backend from the server, forwarding the browser's cookies.
+ * Calls the backend from the server, forwarding the browser's cookies and
+ * the user's language.
  * Throws a BackendError when the response is not ok.
  */
 export async function backendFetch(path: string, init: RequestInit = {}) {
@@ -34,6 +36,8 @@ export async function backendFetch(path: string, init: RequestInit = {}) {
   const cookie = (await headers()).get("cookie");
   if (cookie) requestHeaders.set("cookie", cookie);
   requestHeaders.set("origin", APP_URL);
+  // The backend answers errors in this language.
+  requestHeaders.set("accept-language", await getLocale());
   if (init.body && !requestHeaders.has("content-type")) {
     requestHeaders.set("content-type", "application/json");
   }

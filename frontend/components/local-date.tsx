@@ -1,12 +1,8 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import {
-  DEFAULT_LOCALE,
-  formatDate,
-  localeFor,
-  type DateFormat,
-} from "@/lib/dates";
+import { useLocale } from "next-intl";
+import { formatDate, localeFor, type DateFormat } from "@/lib/dates";
 
 const subscribe = () => () => {};
 
@@ -23,15 +19,21 @@ export function useTimeZone() {
 }
 
 /**
- * The date-fns locale for the browser's languages, or Italian when none is
- * supported. Italian on the server and during hydration, so the server's
- * HTML matches, then the browser's on the next render.
+ * The date-fns locale of the app's language. In the browser, a regional
+ * variant the user prefers is used when it's the same language ("en-GB"
+ * for English); the server and hydration use the plain language, so the
+ * server's HTML matches.
  */
 export function useDateLocale() {
+  const language = useLocale();
   return useSyncExternalStore(
     subscribe,
-    () => localeFor(navigator.languages),
-    () => DEFAULT_LOCALE,
+    () =>
+      localeFor([
+        ...navigator.languages.filter((tag) => tag.split("-")[0] === language),
+        language,
+      ]),
+    () => localeFor([language]),
   );
 }
 

@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { ShieldAlertIcon } from "lucide-react";
 import {
   Empty,
@@ -8,19 +9,16 @@ import {
 } from "@/components/ui/empty";
 
 /** Shown on the users pages to non-admins. */
-export function NotAllowed({
-  children = "You need the admin role to see the list of users.",
-}: {
-  children?: React.ReactNode;
-}) {
+export function NotAllowed({ children }: { children?: React.ReactNode }) {
+  const t = useTranslations("users.notAllowed");
   return (
     <Empty>
       <EmptyHeader>
         <EmptyMedia variant="icon">
           <ShieldAlertIcon />
         </EmptyMedia>
-        <EmptyTitle>Admins only</EmptyTitle>
-        <EmptyDescription>{children}</EmptyDescription>
+        <EmptyTitle>{t("title")}</EmptyTitle>
+        <EmptyDescription>{children ?? t("list")}</EmptyDescription>
       </EmptyHeader>
     </Empty>
   );

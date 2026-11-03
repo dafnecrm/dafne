@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import {
@@ -44,36 +45,39 @@ interface DialogProps {
 }
 
 export function ReopenActivityDialog(props: DialogProps) {
+  const t = useTranslations();
   return (
     <ConfirmDialog
       {...props}
-      title={`Reopen ${props.activity.name}?`}
-      description="The activity will be open and editable again."
-      label="Reopen"
+      title={t("activities.reopenTitle", { name: props.activity.name })}
+      description={t("activities.reopenDescription")}
+      label={t("activities.reopen")}
       run={reopenActivity}
     />
   );
 }
 
 export function CloseActivityDialog(props: DialogProps) {
+  const t = useTranslations();
   return (
     <ConfirmDialog
       {...props}
-      title={`Close ${props.activity.name}?`}
-      description="The activity will no longer be editable."
-      label="Close"
+      title={t("activities.closeTitle", { name: props.activity.name })}
+      description={t("activities.closeDescription")}
+      label={t("activities.close")}
       run={closeActivity}
     />
   );
 }
 
 export function DeleteActivityDialog(props: DialogProps) {
+  const t = useTranslations();
   return (
     <ConfirmDialog
       {...props}
-      title={`Delete ${props.activity.name}?`}
-      description="The activity will no longer be listed or editable."
-      label="Delete"
+      title={t("common.deleteTitle", { name: props.activity.name })}
+      description={t("activities.deleteDescription")}
+      label={t("common.delete")}
       run={deleteActivity}
     />
   );
@@ -96,6 +100,7 @@ function ConfirmDialog({
 }) {
   const router = useRouter();
   const [error, setError] = useState<string>();
+  const t = useTranslations();
   const [pending, startTransition] = useTransition();
 
   const confirm = () =>
@@ -123,7 +128,9 @@ function ConfirmDialog({
           </p>
         )}
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={pending}>
+            {t("common.cancel")}
+          </AlertDialogCancel>
           <AlertDialogAction
             variant="destructive"
             disabled={pending}

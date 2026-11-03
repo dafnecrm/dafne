@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import {
@@ -12,11 +13,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ActivityForm } from "../../activity-form";
 import { loadActivity } from "../load-activity";
 
-export const metadata: Metadata = { title: "Edit activity" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("activities");
+  return { title: t("editMeta") };
+}
 
 export default function EditActivityPage({
   params,
-}: PageProps<"/activities/[id]/edit">) {
+}: PageProps<"/[locale]/activities/[id]/edit">) {
   return (
     <Suspense fallback={<Skeleton className="h-96 w-full" />}>
       <EditActivity params={params} />
@@ -26,8 +30,9 @@ export default function EditActivityPage({
 
 async function EditActivity({
   params,
-}: Pick<PageProps<"/activities/[id]/edit">, "params">) {
+}: Pick<PageProps<"/[locale]/activities/[id]/edit">, "params">) {
   const activity = await loadActivity((await params).id);
+  const t = await getTranslations();
 
   return (
     <PageContent>
@@ -36,9 +41,11 @@ async function EditActivity({
         label={activity.name}
       />
       <PageContentHeader>
-        <PageContentTitle>Edit {activity.name}</PageContentTitle>
+        <PageContentTitle>
+          {t("common.editTitle", { name: activity.name })}
+        </PageContentTitle>
         <PageContentDescription>
-          Saving replaces the activity&apos;s details.
+          {t("activities.editDescription")}
         </PageContentDescription>
       </PageContentHeader>
       <PageContentBody>

@@ -9,7 +9,11 @@
  * (1-based), `?limit=` (rows per page), `?sort=` (column id) and `?dir=`
  * (asc | desc). The URL is the source of truth, so any view can be shared or
  * reloaded. Filter fields must not be named page, limit, sort or dir.
+ *
+ * Labels are message keys (see i18n/keys.ts), translated by DataTable.
  */
+
+import type { MessageKey } from "@/i18n/keys";
 
 export interface TableSort {
   /** Column id, which is also the backend's sort field. */
@@ -31,9 +35,15 @@ export type TableFilters = Record<string, string>;
 export interface TableFilterDef {
   /** Backend filter field, e.g. "email". */
   field: string;
-  label: string;
-  placeholder?: string;
-  options?: readonly { value: string; label: string }[];
+  label: MessageKey;
+  placeholder?: MessageKey;
+  options?: readonly TableOption[];
+}
+
+/** A value to pick, e.g. `{ value: "person", label: "customers.type.person" }`. */
+export interface TableOption {
+  value: string;
+  label: MessageKey;
 }
 
 /** A table's config, with defaults filled in (see `defineDataTable`). */
@@ -144,24 +154,4 @@ export function tableHref(
   if (page > 1) query.set("page", String(page));
   const qs = query.toString();
   return qs ? `${config.path}?${qs}` : config.path;
-}
-
-/**
- * Human-readable filters, e.g. `Email contains “ada” and Role is “Admin”`.
- * Empty when no filter is active.
- */
-export function describeFilters(
-  active: TableFilters,
-  filters: readonly TableFilterDef[],
-) {
-  return filters
-    .flatMap((def) => {
-      const value = active[def.field];
-      if (!value) return [];
-      const option = def.options?.find((o) => o.value === value);
-      return option
-        ? `${def.label} is “${option.label}”`
-        : `${def.label} contains “${value}”`;
-    })
-    .join(" and ");
 }

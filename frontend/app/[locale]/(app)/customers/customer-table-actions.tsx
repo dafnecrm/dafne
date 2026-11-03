@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   CopyIcon,
   EllipsisVerticalIcon,
@@ -22,6 +23,7 @@ import { DeleteCustomerDialog, type CustomerRef } from "./customer-dialogs";
 /** Actions of a row of the customers table, in a menu. */
 export function CustomerTableActions({ customer }: { customer: CustomerRef }) {
   const [deleting, setDeleting] = useState(false);
+  const t = useTranslations("common");
   const href = `/customers/${encodeURIComponent(customer.id)}`;
   const { email } = customer;
 
@@ -33,7 +35,7 @@ export function CustomerTableActions({ customer }: { customer: CustomerRef }) {
             <Button
               variant="ghost"
               size="icon-sm"
-              aria-label={`Actions for ${customer.name}`}
+              aria-label={t("actionsFor", { name: customer.name })}
             />
           }
         >
@@ -42,11 +44,11 @@ export function CustomerTableActions({ customer }: { customer: CustomerRef }) {
         <DropdownMenuContent align="end">
           <DropdownMenuItem render={<Link href={href} />}>
             <UserRoundIcon />
-            View details
+            {t("viewDetails")}
           </DropdownMenuItem>
           <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
             <PencilIcon />
-            Edit
+            {t("edit")}
           </DropdownMenuItem>
           {email && (
             <>
@@ -55,7 +57,7 @@ export function CustomerTableActions({ customer }: { customer: CustomerRef }) {
                 onClick={() => navigator.clipboard.writeText(email)}
               >
                 <CopyIcon />
-                Copy email
+                {t("copyEmail")}
               </DropdownMenuItem>
             </>
           )}
@@ -65,7 +67,7 @@ export function CustomerTableActions({ customer }: { customer: CustomerRef }) {
             onClick={() => setDeleting(true)}
           >
             <Trash2Icon />
-            Delete
+            {t("delete")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

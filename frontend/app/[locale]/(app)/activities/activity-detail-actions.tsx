@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   CircleOffIcon,
   EllipsisVerticalIcon,
@@ -30,6 +31,7 @@ import {
 /** Actions on the activity's page, in a menu. */
 export function ActivityDetailActions({ activity }: { activity: ActivityRef }) {
   const [dialog, setDialog] = useState<"reopen" | "close" | "delete">();
+  const t = useTranslations();
   const href = `/activities/${encodeURIComponent(activity.id)}`;
   const closeDialog = () => setDialog(undefined);
 
@@ -41,7 +43,7 @@ export function ActivityDetailActions({ activity }: { activity: ActivityRef }) {
             <Button
               variant="outline"
               size="icon-sm"
-              aria-label={`Actions for ${activity.name}`}
+              aria-label={t("common.actionsFor", { name: activity.name })}
             />
           }
         >
@@ -51,19 +53,19 @@ export function ActivityDetailActions({ activity }: { activity: ActivityRef }) {
           {ACTIVITY_STATUSES_ALLOW_EDIT.includes(activity.status) && (
             <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
               <PencilIcon />
-              Edit
+              {t("common.edit")}
             </DropdownMenuItem>
           )}
           {ACTIVITY_STATUSES_ALLOW_REOPEN.includes(activity.status) && (
             <DropdownMenuItem onClick={() => setDialog("reopen")}>
               <RotateCcwIcon />
-              Reopen
+              {t("activities.reopen")}
             </DropdownMenuItem>
           )}
           {ACTIVITY_STATUSES_ALLOW_CLOSE.includes(activity.status) && (
             <DropdownMenuItem onClick={() => setDialog("close")}>
               <CircleOffIcon />
-              Close
+              {t("activities.close")}
             </DropdownMenuItem>
           )}
           <DropdownMenuSeparator />
@@ -72,7 +74,7 @@ export function ActivityDetailActions({ activity }: { activity: ActivityRef }) {
             onClick={() => setDialog("delete")}
           >
             <Trash2Icon />
-            Delete
+            {t("common.delete")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

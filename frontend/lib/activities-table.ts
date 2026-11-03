@@ -4,22 +4,23 @@ import type {
   ActivityType,
   ActivityStatus,
 } from "@backend/contracts";
+import type { MessageKey } from "@/i18n/keys";
 import { defineDataTable } from "./data-table";
 import { CircleIcon, CircleOffIcon, LucideIcon } from "lucide-react";
 
-/** Labels of the type values. */
+/** Labels (message keys) of the type values. */
 export const ACTIVITY_TYPE_OPTIONS = [
-  { value: "call", label: "Call" },
-  { value: "email", label: "Email" },
-  { value: "meeting", label: "Meeting" },
-  { value: "task", label: "Task" },
-] satisfies { value: ActivityType; label: string }[];
+  { value: "call", label: "activities.type.call" },
+  { value: "email", label: "activities.type.email" },
+  { value: "meeting", label: "activities.type.meeting" },
+  { value: "task", label: "activities.type.task" },
+] satisfies { value: ActivityType; label: MessageKey }[];
 
-/** Labels of the status values. */
+/** Labels (message keys) of the status values. */
 export const ACTIVITY_STATUS_OPTIONS = [
-  { value: "open", label: "Open", icon: CircleIcon },
-  { value: "closed", label: "Closed", icon: CircleOffIcon },
-] satisfies { value: ActivityStatus; label: string; icon: LucideIcon }[];
+  { value: "open", label: "activities.status.open", icon: CircleIcon },
+  { value: "closed", label: "activities.status.closed", icon: CircleOffIcon },
+] satisfies { value: ActivityStatus; label: MessageKey; icon: LucideIcon }[];
 
 /**
  * The activities table: plain data with no server-only imports (unlike
@@ -44,17 +45,18 @@ export const activitiesTable = defineDataTable({
   ] satisfies ActivitySortField[],
   defaultSort: { id: "name", desc: false },
   filters: [
-    { field: "name" satisfies ActivityFilterField, label: "Name" },
+    {
+      field: "name" satisfies ActivityFilterField,
+      label: "activities.fields.name",
+    },
     {
       field: "type" satisfies ActivityFilterField,
-      label: "Type",
-      placeholder: "Any type",
+      label: "activities.fields.type",
       options: ACTIVITY_TYPE_OPTIONS,
     },
     {
       field: "status" satisfies ActivityFilterField,
-      label: "Status",
-      placeholder: "Any status",
+      label: "activities.fields.status",
       options: ACTIVITY_STATUS_OPTIONS,
     },
   ],

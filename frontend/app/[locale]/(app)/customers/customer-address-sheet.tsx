@@ -1,6 +1,8 @@
 "use client";
 
 import { revalidateLogic } from "@tanstack/react-form-nextjs";
+import { useTranslations } from "next-intl";
+import { useOptionLabels } from "@/i18n/options";
 import { Button } from "@/components/ui/button";
 import { PlaceSearch } from "@/components/place-search";
 import {
@@ -49,12 +51,13 @@ export function CustomerAddressSheet({
   address?: AddressFormValues;
   onSave: (address: AddressFormValues) => void;
 }) {
+  const t = useTranslations("customers.addresses");
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="sm:max-w-md">
         <SheetHeader>
-          <SheetTitle>{address ? "Edit address" : "Add address"}</SheetTitle>
-          <SheetDescription>Saved together with the customer.</SheetDescription>
+          <SheetTitle>{address ? t("edit") : t("add")}</SheetTitle>
+          <SheetDescription>{t("savedWith")}</SheetDescription>
         </SheetHeader>
         {/* The content unmounts when the sheet closes, so each opening starts from `address`. */}
         <AddressForm
@@ -84,6 +87,10 @@ function AddressForm({
   address?: AddressFormValues;
   onSave: (address: AddressFormValues) => void;
 }) {
+  const t = useTranslations();
+  const typeOptions = useOptionLabels(
+    addressTypeOptions(customerType, usedTypes),
+  );
   const form = useAppForm({
     defaultValues: address ?? emptyAddress(customerType, usedTypes),
     // Validate on submit, then on every change.
@@ -119,34 +126,44 @@ function AddressForm({
           <form.AppField name="type">
             {(field) => (
               <field.SelectField
-                label="Type"
-                options={addressTypeOptions(customerType, usedTypes)}
+                label={t("customers.addresses.fields.type")}
+                options={typeOptions}
               />
             )}
           </form.AppField>
           <Field>
-            <FieldLabel htmlFor="address-search">Search</FieldLabel>
+            <FieldLabel htmlFor="address-search">
+              {t("common.search")}
+            </FieldLabel>
             <PlaceSearch
               id="address-search"
               onSelect={(place) => fillFrom(place)}
             />
             <FieldDescription>
-              Pick a place to fill in the fields below, then check them.
+              {t("customers.addresses.searchHint")}
             </FieldDescription>
           </Field>
           <form.AppField name="street">
-            {(field) => <field.TextField label="Street" autoComplete="off" />}
+            {(field) => (
+              <field.TextField
+                label={t("customers.addresses.fields.street")}
+                autoComplete="off"
+              />
+            )}
           </form.AppField>
           <div className="grid grid-cols-3 gap-4">
             <form.AppField name="postalCode">
               {(field) => (
-                <field.TextField label="Postal code" autoComplete="off" />
+                <field.TextField
+                  label={t("customers.addresses.fields.postalCode")}
+                  autoComplete="off"
+                />
               )}
             </form.AppField>
             <form.AppField name="city">
               {(field) => (
                 <field.TextField
-                  label="City"
+                  label={t("customers.addresses.fields.city")}
                   autoComplete="off"
                   className="col-span-2"
                 />
@@ -155,17 +172,28 @@ function AddressForm({
           </div>
           <form.AppField name="region">
             {(field) => (
-              <field.TextField label="State / province" autoComplete="off" />
+              <field.TextField
+                label={t("customers.addresses.fields.region")}
+                autoComplete="off"
+              />
             )}
           </form.AppField>
           <form.AppField name="countryCode">
-            {(field) => <field.CountrySelectField label="Country" />}
+            {(field) => (
+              <field.CountrySelectField
+                label={t("customers.addresses.fields.country")}
+              />
+            )}
           </form.AppField>
         </FieldGroup>
         <SheetFooter>
-          <form.SubmitButton label={address ? "Save address" : "Add address"} />
+          <form.SubmitButton
+            label={t(
+              address ? "customers.addresses.save" : "customers.addresses.add",
+            )}
+          />
           <SheetClose render={<Button type="button" variant="outline" />}>
-            Cancel
+            {t("common.cancel")}
           </SheetClose>
         </SheetFooter>
       </form.AppForm>

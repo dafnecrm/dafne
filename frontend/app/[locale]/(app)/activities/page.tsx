@@ -1,3 +1,5 @@
+import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 import { PlusIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -18,22 +20,24 @@ import { activitiesTable } from "@/lib/activities-table";
 import { requireUser } from "@/lib/session";
 import { ActivitiesTable } from "./activities-table";
 
-export const metadata: Metadata = { title: "Activities" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("activities");
+  return { title: t("title") };
+}
 
 export default function ActivitiesPage({
   searchParams,
-}: PageProps<"/activities">) {
+}: PageProps<"/[locale]/activities">) {
+  const t = useTranslations();
   return (
     <PageContent>
       <PageContentHeader>
-        <PageContentTitle>Activities</PageContentTitle>
-        <PageContentDescription>
-          Filter by a field, or click a column to sort.
-        </PageContentDescription>
+        <PageContentTitle>{t("activities.title")}</PageContentTitle>
+        <PageContentDescription>{t("common.listHint")}</PageContentDescription>
         <PageContentAction>
           <Button nativeButton={false} render={<Link href="/activities/new" />}>
             <PlusIcon data-icon="inline-start" />
-            New activity
+            {t("activities.new")}
           </Button>
         </PageContentAction>
       </PageContentHeader>
@@ -50,7 +54,7 @@ export default function ActivitiesPage({
 /** Fetches one page; the client table renders it. */
 async function ActivitiesList({
   searchParams,
-}: Pick<PageProps<"/activities">, "searchParams">) {
+}: Pick<PageProps<"/[locale]/activities">, "searchParams">) {
   await requireUser();
   const params = getTableParams(await searchParams, activitiesTable);
   const data = await listActivities({

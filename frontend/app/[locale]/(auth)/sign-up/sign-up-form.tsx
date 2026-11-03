@@ -1,18 +1,21 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { revalidateLogic } from "@tanstack/react-form-nextjs";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { FieldGroup } from "@/components/ui/field";
 import { setServerError, useAppForm } from "@/lib/app-form/app-form";
 import { useResetOnLeave } from "@/lib/app-form/reset-on-leave";
-import { authClient, authErrorMessage } from "@/lib/auth-client";
+import { authClient, useAuthErrorMessage } from "@/lib/auth-client";
 import { signUpFormOpts, signUpSchema } from "../schemas";
 import { VERIFY_EMAIL_PATH } from "../verify-email/verify-email";
 
 export function SignUpForm() {
   const router = useRouter();
   const [navigating, startTransition] = useTransition();
+  const t = useTranslations("auth");
+  const authErrorMessage = useAuthErrorMessage();
 
   const form = useAppForm({
     ...signUpFormOpts,
@@ -61,35 +64,41 @@ export function SignUpForm() {
           <div className="grid grid-cols-2 gap-3">
             <form.AppField name="firstname">
               {(field) => (
-                <field.TextField label="First name" autoComplete="given-name" />
+                <field.TextField
+                  label={t("fields.firstname")}
+                  autoComplete="given-name"
+                />
               )}
             </form.AppField>
             <form.AppField name="lastname">
               {(field) => (
-                <field.TextField label="Last name" autoComplete="family-name" />
+                <field.TextField
+                  label={t("fields.lastname")}
+                  autoComplete="family-name"
+                />
               )}
             </form.AppField>
           </div>
           <form.AppField name="email">
             {(field) => (
               <field.TextField
-                label="Email"
+                label={t("fields.email")}
                 type="email"
                 autoComplete="email"
-                placeholder="you@example.com"
+                placeholder={t("fields.emailPlaceholder")}
               />
             )}
           </form.AppField>
           <form.AppField name="password">
             {(field) => (
               <field.PasswordField
-                label="Password"
+                label={t("fields.password")}
                 autoComplete="new-password"
               />
             )}
           </form.AppField>
           <form.SubmitButton
-            label="Create account"
+            label={t("signUp.submit")}
             pending={navigating}
             className="w-full"
           />

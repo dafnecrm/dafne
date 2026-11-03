@@ -1,5 +1,6 @@
 import path from "node:path";
 import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
 
 /**
  * The parent folder with backend/ and frontend/ side by side: the frontend
@@ -34,4 +35,7 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+/** Points next-intl at i18n/request.ts (the per-request locale and messages). */
+const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
+
+export default withNextIntl(nextConfig);

@@ -1,5 +1,6 @@
 "use server";
 
+import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { BackendError, backendFetch } from "@/lib/backend";
 import type { UserDetail } from "@/lib/users";
@@ -15,12 +16,13 @@ export interface ActionError {
   error: string;
 }
 
-function errorMessage(error: unknown) {
+async function errorMessage(error: unknown) {
   if (!(error instanceof BackendError)) throw error;
-  if (error.status === 401) return "Your session has expired. Sign in again.";
-  if (error.status === 403) return "Only admins can create users.";
-  // 409 (email taken) and 400 carry a message meant for the user.
-  return error.message || "Something went wrong. Please try again.";
+  const t = await getTranslations();
+  if (error.status === 401) return t("common.errors.sessionExpired");
+  if (error.status === 403) return t("users.adminsOnly");
+  // 409 (email taken) and 400 carry a message meant for the user, translated by the backend.
+  return error.message || t("common.errors.generic");
 }
 
 /**
@@ -30,7 +32,8 @@ function errorMessage(error: unknown) {
  */
 export async function createUser(values: UserFormValues): Promise<ActionError> {
   const parsed = userSchema.safeParse(values);
-  if (!parsed.success) return { error: "Some fields are not valid." };
+  if (!parsed.success)
+    return { error: (await getTranslations())("common.errors.invalid") };
 
   let id: string;
   try {
@@ -40,7 +43,7 @@ export async function createUser(values: UserFormValues): Promise<ActionError> {
     });
     id = ((await res.json()) as UserDetail).id;
   } catch (error) {
-    return { error: errorMessage(error) };
+    return { error: await errorMessage(error) };
   }
   // Outside the try: redirect works by throwing.
   redirect(`/users/${encodeURIComponent(id)}`);

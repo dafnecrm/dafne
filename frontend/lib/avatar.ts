@@ -37,7 +37,12 @@ export async function fileToAvatar(file: File): Promise<string> {
         return url;
     }
   }
-  throw new Error(
-    "This image is too detailed to use as an avatar. Try another one.",
-  );
+  throw new AvatarTooDetailedError();
+}
+
+/** The image can't be made small enough for an avatar (see fileToAvatar). */
+export class AvatarTooDetailedError extends Error {
+  constructor() {
+    super("This image is too detailed to use as an avatar.");
+  }
 }

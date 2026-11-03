@@ -1,5 +1,6 @@
 "use server";
 
+import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { BackendError, backendFetch } from "@/lib/backend";
 import type { ActivityDetail } from "@/lib/activities";
@@ -14,11 +15,13 @@ export interface ActionError {
   error: string;
 }
 
-function errorMessage(error: unknown) {
+/** The error to show; the backend's own message is already translated. */
+async function errorMessage(error: unknown) {
   if (!(error instanceof BackendError)) throw error;
-  if (error.status === 401) return "Your session has expired. Sign in again.";
-  if (error.status === 404) return "This activity no longer exists.";
-  return error.message || "Something went wrong. Please try again.";
+  const t = await getTranslations();
+  if (error.status === 401) return t("common.errors.sessionExpired");
+  if (error.status === 404) return t("activities.notFound");
+  return error.message || t("common.errors.generic");
 }
 
 /**
@@ -30,7 +33,8 @@ export async function saveActivity(
   values: ActivityFormValues,
 ): Promise<ActionError> {
   const parsed = activitySchema.safeParse(values);
-  if (!parsed.success) return { error: "Some fields are not valid." };
+  if (!parsed.success)
+    return { error: (await getTranslations())("common.errors.invalid") };
 
   let savedId: string;
   try {
@@ -43,7 +47,7 @@ export async function saveActivity(
     );
     savedId = ((await res.json()) as ActivityDetail).id;
   } catch (error) {
-    return { error: errorMessage(error) };
+    return { error: await errorMessage(error) };
   }
   // Outside the try: redirect works by throwing.
   redirect(`/activities/${encodeURIComponent(savedId)}`);
@@ -60,7 +64,7 @@ export async function deleteActivity(id: string): Promise<ActionError | null> {
     });
     return null;
   } catch (error) {
-    return { error: errorMessage(error) };
+    return { error: await errorMessage(error) };
   }
 }
 
@@ -75,7 +79,7 @@ export async function closeActivity(id: string): Promise<ActionError | null> {
     });
     return null;
   } catch (error) {
-    return { error: errorMessage(error) };
+    return { error: await errorMessage(error) };
   }
 }
 
@@ -90,6 +94,6 @@ export async function reopenActivity(id: string): Promise<ActionError | null> {
     });
     return null;
   } catch (error) {
-    return { error: errorMessage(error) };
+    return { error: await errorMessage(error) };
   }
 }

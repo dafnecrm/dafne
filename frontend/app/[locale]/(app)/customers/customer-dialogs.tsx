@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import {
   AlertDialog,
@@ -38,6 +39,7 @@ export function DeleteCustomerDialog({
 }) {
   const router = useRouter();
   const [error, setError] = useState<string>();
+  const t = useTranslations();
   const [pending, startTransition] = useTransition();
 
   const confirm = () =>
@@ -56,9 +58,11 @@ export function DeleteCustomerDialog({
     <AlertDialog open onOpenChange={(open) => !open && onClose()}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete {customer.name}?</AlertDialogTitle>
+          <AlertDialogTitle>
+            {t("common.deleteTitle", { name: customer.name })}
+          </AlertDialogTitle>
           <AlertDialogDescription>
-            The customer will no longer be listed or editable.
+            {t("customers.deleteDescription")}
           </AlertDialogDescription>
         </AlertDialogHeader>
         {error && (
@@ -67,14 +71,16 @@ export function DeleteCustomerDialog({
           </p>
         )}
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={pending}>
+            {t("common.cancel")}
+          </AlertDialogCancel>
           <AlertDialogAction
             variant="destructive"
             disabled={pending}
             onClick={confirm}
           >
             {pending && <Spinner data-icon="inline-start" />}
-            Delete
+            {t("common.delete")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

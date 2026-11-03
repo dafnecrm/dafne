@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { CalendarPlusIcon, MailIcon, ShieldIcon, UserIcon } from "lucide-react";
 import { Detail, DetailSection } from "@/components/detail";
 import { LocalDate } from "@/components/local-date";
@@ -13,46 +14,51 @@ import { AvatarUpload } from "./avatar-upload";
  */
 export function ProfileDetails({ user }: { user: User }) {
   const role = user.role ?? "user";
+  const t = useTranslations();
 
-  return (<>
-    <DetailSection title="Profile" groupClassName="flex flex-row gap-12!">
-      <AvatarUpload
-        image={user.image ?? null}
-        initials={`${user.firstname[0] ?? ""}${user.lastname[0] ?? ""}`.toUpperCase()}
-      />
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-10">
-        <Detail icon={UserIcon} label="First name">
-          {user.firstname}
-        </Detail>
-        <Detail icon={UserIcon} label="Last name">
-          {user.lastname}
-        </Detail>
-        <Detail icon={MailIcon} label="Email">
-          <div className="min-w-0 truncate" title={user.email}>
-            {user.email}
-          </div>
-          {user.emailVerified ? (
-            <Badge variant="outline" className="shrink-0">
-              Verified
+  return (
+    <>
+      <DetailSection
+        title={t("users.sections.profile")}
+        groupClassName="flex flex-row gap-12!"
+      >
+        <AvatarUpload
+          image={user.image ?? null}
+          initials={`${user.firstname[0] ?? ""}${user.lastname[0] ?? ""}`.toUpperCase()}
+        />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-10">
+          <Detail icon={UserIcon} label={t("users.fields.firstname")}>
+            {user.firstname}
+          </Detail>
+          <Detail icon={UserIcon} label={t("users.fields.lastname")}>
+            {user.lastname}
+          </Detail>
+          <Detail icon={MailIcon} label={t("users.fields.email")}>
+            <div className="min-w-0 truncate" title={user.email}>
+              {user.email}
+            </div>
+            {user.emailVerified ? (
+              <Badge variant="outline" className="shrink-0">
+                {t("users.verified")}
+              </Badge>
+            ) : (
+              <Badge variant="secondary" className="shrink-0">
+                {t("users.notVerified")}
+              </Badge>
+            )}
+          </Detail>
+          <Detail icon={ShieldIcon} label={t("users.fields.role")}>
+            <Badge variant={role === "admin" ? "default" : "secondary"}>
+              {t.has(`users.role.${role}` as never)
+                ? t(`users.role.${role}` as "users.role.user")
+                : role}
             </Badge>
-          ) : (
-            <Badge variant="secondary" className="shrink-0">
-              Not verified
-            </Badge>
-          )}
-        </Detail>
-        <Detail icon={ShieldIcon} label="Role">
-          <Badge variant={role === "admin" ? "default" : "secondary"}>
-            {role}
-          </Badge>
-        </Detail>
-        <Detail icon={CalendarPlusIcon} label="Member since">
-          <LocalDate value={user.createdAt} format="longDate" />
-        </Detail>
-      </div>
-
-
-    </DetailSection>
-  </>
+          </Detail>
+          <Detail icon={CalendarPlusIcon} label={t("account.memberSince")}>
+            <LocalDate value={user.createdAt} format="longDate" />
+          </Detail>
+        </div>
+      </DetailSection>
+    </>
   );
 }

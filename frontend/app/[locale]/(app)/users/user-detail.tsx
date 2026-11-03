@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import {
   ActivityIcon,
   BanIcon,
@@ -29,98 +30,108 @@ import type { UserDetail, UserSession } from "@/lib/users";
 
 /** The details of a user: profile, access, sign-in methods, sessions and record. */
 export function UserDetails({ user }: { user: UserDetail }) {
+  const t = useTranslations();
   const role = user.role ?? "user";
 
   return (
     <>
-      <DetailSection title="Profile">
-        <Detail icon={UserIcon} label="First name">
+      <DetailSection title={t("users.sections.profile")}>
+        <Detail icon={UserIcon} label={t("users.fields.firstname")}>
           {user.firstname}
         </Detail>
-        <Detail icon={UserIcon} label="Last name">
+        <Detail icon={UserIcon} label={t("users.fields.lastname")}>
           {user.lastname}
         </Detail>
-        <Detail icon={MailIcon} label="Email">
+        <Detail icon={MailIcon} label={t("users.fields.email")}>
           <span className="flex flex-wrap items-center gap-2">
             {user.email}
             {user.emailVerified ? (
-              <Badge variant="outline">Verified</Badge>
+              <Badge variant="outline">{t("users.verified")}</Badge>
             ) : (
-              <Badge variant="secondary">Not verified</Badge>
+              <Badge variant="secondary">{t("users.notVerified")}</Badge>
             )}
           </span>
         </Detail>
-        <Detail icon={ShieldIcon} label="Role">
+        <Detail icon={ShieldIcon} label={t("users.fields.role")}>
           <Badge variant={role === "admin" ? "default" : "secondary"}>
-            {role}
+            {t.has(`users.role.${role}` as never)
+              ? t(`users.role.${role}` as "users.role.user")
+              : role}
           </Badge>
         </Detail>
       </DetailSection>
 
-      <DetailSection title="Access">
-        <Detail icon={user.banned ? BanIcon : CircleCheckIcon} label="Status">
+      <DetailSection title={t("users.sections.access")}>
+        <Detail
+          icon={user.banned ? BanIcon : CircleCheckIcon}
+          label={t("users.fields.status")}
+        >
           {user.banned ? (
-            <Badge variant="destructive">Banned</Badge>
+            <Badge variant="destructive">{t("users.status.banned")}</Badge>
           ) : (
-            <Badge variant="outline">Active</Badge>
+            <Badge variant="outline">{t("users.status.active")}</Badge>
           )}
         </Detail>
         {user.banned && (
-          <Detail icon={CircleAlertIcon} label="Ban reason">
+          <Detail icon={CircleAlertIcon} label={t("users.fields.banReason")}>
             {user.banReason || "—"}
           </Detail>
         )}
         {user.banned && (
-          <Detail icon={CalendarClockIcon} label="Ban expires">
+          <Detail icon={CalendarClockIcon} label={t("users.fields.banExpires")}>
             {user.banExpires ? (
               <LocalDate value={user.banExpires} format="dateTime" />
             ) : (
-              "Never"
+              t("users.never")
             )}
           </Detail>
         )}
-        <Detail icon={ActivityIcon} label="Last active">
+        <Detail icon={ActivityIcon} label={t("users.fields.lastActive")}>
           {user.lastActiveAt ? (
             <LocalDate value={user.lastActiveAt} format="dateTime" />
           ) : (
-            "Never"
+            t("users.never")
           )}
         </Detail>
       </DetailSection>
 
-      <DetailSection title="Sign-in methods">
+      <DetailSection title={t("users.sections.signInMethods")}>
         {user.accounts.length ? (
           user.accounts.map((account) => (
             <Detail
               key={account.id}
               icon={KeyRoundIcon}
-              label={providerLabel(account.providerId)}
+              label={providerLabel(
+                account.providerId,
+                t("users.providers.credential"),
+              )}
             >
               <span className="text-muted-foreground font-normal">
-                Linked <LocalDate value={account.createdAt} format="dateTime" />
+                {t("users.linked")}{" "}
+                <LocalDate value={account.createdAt} format="dateTime" />
               </span>
             </Detail>
           ))
         ) : (
-          <Detail icon={KeyRoundIcon} label="Accounts">
-            None
+          <Detail icon={KeyRoundIcon} label={t("users.fields.accounts")}>
+            {t("users.none")}
           </Detail>
         )}
       </DetailSection>
 
       <UserSessions sessions={user.sessions} />
 
-      <DetailSection title="Record">
-        <Detail icon={FingerprintIcon} label="User ID">
+      <DetailSection title={t("common.record.title")}>
+        <Detail icon={FingerprintIcon} label={t("users.fields.id")}>
           <div className="flex items-center gap-2">
             <code className="font-mono text-xs truncate">{user.id}</code>
             <CopyButton variant="ghost" value={user.id} />
           </div>
         </Detail>
-        <Detail icon={CalendarPlusIcon} label="Joined">
+        <Detail icon={CalendarPlusIcon} label={t("users.fields.createdAt")}>
           <LocalDate value={user.createdAt} format="dateTime" />
         </Detail>
-        <Detail icon={HistoryIcon} label="Updated">
+        <Detail icon={HistoryIcon} label={t("common.record.updated")}>
           <LocalDate value={user.updatedAt} format="dateTime" />
         </Detail>
       </DetailSection>
@@ -130,18 +141,22 @@ export function UserDetails({ user }: { user: UserDetail }) {
 
 /** The user's active Better Auth sessions, most recently used first. */
 function UserSessions({ sessions }: { sessions: UserSession[] }) {
+  const t = useTranslations("users");
   return (
-    <DetailSection title={`Active sessions (${sessions.length})`} groupClassName="flex">
+    <DetailSection
+      title={t("sections.sessions", { count: sessions.length })}
+      groupClassName="flex"
+    >
       {sessions.length ? (
         <div className="rounded-lg border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Device</TableHead>
-                <TableHead>IP address</TableHead>
-                <TableHead>Signed in</TableHead>
-                <TableHead>Last active</TableHead>
-                <TableHead>Expires</TableHead>
+                <TableHead>{t("sessions.device")}</TableHead>
+                <TableHead>{t("sessions.ip")}</TableHead>
+                <TableHead>{t("sessions.signedIn")}</TableHead>
+                <TableHead>{t("sessions.lastActive")}</TableHead>
+                <TableHead>{t("sessions.expires")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -153,9 +168,11 @@ function UserSessions({ sessions }: { sessions: UserSession[] }) {
                       title={session.userAgent ?? undefined}
                     >
                       <MonitorSmartphoneIcon className="text-muted-foreground size-4 shrink-0" />
-                      {describeUserAgent(session.userAgent)}
+                      {describeUserAgent(session.userAgent, t)}
                       {session.impersonatedBy && (
-                        <Badge variant="secondary">Impersonated</Badge>
+                        <Badge variant="secondary">
+                          {t("sessions.impersonated")}
+                        </Badge>
                       )}
                     </span>
                   </TableCell>
@@ -177,7 +194,7 @@ function UserSessions({ sessions }: { sessions: UserSession[] }) {
           </Table>
         </div>
       ) : (
-        <p className="text-muted-foreground text-sm">No active sessions.</p>
+        <p className="text-muted-foreground text-sm">{t("sessions.none")}</p>
       )}
     </DetailSection>
   );
@@ -199,25 +216,21 @@ const SYSTEMS: [RegExp, string][] = [
   [/Linux/, "Linux"],
 ];
 
+type UsersT = ReturnType<typeof useTranslations<"users">>;
+
 /** "Mozilla/5.0 (Macintosh; …) … Chrome/130…" → "Chrome on macOS". */
-function describeUserAgent(userAgent: string | null) {
-  if (!userAgent) return "Unknown device";
+function describeUserAgent(userAgent: string | null, t: UsersT) {
+  if (!userAgent) return t("sessions.unknownDevice");
   const match = (list: [RegExp, string][]) =>
     list.find(([pattern]) => pattern.test(userAgent))?.[1];
   const browser = match(BROWSERS);
   const os = match(SYSTEMS);
-  if (browser && os) return `${browser} on ${os}`;
+  if (browser && os) return t("sessions.browserOn", { browser, os });
   return browser ?? os ?? userAgent;
 }
 
-const PROVIDER_LABELS: Record<string, string> = {
-  credential: "Email and password",
-};
-
 /** "credential" → "Email and password", "google" → "Google". */
-function providerLabel(provider: string) {
-  return (
-    PROVIDER_LABELS[provider] ??
-    provider.charAt(0).toUpperCase() + provider.slice(1)
-  );
+function providerLabel(provider: string, credentialLabel: string) {
+  if (provider === "credential") return credentialLabel;
+  return provider.charAt(0).toUpperCase() + provider.slice(1);
 }

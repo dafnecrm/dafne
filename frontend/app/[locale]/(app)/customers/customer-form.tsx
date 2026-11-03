@@ -1,6 +1,8 @@
 "use client";
 
 import { revalidateLogic } from "@tanstack/react-form-nextjs";
+import { useTranslations } from "next-intl";
+import { useOptionLabel, useOptionLabels } from "@/i18n/options";
 import { MapPinPlusIcon, PencilIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
@@ -41,6 +43,9 @@ import {
  * page; the addresses are saved together with the rest.
  */
 export function CustomerForm({ customer }: { customer?: CustomerDetail }) {
+  const t = useTranslations();
+  const typeOptions = useOptionLabels(TYPE_OPTIONS);
+  const optionLabel = useOptionLabel();
   const form = useAppForm({
     ...customerFormOpts(customer),
     // Validate on submit, then on every change.
@@ -78,7 +83,7 @@ export function CustomerForm({ customer }: { customer?: CustomerDetail }) {
           <Card>
             <CardHeader>
               <CardTitle>
-                <h2>Details</h2>
+                <h2>{t("customers.sections.details")}</h2>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -86,8 +91,8 @@ export function CustomerForm({ customer }: { customer?: CustomerDetail }) {
                 <form.AppField name="type">
                   {(field) => (
                     <field.SelectField
-                      label="Type"
-                      options={TYPE_OPTIONS}
+                      label={t("customers.fields.type")}
+                      options={typeOptions}
                       // Chosen when the customer is created (the backend refuses a change).
                       disabled={!!customer}
                     />
@@ -99,7 +104,11 @@ export function CustomerForm({ customer }: { customer?: CustomerDetail }) {
                       <form.AppField name="name">
                         {(field) => (
                           <field.TextField
-                            label={type === "company" ? "Company name" : "Name"}
+                            label={t(
+                              type === "company"
+                                ? "customers.fields.companyName"
+                                : "customers.fields.name",
+                            )}
                             autoComplete="off"
                             autoFocus
                           />
@@ -110,13 +119,15 @@ export function CustomerForm({ customer }: { customer?: CustomerDetail }) {
                         <>
                           <form.AppField name="birthDate">
                             {(field) => (
-                              <field.DatePickerField label="Birth date" />
+                              <field.DatePickerField
+                                label={t("customers.fields.birthDate")}
+                              />
                             )}
                           </form.AppField>
                           <form.AppField name="fiscalCode">
                             {(field) => (
                               <field.TextField
-                                label="Fiscal code"
+                                label={t("customers.fields.fiscalCode")}
                                 autoComplete="off"
                                 maxLength={16}
                                 controlClassName="[&_input]:uppercase"
@@ -128,7 +139,7 @@ export function CustomerForm({ customer }: { customer?: CustomerDetail }) {
                         <form.AppField name="vatNumber">
                           {(field) => (
                             <field.TextField
-                              label="VAT number"
+                              label={t("customers.fields.vatNumber")}
                               autoComplete="off"
                               maxLength={13}
                               controlClassName="[&_input]:uppercase"
@@ -146,7 +157,7 @@ export function CustomerForm({ customer }: { customer?: CustomerDetail }) {
           <Card>
             <CardHeader>
               <CardTitle>
-                <h2>Contact</h2>
+                <h2>{t("customers.sections.contact")}</h2>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -154,17 +165,17 @@ export function CustomerForm({ customer }: { customer?: CustomerDetail }) {
                 <form.AppField name="email">
                   {(field) => (
                     <field.TextField
-                      label="Email"
+                      label={t("customers.fields.email")}
                       type="email"
                       autoComplete="off"
-                      placeholder="name@example.com"
+                      placeholder={t("common.emailPlaceholder")}
                     />
                   )}
                 </form.AppField>
                 <form.AppField name="phone">
                   {(field) => (
                     <field.TextField
-                      label="Phone"
+                      label={t("customers.fields.phone")}
                       type="tel"
                       autoComplete="off"
                       placeholder="+39 02 1234 5678"
@@ -181,12 +192,12 @@ export function CustomerForm({ customer }: { customer?: CustomerDetail }) {
                 <Card>
                   <CardHeader>
                     <CardTitle>
-                      <h2>Addresses</h2>
+                      <h2>{t("customers.sections.addresses")}</h2>
                     </CardTitle>
                     <CardDescription>
                       {addresses.state.value.length
-                        ? "In the order they're shown on the customer's page."
-                        : "No addresses yet."}
+                        ? t("customers.addresses.ordered")
+                        : t("customers.addresses.none")}
                     </CardDescription>
                     <CardAction>
                       <form.Subscribe selector={(state) => state.values.type}>
@@ -207,7 +218,7 @@ export function CustomerForm({ customer }: { customer?: CustomerDetail }) {
                             }
                           >
                             <MapPinPlusIcon data-icon="inline-start" />
-                            Add address
+                            {t("customers.addresses.add")}
                           </Button>
                         )}
                       </form.Subscribe>
@@ -219,14 +230,28 @@ export function CustomerForm({ customer }: { customer?: CustomerDetail }) {
                         <Table>
                           <TableHeader>
                             <TableRow>
-                              <TableHead>Type</TableHead>
-                              <TableHead>Street</TableHead>
-                              <TableHead>Postal code</TableHead>
-                              <TableHead>City</TableHead>
-                              <TableHead>State / province</TableHead>
-                              <TableHead>Country</TableHead>
+                              <TableHead>
+                                {t("customers.addresses.fields.type")}
+                              </TableHead>
+                              <TableHead>
+                                {t("customers.addresses.fields.street")}
+                              </TableHead>
+                              <TableHead>
+                                {t("customers.addresses.fields.postalCode")}
+                              </TableHead>
+                              <TableHead>
+                                {t("customers.addresses.fields.city")}
+                              </TableHead>
+                              <TableHead>
+                                {t("customers.addresses.fields.region")}
+                              </TableHead>
+                              <TableHead>
+                                {t("customers.addresses.fields.country")}
+                              </TableHead>
                               <TableHead className="w-0">
-                                <span className="sr-only">Actions</span>
+                                <span className="sr-only">
+                                  {t("dataTable.actions")}
+                                </span>
                               </TableHead>
                             </TableRow>
                           </TableHeader>
@@ -235,9 +260,10 @@ export function CustomerForm({ customer }: { customer?: CustomerDetail }) {
                               // TanStack Form tracks array items by index.
                               <TableRow key={i}>
                                 <TableCell>
-                                  {CUSTOMER_ADDRESS_TYPE_OPTIONS.find(
-                                    (o) => o.value === address.type,
-                                  )?.label ?? "—"}
+                                  {optionLabel(
+                                    CUSTOMER_ADDRESS_TYPE_OPTIONS,
+                                    address.type,
+                                  )}
                                 </TableCell>
                                 <TableCell>{address.street}</TableCell>
                                 <TableCell>
@@ -254,7 +280,10 @@ export function CustomerForm({ customer }: { customer?: CustomerDetail }) {
                                       type="button"
                                       variant="ghost"
                                       size="icon-sm"
-                                      aria-label={`Edit address ${i + 1}`}
+                                      aria-label={t(
+                                        "customers.addresses.editN",
+                                        { n: i + 1 },
+                                      )}
                                       onClick={() =>
                                         setAddressSheet({
                                           open: true,
@@ -268,7 +297,10 @@ export function CustomerForm({ customer }: { customer?: CustomerDetail }) {
                                       type="button"
                                       variant="ghost"
                                       size="icon-sm"
-                                      aria-label={`Remove address ${i + 1}`}
+                                      aria-label={t(
+                                        "customers.addresses.removeN",
+                                        { n: i + 1 },
+                                      )}
                                       onClick={() => addresses.removeValue(i)}
                                     >
                                       <Trash2Icon />
@@ -320,10 +352,10 @@ export function CustomerForm({ customer }: { customer?: CustomerDetail }) {
               nativeButton={false}
               render={<Link href={cancelHref} />}
             >
-              Cancel
+              {t("common.cancel")}
             </Button>
             <form.SubmitButton
-              label={customer ? "Save changes" : "Create customer"}
+              label={t(customer ? "common.saveChanges" : "customers.create")}
             />
           </div>
         </FieldGroup>

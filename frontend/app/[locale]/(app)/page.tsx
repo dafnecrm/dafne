@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import {
   Card,
@@ -18,12 +19,17 @@ export default function Home() {
 
 async function Welcome() {
   const user = await requireUser();
+  const t = await getTranslations("dashboard");
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-2xl">Welcome, {user.firstname}!</CardTitle>
-        <CardDescription>Signed in as {user.email}</CardDescription>
+        <CardTitle className="text-2xl">
+          {t("welcome", { name: user.firstname })}
+        </CardTitle>
+        <CardDescription>
+          {t("signedInAs", { email: user.email })}
+        </CardDescription>
       </CardHeader>
     </Card>
   );

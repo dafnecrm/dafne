@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { ArrowLeftIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -16,9 +17,14 @@ import { ProductDetailActions } from "../product-detail-actions";
 import { ProductDetails } from "../product-detail";
 import { loadProduct } from "./load-product";
 
-export const metadata: Metadata = { title: "Product" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("products");
+  return { title: t("singular") };
+}
 
-export default function ProductPage({ params }: PageProps<"/products/[id]">) {
+export default function ProductPage({
+  params,
+}: PageProps<"/[locale]/products/[id]">) {
   return (
     <Suspense fallback={<Skeleton className="h-96 w-full" />}>
       <ProductProfile params={params} />
@@ -29,8 +35,9 @@ export default function ProductPage({ params }: PageProps<"/products/[id]">) {
 /** Loads the product: its name and actions, then its details. */
 async function ProductProfile({
   params,
-}: Pick<PageProps<"/products/[id]">, "params">) {
+}: Pick<PageProps<"/[locale]/products/[id]">, "params">) {
   const product = await loadProduct((await params).id);
+  const t = await getTranslations("products");
 
   return (
     <PageContent>
@@ -48,7 +55,7 @@ async function ProductProfile({
             render={<Link href="/products" />}
           >
             <ArrowLeftIcon data-icon="inline-start" />
-            All products
+            {t("all")}
           </Button>
           <ProductDetailActions product={product} />
         </PageContentAction>

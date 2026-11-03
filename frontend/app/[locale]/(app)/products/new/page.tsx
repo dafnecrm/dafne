@@ -1,3 +1,5 @@
+import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 import type { Metadata } from "next";
 import {
   PageContent,
@@ -8,16 +10,18 @@ import {
 } from "@/components/page-content";
 import { ProductForm } from "../product-form";
 
-export const metadata: Metadata = { title: "New product" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("products");
+  return { title: t("new") };
+}
 
 export default function NewProductPage() {
+  const t = useTranslations("products");
   return (
     <PageContent>
       <PageContentHeader>
-        <PageContentTitle>New product</PageContentTitle>
-        <PageContentDescription>
-          Only the name is required.
-        </PageContentDescription>
+        <PageContentTitle>{t("new")}</PageContentTitle>
+        <PageContentDescription>{t("newDescription")}</PageContentDescription>
       </PageContentHeader>
       <PageContentBody>
         <ProductForm />
