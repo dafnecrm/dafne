@@ -18,6 +18,7 @@ import { describeFilters, type TableParams } from "@/lib/data-table";
 import type { ListedProduct } from "@/lib/products";
 import { productsTable } from "@/lib/products-table";
 import { ProductTableActions } from "./product-table-actions";
+import { formatCurrency } from "@/lib/currencies";
 
 /*
  * Columns of the products table. Column ids double as the backend's
@@ -40,7 +41,10 @@ const productColumns = col.columns([
       </Link>
     ),
   }),
-  col.accessor("price", { header: "Price" }),
+  col.accessor("price", { 
+    header: "Price",
+    cell: (info) => formatCurrency(info.getValue())
+  }),
   col.accessor("createdAt", {
     header: "Added",
     meta: { className: "text-right" },
