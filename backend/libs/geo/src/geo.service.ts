@@ -13,6 +13,7 @@ import type {
   GeoSearchResult,
   ListedCountry,
 } from '@app/contracts';
+import { msg } from '@app/contracts';
 import { asc, isNull } from 'drizzle-orm';
 import { InjectDrizzle } from '@nestjs/drizzle';
 import { schema, type Database } from '@app/database';
@@ -109,9 +110,7 @@ export class GeoService {
         ((await res.json()) as { features?: PhotonFeature[] }).features ?? [];
     } catch (error) {
       this.logger.error(`Search "${q}" failed`, error);
-      throw new ServiceUnavailableException(
-        'Address search is unavailable. Try again later.',
-      );
+      throw new ServiceUnavailableException(msg('geo.unavailable'));
     }
 
     const places = unique(features.filter(isAddress).map(toPlace)).slice(

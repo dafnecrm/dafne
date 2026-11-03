@@ -16,6 +16,7 @@ import {
   type UserDetail,
   type UserFilterField,
   type UsersList,
+  msg,
 } from '@app/contracts';
 
 export const DEFAULT_PAGE_SIZE = 20;
@@ -60,7 +61,7 @@ export class UsersService {
         isAPIError(error) &&
         error.body?.code === 'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL'
       )
-        throw new ConflictException('A user with this email already exists');
+        throw new ConflictException(msg('users.email.taken'));
       throw error;
     }
     try {
@@ -129,7 +130,7 @@ export class UsersService {
         },
       },
     });
-    if (!found) throw new NotFoundException('User not found');
+    if (!found) throw new NotFoundException(msg('users.notFound'));
 
     const { accounts, sessions, ...rest } = found;
     const now = new Date();

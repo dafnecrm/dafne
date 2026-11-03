@@ -15,6 +15,7 @@ import {
   type CustomerDetail,
   type CustomersList,
   type ListCustomersQuery,
+  msg,
 } from '@app/contracts';
 
 export const DEFAULT_PAGE_SIZE = 20;
@@ -38,10 +39,10 @@ function rethrowConstraint(error: unknown): never {
     cause instanceof Error ? (cause as { code?: unknown }).code : undefined;
   const message = cause instanceof Error ? cause.message : '';
   if (code === 'ER_DUP_ENTRY' && message.includes('customer_email_unique_idx'))
-    throw new ConflictException('A customer with this email already exists');
+    throw new ConflictException(msg('customers.email.taken'));
   if (code === 'ER_NO_REFERENCED_ROW_2' && message.includes('country_code'))
     throw new BadRequestException([
-      'addresses: Choose the country from the list',
+      `addresses: ${msg('customers.addresses.country')}`,
     ]);
   throw error;
 }
@@ -117,7 +118,7 @@ export class CustomersService {
         updatedBy: userSummary,
       },
     });
-    if (!found) throw new NotFoundException('Customer not found');
+    if (!found) throw new NotFoundException(msg('customers.notFound'));
     return found;
   }
 
@@ -191,9 +192,9 @@ export class CustomersService {
             where: { id, deletedAt: { isNull: true } },
             columns: { id: true },
           });
-          if (!found) throw new NotFoundException('Customer not found');
+          if (!found) throw new NotFoundException(msg('customers.notFound'));
           throw new BadRequestException([
-            "type: The type can't be changed after the customer is created",
+            `type: ${msg('customers.type.locked')}`,
           ]);
         }
 
@@ -217,7 +218,7 @@ export class CustomersService {
       .set({ deletedAt: now, updatedAt: now, updatedById: userId })
       .where(and(eq(customer.id, id), notDeleted));
     if (result.affectedRows === 0)
-      throw new NotFoundException('Customer not found');
+      throw new NotFoundException(msg('customers.notFound'));
   }
 }
 

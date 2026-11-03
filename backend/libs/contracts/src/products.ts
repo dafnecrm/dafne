@@ -5,6 +5,7 @@ import {
   SORT_DIRECTIONS,
   optionalText,
 } from './common.ts';
+import { msg } from './messages/index.ts';
 
 /* ---------- Requests ---------- */
 
@@ -13,9 +14,11 @@ import {
  * whole product: omitted optional fields are cleared.
  */
 export const productBodySchema = z.strictObject({
-  name: requiredText(255, 'Enter the name'),
+  name: requiredText(255, msg('products.name.required')),
   description: optionalText(z.string().max(65535)),
-  price: z.string().regex(/^-?\d+(\.\d+)?$/, { error: 'Enter a number' }),
+  price: z
+    .string()
+    .regex(/^-?\d+(\.\d+)?$/, { error: msg('common.number.invalid') }),
 });
 
 /** What a client sends: blank optional fields may be "", null or missing. */

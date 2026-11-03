@@ -1,9 +1,11 @@
 import { Logger, Module } from '@nestjs/common';
+import { APP_FILTER } from '@nestjs/core';
 import { CacheModule, type CacheModuleOptions } from '@nestjs/cache-manager';
 import { createKeyv } from '@keyv/redis';
 import { ApiController } from './api.controller.js';
 import { ApiService } from './api.service.js';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { I18nExceptionFilter } from '@app/common';
 import { DatabaseModule } from '@app/database';
 import { AuthModule } from '@app/auth';
 import { UsersModule } from '@app/users';
@@ -40,6 +42,10 @@ import { ProductsModule } from '@app/products';
     ProductsModule,
   ],
   controllers: [ApiController],
-  providers: [ApiService],
+  providers: [
+    ApiService,
+    // Errors in the request's language (Accept-Language).
+    { provide: APP_FILTER, useClass: I18nExceptionFilter },
+  ],
 })
 export class ApiModule {}

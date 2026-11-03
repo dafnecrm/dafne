@@ -6,6 +6,7 @@ import {
   optionalText,
   optionalDate,
 } from './common.ts';
+import { msg } from './messages/index.ts';
 
 /* ---------- Requests ---------- */
 
@@ -22,9 +23,9 @@ export type ActivityStatus = (typeof ACTIVITY_STATUSES)[number];
  * whole activity: omitted optional fields are cleared.
  */
 export const activityBodySchema = z.strictObject({
-  name: requiredText(255, 'Enter the name'),
-  type: z.enum(ACTIVITY_TYPES, { error: 'Choose the type' }),
-  dueDate: optionalDate('Enter a valid date'),
+  name: requiredText(255, msg('activities.name.required')),
+  type: z.enum(ACTIVITY_TYPES, { error: msg('activities.type.required') }),
+  dueDate: optionalDate(msg('common.date.invalid')),
   notes: optionalText(z.string().max(65535)),
 });
 

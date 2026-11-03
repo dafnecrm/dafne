@@ -7,6 +7,7 @@
  * the frontend's bundler (Turbopack) doesn't map .js to .ts.
  */
 export * from './common.ts';
+export * from './messages/index.ts';
 export * from './customers.ts';
 export * from './users.ts';
 export * from './activities.ts';

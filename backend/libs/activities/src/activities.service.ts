@@ -9,6 +9,7 @@ import {
   type ActivityDetail,
   type ActivitiesList,
   type ListActivitiesQuery,
+  msg,
 } from '@app/contracts';
 
 export const DEFAULT_PAGE_SIZE = 20;
@@ -87,7 +88,7 @@ export class ActivitiesService {
         updatedBy: userSummary,
       },
     });
-    if (!found) throw new NotFoundException('Activity not found');
+    if (!found) throw new NotFoundException(msg('activities.notFound'));
     return found;
   }
 
@@ -136,7 +137,7 @@ export class ActivitiesService {
       })
       .where(and(eq(activity.id, id), notDeleted, notClosed));
     if (result.affectedRows === 0)
-      throw new NotFoundException('Activity not found');
+      throw new NotFoundException(msg('activities.notFound'));
     return this.getActivity(id);
   }
 
@@ -151,7 +152,7 @@ export class ActivitiesService {
       .set({ deletedAt: now, updatedAt: now, updatedById: userId })
       .where(and(eq(activity.id, id), notDeleted));
     if (result.affectedRows === 0)
-      throw new NotFoundException('Activity not found');
+      throw new NotFoundException(msg('activities.notFound'));
   }
 
   /** Completes an activity */
@@ -162,7 +163,7 @@ export class ActivitiesService {
       .set({ status: 'closed', completedAt: now, completedById: userId })
       .where(and(eq(activity.id, id), notDeleted, notClosed));
     if (result.affectedRows === 0)
-      throw new NotFoundException('Activity not found or closed');
+      throw new NotFoundException(msg('activities.notOpen'));
   }
 
   /**
@@ -177,6 +178,6 @@ export class ActivitiesService {
         and(eq(activity.id, id), notDeleted, eq(activity.status, 'closed')),
       );
     if (result.affectedRows === 0)
-      throw new NotFoundException('Activity not found or not closed');
+      throw new NotFoundException(msg('activities.notClosed'));
   }
 }

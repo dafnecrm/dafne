@@ -6,6 +6,7 @@ import {
   SORT_DIRECTIONS,
   optionalDate,
 } from './common.ts';
+import { msg } from './messages/index.ts';
 
 /* ---------- Requests ---------- */
 
@@ -33,18 +34,22 @@ export const CUSTOMER_ADDRESS_TYPES = [
 export type CustomerAddressType = (typeof CUSTOMER_ADDRESS_TYPES)[number];
 
 export const customerAddressBodySchema = z.strictObject({
-  type: z.enum(CUSTOMER_ADDRESS_TYPES, { error: 'Choose the type' }),
-  street: requiredText(255, 'Enter the street'),
-  city: requiredText(100, 'Enter the city'),
+  type: z.enum(CUSTOMER_ADDRESS_TYPES, {
+    error: msg('customerAddresses.type.required'),
+  }),
+  street: requiredText(255, msg('customerAddresses.street.required')),
+  city: requiredText(100, msg('customerAddresses.city.required')),
   postalCode: optionalText(z.string().max(20)),
   /** State, province or region. */
   region: optionalText(z.string().max(100)),
   /** ISO 3166-1 alpha-2 code of one of the countries, e.g. "IT". */
   countryCode: z
-    .string({ error: 'Choose the country' })
+    .string({ error: msg('customerAddresses.countryCode.required') })
     .trim()
     .toUpperCase()
-    .regex(/^[A-Z]{2}$/, { error: 'Choose the country' }),
+    .regex(/^[A-Z]{2}$/, {
+      error: msg('customerAddresses.countryCode.required'),
+    }),
 });
 
 /** Values of customer type: a natural person or a company. */
@@ -57,29 +62,35 @@ export type CustomerType = (typeof CUSTOMER_TYPES)[number];
  */
 export const customerBodySchema = z
   .strictObject({
-    type: z.enum(CUSTOMER_TYPES, { error: 'Choose the type' }),
-    name: requiredText(255, 'Enter the name'),
-    birthDate: optionalDate('Enter a valid date'),
+    type: z.enum(CUSTOMER_TYPES, { error: msg('customers.type.required') }),
+    name: requiredText(255, msg('customers.name.required')),
+    birthDate: optionalDate(msg('common.date.invalid')),
     /** Persons only: the Italian codice fiscale, saved in upper case. */
     fiscalCode: optionalText(
       z
         .string()
         .toUpperCase()
-        .regex(FISCAL_CODE_PATTERN, { error: 'Enter a valid fiscal code' }),
+        .regex(FISCAL_CODE_PATTERN, {
+          error: msg('customers.fiscalCode.invalid'),
+        }),
     ),
     /** Companies only: the Italian partita IVA, with or without "IT". */
     vatNumber: optionalText(
       z
         .string()
         .toUpperCase()
-        .regex(VAT_NUMBER_PATTERN, { error: 'Enter a valid VAT number' }),
+        .regex(VAT_NUMBER_PATTERN, {
+          error: msg('customers.vatNumber.invalid'),
+        }),
     ),
     /** Unique among customers, deleted ones included. */
-    email: requiredText(255, 'Enter the email').pipe(
-      z.email({ error: 'Enter a valid email address' }),
+    email: requiredText(255, msg('customers.email.required')).pipe(
+      z.email({ error: msg('common.email.invalid') }),
     ),
     phone: optionalText(
-      z.string().regex(PHONE_PATTERN, { error: 'Enter a valid phone number' }),
+      z
+        .string()
+        .regex(PHONE_PATTERN, { error: msg('customers.phone.invalid') }),
     ),
     /** In display order; at most one address of each type. */
     addresses: z
@@ -92,7 +103,7 @@ export const customerBodySchema = z
             ctx.addIssue({
               code: 'custom',
               path: [i, 'type'],
-              message: 'Another address already has this type',
+              message: msg('customers.addresses.typeTaken'),
             });
         }),
       ),

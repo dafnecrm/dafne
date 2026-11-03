@@ -1,7 +1,8 @@
 import { z } from 'zod';
+import type { ContractMessageKey } from './messages/index.ts';
 
-/** Required text: trimmed, so a blank value fails with `error`. */
-export const requiredText = (max: number, error: string) =>
+/** Required text: trimmed, so a blank value fails with `error` (a message key). */
+export const requiredText = (max: number, error: ContractMessageKey) =>
   z.string().trim().min(1, { error }).max(max);
 
 /**
@@ -42,7 +43,7 @@ export type Json<T> = T extends Date
  * Optional date: blank, null or missing all become null, so a form can send
  * "" for an empty date field. Anything else must be a valid date.
  */
-export const optionalDate = (error: string) =>
+export const optionalDate = (error: ContractMessageKey) =>
   z
     .preprocess(
       (value) => (value === '' || value == null ? null : value),

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { pageQuery, requiredText, SORT_DIRECTIONS } from './common.ts';
+import { msg } from './messages/index.ts';
 
 /* ---------- Requests ---------- */
 
@@ -30,12 +31,12 @@ export const passwordSchema = z
  * click it (as after sign-up).
  */
 export const createUserBodySchema = z.strictObject({
-  firstname: requiredText(USER_NAME_MAX, 'Enter the first name'),
-  lastname: requiredText(USER_NAME_MAX, 'Enter the last name'),
+  firstname: requiredText(USER_NAME_MAX, msg('users.firstname.required')),
+  lastname: requiredText(USER_NAME_MAX, msg('users.lastname.required')),
   email: z
     .string()
     .trim()
-    .pipe(z.email({ error: 'Enter a valid email address' }).max(255)),
+    .pipe(z.email({ error: msg('common.email.invalid') }).max(255)),
   password: passwordSchema,
   /** Defaults to user. */
   role: z.enum(USER_ROLES).default('user'),

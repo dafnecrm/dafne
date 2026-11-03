@@ -28,6 +28,20 @@ types itself.
   (Turbopack) can't map `.js` to `.ts`. `rewriteRelativeImportExtensions`
   in `tsconfig.json` allows it.
 
+## Messages (English and Italian)
+
+User-facing messages are keys, never text: `msg('customers.name.required')`
+(`libs/contracts/src/messages`), for Zod errors and for exceptions
+(`new NotFoundException(msg('customers.notFound'))`). `msg` only accepts
+keys of `messages/en.ts`; `it.ts` must have the same keys (typed by
+`ContractMessages`). The frontend shows the same texts.
+
+- `I18nExceptionFilter` (global, `@app/common`) translates key messages
+  (also `"path: key"`) into the request's `Accept-Language` (Italian by
+  default), and re-parses validation failures so Zod's own messages are in
+  that language too.
+- Emails pick their language with `localeFrom(request.headers…)`.
+
 ## Validation
 
 - Validate with `ZodValidationPipe` from `@app/common`, per parameter:

@@ -1,12 +1,13 @@
 import { z } from 'zod';
 import { requiredText } from './common.ts';
+import { msg } from './messages/index.ts';
 
 /* ---------- Requests ---------- */
 
 /** Query string of GET /geo/search. */
 export const geoSearchQuerySchema = z.strictObject({
   /** What to look for: an address, a place, a city… */
-  q: requiredText(200, 'Enter what to search'),
+  q: requiredText(200, msg('geo.q.required')),
   /** How many places, at most. Defaults to 5. */
   limit: z.coerce.number().int().min(1).max(10).optional(),
 });

@@ -9,6 +9,7 @@ import {
   type ProductDetail,
   type ProductsList,
   type ListProductsQuery,
+  msg,
 } from '@app/contracts';
 
 export const DEFAULT_PAGE_SIZE = 20;
@@ -77,7 +78,7 @@ export class ProductsService {
       columns: { createdById: false, updatedById: false },
       with: { createdBy: userSummary, updatedBy: userSummary },
     });
-    if (!found) throw new NotFoundException('Product not found');
+    if (!found) throw new NotFoundException(msg('products.notFound'));
     return found;
   }
 
@@ -124,7 +125,7 @@ export class ProductsService {
       })
       .where(and(eq(product.id, id), notDeleted));
     if (result.affectedRows === 0)
-      throw new NotFoundException('Product not found');
+      throw new NotFoundException(msg('products.notFound'));
     return this.getProduct(id);
   }
 
@@ -139,6 +140,6 @@ export class ProductsService {
       .set({ deletedAt: now, updatedAt: now, updatedById: userId })
       .where(and(eq(product.id, id), notDeleted));
     if (result.affectedRows === 0)
-      throw new NotFoundException('Product not found');
+      throw new NotFoundException(msg('products.notFound'));
   }
 }
