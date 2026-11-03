@@ -10,7 +10,7 @@ import { BACKEND } from '../wiring/backend.js';
 import { FRONTEND } from '../wiring/frontend.js';
 
 /*
- * `dafne run`: package scripts of the backend and the frontend, as child
+ * `dafne dev`: package scripts of the backend and the frontend, as child
  * processes of this terminal. One package gets the terminal as it is; two
  * run side by side, each output line prefixed with its package.
  */
@@ -147,8 +147,8 @@ function runScripts(root: string, runs: [Package, string][]): Promise<number> {
   });
 }
 
-export function runCommand() {
-  return new Command('run')
+export function devCommand() {
+  return new Command('dev')
     .description('Run a package script (default: dev) in backend/ and frontend/, in this terminal')
     .argument('[script]', 'the script for both packages (default: dev)')
     .option('-b, --backend <script>', 'the script for the backend')
@@ -165,11 +165,11 @@ Both packages run side by side, each output line prefixed with [backend] or
 everything; if one script fails, the other is stopped too.
 
 Examples:
-  dafne run                          # pnpm run dev in both
-  dafne run build                    # pnpm run build in both
-  dafne run -b start:debug           # start:debug in the backend, dev in the frontend
-  dafne run test --only backend
-  dafne run --pick                   # choose from each package.json`,
+  dafne dev                          # pnpm run dev in both
+  dafne dev build                    # pnpm run build in both
+  dafne dev -b start:debug           # start:debug in the backend, dev in the frontend
+  dafne dev test --only backend
+  dafne dev --pick                   # choose from each package.json`,
     )
     .action(async (script: string | undefined, options: RunOptions) => {
       const root = findRoot(options.root);

@@ -307,11 +307,11 @@ page…) is skipped. Run `dafne sync contract` first if the table changed.
 ## Running the backend and the frontend
 
 ```sh
-dafne run                          # pnpm run dev in backend/ and frontend/
-dafne run build                    # the same script in both
-dafne run -b start:debug           # a different script per package (-b, -f)
-dafne run test --only backend      # one package
-dafne run --pick                   # choose from each package.json
+dafne dev                          # pnpm run dev in backend/ and frontend/
+dafne dev build                    # the same script in both
+dafne dev -b start:debug           # a different script per package (-b, -f)
+dafne dev test --only backend      # one package
+dafne dev --pick                   # choose from each package.json
 ```
 
 The scripts run in this terminal, side by side, each output line prefixed

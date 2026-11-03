@@ -1,4 +1,4 @@
-import { resolveScripts } from '../src/commands/run.js';
+import { resolveScripts } from '../src/commands/dev.js';
 
 const available = {
   backend: ['dev', 'build', 'start:debug', 'test'],
