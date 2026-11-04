@@ -4,7 +4,7 @@
 
 *                    @lula
 
-/apps/backend/       @lula
+/apps/api/           @lula
 /packages/backend/   @lula
 /apps/frontend/      @lula
 # Shared by the backend and the frontend: both owners.

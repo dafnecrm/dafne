@@ -370,7 +370,7 @@ async function finish(changes: Changes, result: FieldResult, options: CommonOpti
   p.note(
     [
       'dafne migration generate   # fixes the foreign keys drizzle-kit 1.0.0-rc.5 gets wrong',
-      'npx tsc -b apps/backend && pnpm --filter \"@dafne/backend...\" test',
+      'npx tsc -b apps/api && pnpm --filter \"@dafne/api...\" test',
       'dafne sync frontend <resource>   # form, table and detail',
     ].join('\n'),
     'Next steps',
@@ -380,7 +380,7 @@ async function finish(changes: Changes, result: FieldResult, options: CommonOpti
 
 function common(command: Command) {
   return command
-    .option('--root <dir>', 'Dafne folder (with apps/backend/ and apps/frontend/)')
+    .option('--root <dir>', 'Dafne folder (with apps/api/ and apps/frontend/)')
     .option('--dry-run', 'show what would change, write nothing')
     .option('--no-sync', "don't update the contracts afterwards")
     .option('-y, --yes', 'never prompt');

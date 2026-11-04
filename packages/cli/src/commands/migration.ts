@@ -55,7 +55,7 @@ function report(folder: string, fixes: string[], relative: string) {
 }
 
 /**
- * Runs drizzle-kit generate in apps/backend/: a migration from the table changes,
+ * Runs drizzle-kit generate in apps/api/: a migration from the table changes,
  * or an empty one (`custom`) for SQL written by hand.
  */
 async function generate(nameArg: string | undefined, options: MigrationOptions) {
@@ -103,7 +103,7 @@ async function generate(nameArg: string | undefined, options: MigrationOptions) 
 }
 
 export function migrationCommand() {
-  const migration = new Command('migration').description('Database migrations (drizzle-kit, in apps/backend/)');
+  const migration = new Command('migration').description('Database migrations (drizzle-kit, in apps/api/)');
 
   migration
     .command('generate')
@@ -111,7 +111,7 @@ export function migrationCommand() {
     .argument('[name]', 'migration name, e.g. add-activity-customer (asked if missing)')
     .option('--custom', 'an empty migration, for SQL written by hand')
     .option('--no-fix', "don't put back the foreign key actions drizzle-kit drops")
-    .option('--root <dir>', 'Dafne folder (with apps/backend/ and apps/frontend/)')
+    .option('--root <dir>', 'Dafne folder (with apps/api/ and apps/frontend/)')
     .option('-y, --yes', 'never prompt (drizzle-kit names the migration)')
     .action((name: string | undefined, options: MigrationOptions) => generate(name, options));
 
@@ -119,7 +119,7 @@ export function migrationCommand() {
     .command('custom')
     .description('Create an empty migration, for SQL written by hand (data fixes, backfills…)')
     .argument('[name]', 'migration name, e.g. backfill-countries (asked if missing)')
-    .option('--root <dir>', 'Dafne folder (with apps/backend/ and apps/frontend/)')
+    .option('--root <dir>', 'Dafne folder (with apps/api/ and apps/frontend/)')
     .option('-y, --yes', 'never prompt (drizzle-kit names the migration)')
     .addHelpText(
       'after',
@@ -134,7 +134,7 @@ The backend applies it when it starts, after the migrations before it.`,
     .command('fix')
     .description('Put back the foreign key actions drizzle-kit drops, in a migration made with pnpm migration:generate')
     .argument('[folder]', 'migration folder name (default: the latest)')
-    .option('--root <dir>', 'Dafne folder (with apps/backend/ and apps/frontend/)')
+    .option('--root <dir>', 'Dafne folder (with apps/api/ and apps/frontend/)')
     .action((folderArg: string | undefined, options: MigrationOptions) => {
       p.intro('dafne migration fix');
       const backend = join(findRoot(options.root), BACKEND);
