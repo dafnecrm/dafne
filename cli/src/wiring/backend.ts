@@ -19,7 +19,10 @@ import { Node } from 'ts-morph';
 export const BACKEND = 'backend';
 export const API_MODULE = `${BACKEND}/apps/api/src/api.module.ts`;
 export const DB_SCHEMA = `${BACKEND}/libs/database/src/schema.ts`;
-export const CONTRACTS_INDEX = `${BACKEND}/libs/contracts/src/index.ts`;
+/** The API contracts package, shared by the backend and the frontend. */
+export const CONTRACTS_PACKAGE = '@dafne/contracts';
+export const CONTRACTS_SRC = 'packages/contracts/src';
+export const CONTRACTS_INDEX = `${CONTRACTS_SRC}/index.ts`;
 
 const JSON_FORMAT = { formattingOptions: { insertSpaces: true, tabSize: 2, eol: '\n' } };
 
@@ -87,7 +90,7 @@ export function wireIntoLib(
     changes.update(`${src}/index.ts`, (source) => ensureExportStar(source, fileImport));
 }
 
-/** Exports the contract file from libs/contracts (with .ts, see that index). */
+/** Exports the contract file from the contracts package (with .ts, see its index). */
 export function wireContract(changes: Changes, { p }: ResourceNames) {
   changes.update(CONTRACTS_INDEX, (source) => ensureExportStar(source, `./${p.kebab}.ts`));
 }

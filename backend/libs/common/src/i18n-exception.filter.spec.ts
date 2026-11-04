@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { BaseExceptionFilter } from '@nestjs/core';
-import { msg, requiredText } from '@app/contracts';
+import { msg, requiredText } from '@dafne/contracts';
 import { z } from 'zod';
 import { I18nExceptionFilter } from './i18n-exception.filter.js';
 import { ZodValidationPipe } from './zod-validation.pipe.js';

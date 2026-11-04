@@ -15,7 +15,6 @@
     "npm": ">=11.20.0",
     "node": ">=26.0.0"
   },
-  "packageManager": "pnpm@9.15.2",
   "scripts": {
     "dev": "tsx src/index.ts",
     "build": "tsup",
@@ -28,7 +27,7 @@
     "ejs": "^7.0.2",
     "jsonc-parser": "^3.3.1",
     "pluralize": "^8.0.0",
-    "prettier": "^3.9.10",
+    "prettier": "catalog:",
     "ts-morph": "^28.0.0"
   },
   "devDependencies": {
@@ -36,8 +35,17 @@
     "@types/node": "^26.6.6",
     "@types/pluralize": "^0.0.33",
     "tsup": "^9.0.0",
-    "tsx": "^4.23.15",
+    "tsx": "catalog:",
     "typescript": "^7.0.2",
     "vitest": "^5.0.5"
+  },
+  "nx": {
+    "targets": {
+      "build": {
+        "outputs": [
+          "{projectRoot}/dist"
+        ]
+      }
+    }
   }
 }

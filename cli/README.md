@@ -60,7 +60,7 @@ existing files), `--root <dir>`, `-y`; for the sidebar `--section <title>`
 
 Backend:
 - `libs/<plural>/`: module, service (+ spec), controller.
-- `libs/contracts/src/<plural>.ts` (+ spec).
+- `packages/contracts/src/<plural>.ts` (+ spec).
 - `libs/database/src/tables/<plural>.ts`.
 
 Frontend:
@@ -166,7 +166,7 @@ After changing a table in `backend/libs/database/src/tables/`:
 dafne sync contract activities     # or --all; --dry-run to preview
 ```
 
-It updates `libs/contracts/src/<plural>.ts`: the body schema, sort and
+It updates `packages/contracts/src/<plural>.ts`: the body schema, sort and
 filter fields, list query and response types. It adds new columns, drops
 the ones removed from the API and keeps hand-written validation. Members
 that aren't columns (e.g. `addresses`) are left alone.

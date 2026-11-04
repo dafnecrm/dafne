@@ -62,7 +62,7 @@ describe('a resource with fields', () => {
     const table = read('backend/libs/database/src/tables/invoices.ts');
     expect(table).toMatch(/number: varchar\('number', \{ length: 20 \}\)\.notNull\(\)/);
     expect(table).toContain('/** @api detail @form editor */');
-    const contract = read('backend/libs/contracts/src/invoices.ts');
+    const contract = read('packages/contracts/src/invoices.ts');
     expect(contract).toMatch(/number: requiredText\(20/);
     expect(contract).toContain('INVOICE_STATUSES');
     expect(read('backend/libs/invoices/src/invoices.service.ts')).toContain('number: invoice.number');
@@ -74,11 +74,11 @@ describe('a resource with fields', () => {
 
     // The keys the new files use have texts in both languages' catalogs.
     expect(contract).toContain("msg('invoices.number.required')");
-    const en = read('backend/libs/contracts/src/messages/en.ts');
+    const en = read('packages/contracts/src/messages/en.ts');
     expect(en).toMatch(/invoices: \{[^]*notFound: 'Invoice not found'/);
     expect(en).toMatch(/number: \{ required: 'Enter the number' \}/);
     expect(en).toMatch(/status: \{ required: 'Choose the status' \}/);
-    expect(read('backend/libs/contracts/src/messages/it.ts')).toMatch(/number: \{ required: 'Enter the number' \}/);
+    expect(read('packages/contracts/src/messages/it.ts')).toMatch(/number: \{ required: 'Enter the number' \}/);
     for (const locale of ['en', 'it']) {
       const messages = JSON.parse(read(`frontend/messages/${locale}.json`));
       expect(messages.invoices).toMatchObject({
@@ -98,12 +98,12 @@ describe('a resource with fields', () => {
     await generateResource(changes, 'invoice', { backend: BACKEND_RESOURCE, frontend: FRONTEND_RESOURCE }, options);
     await changes.commit();
     const en = read('frontend/messages/en.json');
-    const contracts = read('backend/libs/contracts/src/messages/en.ts');
+    const contracts = read('packages/contracts/src/messages/en.ts');
     const again = new Changes(root);
     syncMessages(again, resourceMessages(resourceNames('invoice')));
     await again.commit();
     expect(read('frontend/messages/en.json')).toBe(en);
-    expect(read('backend/libs/contracts/src/messages/en.ts')).toBe(contracts);
+    expect(read('packages/contracts/src/messages/en.ts')).toBe(contracts);
   });
 
   it('refuses fields for a table that already exists', async () => {

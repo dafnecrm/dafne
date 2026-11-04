@@ -1,0 +1,41 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "namedInputs": {
+    "default": ["{projectRoot}/**/*", "sharedGlobals"],
+    "production": [
+      "default",
+      "!{projectRoot}/**/*.spec.ts",
+      "!{projectRoot}/**/*.e2e-spec.ts",
+      "!{projectRoot}/test/**/*",
+      "!{projectRoot}/vitest.config*.ts"
+    ],
+    "sharedGlobals": ["{workspaceRoot}/pnpm-workspace.yaml"]
+  },
+  "targetDefaults": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"],
+      "cache": true
+    },
+    "typecheck": {
+      "inputs": ["default", "^production"],
+      "cache": true
+    },
+    "test": {
+      "inputs": ["default", "^production"],
+      "cache": true
+    },
+    "lint": {
+      "inputs": ["default"],
+      "cache": true
+    },
+    "dev": {
+      "continuous": true,
+      "cache": false
+    },
+    "start": {
+      "continuous": true,
+      "cache": false
+    }
+  }
+}

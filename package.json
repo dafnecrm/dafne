@@ -1,0 +1,21 @@
+{
+  "name": "dafne",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@9.15.2",
+  "engines": {
+    "node": ">=26.0.0"
+  },
+  "scripts": {
+    "build": "nx run-many -t build",
+    "test": "nx run-many -t test",
+    "lint": "nx run-many -t lint",
+    "typecheck": "nx run-many -t typecheck",
+    "affected": "nx affected -t lint typecheck test build",
+    "graph": "nx graph",
+    "dafne": "pnpm --filter @dafne/cli dev"
+  },
+  "devDependencies": {
+    "nx": "^24.0.4"
+  }
+}

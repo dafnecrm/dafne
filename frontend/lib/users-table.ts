@@ -1,4 +1,4 @@
-import type { UserFilterField, UserSortField } from "@backend/contracts";
+import type { UserFilterField, UserSortField } from "@dafne/contracts";
 import { defineDataTable } from "./data-table";
 
 /**

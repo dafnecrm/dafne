@@ -57,7 +57,7 @@ describe('syncFormSchema', () => {
     expect(content).toMatch(/Record<Exclude<keyof ActivityBody, "type" \| "priority" \| "budget" \| "done">, string> & \{\s*type: ActivityType;\s*priority: number;\s*budget: number \| null;\s*done: boolean;\s*\}/);
     expect(content).toContain('export const TYPE_OPTIONS = [');
     expect(content).toContain('{ value: "phone", label: "activities.type.phone" }');
-    expect(content).toMatch(/import \{[^}]*type ActivityType[^}]*\} from "@backend\/contracts"/);
+    expect(content).toMatch(/import \{[^}]*type ActivityType[^}]*\} from "@dafne\/contracts"/);
     expect(content).toContain('priority: activity?.priority ?? 1');
     expect(content).toContain('budget: activity?.budget ?? null');
     expect(content).toContain('dueDate: activity?.dueDate?.slice(0, 10) ?? ""');

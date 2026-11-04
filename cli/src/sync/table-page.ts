@@ -1,6 +1,7 @@
 import { Node, type ObjectLiteralExpression, type SourceFile, SyntaxKind } from 'ts-morph';
 import type { ResourceNames } from '../core/names.js';
 import { appendToList, editSource, ensureHookLine, ensureNamedImport, insertListElement } from '../wiring/ast.js';
+import { CONTRACTS_PACKAGE } from '../wiring/backend.js';
 import type { FormReport as Report } from './form.js';
 import { enumOptionsName, ignoredKeys, optionLabel, type ResponseField, type ResponseInfo } from './response.js';
 
@@ -27,7 +28,7 @@ export function ensureEnumOptions(file: SourceFile, names: ResourceNames, field:
     statement ? statement.getStart(true) : file.getEnd(),
     `/** Labels (message keys) of the ${field.label.toLowerCase()} values. */\nexport const ${name} = [\n  ${options},\n] satisfies { value: ${field.enumType}; label: MessageKey }[];\n\n`,
   );
-  ensureNamedImport(file, '@backend/contracts', field.enumType!, { typeOnly: true });
+  ensureNamedImport(file, CONTRACTS_PACKAGE, field.enumType!, { typeOnly: true });
   ensureNamedImport(file, '@/i18n/keys', 'MessageKey', { typeOnly: true });
   report.added.push(name);
 }
@@ -115,7 +116,7 @@ export function syncTableConfig(path: string, source: string, names: ResourceNam
       report.added.push(`filters: ${key}`);
     }
     if (report.added.some((a) => a.startsWith('filters:')))
-      ensureNamedImport(file, '@backend/contracts', `${s.pascal}FilterField`, { typeOnly: true });
+      ensureNamedImport(file, CONTRACTS_PACKAGE, `${s.pascal}FilterField`, { typeOnly: true });
   });
 
   return { content: source, report };

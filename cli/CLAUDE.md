@@ -5,7 +5,7 @@ Code generator for the Dafne backend (`../backend`, NestJS) and frontend
 new files and registers them in the existing ones. Usage is in
 `README.md`.
 
-TypeScript ESM, Node ≥ 22, pnpm. `pnpm dev g ...` runs from source (tsx),
+TypeScript ESM, Node ≥ 22, pnpm (workspace package of the Dafne monorepo, see `../CLAUDE.md`). `pnpm dev g ...` runs from source (tsx),
 `pnpm build` bundles to `dist/` (tsup), `pnpm test` (vitest),
 `pnpm typecheck`.
 
@@ -124,7 +124,7 @@ TypeScript ESM, Node ≥ 22, pnpm. `pnpm dev g ...` runs from source (tsx),
 - **Forms send numbers as numbers and dates as strings.** For numbers, the
   frontend's `NumberField` gives `number | null`. For dates, nullable
   date columns use `optionalDate` in the contracts, which turns "" into
-  null. `sync contract` adds it to `contracts/src/common.ts` on first use.
+  null. `sync contract` adds it to `packages/contracts/src/common.ts` on first use.
   `formSchema` only compiles when every form value is valid input for the
   contract, so the two must match.
 - **Table files are always formatted** after a field edit
@@ -136,15 +136,17 @@ TypeScript ESM, Node ≥ 22, pnpm. `pnpm dev g ...` runs from source (tsx),
   and services: `msg('<plural>.<field>.required|invalid')`,
   `msg('<plural>.notFound')`. Before every commit, `syncMessages`
   (`wiring/messages.ts`) adds the keys the run's files use to
-  `frontend/messages/*.json` and `contracts/src/messages/*.ts`, with an
+  `frontend/messages/*.json` and `packages/contracts/src/messages/*.ts`, with an
   English text derived from the key (`resourceMessages` seeds a new
   resource's titles). Italian gets the English text and a warning. Hooks
   for options (`useOptionLabels`) go after the component's
   `const t = useTranslations()` (`ensureHookLine`), not in render props.
 - **Pages live under `frontend/app/[locale]/(app)/`** (the locale is a
   hidden root segment), so route types are `PageProps<"/[locale]/…">`.
-- **`frontend` and `backend` are fixed folder names** under the root
-  (`BACKEND`/`FRONTEND` constants).
+- **`frontend`, `backend` and `packages/contracts` are fixed paths** under
+  the root (`BACKEND`/`FRONTEND`/`CONTRACTS_SRC` constants). Generated code
+  imports the contracts as `@dafne/contracts` (`CONTRACTS_PACKAGE`). The
+  CLI must keep working without Nx: it's also meant to be distributed.
 
 ## Testing
 
@@ -155,12 +157,14 @@ TypeScript ESM, Node ≥ 22, pnpm. `pnpm dev g ...` runs from source (tsx),
   when the real ones change. `tsconfig.json` excludes them.
 - **Changing a template:** also check that the generated code compiles.
   Never generate into the real `../backend` / `../frontend` to test.
-  1. Copy both packages into a scratch folder (without `node_modules`,
-     `.next`, `.git`, `dist`, `.env`).
-  2. Clone the `node_modules` with `cp -Rc` instead of symlinking:
-     Turbopack won't resolve `next` through a symlink outside its root.
+  1. Copy the whole monorepo into a scratch folder (without
+     `node_modules`, `.next`, `.git`, `dist`, `.env`, `.nx`).
+  2. Clone the `node_modules` of the root and of each package with
+     `cp -Rc` instead of symlinking: Turbopack won't resolve `next`
+     through a symlink outside its root.
   3. Run `pnpm dev g resource invoice --root <copy> -y`.
-  4. In the backend copy, run `npx tsc --noEmit` and `npx vitest run`.
+  4. In the backend copy, run `npx tsc --noEmit` and `npx vitest run`; in
+     `packages/contracts`, `npx vitest run`.
   5. In the frontend copy, run `npx next typegen`, then `npx tsc --noEmit`
      and `npx next build`.
 

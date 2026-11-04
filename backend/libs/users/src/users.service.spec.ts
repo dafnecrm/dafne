@@ -1,7 +1,7 @@
 import { schema } from '@app/database';
 import { getDrizzleToken } from '@nestjs/drizzle';
 import { AuthService } from '@app/auth';
-import { createUserBodySchema } from '@app/contracts';
+import { createUserBodySchema } from '@dafne/contracts';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { APIError } from 'better-auth/api';
 import { Test, TestingModule } from '@nestjs/testing';

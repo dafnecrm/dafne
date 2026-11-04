@@ -130,7 +130,7 @@ describe('syncEnumOptions', () => {
     const { content, report } = syncEnumOptions('lib.ts', lib, names, [type]);
     expect(content.indexOf('export const ACTIVITY_TYPE_OPTIONS')).toBeLessThan(content.indexOf('activitiesTable'));
     expect(content).toContain('{ value: "phone", label: "activities.type.phone" }');
-    expect(content).toMatch(/import \{ type ActivityType \} from "@backend\/contracts"/);
+    expect(content).toMatch(/import \{ type ActivityType \} from "@dafne\/contracts"/);
     expect(report.added).toEqual(['ACTIVITY_TYPE_OPTIONS']);
     expect(syncEnumOptions('lib.ts', content, names, [type]).report.added).toEqual([]);
   });

@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { and, asc, desc, eq, isNull, like } from 'drizzle-orm';
-import { customerBodySchema, type CustomerBodyInput } from '@app/contracts';
+import { customerBodySchema, type CustomerBodyInput } from '@dafne/contracts';
 import { CustomersService } from './customers.service.js';
 
 /** A body as the validation pipe hands it to the service. */

@@ -5,7 +5,7 @@
     "resolvePackageJsonExports": true,
     "esModuleInterop": true,
     "isolatedModules": true,
-    // libs/contracts imports ./x.ts (see its index.ts).
+    // @dafne/contracts (packages/contracts) imports ./x.ts (see its index.ts).
     "rewriteRelativeImportExtensions": true,
     "declaration": true,
     "removeComments": true,
@@ -42,12 +42,6 @@
       ],
       "@app/common/*": [
         "./libs/common/src/*"
-      ],
-      "@app/contracts": [
-        "./libs/contracts/src/index.ts"
-      ],
-      "@app/contracts/*": [
-        "./libs/contracts/src/*"
       ],
       "@app/customers": [
         "./libs/customers/src/index.ts"

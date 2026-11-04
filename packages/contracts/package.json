@@ -1,0 +1,21 @@
+{
+  "name": "@dafne/contracts",
+  "version": "0.0.1",
+  "description": "API request schemas (Zod) and response types shared by the backend and the frontend",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.2",
+    "vitest": "^4.1.2"
+  }
+}

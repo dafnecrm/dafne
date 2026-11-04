@@ -1,5 +1,5 @@
 import { formOptions } from "@tanstack/react-form-nextjs";
-import { productBodySchema, type ProductBody } from "@backend/contracts";
+import { productBodySchema, type ProductBody } from "@dafne/contracts";
 import { formSchema } from "@/lib/app-form/form-schema";
 import type { ProductDetail } from "@/lib/products";
 

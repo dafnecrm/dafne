@@ -3,13 +3,14 @@ import { Node, type ObjectLiteralExpression, type SourceFile } from 'ts-morph';
 import type { Changes } from '../core/changes.js';
 import { casings, words, type ResourceNames } from '../core/names.js';
 import { appendToList, editSource, quoteOf, variableObject } from './ast.js';
+import { CONTRACTS_SRC } from './backend.js';
 
 /*
  * Translated texts. Generated code holds message keys, never text:
  *   - the frontend calls t("invoices.fields.name"), and table configs hold
  *     keys as labels; the texts are in frontend/messages/<locale>.json;
  *   - contracts and services use msg('invoices.name.required'); the texts
- *     are in backend/libs/contracts/src/messages/<locale>.ts.
+ *     are in packages/contracts/src/messages/<locale>.ts.
  * After a run, `syncMessages` adds the keys the changed files use and the
  * catalogs lack, with an English text derived from the key. Italian gets
  * the same English text, to be translated by hand. Existing keys are never
@@ -18,7 +19,7 @@ import { appendToList, editSource, quoteOf, variableObject } from './ast.js';
 
 export const LOCALES = ['en', 'it'] as const;
 export const FRONTEND_MESSAGES = (locale: string) => `frontend/messages/${locale}.json`;
-export const CONTRACT_MESSAGES = (locale: string) => `backend/libs/contracts/src/messages/${locale}.ts`;
+export const CONTRACT_MESSAGES = (locale: string) => `${CONTRACTS_SRC}/messages/${locale}.ts`;
 
 /** Key → English text. */
 export type MessageMap = Map<string, string>;
@@ -203,7 +204,7 @@ export function syncMessages(
         const text = frontendText(key);
         if (text && !frontend.has(key)) frontend.set(key, text);
       }
-    } else if (path.startsWith('backend/libs/') && /\.ts$/.test(path) && !path.includes('/messages/')) {
+    } else if ((path.startsWith('backend/libs/') || path.startsWith(`${CONTRACTS_SRC}/`)) && /\.ts$/.test(path) && !path.includes('/messages/')) {
       for (const { key, enumField } of contractKeys(source)) {
         const text = contractText(key, enumField);
         if (text && !contracts.has(key)) contracts.set(key, text);

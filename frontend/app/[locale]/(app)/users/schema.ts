@@ -4,7 +4,7 @@ import {
   createUserBodySchema,
   type CreateUserBody,
   type UserRole,
-} from "@backend/contracts";
+} from "@dafne/contracts";
 import { formSchema } from "@/lib/app-form/form-schema";
 
 /** Form values: text fields as strings, the role from ROLE_OPTIONS. */

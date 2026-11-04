@@ -13,7 +13,7 @@ import { syncChildService, syncService } from '../sync/service.js';
 import { syncContractSpec, syncServiceSpec } from '../sync/service-spec.js';
 import { API_TAGS, foreignRelations, readTable, tablesIn, type TableInfo } from '../sync/table.js';
 import { editSource } from '../wiring/ast.js';
-import { BACKEND } from '../wiring/backend.js';
+import { BACKEND, CONTRACTS_SRC } from '../wiring/backend.js';
 import { FRONTEND } from '../wiring/frontend.js';
 import { syncDetail } from '../sync/detail.js';
 import { readBody, syncFormComponent, syncFormSchema, type FormReport } from '../sync/form.js';
@@ -77,7 +77,7 @@ export async function syncOne(
   const formatted = await formatSource(join(changes.root, contractPath), content, source);
   if (formatted !== source) changes.update(contractPath, () => formatted);
   if (formatted.includes('optionalDate(')) {
-    const common = `${BACKEND}/libs/contracts/src/common.ts`;
+    const common = `${CONTRACTS_SRC}/common.ts`;
     changes.update(common, (text) => {
       if (/export const optionalDate\b/.test(text)) return text;
       // Its error is a message key.
@@ -213,7 +213,7 @@ contract and frontend also take --all; every command takes --dry-run.`,
   sync
     .command('contract')
     .description(
-      'Update libs/contracts/src/<plural>.ts and the service queries (list, detail, create, update) from libs/database/src/tables/<plural>.ts, keeping hand-written code',
+      'Update packages/contracts/src/<plural>.ts and the service queries (list, detail, create, update) from libs/database/src/tables/<plural>.ts, keeping hand-written code',
     )
     .argument('[name]', 'resource name, singular or plural')
     .option('--all', 'every table that has a contract')
@@ -342,7 +342,7 @@ table changed.`,
     .addHelpText(
       'after',
       `
-It reads <singular>BodySchema in backend/libs/contracts/src/<plural>.ts and
+It reads <singular>BodySchema in packages/contracts/src/<plural>.ts and
 edits frontend/app/[locale]/(app)/<plural>/schema.ts and <singular>-form.tsx. A field
 counts as present when the form has a <form.AppField name="…"> for it,
 wherever it is. For a field that must have no input, write in the form:

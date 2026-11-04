@@ -12,8 +12,8 @@ import type {
   GeoSearchQuery,
   GeoSearchResult,
   ListedCountry,
-} from '@app/contracts';
-import { msg } from '@app/contracts';
+} from '@dafne/contracts';
+import { msg } from '@dafne/contracts';
 import { asc, isNull } from 'drizzle-orm';
 import { InjectDrizzle } from '@nestjs/drizzle';
 import { schema, type Database } from '@app/database';

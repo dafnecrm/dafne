@@ -3,14 +3,15 @@ import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
 /**
- * The parent folder with backend/ and frontend/ side by side: the frontend
- * imports the backend's API contracts (libs/contracts), so both must be
- * inside the root Turbopack builds from.
+ * The monorepo root: @dafne/contracts (packages/contracts) and the
+ * backend's auth options live outside frontend/, so Turbopack must build
+ * from the root to read them.
  */
 const root = path.join(__dirname, "..");
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Workspace packages ship TypeScript sources.
+  transpilePackages: ["@dafne/contracts"],
   cacheComponents: true,
   partialPrefetching: true,
   // Keep the dev badge off the sidebar's user menu (bottom-left).

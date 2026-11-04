@@ -2,7 +2,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthService as BetterAuthService } from '@thallesp/nestjs-better-auth';
 import { isAPIError } from 'better-auth/api';
-import type { CreateUserBody } from '@app/contracts';
+import type { CreateUserBody } from '@dafne/contracts';
 import type { Auth } from './auth.js';
 
 /**

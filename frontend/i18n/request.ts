@@ -1,4 +1,4 @@
-import { CONTRACT_MESSAGES } from "@backend/contracts";
+import { CONTRACT_MESSAGES } from "@dafne/contracts";
 import { hasLocale } from "next-intl";
 import { getRequestConfig } from "next-intl/server";
 import { locale as rootLocale } from "next/root-params";

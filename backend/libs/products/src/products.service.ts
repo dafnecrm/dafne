@@ -10,7 +10,7 @@ import {
   type ProductsList,
   type ListProductsQuery,
   msg,
-} from '@app/contracts';
+} from '@dafne/contracts';
 
 export const DEFAULT_PAGE_SIZE = 20;
 

@@ -3,7 +3,7 @@ import type {
   CustomerFilterField,
   CustomerSortField,
   CustomerType,
-} from "@backend/contracts";
+} from "@dafne/contracts";
 import type { MessageKey } from "@/i18n/keys";
 import { defineDataTable } from "./data-table";
 

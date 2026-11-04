@@ -3,7 +3,7 @@ import {
   activityBodySchema,
   type ActivityBody,
   type ActivityType,
-} from "@backend/contracts";
+} from "@dafne/contracts";
 import { formSchema } from "@/lib/app-form/form-schema";
 import type { ActivityDetail } from "@/lib/activities";
 

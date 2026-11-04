@@ -1,6 +1,7 @@
 import { Node, type SourceFile, SyntaxKind } from 'ts-morph';
 import { casings, words, type ResourceNames } from '../core/names.js';
 import { appendToList, editSource, ensureHookLine, ensureNamedImport } from '../wiring/ast.js';
+import { CONTRACTS_PACKAGE } from '../wiring/backend.js';
 import type { TableInfo } from './table.js';
 
 /*
@@ -197,7 +198,7 @@ export function syncFormSchema(
     excluded.push(...newTyped.map((f) => f.key));
     members.push(...newTyped.map((f) => `${f.key}: ${valueType(f)};`));
     for (const f of newTyped) {
-      if (f.kind === 'enum') ensureNamedImport(file, '@backend/contracts', f.enumType!, { typeOnly: true });
+      if (f.kind === 'enum') ensureNamedImport(file, CONTRACTS_PACKAGE, f.enumType!, { typeOnly: true });
       report.added.push(`${s.pascal}FormValues: ${f.key}`);
     }
     const text = [
@@ -221,7 +222,7 @@ export function syncFormSchema(
       const opts = formOptsNode(file, s.camel);
       const statement = opts?.getFirstAncestor((a) => a.getParent() === file) ?? opts;
       file.insertText(statement ? statement.getStart(true) : file.getEnd(), code);
-      ensureNamedImport(file, '@backend/contracts', f.enumType!, { typeOnly: true });
+      ensureNamedImport(file, CONTRACTS_PACKAGE, f.enumType!, { typeOnly: true });
       ensureNamedImport(file, '@/i18n/keys', 'MessageKey', { typeOnly: true });
       report.added.push(name);
     });

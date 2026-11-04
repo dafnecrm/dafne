@@ -14,7 +14,7 @@ import {
   type ListUsersQuery,
   type UserDetail,
   type UsersList,
-} from '@app/contracts';
+} from '@dafne/contracts';
 import { UsersService } from './users.service.js';
 
 @Controller('users')

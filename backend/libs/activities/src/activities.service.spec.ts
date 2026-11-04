@@ -3,7 +3,7 @@ import { getDrizzleToken } from '@nestjs/drizzle';
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { and, asc, desc, eq, isNull, like, ne } from 'drizzle-orm';
-import { activityBodySchema, type ActivityBodyInput } from '@app/contracts';
+import { activityBodySchema, type ActivityBodyInput } from '@dafne/contracts';
 import { ActivitiesService } from './activities.service.js';
 
 /** A body as the validation pipe hands it to the service. */

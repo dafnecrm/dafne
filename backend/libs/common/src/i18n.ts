@@ -2,7 +2,7 @@ import {
   CONTRACT_MESSAGES,
   translateMessage,
   type ContractLocale,
-} from '@app/contracts';
+} from '@dafne/contracts';
 import { z } from 'zod';
 
 export const LOCALES = Object.keys(CONTRACT_MESSAGES) as ContractLocale[];

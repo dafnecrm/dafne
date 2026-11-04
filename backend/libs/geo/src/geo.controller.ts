@@ -5,7 +5,7 @@ import {
   geoSearchQuerySchema,
   type GeoSearchQuery,
   type GeoSearchResult,
-} from '@app/contracts';
+} from '@dafne/contracts';
 import { GeoService } from './geo.service.js';
 
 /** Geographic lookups, for any signed-in user (the global auth guard checks it). */

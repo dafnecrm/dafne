@@ -21,7 +21,7 @@ import {
   type ActivityDetail,
   type ActivitiesList,
   type ListActivitiesQuery,
-} from '@app/contracts';
+} from '@dafne/contracts';
 import { ActivitiesService } from './activities.service.js';
 
 /** Activities, for any signed-in user (the global auth guard checks it). */

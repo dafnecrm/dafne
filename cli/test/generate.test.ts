@@ -51,7 +51,7 @@ describe('a fullstack resource', () => {
       expect.arrayContaining([
         'backend/libs/invoices/src/invoices.controller.ts',
         'backend/libs/invoices/src/invoices.service.spec.ts',
-        'backend/libs/contracts/src/invoices.ts',
+        'packages/contracts/src/invoices.ts',
         'backend/libs/database/src/tables/invoices.ts',
         'frontend/lib/invoices-table.ts',
         'frontend/app/[locale]/(app)/invoices/[id]/edit/page.tsx',
@@ -79,7 +79,7 @@ describe('a fullstack resource', () => {
     expect(schema).toContain('const { invoiceRelations, ...invoiceTables } = invoices;');
     expect(schema).toContain('...customerTables, ...invoiceTables }');
     expect(schema).toContain('  ...invoiceRelations,\n};');
-    expect(read('backend/libs/contracts/src/index.ts')).toContain(
+    expect(read('packages/contracts/src/index.ts')).toContain(
       "export * from './invoices.ts';",
     );
     const module = read('backend/libs/invoices/src/invoices.module.ts');

@@ -1,0 +1,9 @@
+# Root of the monorepo; each project has its own .gitignore too.
+node_modules
+.DS_Store
+*.log
+*.tsbuildinfo
+
+# Nx
+.nx/cache
+.nx/workspace-data

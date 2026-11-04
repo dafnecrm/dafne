@@ -21,8 +21,7 @@
     ],
     "paths": {
       "@/*": ["./*"],
-      "@backend/auth-options": ["../backend/libs/auth/src/auth.options.ts"],
-      "@backend/contracts": ["../backend/libs/contracts/src/index.ts"]
+      "@backend/auth-options": ["../backend/libs/auth/src/auth.options.ts"]
     }
   },
   "include": [

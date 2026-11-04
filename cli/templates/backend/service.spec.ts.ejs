@@ -3,7 +3,7 @@ import { getDrizzleToken } from '@nestjs/drizzle';
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { and, asc, desc, eq, isNull, like } from 'drizzle-orm';
-import { <%= s.camel %>BodySchema, type <%= s.pascal %>BodyInput } from '@app/contracts';
+import { <%= s.camel %>BodySchema, type <%= s.pascal %>BodyInput } from '@dafne/contracts';
 import { <%= p.pascal %>Service } from './<%= p.kebab %>.service.js';
 
 /** A body as the validation pipe hands it to the service. */

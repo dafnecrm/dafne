@@ -2,6 +2,7 @@ import { render } from '../core/templates.js';
 import type { ResourceNames } from '../core/names.js';
 import {
   BACKEND,
+  CONTRACTS_SRC,
   wireContract,
   wireIntoLib,
   wireLib,
@@ -11,7 +12,7 @@ import type { Ctx, Piece } from './pieces.js';
 
 export const libSrc = ({ p }: ResourceNames) => `${BACKEND}/libs/${p.kebab}/src`;
 export const contractFile = ({ p }: ResourceNames) =>
-  `${BACKEND}/libs/contracts/src/${p.kebab}.ts`;
+  `${CONTRACTS_SRC}/${p.kebab}.ts`;
 export const tableFile = ({ p }: ResourceNames) =>
   `${BACKEND}/libs/database/src/tables/${p.kebab}.ts`;
 
@@ -34,7 +35,7 @@ const lib: Piece = {
 
 export const backendPieces: Record<string, Piece> = {
   contract: {
-    description: 'Zod request schemas and response types in libs/contracts',
+    description: 'Zod request schemas and response types in packages/contracts',
     deps: [],
     marker: contractFile,
     generate(ctx) {

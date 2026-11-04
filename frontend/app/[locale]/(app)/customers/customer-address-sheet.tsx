@@ -28,7 +28,7 @@ import {
   emptyAddress,
   type AddressFormValues,
 } from "./schema";
-import type { CustomerAddressType, CustomerType } from "@backend/contracts";
+import type { CustomerAddressType, CustomerType } from "@dafne/contracts";
 
 /**
  * Adds an address (no `address`) or edits one, in a sheet. Saving only

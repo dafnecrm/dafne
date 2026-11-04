@@ -2,16 +2,17 @@
 
 # dafne frontend
 
-Next.js app. It calls the NestJS backend (`../backend`, a separate repo,
-checked out side by side) from the server through `backendFetch`
-(`lib/backend.ts`). It needs `../backend` to build: it imports the
-backend's API contracts and, type-only, its auth options.
+Next.js app, part of the Dafne monorepo (see `../CLAUDE.md`). It calls the
+NestJS backend (`../backend`) from the server through `backendFetch`
+(`lib/backend.ts`). It imports the API contracts from the workspace
+package `@dafne/contracts` and, type-only, the backend's auth options
+(`@backend/auth-options`, a path in `tsconfig.json`).
 
 ## API types come from the backend
 
-Never write API request or response types by hand. They live in the
-backend's `libs/contracts` (rules in `../backend/CLAUDE.md`) and are
-imported as `@backend/contracts` (path in `tsconfig.json`).
+Never write API request or response types by hand. They live in
+`@dafne/contracts` (`../packages/contracts`, rules in `../backend/CLAUDE.md`),
+a workspace dependency compiled by Next (`transpilePackages`).
 
 - `lib/<resource>.ts` re-exports response types as
   `export type CustomerDetail = Json<contracts.CustomerDetail>`. `Json<T>`
@@ -22,11 +23,11 @@ imported as `@backend/contracts` (path in `tsconfig.json`).
   ("" when blank). It only compiles if the form values are valid input for
   the schema.
 - Modules that also run in the browser and only need names (table configs,
-  `lib/*-table.ts`) import **types only** from `@backend/contracts` and check
+  `lib/*-table.ts`) import **types only** from `@dafne/contracts` and check
   literals with `satisfies CustomerSortField[]`. A value import pulls Zod
   (~100 KB) into the page's bundle.
-- `next.config.ts` sets `turbopack.root` to the parent folder, so
-  Turbopack can read `../backend`. `allowImportingTsExtensions` in
+- `next.config.ts` sets `turbopack.root` to the monorepo root, so
+  Turbopack can read `../packages/contracts` and `../backend`. `allowImportingTsExtensions` in
   `tsconfig.json` is needed for the contracts' `.ts` imports.
 
 ## Languages (next-intl)

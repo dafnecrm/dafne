@@ -1,14 +1,15 @@
 # dafne backend
 
-NestJS API (monorepo: `apps/api`, libraries in `libs/*`, imported as
-`@app/<lib>`). The frontend (`../frontend`, a separate repo) imports this
-repo's `libs/contracts`.
+NestJS API (Nest monorepo: `apps/api`, libraries in `libs/*`, imported as
+`@app/<lib>`), part of the Dafne monorepo (see `../CLAUDE.md`). The API
+contracts live in the workspace package `@dafne/contracts`
+(`../packages/contracts`), shared with the frontend (`../frontend`).
 
 ## API contracts (shared with the frontend)
 
-API request and response types live **only here**, in `libs/contracts`.
-The frontend imports them as `@backend/contracts`, so it never writes API
-types itself.
+API request and response types live **only** in `@dafne/contracts`
+(`../packages/contracts`). The backend and the frontend both import them
+as `@dafne/contracts`, so the frontend never writes API types itself.
 
 - **Requests** (bodies, query strings) are Zod schemas, e.g.
   `customerBodySchema`, `listCustomersQuerySchema`. Use `z.strictObject` so
@@ -21,17 +22,21 @@ types itself.
   `optionalText` (blank, null or missing all become null), `pageQuery`
   (limit/offset), `SORT_DIRECTIONS`, `Json<T>` (the client-side type, dates
   as strings).
-- `libs/contracts` holds plain Zod only, with no Nest, Node or database
+- `@dafne/contracts` holds plain Zod only, with no Nest, Node or database
   imports, because it ends up in the frontend bundle.
-- Inside `libs/contracts`, relative imports end in `.ts` (`./common.ts`),
+- Inside `packages/contracts`, relative imports end in `.ts` (`./common.ts`),
   not `.js` like the rest of the backend, because the frontend's bundler
   (Turbopack) can't map `.js` to `.ts`. `rewriteRelativeImportExtensions`
   in `tsconfig.json` allows it.
+- The package ships TypeScript sources and has no build step.
+  `rspack.config.js` bundles `@dafne/*` into the API, since Nest's rspack
+  defaults leave everything in `node_modules` external. Its specs run in
+  the package itself (`pnpm --filter @dafne/contracts test`).
 
 ## Messages (English and Italian)
 
 User-facing messages are keys, never text: `msg('customers.name.required')`
-(`libs/contracts/src/messages`), for Zod errors and for exceptions
+(`packages/contracts/src/messages`), for Zod errors and for exceptions
 (`new NotFoundException(msg('customers.notFound'))`). `msg` only accepts
 keys of `messages/en.ts`; `it.ts` must have the same keys (typed by
 `ContractMessages`). The frontend shows the same texts.
@@ -54,6 +59,6 @@ keys of `messages/en.ts`; `it.ts` must have the same keys (typed by
 ## Adding an endpoint
 
 1. Add the request schema and response type to
-   `libs/contracts/src/<resource>.ts`, then export the file from `index.ts`.
+   `packages/contracts/src/<resource>.ts`, then export the file from `index.ts`.
 2. Use them in the controller (pipe + return type) and in the service.
 3. In the frontend, add the `Json<...>` alias (see `../frontend/CLAUDE.md`).

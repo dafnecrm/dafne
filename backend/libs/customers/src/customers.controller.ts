@@ -20,7 +20,7 @@ import {
   type CustomerDetail,
   type CustomersList,
   type ListCustomersQuery,
-} from '@app/contracts';
+} from '@dafne/contracts';
 import { CustomersService } from './customers.service.js';
 
 /** Customers, for any signed-in user (the global auth guard checks it). */

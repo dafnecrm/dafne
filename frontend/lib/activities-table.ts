@@ -3,7 +3,7 @@ import type {
   ActivitySortField,
   ActivityType,
   ActivityStatus,
-} from "@backend/contracts";
+} from "@dafne/contracts";
 import type { MessageKey } from "@/i18n/keys";
 import { defineDataTable } from "./data-table";
 import { CircleIcon, CircleOffIcon, LucideIcon } from "lucide-react";

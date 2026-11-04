@@ -1,8 +1,8 @@
 "use server";
 
-import type * as contracts from "@backend/contracts";
+import type * as contracts from "@dafne/contracts";
 import { getTranslations } from "next-intl/server";
-import type { Json } from "@backend/contracts";
+import type { Json } from "@dafne/contracts";
 import { BackendError, backendFetch } from "./backend";
 
 export type GeoPlace = Json<contracts.GeoPlace>;

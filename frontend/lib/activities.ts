@@ -1,5 +1,5 @@
-import type * as contracts from "@backend/contracts";
-import type { Json } from "@backend/contracts";
+import type * as contracts from "@dafne/contracts";
+import type { Json } from "@dafne/contracts";
 import { backendFetch } from "./backend";
 import type { TableFilters, TableSort } from "./data-table";
 import { activitiesTable } from "./activities-table";
