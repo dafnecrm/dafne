@@ -4,11 +4,11 @@
 
 *                    @lula
 
-/backend/            @lula
-/frontend/           @lula
+/apps/backend/       @lula
+/apps/frontend/      @lula
 # Shared by the backend and the frontend: both owners.
 /packages/contracts/ @lula
-/cli/                @lula
+/packages/cli/       @lula
 
 # Monorepo setup and CI.
 /.github/            @lula
