@@ -8,16 +8,16 @@ import {
   createDataTableColumnHelper,
   useDescribeFilters,
   DataTable,
-} from "@/components/data-table";
-import { LocalDate } from "@/components/local-date";
+} from "@dafne/frontend-data-table/table";
+import { LocalDate } from "@dafne/frontend-ui/components/local-date";
 import {
   Empty,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "@/components/ui/empty";
-import type { TableParams } from "@/lib/data-table";
+} from "@dafne/frontend-ui/components/empty";
+import type { TableParams } from "@dafne/frontend-data-table";
 import type { ListedProduct } from "@/lib/products";
 import { productsTable } from "@/lib/products-table";
 import { ProductTableActions } from "./product-table-actions";

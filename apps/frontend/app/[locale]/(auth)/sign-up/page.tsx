@@ -9,7 +9,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@dafne/frontend-ui/components/card";
 import { SignUpForm } from "./sign-up-form";
 
 export async function generateMetadata(): Promise<Metadata> {

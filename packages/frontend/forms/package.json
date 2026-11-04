@@ -1,0 +1,33 @@
+{
+  "name": "@dafne/frontend-forms",
+  "version": "0.0.1",
+  "description": "Form building blocks (TanStack Form): fields, contexts, schema helpers",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts"
+  },
+  "scripts": {
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@dafne/frontend-ui": "workspace:*",
+    "@tanstack/react-form-nextjs": "catalog:",
+    "cn": "catalog:",
+    "lucide-react": "catalog:",
+    "zod": "catalog:"
+  },
+  "peerDependencies": {
+    "next-intl": "catalog:",
+    "react": "catalog:"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "next-intl": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

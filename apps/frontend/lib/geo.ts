@@ -3,7 +3,7 @@
 import type * as contracts from "@dafne/contracts";
 import { getTranslations } from "next-intl/server";
 import type { Json } from "@dafne/contracts";
-import { BackendError, backendFetch } from "./backend";
+import { BackendError, backendFetch } from "@dafne/frontend-api/server";
 
 export type GeoPlace = Json<contracts.GeoPlace>;
 export type ListedCountry = Json<contracts.ListedCountry>;

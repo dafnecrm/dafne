@@ -11,8 +11,8 @@ import {
   PageContentTitle,
 } from "@/components/page-content";
 import { BreadcrumbLabel } from "@/components/page-breadcrumb";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@dafne/frontend-ui/components/button";
+import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { ActivityDetails } from "../activity-detail";
 import { ActivityDetailActions } from "../activity-detail-actions";
 import { loadActivity } from "./load-activity";

@@ -3,14 +3,14 @@
 import { revalidateLogic } from "@tanstack/react-form-nextjs";
 import { useTranslations } from "next-intl";
 import { useOptionLabels } from "@/i18n/options";
-import { Button } from "@/components/ui/button";
+import { Button } from "@dafne/frontend-ui/components/button";
 import { PlaceSearch } from "@/components/place-search";
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
-} from "@/components/ui/field";
+} from "@dafne/frontend-ui/components/field";
 import {
   Sheet,
   SheetClose,
@@ -19,7 +19,7 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/sheet";
+} from "@dafne/frontend-ui/components/sheet";
 import { useAppForm } from "@/lib/app-form/app-form";
 import type { GeoPlace } from "@/lib/geo";
 import {

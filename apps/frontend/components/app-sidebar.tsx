@@ -14,7 +14,7 @@ import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+} from "@dafne/frontend-ui/components/collapsible";
 import {
   Sidebar,
   SidebarContent,
@@ -29,7 +29,7 @@ import {
   SidebarMenuSubItem,
   SidebarRail,
   useSidebar,
-} from "@/components/ui/sidebar";
+} from "@dafne/frontend-ui/components/sidebar";
 import { findNavItem, NAV_SECTIONS, type NavTitle } from "@/lib/navigation";
 
 /** Active page uses the primary color (also on hover), icon included. */

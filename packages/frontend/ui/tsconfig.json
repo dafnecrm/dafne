@@ -1,0 +1,19 @@
+{
+  // Source-only package: Next compiles it (transpilePackages).
+  // Relative imports end in .ts, as in @dafne/contracts.
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "out-tsc",
+    "tsBuildInfoFile": "out-tsc/tsconfig.tsbuildinfo",
+    "lib": ["ES2023", "DOM"],
+    // next/* and other packages resolve through their package exports.
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    // The components import each other by package name, as shadcn writes them.
+    "paths": { "@dafne/frontend-ui/*": ["./src/*"] },
+    "types": ["vitest/globals"]
+  },
+  "include": ["src"]
+}

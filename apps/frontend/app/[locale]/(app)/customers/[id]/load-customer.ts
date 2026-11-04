@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { BackendError } from "@/lib/backend";
+import { BackendError } from "@dafne/frontend-api";
 import { getCustomer } from "@/lib/customers";
 import { requireUser } from "@/lib/session";
 

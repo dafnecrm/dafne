@@ -11,8 +11,8 @@ import {
   PageContentHeader,
   PageContentTitle,
 } from "@/components/page-content";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@dafne/frontend-ui/components/button";
+import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { ProductDetailActions } from "../product-detail-actions";
 import { ProductDetails } from "../product-detail";
 import { loadProduct } from "./load-product";

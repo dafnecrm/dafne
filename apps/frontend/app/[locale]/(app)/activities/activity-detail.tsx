@@ -13,8 +13,8 @@ import {
 } from "lucide-react";
 import CopyButton from "@/components/copy-button";
 import { Detail, DetailSection } from "@/components/detail";
-import { LocalDate } from "@/components/local-date";
-import { TextEditorContent } from "@/components/ui/text-editor";
+import { LocalDate } from "@dafne/frontend-ui/components/local-date";
+import { TextEditorContent } from "@dafne/frontend-ui/components/text-editor";
 import type { ActivityDetail } from "@/lib/activities";
 import {
   ACTIVITY_TYPE_OPTIONS,

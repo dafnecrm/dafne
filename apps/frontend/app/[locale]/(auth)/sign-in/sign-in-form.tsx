@@ -4,10 +4,10 @@ import { useTranslations } from "next-intl";
 import { revalidateLogic } from "@tanstack/react-form-nextjs";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
-import { FieldGroup } from "@/components/ui/field";
+import { FieldGroup } from "@dafne/frontend-ui/components/field";
 import { setServerError, useAppForm } from "@/lib/app-form/app-form";
-import { useResetOnLeave } from "@/lib/app-form/reset-on-leave";
-import { authClient, useAuthErrorMessage } from "@/lib/auth-client";
+import { useResetOnLeave } from "@dafne/frontend-forms/client";
+import { authClient, useAuthErrorMessage } from "@dafne/frontend-auth/client";
 import { signInFormOpts, signInSchema } from "../schemas";
 import { VERIFY_EMAIL_PATH } from "../verify-email/verify-email";
 

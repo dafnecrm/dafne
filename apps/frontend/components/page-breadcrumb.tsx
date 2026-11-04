@@ -19,8 +19,8 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Skeleton } from "@/components/ui/skeleton";
+} from "@dafne/frontend-ui/components/breadcrumb";
+import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { findNavItem } from "@/lib/navigation";
 
 /*

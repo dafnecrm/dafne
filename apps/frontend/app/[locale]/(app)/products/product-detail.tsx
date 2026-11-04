@@ -9,9 +9,9 @@ import {
 } from "lucide-react";
 import CopyButton from "@/components/copy-button";
 import { Detail, DetailSection } from "@/components/detail";
-import { LocalDate } from "@/components/local-date";
+import { LocalDate } from "@dafne/frontend-ui/components/local-date";
 import type { ProductDetail } from "@/lib/products";
-import { TextEditorContent } from "@/components/ui/text-editor";
+import { TextEditorContent } from "@dafne/frontend-ui/components/text-editor";
 
 /** The details of a product: its fields, then who created and updated it. */
 export function ProductDetails({ product }: { product: ProductDetail }) {

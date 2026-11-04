@@ -7,7 +7,7 @@ import { MapPinPlusIcon, PencilIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
 import { CountryName } from "@/components/country-select";
-import { Button } from "@/components/ui/button";
+import { Button } from "@dafne/frontend-ui/components/button";
 import {
   Card,
   CardAction,
@@ -15,8 +15,8 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { FieldGroup } from "@/components/ui/field";
+} from "@dafne/frontend-ui/components/card";
+import { FieldGroup } from "@dafne/frontend-ui/components/field";
 import {
   Table,
   TableBody,
@@ -24,9 +24,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@dafne/frontend-ui/components/table";
 import { setServerError, useAppForm } from "@/lib/app-form/app-form";
-import { useResetOnLeave } from "@/lib/app-form/reset-on-leave";
+import { useResetOnLeave } from "@dafne/frontend-forms/client";
 import type { CustomerDetail } from "@/lib/customers";
 import { CUSTOMER_ADDRESS_TYPE_OPTIONS } from "@/lib/customers-table";
 import { saveCustomer } from "./actions";

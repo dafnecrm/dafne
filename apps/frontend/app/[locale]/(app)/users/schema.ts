@@ -1,11 +1,11 @@
-import type { MessageKey } from "@/i18n/keys";
+import type { MessageKey } from "@dafne/frontend-ui/lib/message-key";
 import { formOptions } from "@tanstack/react-form-nextjs";
 import {
   createUserBodySchema,
   type CreateUserBody,
   type UserRole,
 } from "@dafne/contracts";
-import { formSchema } from "@/lib/app-form/form-schema";
+import { formSchema } from "@dafne/frontend-forms";
 
 /** Form values: text fields as strings, the role from ROLE_OPTIONS. */
 export type UserFormValues = Record<

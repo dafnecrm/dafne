@@ -29,7 +29,7 @@ export function ensureEnumOptions(file: SourceFile, names: ResourceNames, field:
     `/** Labels (message keys) of the ${field.label.toLowerCase()} values. */\nexport const ${name} = [\n  ${options},\n] satisfies { value: ${field.enumType}; label: MessageKey }[];\n\n`,
   );
   ensureNamedImport(file, CONTRACTS_PACKAGE, field.enumType!, { typeOnly: true });
-  ensureNamedImport(file, '@/i18n/keys', 'MessageKey', { typeOnly: true });
+  ensureNamedImport(file, '@dafne/frontend-ui/lib/message-key', 'MessageKey', { typeOnly: true });
   report.added.push(name);
 }
 
@@ -145,7 +145,7 @@ function columnCode(names: ResourceNames, field: ResponseField, sortable: boolea
     }
     case 'date':
     case 'datetime': {
-      imports.push(['@/components/local-date', 'LocalDate']);
+      imports.push(['@dafne/frontend-ui/components/local-date', 'LocalDate']);
       const format = field.kind === 'date' ? 'date' : 'dateTime';
       options.push(
         field.optional

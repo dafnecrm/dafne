@@ -7,8 +7,8 @@ import {
   createDataTableColumnHelper,
   DataTable,
   useDescribeFilters,
-} from "@/components/data-table";
-import { LocalDate } from "@/components/local-date";
+} from "@dafne/frontend-data-table/table";
+import { LocalDate } from "@dafne/frontend-ui/components/local-date";
 import type { ListedCustomer } from "@/lib/customers";
 import { ContactIcon } from "lucide-react";
 import { CustomerTableActions } from "./customer-table-actions";
@@ -18,8 +18,8 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "@/components/ui/empty";
-import type { TableParams } from "@/lib/data-table";
+} from "@dafne/frontend-ui/components/empty";
+import type { TableParams } from "@dafne/frontend-data-table";
 import { useOptionLabel } from "@/i18n/options";
 import { customersTable, CUSTOMER_TYPE_OPTIONS } from "@/lib/customers-table";
 

@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import createMiddleware from "next-intl/middleware";
 import { routing } from "@/i18n/routing";
-import { SESSION_COOKIES } from "@/lib/auth-cookies";
+import { SESSION_COOKIES } from "@dafne/frontend-auth";
 
 const PUBLIC_PATHS = ["/sign-in", "/sign-up", "/verify-email"];
 /** Clears an invalid session cookie; must run with or without a cookie. */

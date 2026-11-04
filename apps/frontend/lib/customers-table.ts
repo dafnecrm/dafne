@@ -4,8 +4,8 @@ import type {
   CustomerSortField,
   CustomerType,
 } from "@dafne/contracts";
-import type { MessageKey } from "@/i18n/keys";
-import { defineDataTable } from "./data-table";
+import type { MessageKey } from "@dafne/frontend-ui/lib/message-key";
+import { defineDataTable } from "@dafne/frontend-data-table";
 
 /**
  * Labels (message keys) of an address's type, for the form and the detail

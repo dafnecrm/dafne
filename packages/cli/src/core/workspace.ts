@@ -7,6 +7,8 @@ export const FRONTEND = 'apps/frontend';
 export const CONTRACTS_SRC = 'packages/contracts/src';
 /** The backend's libs: one workspace package each, `@dafne/backend-<lib>`. */
 export const BACKEND_LIBS = 'packages/backend';
+/** The frontend's libs: one workspace package each, `@dafne/frontend-<lib>`. */
+export const FRONTEND_LIBS = 'packages/frontend';
 
 /** A backend app's folder, e.g. apps/api. */
 export function backendApp(app: string) {
@@ -23,3 +25,8 @@ export const appPackage = (app: string) => `@dafne/${app}`;
 export const backendLib = (lib: string) => `${BACKEND_LIBS}/${lib}`;
 /** A backend lib's package name, e.g. @dafne/backend-customers. */
 export const backendPackage = (lib: string) => `@dafne/backend-${lib}`;
+
+/** A frontend lib's folder, e.g. packages/frontend/auth. */
+export const frontendLib = (lib: string) => `${FRONTEND_LIBS}/${lib}`;
+/** A frontend lib's package name, e.g. @dafne/frontend-auth. */
+export const frontendPackage = (lib: string) => `@dafne/frontend-${lib}`;

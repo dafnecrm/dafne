@@ -7,6 +7,7 @@
 /apps/api/           @lula
 /packages/backend/   @lula
 /apps/frontend/      @lula
+/packages/frontend/  @lula
 # Shared by the backend and the frontend: both owners.
 /packages/contracts/ @lula
 /packages/cli/       @lula

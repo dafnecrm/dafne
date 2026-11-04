@@ -12,11 +12,11 @@ import {
   PageContentHeader,
   PageContentTitle,
 } from "@/components/page-content";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@dafne/frontend-ui/components/button";
+import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { listCustomers } from "@/lib/customers";
 import { customersTable } from "@/lib/customers-table";
-import { getTableParams } from "@/lib/data-table";
+import { getTableParams } from "@dafne/frontend-data-table";
 import { requireUser } from "@/lib/session";
 import { CustomersTable } from "./customers-table";
 

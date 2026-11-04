@@ -9,7 +9,7 @@ import {
   ComboboxInput,
   ComboboxItem,
   ComboboxList,
-} from "@/components/ui/combobox";
+} from "@dafne/frontend-ui/components/combobox";
 import { countryName } from "@/lib/country-name";
 import { listCountries, type ListedCountry } from "@/lib/geo";
 

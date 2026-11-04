@@ -1,5 +1,5 @@
 import type { UserFilterField, UserSortField } from "@dafne/contracts";
-import { defineDataTable } from "./data-table";
+import { defineDataTable } from "@dafne/frontend-data-table";
 
 /**
  * The users table: plain data with no server-only imports (unlike

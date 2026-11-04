@@ -1,0 +1,33 @@
+{
+  "name": "@dafne/frontend-data-table",
+  "version": "0.0.1",
+  "description": "Server-side data tables: config, URL state and the DataTable component",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./table": "./src/table.tsx"
+  },
+  "scripts": {
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@dafne/frontend-ui": "workspace:*",
+    "@tanstack/react-table": "^9.3.1",
+    "lucide-react": "catalog:"
+  },
+  "peerDependencies": {
+    "next": "catalog:",
+    "next-intl": "catalog:",
+    "react": "catalog:"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "next": "catalog:",
+    "next-intl": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

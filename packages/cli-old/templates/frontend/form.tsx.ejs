@@ -3,11 +3,11 @@
 import { revalidateLogic } from "@tanstack/react-form-nextjs";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FieldGroup } from "@/components/ui/field";
+import { Button } from "@dafne/frontend-ui/components/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@dafne/frontend-ui/components/card";
+import { FieldGroup } from "@dafne/frontend-ui/components/field";
 import { setServerError, useAppForm } from "@/lib/app-form/app-form";
-import { useResetOnLeave } from "@/lib/app-form/reset-on-leave";
+import { useResetOnLeave } from "@dafne/frontend-forms/client";
 import type { <%= s.pascal %>Detail } from "@/lib/<%= p.kebab %>";
 import { save<%= s.pascal %> } from "./actions";
 import { <%= s.camel %>FormOpts, <%= s.camel %>Schema } from "./schema";

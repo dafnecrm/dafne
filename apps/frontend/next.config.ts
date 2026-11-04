@@ -3,15 +3,22 @@ import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
 /**
- * The monorepo root: the workspace packages (@dafne/contracts, and the type of
- * @dafne/backend-auth/options) live outside apps/frontend/, so Turbopack must
+ * The monorepo root: the workspace packages (@dafne/contracts,
+ * @dafne/frontend-auth) live outside apps/frontend/, so Turbopack must
  * build from the root to read them.
  */
 const root = path.join(__dirname, "../..");
 
 const nextConfig: NextConfig = {
   // Workspace packages ship TypeScript sources.
-  transpilePackages: ["@dafne/contracts"],
+  transpilePackages: [
+    "@dafne/contracts",
+    "@dafne/frontend-auth",
+    "@dafne/frontend-api",
+    "@dafne/frontend-ui",
+    "@dafne/frontend-forms",
+    "@dafne/frontend-data-table",
+  ],
   cacheComponents: true,
   partialPrefetching: true,
   // Keep the dev badge off the sidebar's user menu (bottom-left).

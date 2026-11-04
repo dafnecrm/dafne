@@ -1,7 +1,7 @@
 import type * as contracts from "@dafne/contracts";
 import type { Json } from "@dafne/contracts";
-import { backendFetch } from "./backend";
-import type { TableFilters, TableSort } from "./data-table";
+import { backendFetch } from "@dafne/frontend-api/server";
+import type { TableFilters, TableSort } from "@dafne/frontend-data-table";
 import { customersTable } from "./customers-table";
 
 /*

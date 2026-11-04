@@ -1,9 +1,11 @@
+import { parse } from 'jsonc-parser';
 import { rmSync } from 'node:fs';
 import { flushChanges } from 'nx/src/generators/tree.js';
 import backendAppGenerator from '../src/generators/backend-app/generator.ts';
 import backendLibGenerator from '../src/generators/backend-lib/generator.ts';
 import backendResourceGenerator from '../src/generators/backend-resource/generator.ts';
 import contractGenerator from '../src/generators/contract/generator.ts';
+import frontendLibGenerator from '../src/generators/frontend-lib/generator.ts';
 import { diskTree, fixtureCopy, reader } from './helpers.ts';
 
 let root: string;
@@ -111,5 +113,30 @@ describe('contract', () => {
     expect(read('packages/contracts/src/reports.ts')).toContain('export const reportBodySchema');
     expect(read('packages/contracts/src/reports.spec.ts')).toContain('reportBodySchema');
     expect(read('packages/contracts/src/index.ts')).toContain("export * from './reports.ts';");
+  });
+});
+
+describe('frontend-lib', () => {
+  it('creates an empty lib, named as given, registered in the frontend', async () => {
+    await generate(frontendLibGenerator, { name: 'charts' });
+    expect(read('packages/frontend/charts/package.json')).toContain('"name": "@dafne/frontend-charts"');
+    expect(read('packages/frontend/charts/src/index.ts')).toContain('export {};');
+    expect(read('apps/frontend/package.json')).toContain('"@dafne/frontend-charts": "workspace:*"');
+    expect(read('apps/frontend/next.config.ts')).toMatch(
+      /transpilePackages: \[\s*"@dafne\/contracts",\s*"@dafne\/frontend-auth",\s*"@dafne\/frontend-charts",?\s*\]/,
+    );
+    expect(parse(read('apps/frontend/tsconfig.json')).nx.sync.ignoredDependencies).toEqual([
+      '@dafne/contracts',
+      '@dafne/frontend-auth',
+      '@dafne/frontend-charts',
+    ]);
+    expect(read('tsconfig.json')).toContain('./packages/frontend/charts');
+  });
+
+  it('wires a lib only once', async () => {
+    await generate(frontendLibGenerator, { name: 'charts' });
+    await generate(frontendLibGenerator, { name: 'charts', force: true });
+    expect(read('apps/frontend/next.config.ts').match(/@dafne\/frontend-charts/g)).toHaveLength(1);
+    expect(read('apps/frontend/tsconfig.json').match(/@dafne\/frontend-charts/g)).toHaveLength(1);
   });
 });

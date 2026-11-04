@@ -32,7 +32,7 @@ function detailCode(names: ResourceNames, record: string, field: ResponseField):
   let body: string;
   if (field.richText) {
     // Sanitized HTML, on a row of its own: rich text needs the width.
-    imports.push(['@/components/ui/text-editor', 'TextEditorContent']);
+    imports.push(['@dafne/frontend-ui/components/text-editor', 'TextEditorContent']);
     const html = `<TextEditorContent html={${value}} className="font-normal" />`;
     body = field.optional ? `{${value} ? ${html} : "—"}` : html;
     return {
@@ -54,7 +54,7 @@ function detailCode(names: ResourceNames, record: string, field: ResponseField):
     }
     case 'date':
     case 'datetime': {
-      imports.push(['@/components/local-date', 'LocalDate']);
+      imports.push(['@dafne/frontend-ui/components/local-date', 'LocalDate']);
       const date = `<LocalDate value={${value}} format="${field.kind === 'date' ? 'longDate' : 'dateTime'}" />`;
       body = field.optional ? `{${value} ? ${date} : "—"}` : date;
       break;

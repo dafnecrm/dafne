@@ -223,7 +223,7 @@ export function syncFormSchema(
       const statement = opts?.getFirstAncestor((a) => a.getParent() === file) ?? opts;
       file.insertText(statement ? statement.getStart(true) : file.getEnd(), code);
       ensureNamedImport(file, CONTRACTS_PACKAGE, f.enumType!, { typeOnly: true });
-      ensureNamedImport(file, '@/i18n/keys', 'MessageKey', { typeOnly: true });
+      ensureNamedImport(file, '@dafne/frontend-ui/lib/message-key', 'MessageKey', { typeOnly: true });
       report.added.push(name);
     });
   }

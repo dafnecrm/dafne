@@ -17,7 +17,7 @@ import {
 import Link from "next/link";
 import CopyButton from "@/components/copy-button";
 import { Detail, DetailSection } from "@/components/detail";
-import { LocalDate } from "@/components/local-date";
+import { LocalDate } from "@dafne/frontend-ui/components/local-date";
 import {
   Table,
   TableBody,
@@ -25,7 +25,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@dafne/frontend-ui/components/table";
 import type { CustomerDetail } from "@/lib/customers";
 import {
   CUSTOMER_ADDRESS_TYPE_OPTIONS,
