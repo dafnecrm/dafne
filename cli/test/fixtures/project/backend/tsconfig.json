@@ -1,0 +1,81 @@
+{
+  "compilerOptions": {
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "resolvePackageJsonExports": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    // libs/contracts imports ./x.ts (see its index.ts).
+    "rewriteRelativeImportExtensions": true,
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2023",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": ".",
+    "incremental": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "strictPropertyInitialization": false,
+    "types": [
+      "vitest/globals",
+      "node"
+    ],
+    "paths": {
+      "@app/auth": [
+        "./libs/auth/src/index.ts"
+      ],
+      "@app/auth/*": [
+        "./libs/auth/src/*"
+      ],
+      "@app/database": [
+        "./libs/database/src/index.ts"
+      ],
+      "@app/database/*": [
+        "./libs/database/src/*"
+      ],
+      "@app/notifications": [
+        "./libs/notifications/src/index.ts"
+      ],
+      "@app/notifications/*": [
+        "./libs/notifications/src/*"
+      ],
+      "@app/users": [
+        "./libs/users/src/index.ts"
+      ],
+      "@app/users/*": [
+        "./libs/users/src/*"
+      ],
+      "@app/customers": [
+        "./libs/customers/src/index.ts"
+      ],
+      "@app/customers/*": [
+        "./libs/customers/src/*"
+      ],
+      "@app/common": [
+        "./libs/common/src/index.ts"
+      ],
+      "@app/common/*": [
+        "./libs/common/src/*"
+      ],
+      "@app/contracts": [
+        "./libs/contracts/src/index.ts"
+      ],
+      "@app/contracts/*": [
+        "./libs/contracts/src/*"
+      ]
+    }
+  },
+  "include": [
+    "apps/**/*",
+    "libs/**/*",
+    "*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}

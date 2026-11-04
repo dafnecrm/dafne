@@ -1,0 +1,23 @@
+import { formOptions } from "@tanstack/react-form-nextjs";
+import { <%= s.camel %>BodySchema, type <%= s.pascal %>Body } from "@backend/contracts";
+import { formSchema } from "@/lib/app-form/form-schema";
+import type { <%= s.pascal %>Detail } from "@/lib/<%= p.kebab %>";
+
+/** Form values: every field is text, "" when blank. Keys follow the contract. */
+export type <%= s.pascal %>FormValues = Record<keyof <%= s.pascal %>Body, string>;
+
+/**
+ * The form validates with the backend's own schema (same rules and
+ * messages), which turns "" in optional fields into null.
+ */
+export const <%= s.camel %>Schema =
+  formSchema<<%= s.pascal %>FormValues>()(<%= s.camel %>BodySchema);
+
+/** Form values for a new <%= s.lower %>, or for editing `<%= s.camel %>`. */
+export function <%= s.camel %>FormOpts(<%= s.camel %>?: <%= s.pascal %>Detail) {
+  return formOptions({
+    defaultValues: {
+      name: <%= s.camel %>?.name ?? "",
+    } satisfies <%= s.pascal %>FormValues as <%= s.pascal %>FormValues,
+  });
+}
