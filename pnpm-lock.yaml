@@ -176,6 +176,9 @@ importers:
       '@dafne/backend-database-auth':
         specifier: workspace:*
         version: link:../../packages/backend/database-auth
+      '@dafne/backend-migrator':
+        specifier: workspace:*
+        version: link:../../packages/backend/migrator
       '@dafne/backend-users':
         specifier: workspace:*
         version: link:../../packages/backend/users
@@ -279,6 +282,9 @@ importers:
       '@dafne/backend-geo':
         specifier: workspace:*
         version: link:../../packages/backend/geo
+      '@dafne/backend-migrator':
+        specifier: workspace:*
+        version: link:../../packages/backend/migrator
       '@dafne/backend-products':
         specifier: workspace:*
         version: link:../../packages/backend/products

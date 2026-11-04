@@ -20,7 +20,8 @@ erasable syntax (no enums, namespaces or constructor parameter properties;
     `fields` (`name:type[:option…]`) go into the table and the contract,
     service and specs are synced with them.
   - `backend-lib`: an empty lib, named as given (not pluralized).
-  - `backend-app`: a Nest app in `apps/<name>` (`templates/app`).
+  - `backend-app`: a Nest app in `apps/<name>` (`templates/app`), which
+    migrates on startup with `MIGRATE_ON_START=true` (`@dafne/backend-migrator`).
   - `contract`: a contract and its spec.
   - `frontend-lib`: an empty lib in `packages/frontend/<name>`
     (`templates/frontend-lib`), wired into `apps/crm-web` (dependency,

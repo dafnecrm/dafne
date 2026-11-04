@@ -82,9 +82,11 @@ keys of `messages/en.ts`; `it.ts` must have the same keys (typed by
   into the app. `@dafne/backend-database` holds the tables of dafne_crm
   (`src/tables`) and their migrations (`migrations/`): `pnpm dafne db
   generate` writes one, `pnpm dafne db migrate` applies them
-  (`@dafne/backend-migrator`). The app doesn't migrate on startup; `dafne
-  dev` runs the migrator first (`migrate:dev`, skipped without
-  `MIGRATIONS_DATABASE_URL`).
+  (`@dafne/backend-migrator`). `dafne dev` runs the migrator first
+  (`migrate:dev`, skipped without `MIGRATIONS_DATABASE_URL`). With
+  `MIGRATE_ON_START=true` the built app migrates every database before
+  starting (`src/main.ts`; `rspack.config.js` copies the migrations into
+  `dist/migrations`).
 - Sign-in is `apps/auth`'s. This API has no Better Auth: the global
   `SessionGuard` (`@dafne/backend-session`, `SessionModule.forRoot({ app:
   'crm' })`) asks `AUTH_URL` for the session of each request's cookie and

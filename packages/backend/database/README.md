@@ -7,7 +7,8 @@ The CRM's MySQL database, **`dafne_crm`**, with
 
 - `DatabaseModule` (global): connects to `DATABASE_URL` (the app's user,
   on `dafne_crm`). Inject it with
-  `@InjectDrizzle() private readonly db: Database`. It doesn't migrate.
+  `@InjectDrizzle() private readonly db: Database`. It doesn't migrate: the migrator does (`pnpm dafne db migrate`, or the
+  apps on startup with `MIGRATE_ON_START=true`).
 - `schema.ts`: `schema` (every table) and `relations`, built from
   `src/tables/*.ts`. `merge-relations.ts` lets a table add relations to
   another's.

@@ -6,5 +6,10 @@
     "tsBuildInfoFile": "out-tsc/tsconfig.tsbuildinfo",
     "types": ["node", "vitest/globals"]
   },
-  "include": ["src"]
+  "include": ["src"],
+  "references": [
+    {
+      "path": "../../packages/backend/migrator"
+    }
+  ]
 }

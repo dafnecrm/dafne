@@ -85,9 +85,11 @@ Monorepo (pnpm workspaces + Nx) of the Dafne CRM. Each project has its own
   "dafne_crm" }` in their package.json, `migrations/` next to it), not to
   the apps. `@dafne/backend-migrator` applies those of every database in
   one order, by timestamp (`pnpm dafne db migrate`), with
-  `MIGRATIONS_DATABASE_URL`; the apps don't migrate on startup. `pnpm
-  dafne db generate` runs drizzle-kit and fixes the foreign keys it
-  writes (ON DELETE, tables of other databases).
+  `MIGRATIONS_DATABASE_URL`. An app migrates on startup only with
+  `MIGRATE_ON_START=true` (`migrateOnStart` in its `main.ts`): its build
+  carries the migrations of **every** database (`dist/migrations`), since
+  they run in one order. `pnpm dafne db generate` runs drizzle-kit and
+  fixes the foreign keys it writes (ON DELETE, tables of other databases).
 - `.nxignore` hides the CLIs' test fixtures, which look like projects.
 
 ## Workflow

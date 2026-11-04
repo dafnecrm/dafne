@@ -94,6 +94,12 @@ describe('backend-app', () => {
     const main = read('apps/worker/src/main.ts');
     expect(main).toContain("import { WorkerModule } from './worker.module.js';");
     expect(main).toContain('process.env.PORT ?? 3002');
+    // Migrations on start: the build carries them, the app depends on the migrator.
+    expect(main).toContain("migrations: join(import.meta.dirname, 'migrations'),");
+    expect(read('apps/worker/rspack.config.js')).toContain('migrationCopyPatterns(import.meta.dirname)');
+    expect(read('apps/worker/package.json')).toContain('"@dafne/backend-migrator": "workspace:*"');
+    for (const tsconfig of ['tsconfig.json', 'tsconfig.build.json'])
+      expect(read(`apps/worker/${tsconfig}`)).toContain('../../packages/backend/migrator');
     expect(read('apps/worker/src/worker.controller.ts')).toContain('export class WorkerController');
     expect(read('tsconfig.json')).toContain('./apps/worker');
   });

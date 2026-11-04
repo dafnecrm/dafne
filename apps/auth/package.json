@@ -18,6 +18,7 @@
     "@dafne/backend-auth": "workspace:*",
     "@dafne/backend-common": "workspace:*",
     "@dafne/backend-database-auth": "workspace:*",
+    "@dafne/backend-migrator": "workspace:*",
     "@dafne/backend-users": "workspace:*",
     "@dafne/contracts": "workspace:*",
     "@nestjs/common": "catalog:",
@@ -57,6 +58,11 @@
       "build": {
         "outputs": [
           "{projectRoot}/dist"
+        ],
+        "inputs": [
+          "production",
+          "^production",
+          "{workspaceRoot}/packages/backend/*/migrations/*/migration.sql"
         ]
       },
       "dev": {

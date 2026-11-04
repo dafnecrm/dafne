@@ -24,6 +24,9 @@
       "path": "../../packages/backend/products"
     },
     {
+      "path": "../../packages/backend/migrator"
+    },
+    {
       "path": "../../packages/backend/geo"
     },
     {

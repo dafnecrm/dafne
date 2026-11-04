@@ -28,6 +28,7 @@
     "@dafne/backend-customers": "workspace:*",
     "@dafne/backend-database": "workspace:*",
     "@dafne/backend-geo": "workspace:*",
+    "@dafne/backend-migrator": "workspace:*",
     "@dafne/backend-products": "workspace:*",
     "@dafne/backend-session": "workspace:*",
     "@dafne/contracts": "workspace:*",
@@ -83,6 +84,11 @@
       "build": {
         "outputs": [
           "{projectRoot}/dist"
+        ],
+        "inputs": [
+          "production",
+          "^production",
+          "{workspaceRoot}/packages/backend/*/migrations/*/migration.sql"
         ]
       },
       "dev": {
