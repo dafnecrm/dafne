@@ -1,4 +1,4 @@
-import { casings, words, type Casings } from '../core/names.js';
+import { casings, words, type Casings } from '../core/names.ts';
 
 export const FIELD_TYPES = [
   'string',

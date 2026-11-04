@@ -1,0 +1,137 @@
+import { schema, type Database } from '@dafne/backend-database';
+import { InjectDrizzle } from '@nestjs/drizzle';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
+import { and, asc, desc, eq, isNull, like, type SQL } from 'drizzle-orm';
+import {
+  <%= s.constant %>_FILTER_FIELDS,
+  type <%= s.pascal %>Body,
+  type <%= s.pascal %>Detail,
+  type <%= p.pascal %>List,
+  type List<%= p.pascal %>Query,
+  msg,
+} from '@dafne/contracts';
+
+export const DEFAULT_PAGE_SIZE = 20;
+
+const { <%= s.camel %> } = schema;
+
+/** Escapes LIKE wildcards so the value is matched literally. */
+const escapeLike = (value: string) => value.replace(/[\\%_]/g, '\\$&');
+
+/** <%= p.title %> that haven't been deleted. */
+const notDeleted = isNull(<%= s.camel %>.deletedAt);
+
+/** Only the user's ID and name, for "created by" / "updated by". */
+const userSummary = { columns: { id: true, name: true } } as const;
+
+@Injectable()
+export class <%= p.pascal %>Service {
+  constructor(@InjectDrizzle() private readonly db: Database) {}
+
+  /**
+   * Lists <%= p.lower %> that aren't deleted, paged and sorted, filtered by
+   * every field given (AND, each matching text the field contains).
+   */
+  async list<%= p.pascal %>(query: List<%= p.pascal %>Query = {}): Promise<<%= p.pascal %>List> {
+    const {
+      limit = DEFAULT_PAGE_SIZE,
+      offset = 0,
+      sortBy = 'name',
+      sortDirection = 'asc',
+    } = query;
+    const { db } = this;
+    const filters = <%= s.constant %>_FILTER_FIELDS.flatMap((field) => {
+      const value = query[field]?.trim();
+      return value ? [like(<%= s.camel %>[field], `%${escapeLike(value)}%`)] : [];
+    });
+    const where = and(notDeleted, ...filters) as SQL;
+    const order = sortDirection === 'asc' ? asc : desc;
+
+    const [<%= p.camel %>, total] = await Promise.all([
+      db
+        .select({
+          id: <%= s.camel %>.id,
+          name: <%= s.camel %>.name,
+          createdAt: <%= s.camel %>.createdAt,
+          updatedAt: <%= s.camel %>.updatedAt,
+        })
+        .from(<%= s.camel %>)
+        .where(where)
+        .orderBy(order(<%= s.camel %>[sortBy]), asc(<%= s.camel %>.id))
+        .limit(limit)
+        .offset(offset),
+      db.$count(<%= s.camel %>, where),
+    ]);
+
+    return { <%= p.camel %>, total, limit, offset };
+  }
+
+  /**
+   * One <%= s.lower %> that isn't deleted, with who created and last
+   * updated it. Throws 404 otherwise.
+   */
+  async get<%= s.pascal %>(id: string): Promise<<%= s.pascal %>Detail> {
+    const found = await this.db.query.<%= s.camel %>.findFirst({
+      where: { id, deletedAt: { isNull: true } },
+      columns: { createdById: false, updatedById: false },
+      with: { createdBy: userSummary, updatedBy: userSummary },
+    });
+    if (!found) throw new NotFoundException(msg('<%= p.camel %>.notFound'));
+    return found;
+  }
+
+  /** Creates <%= s.a %>; `userId` is the creator. */
+  async create<%= s.pascal %>(body: <%= s.pascal %>Body, userId: string): Promise<<%= s.pascal %>Detail> {
+    const id = randomUUID();
+    // Set here, not by the column default: MySQL's now() and the driver can
+    // disagree on the time zone, while dates written from JS round-trip.
+    const now = new Date();
+    await this.db.insert(<%= s.camel %>).values({
+      id,
+      name: body.name,
+      createdAt: now,
+      updatedAt: now,
+      createdById: userId,
+      updatedById: userId,
+    });
+    return this.get<%= s.pascal %>(id);
+  }
+
+  /**
+   * Replaces <%= s.a %>'s fields; `userId` is the editor. Throws 404
+   * if the <%= s.lower %> doesn't exist or is deleted.
+   */
+  async update<%= s.pascal %>(
+    id: string,
+    body: <%= s.pascal %>Body,
+    userId: string,
+  ): Promise<<%= s.pascal %>Detail> {
+    const [result] = await this.db
+      .update(<%= s.camel %>)
+      .set({
+        name: body.name,
+        updatedById: userId,
+        // Set explicitly so the row always changes and is counted below.
+        updatedAt: new Date(),
+      })
+      .where(and(eq(<%= s.camel %>.id, id), notDeleted));
+    if (result.affectedRows === 0)
+      throw new NotFoundException(msg('<%= p.camel %>.notFound'));
+    return this.get<%= s.pascal %>(id);
+  }
+
+  /**
+   * Deletes <%= s.a %> logically: sets deletedAt, so it disappears
+   * from the API but stays in the database. Throws 404 if already deleted.
+   */
+  async delete<%= s.pascal %>(id: string, userId: string) {
+    const now = new Date();
+    const [result] = await this.db
+      .update(<%= s.camel %>)
+      .set({ deletedAt: now, updatedAt: now, updatedById: userId })
+      .where(and(eq(<%= s.camel %>.id, id), notDeleted));
+    if (result.affectedRows === 0)
+      throw new NotFoundException(msg('<%= p.camel %>.notFound'));
+  }
+}

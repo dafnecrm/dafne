@@ -1,7 +1,7 @@
-import { resourceNames } from '../src/core/names.js';
-import { render } from '../src/core/templates.js';
-import { syncService } from '../src/sync/service.js';
-import { readTable } from '../src/sync/table.js';
+import { resourceNames } from '../src/core/names.ts';
+import { render } from '../src/core/templates.ts';
+import { syncService } from '../src/sync/service.ts';
+import { readTable } from '../src/sync/table.ts';
 
 const names = resourceNames('activity');
 const tableWith = (extra: string) =>

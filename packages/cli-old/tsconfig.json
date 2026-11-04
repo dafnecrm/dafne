@@ -1,0 +1,17 @@
+{
+  // TypeScript 7 and noEmit: checked by its own "typecheck" script, not by
+  // the @nx/js/typescript plugin.
+  "nx": { "addTypecheckTarget": false },
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "types": ["node", "vitest/globals"]
+  },
+  "include": ["src", "test", "*.ts"],
+  "exclude": ["test/fixtures"]
+}

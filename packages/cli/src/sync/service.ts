@@ -1,8 +1,8 @@
 import { Node, type ObjectLiteralExpression, type SourceFile, SyntaxKind } from 'ts-morph';
-import type { ResourceNames } from '../core/names.js';
-import { appendToList, editSource, insertListElement, removeListElement } from '../wiring/ast.js';
-import { rolesOf } from './roles.js';
-import type { TableInfo } from './table.js';
+import type { ResourceNames } from '../core/names.ts';
+import { appendToList, editSource, insertListElement, removeListElement } from '../wiring/ast.ts';
+import { rolesOf } from './roles.ts';
+import type { TableInfo } from './table.ts';
 
 /*
  * Brings the queries of a generated service (packages/backend/<plural>/src/<plural>.service.ts)

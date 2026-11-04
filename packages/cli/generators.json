@@ -1,0 +1,29 @@
+{
+  "name": "@dafne/cli",
+  "version": "0.2.0",
+  "generators": {
+    "backend-app": {
+      "factory": "./src/generators/backend-app/generator.ts",
+      "schema": "./src/generators/backend-app/schema.json",
+      "description": "A NestJS app in apps/<name>, set up like apps/api.",
+      "aliases": ["app"]
+    },
+    "backend-lib": {
+      "factory": "./src/generators/backend-lib/generator.ts",
+      "schema": "./src/generators/backend-lib/schema.json",
+      "description": "An empty Nest lib in packages/backend/<name>, registered in a backend app.",
+      "aliases": ["lib"]
+    },
+    "backend-resource": {
+      "factory": "./src/generators/backend-resource/generator.ts",
+      "schema": "./src/generators/backend-resource/schema.json",
+      "description": "Contract, Drizzle table and Nest lib (module, service, controller) of a resource.",
+      "aliases": ["resource"]
+    },
+    "contract": {
+      "factory": "./src/generators/contract/generator.ts",
+      "schema": "./src/generators/contract/schema.json",
+      "description": "Request schemas and response types in packages/contracts."
+    }
+  }
+}

@@ -1,0 +1,17 @@
+import { Test } from '@nestjs/testing';
+import { <%= a.pascal %>Controller } from './<%= a.kebab %>.controller.js';
+
+describe('<%= a.pascal %>Controller', () => {
+  let controller: <%= a.pascal %>Controller;
+
+  beforeEach(async () => {
+    const module = await Test.createTestingModule({
+      controllers: [<%= a.pascal %>Controller],
+    }).compile();
+    controller = module.get(<%= a.pascal %>Controller);
+  });
+
+  it('reports its status', () => {
+    expect(controller.status()).toEqual({ status: 'ok' });
+  });
+});

@@ -1,6 +1,6 @@
 import { Node, type ObjectLiteralExpression, type SourceFile, SyntaxKind } from 'ts-morph';
-import { appendToList, editSource, removeListElement } from '../wiring/ast.js';
-import type { FormField } from './form.js';
+import { appendToList, editSource, removeListElement } from '../wiring/ast.ts';
+import type { FormField } from './body.ts';
 
 /*
  * Keeps the sample bodies of a service spec valid for the contract: every
@@ -150,6 +150,23 @@ function syncSpecSamples(
         const value = parsed(field);
         if (result && value !== undefined && !result.getProperties().some((p) => keyOf(p) === field.key))
           appendToList(file, result, result.getProperties(), `${field.key}: ${value}`);
+      }
+  });
+
+  // Optional fields missing from a sample come out of parse as null: a
+  // compared result must have them (toEqual tells null from missing).
+  const nullable = fields.filter((f) => f.kind !== 'unsupported' && f.optional && !f.contractDefault);
+  source = editSource(path, source, (file) => {
+    if (!isHelper(file)) return;
+    const count = samples(file).length;
+    for (let i = 0; i < count; i++)
+      for (const field of nullable) {
+        const object = samples(file)[i];
+        if (object.getProperties().some((p) => keyOf(p) === field.key || Node.isSpreadAssignment(p))) continue;
+        const result = expected(file, i);
+        if (!result || result.getProperties().some((p) => keyOf(p) === field.key || Node.isSpreadAssignment(p))) continue;
+        appendToList(file, result, result.getProperties(), `${field.key}: null`);
+        if (!report.added.includes(`${field.key} (null in the expected result)`)) report.added.push(`${field.key} (null in the expected result)`);
       }
   });
   return { content: source, report };

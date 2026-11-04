@@ -1,10 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { resourceNames } from '../src/core/names.js';
-import { render } from '../src/core/templates.js';
-import { syncContract } from '../src/sync/contract.js';
-import { rolesOf } from '../src/sync/roles.js';
-import { readTable } from '../src/sync/table.js';
+import { resourceNames } from '../src/core/names.ts';
+import { render } from '../src/core/templates.ts';
+import { syncContract } from '../src/sync/contract.ts';
+import { rolesOf } from '../src/sync/roles.ts';
+import { readTable } from '../src/sync/table.ts';
 
 const FIXTURE = join(import.meta.dirname, 'fixtures', 'project', 'packages', 'backend');
 const fixture = (path: string) => readFileSync(join(FIXTURE, path), 'utf8');

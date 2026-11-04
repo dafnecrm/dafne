@@ -13,7 +13,7 @@ import {
   insertImportLine,
   removeListElement,
   removeUnusedImports,
-} from '../wiring/ast.js';
+} from '../wiring/ast.ts';
 
 /*
  * Edits one Drizzle table file (packages/backend/database/src/tables/<plural>.ts) as
@@ -21,10 +21,13 @@ import {
  */
 
 export class TableFile {
-  constructor(
-    readonly path: string,
-    public source: string,
-  ) {}
+  readonly path: string;
+  source: string;
+
+  constructor(path: string, source: string) {
+    this.path = path;
+    this.source = source;
+  }
 
   private edit(change: (file: SourceFile) => void) {
     this.source = editSource(this.path, this.source, change);
@@ -290,7 +293,7 @@ export class TableFile {
     );
   }
 
-  /** Adds `import { name } from './file.js'` for a table in another file. */
+  /** Adds `import { name } from './file.ts'` for a table in another file. */
   importTable(name: string, module: string) {
     this.edit((file) => {
       const declared = file.getVariableDeclaration(name);

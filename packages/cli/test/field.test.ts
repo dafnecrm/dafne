@@ -1,12 +1,13 @@
 import { cpSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { Changes } from '../src/core/changes.js';
-import { resourceNames } from '../src/core/names.js';
-import { addField, removeField } from '../src/fields/operations.js';
-import type { FieldSpec } from '../src/fields/spec.js';
-import { backendPieces } from '../src/generators/backend.js';
-import { generatePieces } from '../src/generators/pieces.js';
+import type { Changes } from '../src/core/changes.ts';
+import { commit, diskChanges } from './helpers.ts';
+import { resourceNames } from '../src/core/names.ts';
+import { addField, removeField } from '../src/fields/operations.ts';
+import type { FieldSpec } from '../src/fields/spec.ts';
+import { backendPieces } from '../src/pieces/backend.ts';
+import { generatePieces } from '../src/pieces/pieces.ts';
 
 const FIXTURE = join(import.meta.dirname, 'fixtures', 'project');
 const TABLES = 'packages/backend/database/src/tables';
@@ -26,9 +27,9 @@ const spec = (name: string, type: FieldSpec['type'], extra: Partial<FieldSpec> =
 
 /** Runs one field command and writes it, like the CLI does. */
 async function run(edit: (changes: Changes) => unknown) {
-  const changes = new Changes(root);
+  const changes = diskChanges(root);
   edit(changes);
-  await changes.commit();
+  await commit(changes);
 }
 
 beforeEach(async () => {
@@ -39,7 +40,7 @@ beforeEach(async () => {
     generatePieces(backendPieces, ['table'], {
       changes,
       names: resourceNames('activity'),
-      options: { icon: 'FileIcon', section: 'CRM', admin: false },
+      app: 'api',
     }),
   );
 });
@@ -88,7 +89,7 @@ describe('field add', () => {
     expect(table).toContain("onDelete: 'restrict'");
     expect(table).toContain('optional: false');
     expect(() =>
-      addField(new Changes(root), 'activities', spec('owner', 'ref', { to: 'users', required: true, onDelete: 'set null' })),
+      addField(diskChanges(root), 'activities', spec('owner', 'ref', { to: 'users', required: true, onDelete: 'set null' })),
     ).toThrow(/nullable/);
   });
 
@@ -117,11 +118,11 @@ describe('field add', () => {
   });
 
   it("doesn't edit the Better Auth tables", () => {
-    expect(() => addField(new Changes(root), 'users', spec('nickname', 'string'))).toThrow(/Better Auth/);
+    expect(() => addField(diskChanges(root), 'users', spec('nickname', 'string'))).toThrow(/Better Auth/);
   });
 
   it('refuses a column that exists', () => {
-    expect(() => addField(new Changes(root), 'activities', spec('name', 'string'))).toThrow(/already has/);
+    expect(() => addField(diskChanges(root), 'activities', spec('name', 'string'))).toThrow(/already has/);
   });
 });
 
@@ -158,6 +159,6 @@ describe('field remove', () => {
   });
 
   it('says when there is nothing to remove', () => {
-    expect(() => removeField(new Changes(root), 'activities', 'nope')).toThrow(/no "nope"/);
+    expect(() => removeField(diskChanges(root), 'activities', 'nope')).toThrow(/no "nope"/);
   });
 });

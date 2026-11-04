@@ -1,6 +1,6 @@
 import { Node, type ObjectLiteralExpression, SyntaxKind } from 'ts-morph';
-import type { ResourceNames } from '../core/names.js';
-import { editSource } from '../wiring/ast.js';
+import type { ResourceNames } from '../core/names.ts';
+import { editSource } from '../wiring/ast.ts';
 
 export type ColumnKind =
   | 'string'
@@ -28,7 +28,7 @@ export const API_TAGS = [
 ] as const;
 export type ApiTag = (typeof API_TAGS)[number];
 
-/** `@form` tags: the input `dafne sync frontend form` writes for a `text` column. */
+/** `@form` tags: the input `dafne-old sync frontend form` writes for a `text` column. */
 export const FORM_INPUTS = [
   'plain', // a textarea (TextareaField), the default
   'editor', // a rich text editor (TextEditorField), saved as HTML

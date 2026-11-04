@@ -10,13 +10,15 @@ export async function formatSource(
   path: string,
   source: string,
   original?: string,
+  /** The config to use instead of the one on disk (e.g. a .prettierrc created in the same run). */
+  config?: prettier.Options,
 ): Promise<string> {
   const info = await prettier.getFileInfo(path);
   if (info.ignored || !info.inferredParser) return source;
   // JSON config files keep their own layout.
   if (info.inferredParser.startsWith('json')) return source;
   const options = {
-    ...(await prettier.resolveConfig(path)),
+    ...(config ?? (await prettier.resolveConfig(path))),
     filepath: path,
   };
   if (original !== undefined && !(await prettier.check(original, options)))

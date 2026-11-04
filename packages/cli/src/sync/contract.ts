@@ -1,8 +1,8 @@
 import { Node, type SourceFile, SyntaxKind } from 'ts-morph';
-import type { ResourceNames } from '../core/names.js';
-import { editSource, ensureNamedImport } from '../wiring/ast.js';
-import { bodyZod, enumNames, filterZod, responseType, rolesOf, type Roles } from './roles.js';
-import type { Column, TableInfo } from './table.js';
+import type { ResourceNames } from '../core/names.ts';
+import { editSource, ensureNamedImport } from '../wiring/ast.ts';
+import { bodyZod, enumNames, filterZod, responseType, rolesOf, type Roles } from './roles.ts';
+import type { Column, TableInfo } from './table.ts';
 
 /*
  * Brings a contract file in line with its table, editing it in place:

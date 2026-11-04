@@ -1,0 +1,18 @@
+{
+  // TypeScript solution file: no code of its own, only the projects.
+  // `nx sync` keeps the references up to date.
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {},
+  "files": [],
+  "references": [
+    {
+      "path": "./packages/backend/database"
+    },
+    {
+      "path": "./packages/contracts"
+    },
+    {
+      "path": "./apps/api"
+    }
+  ]
+}

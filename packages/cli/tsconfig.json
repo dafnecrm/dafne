@@ -1,6 +1,8 @@
 {
   // TypeScript 7 and noEmit: checked by its own "typecheck" script, not by
-  // the @nx/js/typescript plugin.
+  // the @nx/js/typescript plugin. No build: Node 26 runs the sources (type
+  // stripping), and Nx loads the generators from them too, so only
+  // erasable syntax is allowed and relative imports end in .ts.
   "nx": { "addTypecheckTarget": false },
   "compilerOptions": {
     "target": "ES2023",
@@ -10,6 +12,9 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
     "types": ["node", "vitest/globals"]
   },
   "include": ["src", "test", "*.ts"],

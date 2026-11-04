@@ -57,7 +57,7 @@ export async function syncOne(
   const table = changes.read(tablePath);
   if (table === undefined) throw new Error(`${tablePath} not found.`);
   if (!changes.exists(contractPath))
-    throw new Error(`${contractPath} not found: create it with "dafne g backend contract ${names.p.kebab}".`);
+    throw new Error(`${contractPath} not found: create it with "dafne-old g backend contract ${names.p.kebab}".`);
 
   const info = readTable(tablePath, table, names);
   addForeignRelations(changes, tablePath, info);
@@ -192,7 +192,7 @@ export function printSync(name: string, report: SyncReport, changed: boolean) {
   for (const warning of report.warnings) p.log.warn(warning);
   if (report.required.length)
     p.log.warn(
-      `New required body fields: ${report.required.join(', ')}. Add them to the frontend form (dafne sync frontend form).`,
+      `New required body fields: ${report.required.join(', ')}. Add them to the frontend form (dafne-old sync frontend form).`,
     );
 }
 
@@ -203,10 +203,10 @@ export function syncCommand() {
       'after',
       `
 After changing a table:
-  dafne sync contract activities    # backend: contract, service queries, specs
-  dafne sync frontend activities    # frontend: form, table and detail together
+  dafne-old sync contract activities    # backend: contract, service queries, specs
+  dafne-old sync frontend activities    # frontend: form, table and detail together
 
-Or one frontend part at a time: dafne sync frontend form|table|detail activities.
+Or one frontend part at a time: dafne-old sync frontend form|table|detail activities.
 contract and frontend also take --all; every command takes --dry-run.`,
     );
 
@@ -235,7 +235,7 @@ id, createdById/updatedById, deletedAt and server-filled columns
 (defaultNow, $onUpdate…) follow the customers contract.`,
     )
     .action(async (name: string | undefined, options: SyncOptions) => {
-      p.intro('dafne sync contract');
+      p.intro('dafne-old sync contract');
       const changes = new Changes(findRoot(options.root));
       let resources: string[];
       if (options.all) resources = syncable(changes);
@@ -266,7 +266,7 @@ id, createdById/updatedById, deletedAt and server-filled columns
       p.note(
         [
           'npx tsc -b apps/api && pnpm --filter \"@dafne/api...\" test',
-          'dafne sync frontend <resource>   # form, table and detail',
+          'dafne-old sync frontend <resource>   # form, table and detail',
         ].join('\n'),
         'Next steps',
       );
@@ -286,13 +286,13 @@ id, createdById/updatedById, deletedAt and server-filled columns
     .addHelpText(
       'after',
       `
-The same as dafne sync frontend form, table and detail one after the other
+The same as dafne-old sync frontend form, table and detail one after the other
 (see their help for what each one adds). A part the resource doesn't have
-(no form, no detail page…) is skipped. Run dafne sync contract first if the
+(no form, no detail page…) is skipped. Run dafne-old sync contract first if the
 table changed.`,
     )
     .action(async (name: string | undefined, options: SyncOptions) => {
-      p.intro('dafne sync frontend');
+      p.intro('dafne-old sync frontend');
       const changes = new Changes(findRoot(options.root));
       const withFrontend = () => syncable(changes).filter((r) => frontendParts(changes, r).length);
       let resources: string[];
@@ -350,7 +350,7 @@ wherever it is. For a field that must have no input, write in the form:
   {/* dafne-ignore: customerId */}
 
 It's still added to the values type and the defaults (the form sends it).
-To sync the table and detail page too, use dafne sync frontend <resource>.
+To sync the table and detail page too, use dafne-old sync frontend <resource>.
 
 A text column gets a textarea; for a rich text editor (HTML), write above
 the column in the table:
@@ -359,7 +359,7 @@ the column in the table:
   description: text('description'),`,
     )
     .action(async (name: string | undefined, options: SyncOptions) => {
-      p.intro('dafne sync frontend form');
+      p.intro('dafne-old sync frontend form');
       const changes = new Changes(findRoot(options.root));
       if (!name) {
         const choices = syncable(changes).filter((r) => changes.exists(formFiles(resourceNames(r)).form));
@@ -418,10 +418,10 @@ it is. To keep a field out, write in that file:
 
   {/* dafne-ignore: customerId */}    (or // dafne-ignore: … in a .ts file)
 
-To sync the form, table and detail page together, use dafne sync frontend <resource>.`,
+To sync the form, table and detail page together, use dafne-old sync frontend <resource>.`,
       )
       .action(async (name: string | undefined, options: SyncOptions) => {
-        p.intro(`dafne sync frontend ${command}`);
+        p.intro(`dafne-old sync frontend ${command}`);
         const changes = new Changes(findRoot(options.root));
         if (!name) {
           const choices = syncable(changes).filter((r) => files(resourceNames(r)).every((f) => changes.exists(f)));
@@ -533,7 +533,7 @@ export function syncTablePage(changes: Changes, name: string): [string, FormRepo
   const names = resourceNames(name);
   const info = response(changes, names);
   const files = tableFiles(names, changes);
-  const hint = `dafne g frontend table ${names.p.kebab}`;
+  const hint = `dafne-old g frontend table ${names.p.kebab}`;
   return [
     applyFrontend(changes, files.table, hint, (source) => syncTableConfig(files.table, source, names, info)),
     applyFrontend(changes, files.columns, hint, (source) => syncColumns(files.columns, source, names, info)),
@@ -547,7 +547,7 @@ export function syncDetailPage(changes: Changes, name: string): [string, FormRep
   const { page } = detailFiles(names);
   // The page shows the title and the actions: what it reads counts too.
   const pageSource = path !== page ? changes.read(page) : undefined;
-  const hint = `dafne g frontend detail ${names.p.kebab}`;
+  const hint = `dafne-old g frontend detail ${names.p.kebab}`;
   const reports = [
     applyFrontend(changes, path, hint, (source) => syncDetail(path, source, names, info, pageSource ? [pageSource] : [])),
   ];
@@ -585,7 +585,7 @@ export function syncForm(changes: Changes, name: string): [string, FormReport][]
     [files.form, (source: string) => syncFormComponent(files.form, source, fields, names)],
   ] as const) {
     const source = changes.read(path);
-    if (source === undefined) throw new Error(`${path} not found: generate the form with "dafne g frontend form ${names.p.kebab}".`);
+    if (source === undefined) throw new Error(`${path} not found: generate the form with "dafne-old g frontend form ${names.p.kebab}".`);
     const { content, report } = sync(source);
     changes.update(path, () => content, { format: true });
     reports.push([path, report]);

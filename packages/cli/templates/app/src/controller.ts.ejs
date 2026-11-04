@@ -1,0 +1,10 @@
+import { Controller, Get } from '@nestjs/common';
+
+@Controller()
+export class <%= a.pascal %>Controller {
+  /** Health check. */
+  @Get()
+  status(): { status: 'ok' } {
+    return { status: 'ok' };
+  }
+}

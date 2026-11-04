@@ -1,0 +1,8 @@
+import { NestFactory } from '@nestjs/core';
+import { <%= a.pascal %>Module } from './<%= a.kebab %>.module.js';
+
+async function bootstrap() {
+  const app = await NestFactory.create(<%= a.pascal %>Module);
+  await app.listen(process.env.PORT ?? <%= port %>);
+}
+await bootstrap();

@@ -1,0 +1,15 @@
+{
+  "nav": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "crm": "CRM",
+    "customers": "Clienti",
+    "admin": "Amministrazione",
+    "users": "Utenti",
+    "account": "Account"
+  },
+  "common": {
+    "yes": "Sì",
+    "no": "No"
+  }
+}

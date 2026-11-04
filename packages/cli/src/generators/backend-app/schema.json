@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/schema",
+  "$id": "DafneBackendApp",
+  "title": "Backend app",
+  "description": "A NestJS app in apps/<name>, set up like apps/api but empty.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "App name (e.g. worker).",
+      "$default": { "$source": "argv", "index": 0 },
+      "x-prompt": "App name (e.g. worker)"
+    },
+    "port": { "type": "number", "description": "Default port (PORT overrides it).", "default": 3001 },
+    "force": { "type": "boolean", "description": "Overwrite files that already exist.", "default": false }
+  },
+  "required": ["name"]
+}

@@ -1,0 +1,10 @@
+import { DatabaseModule } from '@dafne/backend-database';
+import { Module } from '@nestjs/common';
+
+@Module({
+  imports: [DatabaseModule],
+  controllers: [],
+  providers: [],
+  exports: [],
+})
+export class <%= p.pascal %>Module {}

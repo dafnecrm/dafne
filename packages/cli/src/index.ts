@@ -1,19 +1,14 @@
+#!/usr/bin/env node
 import * as p from '@clack/prompts';
 import { Command } from 'commander';
-import { generateCommand } from './commands/generate.js';
-import { fieldCommand } from './commands/field.js';
-import { migrationCommand } from './commands/migration.js';
-import { devCommand } from './commands/dev.js';
-import { syncCommand } from './commands/sync.js';
+import { generateCommand } from './commands/generate.ts';
+import { taskCommands } from './commands/tasks.ts';
 
 const program = new Command('dafne')
-  .description('Dafne code generator for the backend (NestJS) and the frontend (Next.js)')
-  .version('0.1.0')
-  .addCommand(generateCommand())
-  .addCommand(fieldCommand())
-  .addCommand(migrationCommand())
-  .addCommand(syncCommand())
-  .addCommand(devCommand());
+  .description('Dafne CLI: backend generators (Nx) and shortcuts for Nx tasks. Frontend, sync, field and migration: dafne-old.')
+  .version('0.2.0')
+  .addCommand(generateCommand());
+for (const command of taskCommands()) program.addCommand(command);
 
 try {
   await program.parseAsync();

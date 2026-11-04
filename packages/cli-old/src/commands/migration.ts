@@ -59,7 +59,7 @@ function report(folder: string, fixes: string[], relative: string) {
  * or an empty one (`custom`) for SQL written by hand.
  */
 async function generate(nameArg: string | undefined, options: MigrationOptions) {
-  p.intro(options.custom ? 'dafne migration custom' : 'dafne migration generate');
+  p.intro(options.custom ? 'dafne-old migration custom' : 'dafne-old migration generate');
   const root = findRoot(options.root);
   const backend = join(root, BACKEND);
   const bin = join(backend, 'node_modules', '.bin', 'drizzle-kit');
@@ -124,7 +124,7 @@ export function migrationCommand() {
     .addHelpText(
       'after',
       `
-The same as dafne migration generate --custom. Write the SQL in the new
+The same as dafne-old migration generate --custom. Write the SQL in the new
 migration.sql, with a --> statement-breakpoint line between statements.
 The backend applies it when it starts, after the migrations before it.`,
     )
@@ -136,7 +136,7 @@ The backend applies it when it starts, after the migrations before it.`,
     .argument('[folder]', 'migration folder name (default: the latest)')
     .option('--root <dir>', 'Dafne folder (with apps/api/ and apps/frontend/)')
     .action((folderArg: string | undefined, options: MigrationOptions) => {
-      p.intro('dafne migration fix');
+      p.intro('dafne-old migration fix');
       const backend = join(findRoot(options.root), BACKEND);
       const dir = migrationsDir(backend);
       const all = folders(dir);
