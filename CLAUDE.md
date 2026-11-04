@@ -5,10 +5,12 @@ Monorepo (pnpm workspaces + Nx) of the Dafne CRM. Each project has its own
 
 | Folder               | Package            | What                                              |
 | -------------------- | ------------------ | ------------------------------------------------- |
-| `backend/`           | `@dafne/backend`   | NestJS API (Nest monorepo: `apps/api`, `libs/*`)  |
-| `frontend/`          | `@dafne/frontend`  | Next.js app                                       |
+| `apps/backend`       | `@dafne/backend`   | NestJS API (Nest monorepo: `apps/api`, `libs/*`)  |
+| `apps/frontend`      | `@dafne/frontend`  | Next.js app                                       |
 | `packages/contracts` | `@dafne/contracts` | API schemas (Zod) and response types, shared      |
-| `cli/`               | `@dafne/cli`       | `dafne` code generator for backend and frontend   |
+| `packages/cli`       | `@dafne/cli`       | `dafne` code generator for backend and frontend   |
+
+`apps/` holds what runs or deploys, `packages/` what is shared or published.
 
 ## Commands (from the root)
 
@@ -23,12 +25,12 @@ Monorepo (pnpm workspaces + Nx) of the Dafne CRM. Each project has its own
 - **Nx is only a task runner**: no Nx plugins, no `project.json`. Targets
   are the `package.json` scripts; `nx.json` holds caching and inputs, and
   the `nx` field of a `package.json` its outputs. The Nest libs stay in
-  `backend/nest-cli.json`, managed by the `dafne` CLI.
+  `apps/backend/nest-cli.json`, managed by the `dafne` CLI.
 - **Shared versions** go in the `catalog:` of `pnpm-workspace.yaml`
   (`"zod": "catalog:"`). Workspace packages are `"workspace:*"`.
 - **`@dafne/contracts` ships TypeScript sources** (no build): Next compiles
   it through `transpilePackages`, the backend bundles it through
-  `backend/rspack.config.js`.
+  `apps/backend/rspack.config.js`.
 - **New project dependencies Nx can't see** (tsconfig paths, like the
   frontend's `@backend/auth-options`) go in `nx.implicitDependencies`.
 

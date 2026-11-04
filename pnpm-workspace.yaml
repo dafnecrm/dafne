@@ -1,7 +1,5 @@
 packages:
-  - backend
-  - frontend
-  - cli
+  - apps/*
   - packages/*
 
 # Versions shared by several projects: reference them as "catalog:".
