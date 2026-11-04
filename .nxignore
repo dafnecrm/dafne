@@ -1,2 +1,3 @@
 # Copies of real files used by the CLI tests: not projects.
 packages/cli/test/fixtures
+packages/cli-old/test/fixtures

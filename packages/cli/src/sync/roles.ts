@@ -1,6 +1,6 @@
 import pluralize from 'pluralize';
-import { casings, words, type ResourceNames } from '../core/names.js';
-import type { Column } from './table.js';
+import { casings, words, type ResourceNames } from '../core/names.ts';
+import type { Column } from './table.ts';
 
 /** Where a column appears in the contract. */
 export interface Roles {

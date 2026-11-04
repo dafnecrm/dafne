@@ -110,6 +110,6 @@ describe('a resource with fields', () => {
     const changes = new Changes(root);
     await expect(
       generateResource(changes, 'customer', { backend: ['table'], frontend: [] }, options, [parseFieldSpec('code:string')]),
-    ).rejects.toThrow(/already exists: add fields with "dafne field add customers"/);
+    ).rejects.toThrow(/already exists: add fields with "dafne-old field add customers"/);
   });
 });

@@ -1,0 +1,12 @@
+{
+  "name": "@dafne/api",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@dafne/backend-auth": "workspace:*",
+    "@dafne/backend-database": "workspace:*",
+    "@dafne/contracts": "workspace:*",
+    "@nestjs/common": "catalog:"
+  }
+}

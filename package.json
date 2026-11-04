@@ -13,11 +13,13 @@
     "typecheck": "nx run-many -t typecheck",
     "affected": "nx affected -t lint typecheck test build",
     "graph": "nx graph",
-    "dafne": "pnpm --filter @dafne/cli dev"
+    "dafne": "node packages/cli/src/index.ts",
+    "dafne-old": "pnpm --filter @dafne/cli-old dev"
   },
   "devDependencies": {
+    "@dafne/cli": "workspace:*",
     "@nx/js": "24.0.4",
-    "nx": "^24.0.4",
+    "nx": "catalog:",
     "typescript": "catalog:"
   }
 }

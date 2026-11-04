@@ -6,6 +6,7 @@ packages:
 # Versions shared by several projects: reference them as "catalog:".
 catalog:
   "@better-auth/drizzle-adapter": 1.7.12
+  "@nx/devkit": 24.0.4
   "@nestjs/cache-manager": ^12.0.2
   "@nestjs/common": ^12.0.1
   "@nestjs/config": ^12.0.1
@@ -19,6 +20,7 @@ catalog:
   better-auth: 1.7.12
   drizzle-orm: 1.0.0-rc.5
   mysql2: ^3.24.6
+  nx: 24.0.4
   oxlint: ^1.58.0
   oxlint-tsgolint: ^7.0.2001
   prettier: ^3.9.10

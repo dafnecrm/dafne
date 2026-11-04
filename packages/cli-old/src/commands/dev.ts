@@ -10,7 +10,7 @@ import { BACKEND } from '../wiring/backend.js';
 import { FRONTEND } from '../wiring/frontend.js';
 
 /*
- * `dafne dev`: package scripts of the backend and the frontend, as child
+ * `dafne-old dev`: package scripts of the backend and the frontend, as child
  * processes of this terminal. One package gets the terminal as it is; two
  * run side by side, each output line prefixed with its package.
  */
@@ -168,11 +168,11 @@ Both packages run side by side, each output line prefixed with [backend] or
 everything; if one script fails, the other is stopped too.
 
 Examples:
-  dafne dev                          # pnpm run dev in both
-  dafne dev build                    # pnpm run build in both
-  dafne dev -b start:debug           # start:debug in the backend, dev in the frontend
-  dafne dev test --only backend
-  dafne dev --pick                   # choose from each package.json`,
+  dafne-old dev                          # pnpm run dev in both
+  dafne-old dev build                    # pnpm run build in both
+  dafne-old dev -b start:debug           # start:debug in the backend, dev in the frontend
+  dafne-old dev test --only backend
+  dafne-old dev --pick                   # choose from each package.json`,
     )
     .action(async (script: string | undefined, options: RunOptions) => {
       const root = findRoot(options.root);

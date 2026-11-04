@@ -1,0 +1,10 @@
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { <%= a.pascal %>Controller } from './<%= a.kebab %>.controller.js';
+
+@Module({
+  imports: [ConfigModule.forRoot({ isGlobal: true, envFilePath: ['.env'] })],
+  controllers: [<%= a.pascal %>Controller],
+  providers: [],
+})
+export class <%= a.pascal %>Module {}

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/schema",
+  "$id": "DafneBackendResource",
+  "title": "Backend resource",
+  "description": "Contract, Drizzle table and Nest lib (module, service, controller) of a resource.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Resource name, singular or plural (e.g. invoice).",
+      "$default": { "$source": "argv", "index": 0 },
+      "x-prompt": "Resource name (e.g. invoice)"
+    },
+    "fields": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Fields of the new table, as name:type[:option…] (e.g. status:enum:values=draft|sent:required). `dafne g resource` asks for them."
+    },
+    "app": {
+      "type": "string",
+      "description": "Backend app the lib is registered in (apps/<app>).",
+      "default": "api"
+    },
+    "force": { "type": "boolean", "description": "Overwrite files that already exist.", "default": false }
+  },
+  "required": ["name"]
+}

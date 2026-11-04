@@ -1,9 +1,9 @@
-import { resourceNames } from '../src/core/names.js';
-import { render } from '../src/core/templates.js';
-import { syncContract } from '../src/sync/contract.js';
-import { readBody } from '../src/sync/form.js';
-import { syncContractSpec, syncServiceSpec } from '../src/sync/service-spec.js';
-import { readTable } from '../src/sync/table.js';
+import { resourceNames } from '../src/core/names.ts';
+import { render } from '../src/core/templates.ts';
+import { syncContract } from '../src/sync/contract.ts';
+import { readBody } from '../src/sync/body.ts';
+import { syncContractSpec, syncServiceSpec } from '../src/sync/service-spec.ts';
+import { readTable } from '../src/sync/table.ts';
 
 const names = resourceNames('activity');
 function fields(extra: string) {
@@ -52,9 +52,16 @@ describe('syncServiceSpec', () => {
 describe('syncContractSpec', () => {
   it('completes parse/failedFields samples and the parsed result, keeping deliberate unknown keys', () => {
     const { content } = syncContractSpec('c.ts', render('backend/contract.spec.ts', names), 'activityBodySchema', fields(REQUIRED), new Set());
-    expect(content).toMatch(/activityBodySchema\.parse\(\{ name: ' {2}Acme {2}', type: 'email', priority: 1, done: false \}\)\)\.toEqual\(\{\s*name: 'Acme',\s*type: 'email',\s*priority: 1,\s*done: false,?\s*\}\)/);
+    expect(content).toMatch(/activityBodySchema\.parse\(\{ name: ' {2}Acme {2}', type: 'email', priority: 1, done: false \}\)\)\.toEqual\(\{\s*name: 'Acme',\s*type: 'email',\s*priority: 1,\s*done: false,\s*budget: null,?\s*\}\)/);
     expect(content).toContain("failedFields({ name: '   ', type: 'email', priority: 1, done: false })");
     expect(content).toContain("deletedAt: '2026-01-01'");
+  });
+
+  it('adds the optional fields a sample leaves out to its parsed result, as null', () => {
+    const { content } = syncContractSpec('c.ts', render('backend/contract.spec.ts', names), 'activityBodySchema', fields(REQUIRED), new Set());
+    // budget is nullable: parse returns null for it. status has a default: not null.
+    expect(content).toMatch(/\.toEqual\(\{[^}]*budget: null/);
+    expect(content).not.toMatch(/status: null/);
   });
 
   it('leaves samples with a spread, and fields that were already required, alone', () => {
@@ -63,6 +70,6 @@ describe('syncContractSpec', () => {
     const { content, report } = syncContractSpec('c.ts', source, 'activityBodySchema', fields(REQUIRED), new Set(), new Set(['type']));
     expect(content).toContain("failedFields({ ...base, name: '   ' })");
     expect(content).not.toContain("type: 'email'");
-    expect(report.added).toEqual(['priority', 'done']);
+    expect(report.added).toEqual(['priority', 'done', 'budget (null in the expected result)']);
   });
 });

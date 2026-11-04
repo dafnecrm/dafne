@@ -1,0 +1,11 @@
+{
+  // What `nest build` compiles (rspack bundles the @dafne/* libs from their sources).
+  "extends": "./tsconfig.json",
+  // nest start runs <outDir>/main.js, where rspack writes the bundle.
+  "compilerOptions": {
+    "outDir": "dist",
+    "tsBuildInfoFile": "dist/tsconfig.build.tsbuildinfo"
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist", "**/*spec.ts"]
+}

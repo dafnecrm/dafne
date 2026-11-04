@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/schema",
+  "$id": "DafneBackendLib",
+  "title": "Backend lib",
+  "description": "An empty Nest lib, @dafne/backend-<name> in packages/backend/<name>, registered in a backend app.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Lib name, used as it is (e.g. reports).",
+      "$default": { "$source": "argv", "index": 0 },
+      "x-prompt": "Lib name (e.g. reports)"
+    },
+    "app": {
+      "type": "string",
+      "description": "Backend app the lib is registered in (apps/<app>).",
+      "default": "api"
+    },
+    "force": { "type": "boolean", "description": "Overwrite files that already exist.", "default": false }
+  },
+  "required": ["name"]
+}

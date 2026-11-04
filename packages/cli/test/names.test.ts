@@ -1,4 +1,4 @@
-import { resourceNames, words } from '../src/core/names.js';
+import { resourceNames, words } from '../src/core/names.ts';
 
 describe('resourceNames', () => {
   it('gets singular and plural from either form', () => {

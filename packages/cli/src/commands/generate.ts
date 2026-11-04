@@ -1,366 +1,116 @@
-import { resourceMessages, syncMessages } from '../wiring/messages.js';
 import * as p from '@clack/prompts';
-import { Command, Option } from 'commander';
-import { Changes } from '../core/changes.js';
-import { resourceNames } from '../core/names.js';
-import { findRoot } from '../core/workspace.js';
-import { addField } from '../fields/operations.js';
-import type { FieldSpec } from '../fields/spec.js';
-import { BACKEND_RESOURCE, backendPieces, contractFile, tableFile } from '../generators/backend.js';
-import {
-  FRONTEND_RESOURCE,
-  frontendPieces,
-  generateComponent,
-  generatePage,
-} from '../generators/frontend.js';
-import { generatePieces, type Ctx, type ResourceOptions } from '../generators/pieces.js';
-import { askNewFields, FIELD_SPEC_HELP, parseFieldSpec } from './field.js';
-import { printFrontendReports, syncFrontend, syncOne } from './sync.js';
+import { Command } from 'commander';
+import { FsTree } from 'nx/src/generators/tree.js';
+import { Changes } from '../core/changes.ts';
+import { resourceNames } from '../core/names.ts';
+import { findWorkspaceRoot, runNx } from '../core/nx.ts';
+import { DEFAULT_APP } from '../core/workspace.ts';
+import { FIELD_SPEC_HELP, formatFieldSpec, parseFieldSpec } from '../fields/parse.ts';
+import { tableFile } from '../pieces/backend.ts';
+import { askNewFields, cancelled, interactive } from './field-prompts.ts';
 
-interface CommonOptions {
-  root?: string;
+/*
+ * `dafne g <kind> [name]`: asks for what's missing, then runs the matching
+ * generator of this package through `nx g @dafne/cli:<generator>`.
+ */
+
+const KINDS = {
+  resource: { generator: 'backend-resource', hint: 'contract + table + lib with service and controller', placeholder: 'invoice' },
+  lib: { generator: 'backend-lib', hint: 'an empty Nest lib in packages/backend', placeholder: 'reports' },
+  app: { generator: 'backend-app', hint: 'a NestJS app in apps/', placeholder: 'worker' },
+  contract: { generator: 'contract', hint: 'Zod schemas and response types in packages/contracts', placeholder: 'invoice' },
+} as const;
+type Kind = keyof typeof KINDS;
+
+interface GenerateOptions {
+  app?: string;
+  field?: string[];
+  port?: string;
   dryRun?: boolean;
   force?: boolean;
-  skipWiring?: boolean;
   yes?: boolean;
 }
 
-interface FieldOptions {
-  /** --field specs, repeatable. */
-  field?: string[];
-}
-
-interface FrontendOptions {
-  icon: string;
-  section: string;
-  admin?: boolean;
-  client?: boolean;
-  dir: string;
-}
-
-type Target = 'fullstack' | 'backend' | 'frontend';
-
-const FRONTEND_EXTRA = {
-  page: 'Blank page at app/[locale]/(app)/<route>/page.tsx',
-  component: 'Component at components/<name>.tsx',
-};
-
-/* ---------- Prompts ---------- */
-
-const interactive = (options: CommonOptions) => !options.yes && process.stdin.isTTY;
-
-function cancelled<T>(value: T | symbol): T {
-  if (p.isCancel(value)) {
-    p.cancel('Nothing generated.');
-    process.exit(1);
+async function askKind(value: string | undefined, options: GenerateOptions): Promise<Kind> {
+  if (value) {
+    if (!(value in KINDS)) throw new Error(`"${value}" isn't one of: ${Object.keys(KINDS).join(', ')}.`);
+    return value as Kind;
   }
-  return value as T;
+  if (!interactive(options)) throw new Error(`Missing argument: pick one of ${Object.keys(KINDS).join(', ')}.`);
+  return cancelled<Kind>(
+    await p.select<Kind>({
+      message: 'What do you want to generate?',
+      options: (Object.keys(KINDS) as Kind[]).map((key) => ({ value: key, label: key, hint: KINDS[key].hint })),
+    }),
+  );
 }
 
-async function askName(
-  value: string | undefined,
-  options: CommonOptions,
-  message: string,
-  placeholder: string,
-) {
+async function askName(value: string | undefined, kind: Kind, options: GenerateOptions): Promise<string> {
   if (value) return value;
-  if (!interactive(options)) throw new Error(`Missing argument: ${message.toLowerCase()}.`);
+  if (!interactive(options)) throw new Error('Missing argument: the name.');
   return cancelled<string>(
     await p.text({
-      message,
-      placeholder,
+      message: kind === 'resource' || kind === 'contract' ? 'Resource name (singular or plural)' : 'Name',
+      placeholder: KINDS[kind].placeholder,
       validate: (input) => (input?.trim() ? undefined : 'Required'),
     }),
   ).trim();
 }
 
-async function askChoice<T extends string>(
-  value: string | undefined,
-  options: CommonOptions,
-  message: string,
-  choices: Record<T, string>,
-): Promise<T> {
-  if (value) {
-    if (!(value in choices))
-      throw new Error(`"${value}" isn't one of: ${Object.keys(choices).join(', ')}.`);
-    return value as T;
-  }
-  if (!interactive(options))
-    throw new Error(`Missing argument: pick one of ${Object.keys(choices).join(', ')}.`);
-  return cancelled<T>(
-    await p.select<T>({
-      message,
-      options: Object.entries<string>(choices).map(([key, hint]) => ({
-        value: key,
-        label: key,
-        hint,
-      })) as p.Option<T>[],
-    }),
-  );
-}
-
-/* ---------- Running ---------- */
-
-type Generated = { dependencies?: string[]; next: string[] };
-
-/** Runs `generate` on an in-memory change set, then prints and writes it. */
-async function run(
-  options: CommonOptions,
-  generate: (changes: Changes) => Generated | Promise<Generated>,
-) {
-  const root = findRoot(options.root);
-  const changes = new Changes(root, {
-    force: options.force,
-    skipUpdates: options.skipWiring,
-  });
-  const { dependencies = [], next } = await generate(changes);
-
-  const summary = changes.summary();
-  if (!summary.length) {
-    p.log.warn('Nothing to do: everything is already there.');
-    return;
-  }
-  const lines = summary.map(({ path, kind }) => `${kind === 'create' ? '+' : '~'} ${path}`);
-  p.note(lines.join('\n'), options.dryRun ? 'Would change (dry run)' : 'Changes');
-  if (dependencies.length)
-    p.log.info(`Also generated, since they were missing: ${dependencies.join(', ')}.`);
-  if (changes.skipped.size)
-    p.log.warn(`Not registered (--skip-wiring): ${[...changes.skipped].join(', ')}.`);
-  for (const warning of changes.warnings) p.log.warn(warning);
-
-  if (options.dryRun) return;
-  await changes.commit();
-  if (next.length) p.note(next.join('\n'), 'Next steps');
-  p.outro('Done.');
-}
-
-function nextSteps(backend: string[], frontend: string[], withFields: boolean): string[] {
-  const steps: string[] = [];
-  const pages = frontend.some((piece) => piece !== 'nav');
-  if (backend.includes('lib')) steps.push('pnpm install   # links the new @dafne/backend-<lib> package');
-  if (backend.includes('table'))
-    steps.push('dafne migration generate   # creates the table migration (and fixes its foreign keys)');
-  if (backend.length) steps.push('npx tsc -b apps/api && pnpm --filter \"@dafne/api...\" test');
-  if (pages)
-    steps.push('dafne dev --only frontend   # also generates the PageProps types of new routes');
-  if (withFields)
-    steps.push('Check the new fields in the form, the list and the detail page (labels, order, defaults).');
-  else if (backend.length || pages)
-    steps.push('Add the real fields: dafne field add <resource>, then dafne sync frontend <resource>.');
-  return steps;
-}
-
-/**
- * The pieces of a resource. `fields` go into its new table before anything
- * is written; then the contract, the service and the frontend pages are
- * synced with them, as `field add` and `sync frontend` would.
- */
-export async function generateResource(
-  changes: Changes,
-  name: string,
-  requested: { backend: string[]; frontend: string[] },
-  options: ResourceOptions,
-  fields: FieldSpec[] = [],
-): Promise<Generated> {
-  const names = resourceNames(name);
-  const ctx: Ctx = { changes, names, options };
-  if (fields.length && changes.exists(tableFile(names)))
-    throw new Error(`${tableFile(names)} already exists: add fields with "dafne field add ${names.p.kebab}".`);
-  const backendDeps = generatePieces(backendPieces, requested.backend, ctx);
-
-  if (fields.length) {
-    if (!changes.exists(tableFile(names)))
-      throw new Error('Fields need the table: generate the resource, or the table, service or controller piece.');
-    for (const spec of fields)
-      for (const note of addField(changes, names.p.kebab, spec).notes)
-        // The table is new: it has no rows a NOT NULL column could break.
-        if (!note.includes('already has rows')) changes.warn(note);
-    if (changes.exists(contractFile(names))) {
-      const report = await syncOne(changes, names.p.kebab);
-      for (const warning of [...report.warnings, ...report.unknown.map((key) => `contract: ${key} isn't a column.`)]) changes.warn(warning);
-    }
-  }
-
-  const frontendDeps = generatePieces(frontendPieces, requested.frontend, ctx);
-  if (fields.length && [...requested.frontend, ...frontendDeps].some((piece) => piece !== 'nav'))
-    printFrontendReports(syncFrontend(changes, names.p.kebab).reports.map(([path, report]) => [path, { ...report, added: [] }]));
-
-  // The texts of the keys the new files use, in every language's catalog.
-  const seed = resourceMessages(names);
-  const pages = [...requested.frontend, ...frontendDeps].some((piece) => piece !== 'nav');
-  syncMessages(changes, {
-    frontend: pages ? seed.frontend : undefined,
-    contracts: [...requested.backend, ...backendDeps].length ? seed.contracts : undefined,
-  });
-
-  return {
-    dependencies: [
-      ...backendDeps.map((key) => `backend ${key}`),
-      ...frontendDeps.map((key) => `frontend ${key}`),
-    ],
-    next: nextSteps(
-      [...requested.backend, ...backendDeps],
-      [...requested.frontend, ...frontendDeps],
-      fields.length > 0,
-    ),
-  };
-}
-
-const resourceOptions = (options: Partial<FrontendOptions>): ResourceOptions => ({
-  icon: options.icon ?? 'FileIcon',
-  section: options.section ?? (options.admin ? 'Admin' : 'CRM'),
-  admin: options.admin ?? false,
-});
-
-/* ---------- Commands ---------- */
-
-function common(command: Command) {
-  return command
-    .option('--root <dir>', 'Dafne folder (with apps/api/ and apps/frontend/); found from the current folder by default')
-    .option('--dry-run', 'list what would change, write nothing')
-    .option('--force', 'overwrite files that already exist')
-    .option('--skip-wiring', "don't edit existing files to register the new code")
-    .option('-y, --yes', 'never prompt; fail when an argument is missing');
-}
-
-function fieldOptions(command: Command) {
-  return command.option(
-    '--field <spec>',
-    `a field of the new table, repeatable: ${FIELD_SPEC_HELP}`,
-    (value: string, previous: string[] = []) => [...previous, value],
-  );
-}
-
-/**
- * The fields for a new table: from --field, or asked when the table doesn't
- * exist yet and prompting is allowed.
- */
-async function fieldsFor(name: string, options: CommonOptions & FieldOptions, createsTable: boolean): Promise<FieldSpec[]> {
-  const specs = (options.field ?? []).map(parseFieldSpec);
-  if (specs.length || !createsTable || !interactive(options)) return specs;
-  const changes = new Changes(findRoot(options.root));
+/** The fields of a new resource: from --field, or asked (unless -y). */
+async function resourceFields(root: string, name: string, options: GenerateOptions): Promise<string[]> {
+  if (options.field?.length) return options.field.map((text) => formatFieldSpec(parseFieldSpec(text)));
+  if (!interactive(options)) return [];
+  // The prompts read the workspace (tables, ref targets) as it is on disk.
+  const changes = new Changes(new FsTree(root, false));
   if (changes.exists(tableFile(resourceNames(name)))) return [];
-  const now = cancelled<boolean>(
-    await p.confirm({ message: 'Add the fields of the table now?', initialValue: true }),
-  );
-  return now ? askNewFields(changes, name) : [];
-}
-
-/** Backend pieces that create the table (it's one of their dependencies). */
-function createsTable(piece: string): boolean {
-  return piece === 'table' || (backendPieces[piece]?.deps ?? []).some(createsTable);
-}
-
-function navOptions(command: Command) {
-  return command
-    .option('--icon <name>', 'lucide-react icon for the sidebar and the empty list', 'FileIcon')
-    .option('--section <title>', 'sidebar section (created if missing; default CRM, or Admin with --admin)')
-    .option('--admin', 'put the link in an admin-only section');
+  const now = cancelled<boolean>(await p.confirm({ message: 'Add the fields of the table now?', initialValue: true }));
+  if (!now) return [];
+  return (await askNewFields(changes, name)).map(formatFieldSpec);
 }
 
 export function generateCommand() {
-  const generate = new Command('generate')
+  return new Command('generate')
     .alias('g')
-    .description('Generate a resource (backend, frontend or both) or a single piece');
-
-  common(fieldOptions(navOptions(
-    generate
-      .command('resource')
-      .description('A whole resource: backend lib + contract + table, frontend pages + sidebar link')
-      .argument('[name]', 'resource name, singular or plural (e.g. invoice)')
-      .addOption(new Option('--backend', 'only the backend').conflicts('frontend'))
-      .addOption(new Option('--frontend', 'only the frontend').conflicts('backend'))
-      .addHelpText(
-        'after',
-        `
-Without --field it asks for the fields of the new table (unless -y); the
-sample "name" field stays. Examples:
+    .description('Generate a backend resource, lib, app or contract (Nx generators of @dafne/cli)')
+    .argument('[kind]', Object.keys(KINDS).join(' | '))
+    .argument('[name]', 'name: a resource or contract is singular or plural (invoice), a lib or app as it is')
+    .option('--app <name>', `lib, resource: the backend app to register the lib in (apps/<name>)`, DEFAULT_APP)
+    .option('--field <spec>', `resource: a field of the new table, repeatable: ${FIELD_SPEC_HELP}`, (value: string, previous: string[] = []) => [
+      ...previous,
+      value,
+    ])
+    .option('--port <port>', 'app: default port')
+    .option('--dry-run', 'show what would change, write nothing')
+    .option('--force', 'overwrite files that already exist')
+    .option('-y, --yes', 'never prompt; fail when an argument is missing')
+    .addHelpText(
+      'after',
+      `
+Examples:
   dafne g resource invoice --field number:string:length=20:required:unique \\
-    --field status:enum:values=draft|sent|paid:default=draft --field dueDate:date \\
-    --field notes:text:editor:api=detail --field customer:ref:to=customers`,
-      ),
-  ))).action(async (name: string | undefined, options: CommonOptions & FrontendOptions & FieldOptions & { backend?: boolean; frontend?: boolean }) => {
-    p.intro('dafne generate resource');
-    let target: Target = options.backend ? 'backend' : options.frontend ? 'frontend' : 'fullstack';
-    if (!name && !options.backend && !options.frontend && interactive(options))
-      target = await askChoice<Target>(undefined, options, 'What do you want to generate?', {
-        fullstack: 'backend and frontend',
-        backend: 'NestJS lib, contract, table',
-        frontend: 'Next.js pages and sidebar link',
-      });
-    const resolved = await askName(name, options, 'Resource name', 'invoice');
-    if (target === 'frontend' && options.field?.length)
-      throw new Error('--field needs the backend: the fields go in the table.');
-    const fields = await fieldsFor(resolved, options, target !== 'frontend');
-    await run(options, (changes) =>
-      generateResource(
-        changes,
-        resolved,
-        {
-          backend: target === 'frontend' ? [] : BACKEND_RESOURCE,
-          frontend: target === 'backend' ? [] : FRONTEND_RESOURCE,
-        },
-        resourceOptions(options),
-        fields,
-      ),
-    );
-  });
+    --field status:enum:values=draft|sent|paid:default=draft --field customer:ref:to=customers
+  dafne g lib reports
+  dafne g app worker --port 3002
+  dafne g contract report
 
-  const backendChoices = Object.fromEntries(
-    Object.entries(backendPieces).map(([key, piece]) => [key, piece.description]),
-  );
-  common(fieldOptions(
-    generate
-      .command('backend')
-      .description(`A backend piece: ${Object.keys(backendPieces).join(' | ')}`)
-      .argument('[piece]', Object.keys(backendPieces).join(' | '))
-      .argument('[name]', 'resource name, singular or plural'),
-  )).action(async (piece: string | undefined, name: string | undefined, options: CommonOptions & FieldOptions) => {
-    p.intro('dafne generate backend');
-    const key = await askChoice(piece, options, 'Which backend piece?', backendChoices);
-    const resolved = await askName(name, options, 'Resource name', 'invoice');
-    const fields = await fieldsFor(resolved, options, createsTable(key));
-    await run(options, (changes) =>
-      generateResource(changes, resolved, { backend: [key], frontend: [] }, resourceOptions({}), fields),
-    );
-  });
+Same as: nx g @dafne/cli:<backend-resource|backend-lib|backend-app|contract> <name> ...`,
+    )
+    .action(async (kindArg: string | undefined, nameArg: string | undefined, options: GenerateOptions) => {
+      const root = findWorkspaceRoot();
+      if (interactive(options)) p.intro('dafne generate');
+      const kind = await askKind(kindArg, options);
+      const name = await askName(nameArg, kind, options);
+      if (options.field?.length && kind !== 'resource') throw new Error('--field is only for a resource.');
 
-  const frontendChoices: Record<string, string> = {
-    ...Object.fromEntries(
-      Object.entries(frontendPieces).map(([key, piece]) => [key, piece.description]),
-    ),
-    ...FRONTEND_EXTRA,
-  };
-  common(navOptions(
-    generate
-      .command('frontend')
-      .description(`A frontend piece: ${Object.keys(frontendChoices).join(' | ')}`)
-      .argument('[piece]', Object.keys(frontendChoices).join(' | '))
-      .argument('[name]', 'resource name; a route for page (reports/monthly); a name for component')
-      .option('--client', 'component: add "use client"')
-      .option('--dir <path>', 'component: folder inside apps/frontend/', 'components'),
-  )).action(async (piece: string | undefined, name: string | undefined, options: CommonOptions & FrontendOptions) => {
-    p.intro('dafne generate frontend');
-    const key = await askChoice(piece, options, 'Which frontend piece?', frontendChoices);
-    if (key === 'page') {
-      const route = await askName(name, options, 'Route', 'reports/monthly');
-      return run(options, (changes) => {
-        generatePage(changes, route);
-        return { next: ['dafne dev --only frontend'] };
-      });
-    }
-    if (key === 'component') {
-      const component = await askName(name, options, 'Component name', 'status-badge');
-      return run(options, (changes) => {
-        generateComponent(changes, component, options);
-        return { next: [] };
-      });
-    }
-    const resolved = await askName(name, options, 'Resource name', 'invoice');
-    await run(options, (changes) =>
-      generateResource(changes, resolved, { backend: [], frontend: [key] }, resourceOptions(options)),
-    );
-  });
+      const args = ['g', `@dafne/cli:${KINDS[kind].generator}`, name, '--no-interactive'];
+      if (kind === 'resource') for (const spec of await resourceFields(root, name, options)) args.push(`--fields=${spec}`);
+      if ((kind === 'resource' || kind === 'lib') && options.app !== DEFAULT_APP) args.push(`--app=${options.app}`);
+      if (kind === 'app' && options.port) args.push(`--port=${options.port}`);
+      if (options.force) args.push('--force');
+      if (options.dryRun) args.push('--dry-run');
 
-  return generate;
+      if (interactive(options)) p.log.step(`nx ${args.join(' ')}`);
+      process.exitCode = await runNx(root, args);
+    });
 }

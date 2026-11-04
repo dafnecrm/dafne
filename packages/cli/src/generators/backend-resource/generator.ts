@@ -1,0 +1,58 @@
+import type { Tree } from '@nx/devkit';
+import { resourceNames } from '../../core/names.ts';
+import { DEFAULT_APP } from '../../core/workspace.ts';
+import { addField } from '../../fields/operations.ts';
+import { parseFieldSpec } from '../../fields/parse.ts';
+import { BACKEND_RESOURCE, backendPieces, tableFile } from '../../pieces/backend.ts';
+import { generatePieces } from '../../pieces/pieces.ts';
+import { syncOne } from '../../sync/resource.ts';
+import { resourceMessages, syncMessages } from '../../wiring/messages.ts';
+import { runGenerator } from '../run.ts';
+
+export interface BackendResourceSchema {
+  name: string;
+  /** Fields of the new table, as `name:type[:option…]` (see fields/parse.ts). */
+  fields?: string[];
+  app?: string;
+  force?: boolean;
+}
+
+/**
+ * A whole backend resource: contract, Drizzle table, Nest lib with service
+ * and controller. The fields go into the new table before anything is
+ * written; then the contract, the service and their specs are synced with
+ * them. The sample `name` field stays.
+ */
+export default async function backendResourceGenerator(tree: Tree, options: BackendResourceSchema) {
+  return runGenerator(tree, options, async (changes) => {
+    const names = resourceNames(options.name);
+    const fields = (options.fields ?? []).map(parseFieldSpec);
+    if (changes.exists(tableFile(names)) && !options.force)
+      throw new Error(`${tableFile(names)} already exists: the resource "${names.p.kebab}" is there already.`);
+
+    generatePieces(backendPieces, BACKEND_RESOURCE, { changes, names, app: options.app ?? DEFAULT_APP });
+
+    for (const spec of fields)
+      for (const note of addField(changes, names.p.kebab, spec).notes)
+        // The table is new: it has no rows a NOT NULL column could break.
+        if (!note.includes('already has rows')) changes.warn(note);
+    if (fields.length) {
+      const report = await syncOne(changes, names.p.kebab);
+      for (const warning of report.warnings) changes.warn(warning);
+      for (const key of report.unknown) changes.warn(`contract: ${key} isn't a column.`);
+    }
+
+    syncMessages(changes, { contracts: resourceMessages(names).contracts });
+
+    return {
+      next: [
+        'pnpm install   # links the new package',
+        'pnpm nx sync   # TypeScript project references',
+        'pnpm dafne-old migration generate   # the table migration (and its foreign keys)',
+        `pnpm dafne test ${'@dafne/backend-' + names.p.kebab}`,
+        ...(fields.length ? [] : [`Add the fields: pnpm dafne-old field add ${names.p.kebab}`]),
+        `Frontend pages: pnpm dafne-old g frontend ... ${names.p.kebab} (or sync frontend)`,
+      ],
+    };
+  });
+}

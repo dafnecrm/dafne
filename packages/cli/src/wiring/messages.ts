@@ -1,9 +1,9 @@
 import { applyEdits, modify, parse } from 'jsonc-parser';
 import { Node, type ObjectLiteralExpression, type SourceFile } from 'ts-morph';
-import type { Changes } from '../core/changes.js';
-import { casings, words, type ResourceNames } from '../core/names.js';
-import { appendToList, editSource, quoteOf, variableObject } from './ast.js';
-import { BACKEND_LIBS, CONTRACTS_SRC, FRONTEND } from '../core/workspace.js';
+import type { Changes } from '../core/changes.ts';
+import { casings, words, type ResourceNames } from '../core/names.ts';
+import { appendToList, editSource, quoteOf, variableObject } from './ast.ts';
+import { BACKEND_LIBS, CONTRACTS_SRC, FRONTEND } from '../core/workspace.ts';
 
 /*
  * Translated texts. Generated code holds message keys, never text:

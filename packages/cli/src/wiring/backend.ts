@@ -1,8 +1,8 @@
 import { applyEdits, modify, parse } from 'jsonc-parser';
-import type { Changes } from '../core/changes.js';
-import type { ResourceNames } from '../core/names.js';
+import type { Changes } from '../core/changes.ts';
+import type { ResourceNames } from '../core/names.ts';
 import type { SourceFile } from 'ts-morph';
-import { render } from '../core/templates.js';
+import { render } from '../core/templates.ts';
 import {
   appendToList,
   arrayProperty,
@@ -13,13 +13,12 @@ import {
   ensureSpread,
   insertImportLine,
   variableObject,
-} from './ast.js';
+} from './ast.ts';
 import { Node } from 'ts-morph';
 
-import { BACKEND, backendLib, backendPackage, CONTRACTS_SRC } from '../core/workspace.js';
+import { appModule, backendApp, backendLib, backendPackage, CONTRACTS_SRC, DEFAULT_APP } from '../core/workspace.ts';
 
-export { BACKEND, CONTRACTS_SRC };
-export const API_MODULE = `${BACKEND}/src/api.module.ts`;
+export { CONTRACTS_SRC };
 export const DB_SCHEMA = `${backendLib('database')}/src/schema.ts`;
 /** The API contracts package, shared by the backend and the frontend. */
 export const CONTRACTS_PACKAGE = '@dafne/contracts';
@@ -28,7 +27,7 @@ export const CONTRACTS_INDEX = `${CONTRACTS_SRC}/index.ts`;
 const JSON_FORMAT = { formattingOptions: { insertSpaces: true, tabSize: 2, eol: '\n' } };
 
 /** Adds `{ "path": ref }` to a tsconfig's "references", unless it's there. */
-function ensureReference(changes: Changes, tsconfig: string, ref: string) {
+export function ensureReference(changes: Changes, tsconfig: string, ref: string) {
   changes.update(tsconfig, (source) => {
     const refs = (parse(source) as { references?: { path: string }[] }).references ?? [];
     if (refs.some((r) => r.path.replace(/\/$/, '') === ref)) return source;
@@ -40,7 +39,7 @@ function ensureReference(changes: Changes, tsconfig: string, ref: string) {
 }
 
 /** Adds a dependency to a package.json, keeping them sorted, unless it's there. */
-function ensureDependency(changes: Changes, file: string, name: string, version: string) {
+export function ensureDependency(changes: Changes, file: string, name: string, version: string) {
   changes.update(file, (source) => {
     const pkg = JSON.parse(source) as { dependencies?: Record<string, string> };
     if (pkg.dependencies?.[name]) return source;
@@ -52,22 +51,31 @@ function ensureDependency(changes: Changes, file: string, name: string, version:
 }
 
 /**
- * Registers a lib (a workspace package) in the app: its dependency, the
- * TypeScript project references (the app's tsconfig and tsconfig.build, and
- * the root's, as `nx sync`
- * would write them) and the ApiModule import. The new package still needs
+ * Registers a lib (a workspace package) in a backend app: its dependency,
+ * the TypeScript project references (the app's tsconfig and
+ * tsconfig.build, and the root's, as `nx sync` would write them) and the
+ * import in the app's root module. The new package still needs
  * `pnpm install` to be linked.
  */
-export function wireLib(changes: Changes, { p }: ResourceNames) {
+export function wireLib(changes: Changes, { p }: ResourceNames, app = DEFAULT_APP) {
   const name = backendPackage(p.kebab);
-  ensureDependency(changes, `${BACKEND}/package.json`, name, 'workspace:*');
+  const dir = backendApp(app);
+  ensureDependency(changes, `${dir}/package.json`, name, 'workspace:*');
+  // rspack bundles the lib's sources, but its npm packages are loaded from
+  // the app's node_modules: the app lists them too.
+  const libJson = changes.read(`${backendLib(p.kebab)}/package.json`);
+  const libDeps = libJson ? ((JSON.parse(libJson) as { dependencies?: Record<string, string> }).dependencies ?? {}) : {};
+  for (const [dep, version] of Object.entries(libDeps))
+    ensureDependency(changes, `${dir}/package.json`, dep, version);
   for (const tsconfig of ['tsconfig.json', 'tsconfig.build.json'])
-    ensureReference(changes, `${BACKEND}/${tsconfig}`, `../../${backendLib(p.kebab)}`);
+    if (changes.exists(`${dir}/${tsconfig}`))
+      ensureReference(changes, `${dir}/${tsconfig}`, `../../${backendLib(p.kebab)}`);
   ensureReference(changes, 'tsconfig.json', `./${backendLib(p.kebab)}`);
 
   const moduleClass = `${p.pascal}Module`;
-  changes.update(API_MODULE, (source) =>
-    editSource(API_MODULE, source, (file) => {
+  const modulePath = appModule(app);
+  changes.update(modulePath, (source) =>
+    editSource(modulePath, source, (file) => {
       ensureNamedImport(file, name, moduleClass);
       const options = () => decoratorObject(file, 'Module');
       ensureArrayElement(file, arrayProperty(file, options, 'imports'), moduleClass);

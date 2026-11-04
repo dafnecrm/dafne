@@ -22,7 +22,7 @@ export const frontendPieces: Record<string, Piece> = {
       const { p } = ctx.names;
       if (!ctx.changes.exists(contractFile(ctx.names)))
         ctx.changes.warn(
-          `The backend contract ${contractFile(ctx.names)} doesn't exist: the frontend won't compile until you run "dafne g backend contract ${p.kebab}".`,
+          `The backend contract ${contractFile(ctx.names)} doesn't exist: the frontend won't compile until you run "dafne-old g backend contract ${p.kebab}".`,
         );
       create(ctx, `${FRONTEND}/lib/${p.kebab}.ts`, 'lib.ts');
       create(ctx, `${FRONTEND}/lib/${p.kebab}-table.ts`, 'lib-table.ts');

@@ -369,9 +369,9 @@ async function finish(changes: Changes, result: FieldResult, options: CommonOpti
       await changes.commit();
   p.note(
     [
-      'dafne migration generate   # fixes the foreign keys drizzle-kit 1.0.0-rc.5 gets wrong',
+      'dafne-old migration generate   # fixes the foreign keys drizzle-kit 1.0.0-rc.5 gets wrong',
       'npx tsc -b apps/api && pnpm --filter \"@dafne/api...\" test',
-      'dafne sync frontend <resource>   # form, table and detail',
+      'dafne-old sync frontend <resource>   # form, table and detail',
     ].join('\n'),
     'Next steps',
   );
@@ -416,17 +416,17 @@ export function fieldCommand() {
         'after',
         `
 Examples:
-  dafne field add activities dueDate datetime
-  dafne field add activities status enum --values open,done --required --default open
-  dafne field add activities notes text --api internal
-  dafne field add activities description text --editor               # rich text editor in the form
-  dafne field add activities customer ref --to customers               # customerId + activity.customer / customer.activities
-  dafne field add activities customer ref --to customers --relation one-to-one
-  dafne field add customers activities ref --to activities --relation one-to-many
-  dafne field add activities tags ref --to tags --relation many-to-many  # junction table activity_tag`,
+  dafne-old field add activities dueDate datetime
+  dafne-old field add activities status enum --values open,done --required --default open
+  dafne-old field add activities notes text --api internal
+  dafne-old field add activities description text --editor               # rich text editor in the form
+  dafne-old field add activities customer ref --to customers               # customerId + activity.customer / customer.activities
+  dafne-old field add activities customer ref --to customers --relation one-to-one
+  dafne-old field add customers activities ref --to activities --relation one-to-many
+  dafne-old field add activities tags ref --to tags --relation many-to-many  # junction table activity_tag`,
       ),
   ).action(async (resourceArg: string | undefined, nameArg: string | undefined, typeArg: string | undefined, options: AddOptions) => {
-    p.intro('dafne field add');
+    p.intro('dafne-old field add');
     const changes = new Changes(findRoot(options.root));
     const { resource, name, type: resolved } = await askAdd(changes, { resource: resourceArg, name: nameArg, type: typeArg }, options);
     const spec = toSpec(name, resolved, options);
@@ -441,7 +441,7 @@ Examples:
       .argument('[resource]', 'the table, by resource name')
       .argument('[name]', 'column or relation name (customer, customerId, tags…)'),
   ).action(async (resourceArg: string | undefined, nameArg: string | undefined, options: CommonOptions) => {
-    p.intro('dafne field remove');
+    p.intro('dafne-old field remove');
     const changes = new Changes(findRoot(options.root));
     const can = interactive(options);
     let resource = resourceArg;
