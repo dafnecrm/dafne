@@ -1,0 +1,27 @@
+{
+  // Options shared by the TypeScript projects (not the frontend: Next has
+  // its own). Each project's tsconfig.json extends this file; `nx sync`
+  // keeps their "references" in line with the package.json dependencies.
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    // Type-checking only emits declarations: rspack (the app) and Next build the JS.
+    "emitDeclarationOnly": true,
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "strict": true,
+    "strictPropertyInitialization": false,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    // Nest: decorators and their type metadata.
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    // @dafne/contracts imports ./x.ts (see its index.ts).
+    "rewriteRelativeImportExtensions": true
+  }
+}

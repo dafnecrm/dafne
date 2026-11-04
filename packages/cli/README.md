@@ -59,9 +59,11 @@ existing files), `--root <dir>`, `-y`; for the sidebar `--section <title>`
 ## What it generates
 
 Backend:
-- `libs/<plural>/`: module, service (+ spec), controller.
+- `packages/backend/<plural>/`: the lib `@dafne/backend-<plural>`, a workspace
+  package (`package.json`, `tsconfig.json`, `vitest.config.ts`) with module,
+  service (+ spec), controller.
 - `packages/contracts/src/<plural>.ts` (+ spec).
-- `libs/database/src/tables/<plural>.ts`.
+- `packages/backend/database/src/tables/<plural>.ts`.
 
 Frontend:
 - `lib/<plural>.ts` and `lib/<plural>-table.ts`.
@@ -77,11 +79,13 @@ Frontend:
 Each resource starts with one `name` field. It has soft delete and
 created/updated by, as customers do.
 
-It also registers the code in `nest-cli.json`, `tsconfig.json` paths,
-`ApiModule`, `database/src/schema.ts`, `contracts/src/index.ts` and
+It also registers the code in the app (`apps/backend/package.json`, the
+project references of its tsconfigs and of the root `tsconfig.json`,
+`ApiModule`), `database/src/schema.ts`, `contracts/src/index.ts` and
 `apps/frontend/lib/navigation.ts`. Re-running never registers twice. Nothing is
 written until every file is generated, and new files are formatted with the
-target package's Prettier config.
+target package's Prettier config. A new lib needs `pnpm install` afterwards,
+to link its package.
 
 Afterwards: `dafne migration generate`, then replace `name`
 with the real fields.
@@ -128,7 +132,7 @@ A `ref` adds a foreign key to `--to <resource>`, with `--relation`:
 
 Both relations go in the file that holds the key (or the junction), so the
 table files never import each other. The first ref also switches
-`schema.ts` to `mergeRelations(...)` (`libs/database/src/merge-relations.ts`):
+`schema.ts` to `mergeRelations(...)` (`packages/backend/database/src/merge-relations.ts`):
 it combines the relation parts table by table, where the old spread kept
 only the last part of a table. `field remove` takes a column (with its
 indexes and relations) or a relation name, e.g. a many-to-many with its
@@ -160,7 +164,7 @@ starts.
 
 ## Syncing a contract with its table
 
-After changing a table in `apps/backend/libs/database/src/tables/`:
+After changing a table in `packages/backend/database/src/tables/`:
 
 ```sh
 dafne sync contract activities     # or --all; --dry-run to preview
@@ -172,7 +176,7 @@ the ones removed from the API and keeps hand-written validation. Members
 that aren't columns (e.g. `addresses`) are left alone.
 
 It also updates the queries in
-`libs/<plural>/src/<plural>.service.ts`; skip that with `--no-service`:
+`packages/backend/<plural>/src/<plural>.service.ts`; skip that with `--no-service`:
 - the list's `select({...})` gets the listed columns;
 - the detail's `findFirst({ columns })` leaves out (`key: false`) the
   columns that aren't in the response, e.g. `internal` ones;

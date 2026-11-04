@@ -9,7 +9,7 @@ import { FRONTEND_RESOURCE, frontendPieces } from '../src/generators/frontend.js
 import { generatePieces } from '../src/generators/pieces.js';
 
 const FIXTURE = join(import.meta.dirname, 'fixtures', 'project');
-const TABLE = 'apps/backend/libs/database/src/tables/invoices.ts';
+const TABLE = 'packages/backend/database/src/tables/invoices.ts';
 const DIR = 'apps/frontend/app/[locale]/(app)/invoices';
 let root: string;
 const read = (path: string) => readFileSync(join(root, path), 'utf8');

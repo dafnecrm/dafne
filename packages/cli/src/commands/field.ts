@@ -370,7 +370,7 @@ async function finish(changes: Changes, result: FieldResult, options: CommonOpti
   p.note(
     [
       'dafne migration generate   # fixes the foreign keys drizzle-kit 1.0.0-rc.5 gets wrong',
-      'cd backend && npx tsc --noEmit && pnpm test',
+      'npx tsc -b apps/backend && pnpm --filter \"@dafne/backend...\" test',
       'dafne sync frontend <resource>   # form, table and detail',
     ].join('\n'),
     'Next steps',

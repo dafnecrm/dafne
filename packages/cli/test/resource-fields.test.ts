@@ -59,13 +59,13 @@ describe('a resource with fields', () => {
     expect(changes.warnings.join()).not.toMatch(/already has rows/);
     await changes.commit();
 
-    const table = read('apps/backend/libs/database/src/tables/invoices.ts');
+    const table = read('packages/backend/database/src/tables/invoices.ts');
     expect(table).toMatch(/number: varchar\('number', \{ length: 20 \}\)\.notNull\(\)/);
     expect(table).toContain('/** @api detail @form editor */');
     const contract = read('packages/contracts/src/invoices.ts');
     expect(contract).toMatch(/number: requiredText\(20/);
     expect(contract).toContain('INVOICE_STATUSES');
-    expect(read('apps/backend/libs/invoices/src/invoices.service.ts')).toContain('number: invoice.number');
+    expect(read('packages/backend/invoices/src/invoices.service.ts')).toContain('number: invoice.number');
 
     expect(read(`${DIR}/invoice-form.tsx`)).toContain('<field.TextEditorField label={t("invoices.fields.notes")} />');
     expect(read(`${DIR}/invoice-form.tsx`)).toContain('<form.AppField name="status">');

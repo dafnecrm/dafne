@@ -137,11 +137,12 @@ async function run(
 function nextSteps(backend: string[], frontend: string[], withFields: boolean): string[] {
   const steps: string[] = [];
   const pages = frontend.some((piece) => piece !== 'nav');
+  if (backend.includes('lib')) steps.push('pnpm install   # links the new @dafne/backend-<lib> package');
   if (backend.includes('table'))
     steps.push('dafne migration generate   # creates the table migration (and fixes its foreign keys)');
-  if (backend.length) steps.push('cd backend && pnpm test');
+  if (backend.length) steps.push('npx tsc -b apps/backend && pnpm --filter \"@dafne/backend...\" test');
   if (pages)
-    steps.push('cd frontend && pnpm dev   # also generates the PageProps types of new routes');
+    steps.push('dafne dev --only frontend   # also generates the PageProps types of new routes');
   if (withFields)
     steps.push('Check the new fields in the form, the list and the detail page (labels, order, defaults).');
   else if (backend.length || pages)
@@ -345,7 +346,7 @@ sample "name" field stays. Examples:
       const route = await askName(name, options, 'Route', 'reports/monthly');
       return run(options, (changes) => {
         generatePage(changes, route);
-        return { next: ['cd frontend && pnpm dev'] };
+        return { next: ['dafne dev --only frontend'] };
       });
     }
     if (key === 'component') {

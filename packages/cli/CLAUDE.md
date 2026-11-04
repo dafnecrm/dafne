@@ -60,9 +60,10 @@ TypeScript ESM, Node ≥ 22, pnpm (workspace package of the Dafne monorepo, see 
   - `format.ts`: Prettier.
 - `src/generators/`: the pieces (`backend.ts`, `frontend.ts`) and
   dependency resolution (`pieces.ts`).
-- `src/wiring/`: edits to existing files. `backend.ts` handles
-  nest-cli.json, the tsconfig paths, ApiModule, the database schema, the
-  contracts index and the lib's @Module/index. `frontend.ts` handles the
+- `src/wiring/`: edits to existing files. `backend.ts` handles a new
+  lib's registration (`wireLib`: the app's `package.json` dependency, the
+  project references of the app's and the root's tsconfigs, ApiModule), the
+  database schema, the contracts index and the lib's @Module/index. `frontend.ts` handles the
   sidebar (nav titles are keys of the `nav` messages). `messages.ts`
   fills the message catalogs. Shared AST helpers are in `ast.ts`.
 - `templates/backend`, `templates/frontend`: one `.ejs` per generated file.
@@ -143,9 +144,15 @@ TypeScript ESM, Node ≥ 22, pnpm (workspace package of the Dafne monorepo, see 
   `const t = useTranslations()` (`ensureHookLine`), not in render props.
 - **Pages live under `apps/frontend/app/[locale]/(app)/`** (the locale is a
   hidden root segment), so route types are `PageProps<"/[locale]/…">`.
-- **`apps/backend`, `apps/frontend` and `packages/contracts` are fixed
-  paths** under the root (`BACKEND`/`FRONTEND`/`CONTRACTS_SRC` in
-  `core/workspace.ts`). `dafne dev` keeps `backend`/`frontend` as package
+- **`apps/backend`, `apps/frontend`, `packages/backend` and
+  `packages/contracts` are fixed paths** under the root
+  (`BACKEND`/`FRONTEND`/`BACKEND_LIBS`/`CONTRACTS_SRC` in
+  `core/workspace.ts`). A backend lib is the workspace package
+  `@dafne/backend-<plural>` in `packages/backend/<plural>`
+  (`backendLib`/`backendPackage`): its `package.json`, `tsconfig.json` and
+  `vitest.config.ts` templates copy `customers`. The references the CLI
+  writes must match what `nx sync` would write, so `nx sync:check` passes
+  right after a generation. `dafne dev` keeps `backend`/`frontend` as package
   names (`--backend`, `--only frontend`). Generated code
   imports the contracts as `@dafne/contracts` (`CONTRACTS_PACKAGE`). The
   CLI must keep working without Nx: it's also meant to be distributed.
@@ -154,21 +161,19 @@ TypeScript ESM, Node ≥ 22, pnpm (workspace package of the Dafne monorepo, see 
 
 - **Unit tests:** `test/generate.test.ts` copies `test/fixtures/project`
   to a temp folder and runs the generators there. The fixtures are copies
-  of the real files the wiring edits (nest-cli.json, tsconfig.json,
-  api.module.ts, schema.ts, contracts index, navigation.ts…). Refresh them
+  of the real files the wiring edits (the app's package.json and
+  tsconfigs, the root tsconfig.json, api.module.ts, schema.ts, contracts index, navigation.ts…). Refresh them
   when the real ones change. `tsconfig.json` excludes them.
 - **Changing a template:** also check that the generated code compiles.
   Never generate into the real `../../apps/backend` / `../../apps/frontend` to test.
   1. Copy the whole monorepo into a scratch folder (without
-     `node_modules`, `.next`, `.git`, `dist`, `.env`, `.nx`).
-  2. Clone the `node_modules` of the root and of each package with
-     `cp -Rc` instead of symlinking: Turbopack won't resolve `next`
-     through a symlink outside its root.
-  3. Run `pnpm dev g resource invoice --root <copy> -y`.
-  4. In the backend copy, run `npx tsc --noEmit` and `npx vitest run`; in
-     `packages/contracts`, `npx vitest run`.
-  5. In the frontend copy, run `npx next typegen`, then `npx tsc --noEmit`
-     and `npx next build`.
+     `node_modules`, `.next`, `.git`, `dist`, `.env`, `.nx`, `out-tsc`).
+  2. Run `pnpm dev g resource invoice --root <copy> -y`, then
+     `pnpm install --offline` in the copy: it links the new lib, and its
+     `node_modules` stay inside the copy (Turbopack won't resolve `next`
+     through a symlink outside its root).
+  3. In the copy, `npx nx sync:check` must find nothing to change.
+  4. In the copy, run `npx nx run-many -t lint typecheck test build`.
 
 ## Known issue
 

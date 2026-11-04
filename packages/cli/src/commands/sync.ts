@@ -6,14 +6,14 @@ import { join } from 'node:path';
 import { Changes } from '../core/changes.js';
 import { formatSource } from '../core/format.js';
 import { resourceNames, type ResourceNames } from '../core/names.js';
-import { findRoot } from '../core/workspace.js';
+import { backendLib, findRoot } from '../core/workspace.js';
 import { contractFile } from '../generators/backend.js';
 import { childRoles, MESSAGE_KEY_IMPORT, OPTIONAL_DATE_HELPER, syncChildContract, syncContract, type SyncReport } from '../sync/contract.js';
 import { syncChildService, syncService } from '../sync/service.js';
 import { syncContractSpec, syncServiceSpec } from '../sync/service-spec.js';
 import { API_TAGS, foreignRelations, readTable, tablesIn, type TableInfo } from '../sync/table.js';
 import { editSource } from '../wiring/ast.js';
-import { BACKEND, CONTRACTS_SRC } from '../wiring/backend.js';
+import { CONTRACTS_SRC } from '../wiring/backend.js';
 import { FRONTEND } from '../wiring/frontend.js';
 import { syncDetail } from '../sync/detail.js';
 import { readBody, syncFormComponent, syncFormSchema, type FormReport } from '../sync/form.js';
@@ -28,7 +28,7 @@ interface SyncOptions {
   yes?: boolean;
 }
 
-const TABLES = `${BACKEND}/libs/database/src/tables`;
+const TABLES = `${backendLib('database')}/src/tables`;
 const tableFile = ({ p }: ResourceNames) => `${TABLES}/${p.kebab}.ts`;
 
 /** Resources with both a table file and a contract. */
@@ -99,7 +99,7 @@ export async function syncOne(
   const leftBody = new Set([...dropped, ...[...bodyBefore].filter((k) => !bodyNow.some((f) => f.key === k))]);
 
   // The service's queries: list select, detail columns, insert and update.
-  const servicePath = `${BACKEND}/libs/${names.p.kebab}/src/${names.p.kebab}.service.ts`;
+  const servicePath = `${backendLib(names.p.kebab)}/src/${names.p.kebab}.service.ts`;
   const serviceSource = service ? changes.read(servicePath) : undefined;
   if (serviceSource !== undefined) {
     const result = syncService(servicePath, serviceSource, names, info, dropped);
@@ -213,7 +213,7 @@ contract and frontend also take --all; every command takes --dry-run.`,
   sync
     .command('contract')
     .description(
-      'Update packages/contracts/src/<plural>.ts and the service queries (list, detail, create, update) from libs/database/src/tables/<plural>.ts, keeping hand-written code',
+      'Update packages/contracts/src/<plural>.ts and the service queries (list, detail, create, update) from packages/backend/database/src/tables/<plural>.ts, keeping hand-written code',
     )
     .argument('[name]', 'resource name, singular or plural')
     .option('--all', 'every table that has a contract')
@@ -265,7 +265,7 @@ id, createdById/updatedById, deletedAt and server-filled columns
       await changes.commit();
       p.note(
         [
-          'cd backend && npx tsc --noEmit && pnpm test',
+          'npx tsc -b apps/backend && pnpm --filter \"@dafne/backend...\" test',
           'dafne sync frontend <resource>   # form, table and detail',
         ].join('\n'),
         'Next steps',
@@ -324,7 +324,7 @@ table changed.`,
       }
       await changes.commit();
       p.note(
-        ['Check the new inputs, columns and details: their place, labels and defaults.', 'cd frontend && npx tsc --noEmit'].join('\n'),
+        ['Check the new inputs, columns and details: their place, labels and defaults.', 'pnpm --filter @dafne/frontend typecheck'].join('\n'),
         'Next steps',
       );
       p.outro('Done.');
@@ -380,7 +380,7 @@ the column in the table:
       p.note(
         [
           'Check the new inputs: their place in the form, labels and the default values.',
-          'cd frontend && npx tsc --noEmit',
+          'pnpm --filter @dafne/frontend typecheck',
         ].join('\n'),
         'Next steps',
       );
@@ -438,7 +438,7 @@ To sync the form, table and detail page together, use dafne sync frontend <resou
         if (note) p.log.warn(note);
       }
       await changes.commit();
-        p.note(['Check the new entries: their place, labels and formatting.', 'cd frontend && npx tsc --noEmit'].join('\n'), 'Next steps');
+        p.note(['Check the new entries: their place, labels and formatting.', 'pnpm --filter @dafne/frontend typecheck'].join('\n'), 'Next steps');
         p.outro('Done.');
       });
 

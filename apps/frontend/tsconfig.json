@@ -1,4 +1,11 @@
 {
+  // Next compiles the workspace packages from their sources: no project
+  // references (tsc would read their declarations instead).
+  "nx": {
+    "sync": {
+      "ignoredDependencies": ["@dafne/backend-auth", "@dafne/contracts"]
+    }
+  },
   "compilerOptions": {
     "target": "ES2017",
     "lib": ["dom", "dom.iterable", "esnext"],
@@ -20,8 +27,7 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"],
-      "@backend/auth-options": ["../backend/libs/auth/src/auth.options.ts"]
+      "@/*": ["./*"]
     }
   },
   "include": [

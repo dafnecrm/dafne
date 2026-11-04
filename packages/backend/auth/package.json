@@ -1,0 +1,39 @@
+{
+  "name": "@dafne/backend-auth",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./options": "./src/auth.options.ts"
+  },
+  "scripts": {
+    "lint": "oxlint -c ../.oxlintrc.json --type-aware src",
+    "test": "vitest run --passWithNoTests",
+    "auth:schema:generate": "pnpm dlx auth@latest generate --config src/auth.cli.ts --output ../database/src/tables/auth.ts"
+  },
+  "dependencies": {
+    "@better-auth/drizzle-adapter": "catalog:",
+    "@dafne/backend-common": "workspace:*",
+    "@dafne/backend-database": "workspace:*",
+    "@dafne/contracts": "workspace:*",
+    "@nestjs/common": "catalog:",
+    "@nestjs/config": "catalog:",
+    "@nestjs/drizzle": "catalog:",
+    "@thallesp/nestjs-better-auth": "catalog:",
+    "better-auth": "catalog:",
+    "drizzle-orm": "catalog:",
+    "resend": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@nestjs/testing": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/node": "catalog:",
+    "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:",
+    "typescript": "catalog:",
+    "unplugin-swc": "catalog:",
+    "vitest": "catalog:"
+  }
+}

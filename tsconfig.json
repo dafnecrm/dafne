@@ -1,0 +1,42 @@
+{
+  // TypeScript solution file: no code of its own, only the projects.
+  // `nx sync` keeps the references up to date.
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {},
+  "files": [],
+  "references": [
+    {
+      "path": "./packages/backend/notifications"
+    },
+    {
+      "path": "./packages/backend/activities"
+    },
+    {
+      "path": "./packages/backend/customers"
+    },
+    {
+      "path": "./packages/backend/database"
+    },
+    {
+      "path": "./packages/backend/products"
+    },
+    {
+      "path": "./packages/backend/common"
+    },
+    {
+      "path": "./packages/backend/users"
+    },
+    {
+      "path": "./packages/backend/auth"
+    },
+    {
+      "path": "./packages/backend/geo"
+    },
+    {
+      "path": "./packages/contracts"
+    },
+    {
+      "path": "./apps/backend"
+    }
+  ]
+}

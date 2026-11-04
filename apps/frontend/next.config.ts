@@ -3,9 +3,9 @@ import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
 /**
- * The monorepo root: @dafne/contracts (packages/contracts) and the
- * backend's auth options live outside frontend/, so Turbopack must build
- * from the root to read them.
+ * The monorepo root: the workspace packages (@dafne/contracts, and the type of
+ * @dafne/backend-auth/options) live outside apps/frontend/, so Turbopack must
+ * build from the root to read them.
  */
 const root = path.join(__dirname, "../..");
 

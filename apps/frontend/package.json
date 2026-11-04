@@ -41,6 +41,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@dafne/backend-auth": "workspace:*",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -55,9 +56,6 @@
     "node": ">=26.0.0"
   },
   "nx": {
-    "implicitDependencies": [
-      "@dafne/backend"
-    ],
     "targets": {
       "build": {
         "outputs": [

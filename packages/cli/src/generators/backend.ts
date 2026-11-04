@@ -1,32 +1,35 @@
 import { render } from '../core/templates.js';
 import type { ResourceNames } from '../core/names.js';
 import {
-  BACKEND,
   CONTRACTS_SRC,
   wireContract,
   wireIntoLib,
   wireLib,
   wireTable,
 } from '../wiring/backend.js';
+import { backendLib } from '../core/workspace.js';
 import type { Ctx, Piece } from './pieces.js';
 
-export const libSrc = ({ p }: ResourceNames) => `${BACKEND}/libs/${p.kebab}/src`;
+export const libSrc = ({ p }: ResourceNames) => `${backendLib(p.kebab)}/src`;
 export const contractFile = ({ p }: ResourceNames) =>
   `${CONTRACTS_SRC}/${p.kebab}.ts`;
 export const tableFile = ({ p }: ResourceNames) =>
-  `${BACKEND}/libs/database/src/tables/${p.kebab}.ts`;
+  `${backendLib('database')}/src/tables/${p.kebab}.ts`;
 
 const create = (ctx: Ctx, path: string, template: string) =>
   ctx.changes.create(path, render(`backend/${template}`, ctx.names));
 
 const lib: Piece = {
-  description: 'Nest lib (module, index, tsconfig) registered in nest-cli, tsconfig and ApiModule',
+  description: 'Nest lib (workspace package: module, index, package.json, tsconfig, vitest) registered in the app and ApiModule',
   deps: [],
   marker: (n) => `${libSrc(n)}/${n.p.kebab}.module.ts`,
   generate(ctx) {
     const { p } = ctx.names;
     const src = libSrc(ctx.names);
-    create(ctx, `${BACKEND}/libs/${p.kebab}/tsconfig.lib.json`, 'tsconfig.lib.json');
+    const root = backendLib(p.kebab);
+    create(ctx, `${root}/package.json`, 'package.json');
+    create(ctx, `${root}/tsconfig.json`, 'tsconfig.json');
+    create(ctx, `${root}/vitest.config.ts`, 'vitest.config.ts');
     create(ctx, `${src}/index.ts`, 'index.ts');
     create(ctx, `${src}/${p.kebab}.module.ts`, 'module.ts');
     wireLib(ctx.changes, ctx.names);
@@ -46,7 +49,7 @@ export const backendPieces: Record<string, Piece> = {
     },
   },
   table: {
-    description: 'Drizzle table and relations in libs/database',
+    description: 'Drizzle table and relations in @dafne/backend-database',
     deps: [],
     marker: tableFile,
     generate(ctx) {

@@ -17,7 +17,7 @@ interface MigrationOptions {
 /** The `out` folder of backend/drizzle.config.ts. */
 function migrationsDir(backend: string): string {
   const config = readFileSync(join(backend, 'drizzle.config.ts'), 'utf8');
-  const out = /\bout:\s*['"`]([^'"`]+)['"`]/.exec(config)?.[1] ?? './libs/database/src/migrations';
+  const out = /\bout:\s*['"`]([^'"`]+)['"`]/.exec(config)?.[1] ?? './migrations';
   return join(backend, out);
 }
 
@@ -107,7 +107,7 @@ export function migrationCommand() {
 
   migration
     .command('generate')
-    .description('Generate a migration from the changes to libs/database/src/tables, and fix its foreign keys')
+    .description('Generate a migration from the changes to the tables of @dafne/backend-database, and fix its foreign keys')
     .argument('[name]', 'migration name, e.g. add-activity-customer (asked if missing)')
     .option('--custom', 'an empty migration, for SQL written by hand')
     .option('--no-fix', "don't put back the foreign key actions drizzle-kit drops")
