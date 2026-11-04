@@ -1,0 +1,417 @@
+{
+  "app": {
+    "title": "Dafne",
+    "description": "A purrfect journey"
+  },
+  "nav": {
+    "tagline": "A purrfect crm",
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "crm": "CRM",
+    "customers": "Customers",
+    "activities": "Activities",
+    "products": "Products",
+    "admin": "Admin",
+    "users": "Users",
+    "account": "Account"
+  },
+  "breadcrumb": {
+    "new": "New",
+    "edit": "Edit"
+  },
+  "theme": {
+    "change": "Change theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "account": {
+    "menu": {
+      "label": "Account menu",
+      "account": "Account",
+      "language": "Language",
+      "signOut": "Sign out"
+    },
+    "title": "Account",
+    "description": "Your account details.",
+    "memberSince": "Member since",
+    "avatar": {
+      "saveFailed": "Couldn't save your avatar. Please try again.",
+      "wrongType": "Pick a PNG, JPEG, WebP or GIF image.",
+      "tooLarge": "The image must be smaller than {mb} MB.",
+      "tooDetailed": "This image is too detailed to use as an avatar. Try another one.",
+      "unreadable": "Couldn't read this image.",
+      "alt": "Your avatar",
+      "edit": "Edit",
+      "upload": "Upload a photo",
+      "remove": "Remove photo",
+      "input": "Avatar image"
+    }
+  },
+  "common": {
+    "copied": "Copied!",
+    "close": "Close",
+    "more": "More",
+    "closeToast": "Close toast",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "viewDetails": "View details",
+    "actionsFor": "Actions for {name}",
+    "deleteTitle": "Delete {name}?",
+    "saveChanges": "Save changes",
+    "listHint": "Filter by a field, or click a column to sort.",
+    "copyEmail": "Copy email",
+    "search": "Search",
+    "editTitle": "Edit {name}",
+    "record": {
+      "title": "Record",
+      "created": "Created",
+      "createdBy": "Created by",
+      "updated": "Updated",
+      "updatedBy": "Updated by"
+    },
+    "errors": {
+      "sessionExpired": "Your session has expired. Sign in again.",
+      "generic": "Something went wrong. Please try again.",
+      "invalid": "Some fields are not valid."
+    },
+    "emailPlaceholder": "name@example.com",
+    "breadcrumb": "Breadcrumb",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "dataTable": {
+    "actions": "Actions",
+    "results": "results",
+    "range": "{first}–{last} of {total} {unit}",
+    "none": "0 {unit}",
+    "perPage": "{size} / page",
+    "rowsPerPage": "Rows per page",
+    "previous": "Previous",
+    "next": "Next",
+    "any": "Any {label}",
+    "noMatches": "No matches",
+    "filter": "Filter",
+    "clear": "Clear",
+    "noResults": "No results",
+    "nothingWhere": "Nothing where {filter}.",
+    "nothingYet": "There's nothing here yet.",
+    "filterIs": "{label} is “{value}”",
+    "filterContains": "{label} contains “{value}”",
+    "and": " and "
+  },
+  "sidebar": {
+    "title": "Sidebar",
+    "description": "Displays the mobile sidebar.",
+    "toggle": "Toggle sidebar"
+  },
+  "editor": {
+    "toolbar": "Formatting",
+    "bold": "Bold",
+    "italic": "Italic",
+    "underline": "Underline",
+    "strikethrough": "Strikethrough",
+    "heading": "Heading",
+    "subheading": "Subheading",
+    "bulletList": "Bullet list",
+    "numberedList": "Numbered list",
+    "quote": "Quote",
+    "link": "Link",
+    "undo": "Undo",
+    "redo": "Redo",
+    "linkPrompt": "Link URL (empty to remove)"
+  },
+  "form": {
+    "hidePassword": "Hide password",
+    "showPassword": "Show password",
+    "timeOf": "{label} (time)",
+    "serverError": "Something went wrong",
+    "hasErrors": "Form has errors!",
+    "pickDate": "Pick a date"
+  },
+  "geo": {
+    "searchFailed": "The search failed.",
+    "searching": "Searching…",
+    "tooShort": "Type at least {min} characters.",
+    "noPlaces": "No places found.",
+    "searchPlaceholder": "Search an address…",
+    "countryPlaceholder": "Choose a country…",
+    "loadingCountries": "Loading countries…",
+    "noCountries": "No countries found."
+  },
+  "customers": {
+    "title": "Customers",
+    "singular": "Customer",
+    "new": "New customer",
+    "all": "All customers",
+    "noun": "customers",
+    "create": "Create customer",
+    "newDescription": "Only the name is required. Add as many addresses as you need.",
+    "editDescription": "Saving replaces the customer's details and addresses.",
+    "empty": {
+      "title": "No customers found",
+      "filtered": "No customer where {filter}.",
+      "none": "Add your first customer to get started."
+    },
+    "deleteDescription": "The customer will no longer be listed or editable.",
+    "notFound": "This customer no longer exists.",
+    "sections": {
+      "details": "Details",
+      "contact": "Contact",
+      "addresses": "Addresses",
+      "addressesCount": "Addresses ({count})"
+    },
+    "fields": {
+      "type": "Type",
+      "name": "Name",
+      "companyName": "Company name",
+      "birthDate": "Birth date",
+      "fiscalCode": "Fiscal code",
+      "vatNumber": "VAT number",
+      "email": "Email",
+      "phone": "Phone",
+      "createdAt": "Added",
+      "id": "Customer ID"
+    },
+    "type": {
+      "person": "Person",
+      "company": "Company"
+    },
+    "addresses": {
+      "ordered": "In the order they're shown on the customer's page.",
+      "none": "No addresses yet.",
+      "add": "Add address",
+      "edit": "Edit address",
+      "editN": "Edit address {n}",
+      "removeN": "Remove address {n}",
+      "save": "Save address",
+      "savedWith": "Saved together with the customer.",
+      "searchHint": "Pick a place to fill in the fields below, then check them.",
+      "noneDetail": "No addresses.",
+      "addOne": "Add one",
+      "fields": {
+        "type": "Type",
+        "street": "Street",
+        "postalCode": "Postal code",
+        "city": "City",
+        "region": "State / province",
+        "country": "Country"
+      }
+    },
+    "addressType": {
+      "residence": "Residence",
+      "domicile": "Domicile",
+      "head_office": "Head office",
+      "shipping": "Shipping",
+      "billing": "Billing"
+    },
+    "editMeta": "Edit customer"
+  },
+  "products": {
+    "title": "Products",
+    "singular": "Product",
+    "new": "New product",
+    "all": "All products",
+    "noun": "products",
+    "create": "Create product",
+    "editMeta": "Edit product",
+    "newDescription": "Only the name is required.",
+    "editDescription": "Saving replaces the product's details.",
+    "empty": {
+      "title": "No products found",
+      "filtered": "No product where {filter}.",
+      "none": "Add your first product to get started."
+    },
+    "deleteDescription": "The product will no longer be listed or editable.",
+    "notFound": "This product no longer exists.",
+    "sections": {
+      "details": "Details"
+    },
+    "fields": {
+      "name": "Name",
+      "price": "Price",
+      "description": "Description",
+      "createdAt": "Added",
+      "id": "Product ID"
+    }
+  },
+  "activities": {
+    "title": "Activities",
+    "singular": "Activity",
+    "new": "New activity",
+    "all": "All activities",
+    "noun": "activities",
+    "create": "Create activity",
+    "editMeta": "Edit activity",
+    "newDescription": "Only the name is required.",
+    "editDescription": "Saving replaces the activity's details.",
+    "empty": {
+      "title": "No activities found",
+      "filtered": "No activity where {filter}.",
+      "none": "Add your first activity to get started."
+    },
+    "deleteDescription": "The activity will no longer be listed or editable.",
+    "notFound": "This activity no longer exists.",
+    "reopen": "Reopen",
+    "reopenTitle": "Reopen {name}?",
+    "reopenDescription": "The activity will be open and editable again.",
+    "close": "Close",
+    "closeTitle": "Close {name}?",
+    "closeDescription": "The activity will no longer be editable.",
+    "sections": {
+      "details": "Details"
+    },
+    "fields": {
+      "name": "Name",
+      "type": "Type",
+      "status": "Status",
+      "dueDate": "Due date",
+      "notes": "Notes",
+      "completedAt": "Completed at",
+      "completedBy": "Completed by",
+      "createdAt": "Added",
+      "id": "Activity ID"
+    },
+    "type": {
+      "call": "Call",
+      "email": "Email",
+      "meeting": "Meeting",
+      "task": "Task"
+    },
+    "status": {
+      "open": "Open",
+      "closed": "Closed"
+    }
+  },
+  "users": {
+    "title": "Users",
+    "singular": "User",
+    "new": "New user",
+    "all": "All users",
+    "noun": "users",
+    "create": "Create user",
+    "listDescription": "Everyone with an account. Filter by a field, or click a column to sort.",
+    "newDescription": "The user gets an email with a verification link, and can sign in once they click it.",
+    "passwordHint": "The user signs in with this password once they verify their email: share it with them securely.",
+    "adminsOnly": "Only admins can create users.",
+    "notAllowed": {
+      "title": "Admins only",
+      "list": "You need the admin role to see the list of users.",
+      "create": "You need the admin role to create users.",
+      "detail": "You need the admin role to see user details."
+    },
+    "empty": {
+      "title": "No users found",
+      "filtered": "No user where {filter}.",
+      "none": "Nobody has signed up yet."
+    },
+    "sections": {
+      "details": "Details",
+      "password": "Password",
+      "profile": "Profile",
+      "access": "Access",
+      "signInMethods": "Sign-in methods",
+      "sessions": "Active sessions ({count})"
+    },
+    "fields": {
+      "name": "Name",
+      "firstname": "First name",
+      "lastname": "Last name",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status",
+      "password": "Password",
+      "banReason": "Ban reason",
+      "banExpires": "Ban expires",
+      "lastActive": "Last active",
+      "accounts": "Accounts",
+      "createdAt": "Joined",
+      "id": "User ID"
+    },
+    "role": {
+      "admin": "Admin",
+      "user": "User"
+    },
+    "status": {
+      "active": "Active",
+      "banned": "Banned"
+    },
+    "verified": "Verified",
+    "notVerified": "Not verified",
+    "never": "Never",
+    "none": "None",
+    "linked": "Linked",
+    "providers": {
+      "credential": "Email and password"
+    },
+    "sessions": {
+      "device": "Device",
+      "ip": "IP address",
+      "signedIn": "Signed in",
+      "lastActive": "Last active",
+      "expires": "Expires",
+      "impersonated": "Impersonated",
+      "none": "No active sessions.",
+      "unknownDevice": "Unknown device",
+      "browserOn": "{browser} on {os}"
+    }
+  },
+  "dashboard": {
+    "welcome": "Welcome, {name}!",
+    "signedInAs": "Signed in as {email}"
+  },
+  "auth": {
+    "fields": {
+      "email": "Email",
+      "emailPlaceholder": "you@example.com",
+      "password": "Password",
+      "rememberMe": "Remember me",
+      "firstname": "First name",
+      "lastname": "Last name"
+    },
+    "validation": {
+      "email": "Enter a valid email address",
+      "password": "Enter your password",
+      "firstname": "Enter your first name",
+      "lastname": "Enter your last name",
+      "passwordRules": "Password must contain minimum 8 characters, at least one uppercase letter, one lowercase letter, one number and one special character"
+    },
+    "errors": {
+      "invalidCredentials": "Invalid email or password.",
+      "tooManyAttempts": "Too many attempts. Please wait a moment and try again.",
+      "userExists": "An account with this email already exists.",
+      "invalidAvatar": "This image can't be used. Pick a PNG, JPEG or WebP image."
+    },
+    "signIn": {
+      "meta": "Sign in",
+      "title": "Sign in with your account",
+      "description": "Enter your email and password to continue.",
+      "noAccount": "No account yet?",
+      "signUp": "Sign up",
+      "submit": "Sign in"
+    },
+    "signUp": {
+      "meta": "Sign up",
+      "title": "Create your account",
+      "description": "It only takes a minute.",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign in",
+      "submit": "Create account"
+    },
+    "verify": {
+      "meta": "Verify your email",
+      "checkInbox": "Check your inbox",
+      "sentTo": "We sent a verification link to <email></email>. Click it to activate your account and sign in.",
+      "yourEmail": "your email address",
+      "resent": "A new link is on its way.",
+      "sending": "Sending…",
+      "resend": "Resend email",
+      "expired": "This link has expired",
+      "broken": "This link doesn't work",
+      "signInForNewLink": "Sign in with your email and password and we'll send you a new verification link.",
+      "signIn": "Sign in",
+      "backToSignIn": "Back to sign in"
+    }
+  }
+}

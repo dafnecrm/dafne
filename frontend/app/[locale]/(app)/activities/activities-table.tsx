@@ -1,0 +1,154 @@
+"use client";
+
+import { useMemo } from "react";
+import { useTranslations } from "next-intl";
+import Link from "next/link";
+import {
+  createDataTableColumnHelper,
+  useDescribeFilters,
+  DataTable,
+} from "@/components/data-table";
+import { LocalDate } from "@/components/local-date";
+import type { ListedActivity } from "@/lib/activities";
+import {
+  ACTIVITY_TYPE_OPTIONS,
+  activitiesTable,
+  ACTIVITY_STATUS_OPTIONS,
+} from "@/lib/activities-table";
+import { FileIcon } from "lucide-react";
+import { ActivityTableActions } from "./activity-table-actions";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import type { TableParams } from "@/lib/data-table";
+import { useOptionLabel } from "@/i18n/options";
+import { Badge } from "@/components/ui/badge";
+
+/*
+ * Columns of the activities table. Column ids double as the backend's
+ * sort fields, so they must match activitiesTable.sortable in
+ * lib/activities-table.ts.
+ */
+
+const col = createDataTableColumnHelper<ListedActivity>();
+
+/** Translated per language; memoized, so the table sees the same columns on every render. */
+// dafne-ignore: completedAt
+function useActivityColumns() {
+  const t = useTranslations();
+  const optionLabel = useOptionLabel();
+  return useMemo(
+    () =>
+      col.columns([
+        col.accessor("name", {
+          header: t("activities.fields.name"),
+          cell: ({ row }) => (
+            <Link
+              href={`/activities/${encodeURIComponent(row.original.id)}`}
+              className="font-medium underline-offset-4 hover:underline"
+            >
+              {row.original.name}
+            </Link>
+          ),
+        }),
+        col.accessor("type", {
+          header: t("activities.fields.type"),
+          cell: (info) => optionLabel(ACTIVITY_TYPE_OPTIONS, info.getValue()),
+        }),
+        col.accessor("status", {
+          header: t("activities.fields.status"),
+          cell: (info) => {
+            const status = ACTIVITY_STATUS_OPTIONS.find(
+              (o) => o.value === info.getValue(),
+            );
+            if (!status) return "—";
+            // A component, not an element: render it with a capitalized name.
+            const Icon = status.icon;
+            return (
+              <Badge variant="outline">
+                <Icon className="size-4 text-muted-foreground" />
+                {t(status.label)}
+              </Badge>
+            );
+          },
+        }),
+        col.accessor("dueDate", {
+          header: t("activities.fields.dueDate"),
+          cell: (info) => {
+            const value = info.getValue();
+            return value ? <LocalDate value={value} format="dateTime" /> : "—";
+          },
+        }),
+        col.accessor("createdAt", {
+          header: t("activities.fields.createdAt"),
+          meta: { className: "text-right" },
+          cell: (info) => (
+            <LocalDate
+              value={info.getValue()}
+              format="dateTime"
+              className="text-muted-foreground"
+            />
+          ),
+        }),
+      ]),
+    [t, optionLabel],
+  );
+}
+
+// Module scope, so the table sees the same function on every render.
+const activityActions = (activity: ListedActivity) => (
+  <ActivityTableActions activity={activity} />
+);
+
+const getRowId = (activity: ListedActivity) => activity.id;
+
+/** Activities list; the server page passes one page of activities. */
+export function ActivitiesTable({
+  activities,
+  total,
+  params,
+}: {
+  activities: ListedActivity[];
+  total: number;
+  params: TableParams;
+}) {
+  const t = useTranslations("activities");
+  const describeFilters = useDescribeFilters();
+  const columns = useActivityColumns();
+  return (
+    <DataTable
+      columns={columns}
+      data={activities}
+      getRowId={getRowId}
+      config={activitiesTable}
+      rowActions={activityActions}
+      params={params}
+      total={total}
+      noun={t("noun")}
+      empty={
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <FileIcon />
+            </EmptyMedia>
+            <EmptyTitle>{t("empty.title")}</EmptyTitle>
+            <EmptyDescription>
+              {Object.keys(params.filters).length
+                ? t("empty.filtered", {
+                    filter: describeFilters(
+                      params.filters,
+                      activitiesTable.filters,
+                    ),
+                  })
+                : t("empty.none")}
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      }
+    />
+  );
+}
