@@ -68,7 +68,7 @@ export function ProductForm({ product }: { product?: ProductDetail }) {
                       inputMode="decimal"
                       autoComplete="off"
                       addons={[
-                        <InputGroupAddon align="inline-start">
+                        <InputGroupAddon key="currency" align="inline-start">
                           €
                         </InputGroupAddon>,
                       ]}
