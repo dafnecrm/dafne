@@ -7,7 +7,7 @@ import { relations } from './schema.js';
 
 /**
  * The migrations, applied on startup. They belong to the app that applies
- * them: the folder is relative to its working directory (apps/backend).
+ * them: the folder is relative to its working directory (apps/api).
  */
 export const MIGRATIONS = {
   migrationsFolder: 'migrations',

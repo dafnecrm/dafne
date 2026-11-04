@@ -218,7 +218,7 @@ contract and frontend also take --all; every command takes --dry-run.`,
     .argument('[name]', 'resource name, singular or plural')
     .option('--all', 'every table that has a contract')
     .option('--no-service', "don't update the service's queries (list, detail, create, update)")
-    .option('--root <dir>', 'Dafne folder (with apps/backend/ and apps/frontend/)')
+    .option('--root <dir>', 'Dafne folder (with apps/api/ and apps/frontend/)')
     .option('--dry-run', 'show what would change, write nothing')
     .option('-y, --yes', 'never prompt')
     .addHelpText(
@@ -265,7 +265,7 @@ id, createdById/updatedById, deletedAt and server-filled columns
       await changes.commit();
       p.note(
         [
-          'npx tsc -b apps/backend && pnpm --filter \"@dafne/backend...\" test',
+          'npx tsc -b apps/api && pnpm --filter \"@dafne/api...\" test',
           'dafne sync frontend <resource>   # form, table and detail',
         ].join('\n'),
         'Next steps',
@@ -280,7 +280,7 @@ id, createdById/updatedById, deletedAt and server-filled columns
     .enablePositionalOptions()
     .argument('[name]', 'resource name, singular or plural')
     .option('--all', 'every resource with a table and a contract')
-    .option('--root <dir>', 'Dafne folder (with apps/backend/ and apps/frontend/)')
+    .option('--root <dir>', 'Dafne folder (with apps/api/ and apps/frontend/)')
     .option('--dry-run', 'show what would change, write nothing')
     .option('-y, --yes', 'never prompt')
     .addHelpText(
@@ -336,7 +336,7 @@ table changed.`,
       'Add the contract body fields a frontend form lacks (values type, defaults, inputs), leaving the rest as it is',
     )
     .argument('[name]', 'resource name, singular or plural')
-    .option('--root <dir>', 'Dafne folder (with apps/backend/ and apps/frontend/)')
+    .option('--root <dir>', 'Dafne folder (with apps/api/ and apps/frontend/)')
     .option('--dry-run', 'show what would change, write nothing')
     .option('-y, --yes', 'never prompt')
     .addHelpText(
@@ -405,7 +405,7 @@ the column in the table:
       .command(command)
       .description(description)
       .argument('[name]', 'resource name, singular or plural')
-      .option('--root <dir>', 'Dafne folder (with apps/backend/ and apps/frontend/)')
+      .option('--root <dir>', 'Dafne folder (with apps/api/ and apps/frontend/)')
       .option('--dry-run', 'show what would change, write nothing')
       .option('-y, --yes', 'never prompt')
       .addHelpText(

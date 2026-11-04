@@ -1,4 +1,4 @@
-# dafne backend
+# dafne api
 
 NestJS API, part of the Dafne monorepo (see `../../CLAUDE.md`). This folder
 is the app (`src/`: `main.ts`, `ApiModule`; `migrations/`; `.env`). The

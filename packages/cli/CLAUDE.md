@@ -1,6 +1,6 @@
 # dafne cli
 
-Code generator for the Dafne backend (`../../apps/backend`, NestJS) and frontend
+Code generator for the Dafne backend (`../../apps/api`, NestJS) and frontend
 (`../../apps/frontend`, Next.js). `dafne g resource|backend|frontend ...` writes
 new files and registers them in the existing ones. Usage is in
 `README.md`.
@@ -21,7 +21,7 @@ TypeScript ESM, Node ≥ 22, pnpm (workspace package of the Dafne monorepo, see 
   resource lacks), with `frontend form|table|detail` for one part.
   `frontend` uses positional options, so options after a part go to it.
 - `src/commands/migration.ts`: `dafne migration generate|fix`. It runs
-  drizzle-kit from `apps/backend/node_modules/.bin` with the terminal attached.
+  drizzle-kit from `apps/api/node_modules/.bin` with the terminal attached.
 - `src/commands/dev.ts`: `dafne dev`, package scripts as child processes
   (one process group each, so Ctrl+C or a failure stops what they started).
 - `src/fields/`: `dafne field add|remove`. `spec.ts` holds the types and
@@ -71,7 +71,7 @@ TypeScript ESM, Node ≥ 22, pnpm (workspace package of the Dafne monorepo, see 
 ## Rules
 
 - **Templates copy the `customers` resource.** `customers` is the
-  reference in both packages, and `../../apps/backend/CLAUDE.md` and
+  reference in both packages, and `../../apps/api/CLAUDE.md` and
   `../../apps/frontend/CLAUDE.md` hold their rules. When those patterns change,
   update the templates too. Templates keep one sample field, `name`, plus
   soft delete and created/updated by.
@@ -144,7 +144,7 @@ TypeScript ESM, Node ≥ 22, pnpm (workspace package of the Dafne monorepo, see 
   `const t = useTranslations()` (`ensureHookLine`), not in render props.
 - **Pages live under `apps/frontend/app/[locale]/(app)/`** (the locale is a
   hidden root segment), so route types are `PageProps<"/[locale]/…">`.
-- **`apps/backend`, `apps/frontend`, `packages/backend` and
+- **`apps/api`, `apps/frontend`, `packages/backend` and
   `packages/contracts` are fixed paths** under the root
   (`BACKEND`/`FRONTEND`/`BACKEND_LIBS`/`CONTRACTS_SRC` in
   `core/workspace.ts`). A backend lib is the workspace package
@@ -165,7 +165,7 @@ TypeScript ESM, Node ≥ 22, pnpm (workspace package of the Dafne monorepo, see 
   tsconfigs, the root tsconfig.json, api.module.ts, schema.ts, contracts index, navigation.ts…). Refresh them
   when the real ones change. `tsconfig.json` excludes them.
 - **Changing a template:** also check that the generated code compiles.
-  Never generate into the real `../../apps/backend` / `../../apps/frontend` to test.
+  Never generate into the real `../../apps/api` / `../../apps/frontend` to test.
   1. Copy the whole monorepo into a scratch folder (without
      `node_modules`, `.next`, `.git`, `dist`, `.env`, `.nx`, `out-tsc`).
   2. Run `pnpm dev g resource invoice --root <copy> -y`, then

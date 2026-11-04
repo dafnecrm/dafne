@@ -5,7 +5,7 @@ Monorepo (pnpm workspaces + Nx) of the Dafne CRM. Each project has its own
 
 | Folder               | Package            | What                                              |
 | -------------------- | ------------------ | ------------------------------------------------- |
-| `apps/backend`       | `@dafne/backend`   | NestJS API (the app: `src/`, migrations)          |
+| `apps/api`           | `@dafne/api`       | NestJS API (the app: `src/`, migrations)          |
 | `packages/backend/*` | `@dafne/backend-*` | The backend's Nest libs (customers, auth…)        |
 | `apps/frontend`      | `@dafne/frontend`  | Next.js app                                       |
 | `packages/contracts` | `@dafne/contracts` | API schemas (Zod) and response types, shared      |
@@ -18,7 +18,7 @@ Monorepo (pnpm workspaces + Nx) of the Dafne CRM. Each project has its own
 - `pnpm install`: installs every project (one `pnpm-lock.yaml`, here).
 - `pnpm build | test | lint | typecheck`: `nx run-many` over all projects.
 - `pnpm affected`: lint, typecheck, test and build only what changed.
-- `pnpm nx <target> <project>`, e.g. `pnpm nx test @dafne/backend`.
+- `pnpm nx <target> <project>`, e.g. `pnpm nx test @dafne/api`.
 - `pnpm dafne <command>` runs the CLI from source (e.g. `pnpm dafne dev`).
 
 ## Rules
@@ -41,10 +41,10 @@ Monorepo (pnpm workspaces + Nx) of the Dafne CRM. Each project has its own
   (`"zod": "catalog:"`). Workspace packages are `"workspace:*"`.
 - **`@dafne/contracts` ships TypeScript sources** (no build): Next compiles
   it through `transpilePackages`, the backend bundles it through
-  `apps/backend/rspack.config.js`.
+  `apps/api/rspack.config.js`.
 - **The app lists every runtime dependency of its libs** too: rspack
   bundles the `@dafne/*` sources, but loads npm packages from
-  `apps/backend/node_modules` at runtime.
+  `apps/api/node_modules` at runtime.
 - `.nxignore` hides the CLI's test fixtures, which look like projects.
 
 ## Workflow

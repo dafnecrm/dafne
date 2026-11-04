@@ -71,16 +71,16 @@ describe('a fullstack resource', () => {
     const pkg = JSON.parse(read('packages/backend/invoices/package.json'));
     expect(pkg.name).toBe('@dafne/backend-invoices');
     expect(pkg.dependencies['@dafne/backend-database']).toBe('workspace:*');
-    const app = JSON.parse(read('apps/backend/package.json'));
+    const app = JSON.parse(read('apps/api/package.json'));
     expect(app.dependencies['@dafne/backend-invoices']).toBe('workspace:*');
     expect(Object.keys(app.dependencies)).toEqual(Object.keys(app.dependencies).sort());
     // The TypeScript project references nx sync would write.
     expect(read('packages/backend/invoices/tsconfig.json')).toContain('"path": "../database"');
-    expect(JSON.parse(read('apps/backend/tsconfig.json')).references).toContainEqual({
+    expect(JSON.parse(read('apps/api/tsconfig.json')).references).toContainEqual({
       path: '../../packages/backend/invoices',
     });
     expect(read('tsconfig.json')).toContain('"path": "./packages/backend/invoices"');
-    const api = read('apps/backend/src/api.module.ts');
+    const api = read('apps/api/src/api.module.ts');
     expect(api).toContain("import { InvoicesModule } from '@dafne/backend-invoices';");
     expect(api).toMatch(/CustomersModule,\n {4}InvoicesModule,\n {2}\]/);
     const schema = read('packages/backend/database/src/schema.ts');
@@ -116,14 +116,14 @@ describe('a fullstack resource', () => {
 
   it("doesn't register twice", async () => {
     await fullstack('invoice');
-    const before = read('apps/backend/src/api.module.ts');
+    const before = read('apps/api/src/api.module.ts');
     const c = ctx('invoice', new Changes(root, { force: true }));
     generatePieces(backendPieces, BACKEND_RESOURCE, c);
     generatePieces(frontendPieces, ['nav'], c);
     await c.changes.commit();
-    expect(read('apps/backend/src/api.module.ts')).toBe(before);
+    expect(read('apps/api/src/api.module.ts')).toBe(before);
     expect(read('tsconfig.json').match(/packages\/backend\/invoices"/g)).toHaveLength(1);
-    expect(read('apps/backend/tsconfig.json').match(/packages\/backend\/invoices"/g)).toHaveLength(1);
+    expect(read('apps/api/tsconfig.json').match(/packages\/backend\/invoices"/g)).toHaveLength(1);
     expect(read('apps/frontend/lib/navigation.ts').match(/"\/invoices"/g)).toHaveLength(1);
   });
 });
@@ -168,7 +168,7 @@ describe('single pieces', () => {
     const changes = new Changes(root, { skipUpdates: true });
     generatePieces(backendPieces, ['lib'], ctx('invoice', changes));
     expect(changes.summary().every((c) => c.kind === 'create')).toBe(true);
-    expect(changes.skipped).toContain('apps/backend/src/api.module.ts');
+    expect(changes.skipped).toContain('apps/api/src/api.module.ts');
   });
 
   it('generates a blank page at a route', async () => {

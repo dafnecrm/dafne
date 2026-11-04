@@ -10,7 +10,7 @@ pnpm install && pnpm --dir packages/cli build && (cd packages/cli && npm link)  
 # or, without linking, from the root: pnpm dafne g ...
 ```
 
-Run it anywhere inside the Dafne folder (the one holding `apps/backend/` and
+Run it anywhere inside the Dafne folder (the one holding `apps/api/` and
 `apps/frontend/`), or pass `--root`. A missing argument is asked for
 interactively; `-y` fails instead.
 
@@ -79,7 +79,7 @@ Frontend:
 Each resource starts with one `name` field. It has soft delete and
 created/updated by, as customers do.
 
-It also registers the code in the app (`apps/backend/package.json`, the
+It also registers the code in the app (`apps/api/package.json`, the
 project references of its tsconfigs and of the root `tsconfig.json`,
 `ApiModule`), `database/src/schema.ts`, `contracts/src/index.ts` and
 `apps/frontend/lib/navigation.ts`. Re-running never registers twice. Nothing is
@@ -146,7 +146,7 @@ dafne migration custom backfill-countries        # empty, for SQL by hand
 dafne migration fix [folder]                     # default: the latest
 ```
 
-`generate` runs drizzle-kit in `apps/backend/`, with the terminal attached, so you
+`generate` runs drizzle-kit in `apps/api/`, with the terminal attached, so you
 can answer when it asks whether a column was renamed. It then prints the
 statements of the new migration.
 
@@ -311,7 +311,7 @@ page…) is skipped. Run `dafne sync contract` first if the table changed.
 ## Running the backend and the frontend
 
 ```sh
-dafne dev                          # pnpm run dev in apps/backend/ and apps/frontend/
+dafne dev                          # pnpm run dev in apps/api/ and apps/frontend/
 dafne dev build                    # the same script in both
 dafne dev -b start:debug           # a different script per package (-b, -f)
 dafne dev test --only backend      # one package

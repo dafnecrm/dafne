@@ -3,7 +3,7 @@
 # dafne frontend
 
 Next.js app, part of the Dafne monorepo (see `../../CLAUDE.md`). It calls the
-NestJS backend (`../backend`) from the server through `backendFetch`
+NestJS backend (`../api`) from the server through `backendFetch`
 (`lib/backend.ts`). It imports the API contracts from the workspace
 package `@dafne/contracts` and, type-only, the backend's auth options
 (`@dafne/backend-auth/options`, a dev dependency). Its `tsconfig.json`
