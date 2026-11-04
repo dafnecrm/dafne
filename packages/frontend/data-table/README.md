@@ -12,7 +12,7 @@ the backend. On [TanStack Table](https://tanstack.com/table).
 
 ## Usage
 
-Each resource defines its config (`apps/frontend/lib/<resource>-table.ts`):
+Each resource defines its config (`apps/crm-web/lib/<resource>-table.ts`):
 
 ```ts
 export const customersTable = defineDataTable({
@@ -39,5 +39,5 @@ pnpm nx test @dafne/frontend-data-table
 pnpm nx typecheck @dafne/frontend-data-table
 ```
 
-There is no build: `apps/frontend` compiles the sources (`transpilePackages`
+There is no build: `apps/crm-web` compiles the sources (`transpilePackages`
 in its `next.config.ts`).

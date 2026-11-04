@@ -2,11 +2,12 @@
 
 Nest lib of the activities resource: `ActivitiesModule`, with its
 controller (REST API) and `ActivitiesService` (Drizzle queries).
-Registered in `apps/api` (`ApiModule`).
+Registered in `apps/crm-api` (`CrmApiModule`).
 
 ## API
 
-Every route needs a signed-in user (Better Auth session cookie).
+Every route needs a signed-in user of the CRM (the session cookie of
+`apps/auth`, checked by `@dafne/backend-session`).
 
 | Method   | Path                     | What                                |
 | -------- | ------------------------ | ----------------------------------- |

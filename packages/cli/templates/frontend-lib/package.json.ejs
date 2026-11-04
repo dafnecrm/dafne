@@ -7,6 +7,7 @@
     ".": "./src/index.ts"
   },
   "scripts": {
+    "lint": "eslint src",
     "test": "vitest run --passWithNoTests"
   },
   "peerDependencies": {
@@ -15,10 +16,14 @@
   },
   "devDependencies": {
     "@types/react": "catalog:",
+    "eslint": "catalog:",
     "next": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "nx": {
+    "tags": ["scope:frontend"]
   }
 }

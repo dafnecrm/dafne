@@ -89,7 +89,7 @@ export class Changes {
   /**
    * Formats the changed files with Prettier and the target package's
    * config: new files always, edited ones only if they were formatted
-   * before (several backend files aren't, e.g. api.module.ts).
+   * before (several backend files aren't, e.g. crm-api.module.ts).
    */
   async format() {
     for (const [path, change] of this.changes) {

@@ -39,4 +39,7 @@ jobs:
       # Project references in line with the package.json dependencies (nx sync).
       - run: pnpm nx sync:check
 
+      # Who may depend on whom (tools/boundaries.mjs): the frontend never on the backend.
+      - run: pnpm boundaries
+
       - run: pnpm nx affected -t lint typecheck test build --outputStyle=static

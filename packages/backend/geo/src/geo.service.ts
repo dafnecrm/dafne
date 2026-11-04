@@ -74,7 +74,7 @@ export class GeoService {
 
   constructor(
     config: ConfigService,
-    /** The app's cache (Redis, see ApiModule): results by search. */
+    /** The app's cache (Redis, see CrmApiModule): results by search. */
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
     @InjectDrizzle() private readonly db: Database,
   ) {

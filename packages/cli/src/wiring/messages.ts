@@ -8,7 +8,7 @@ import { BACKEND_LIBS, CONTRACTS_SRC, FRONTEND } from '../core/workspace.ts';
 /*
  * Translated texts. Generated code holds message keys, never text:
  *   - the frontend calls t("invoices.fields.name"), and table configs hold
- *     keys as labels; the texts are in apps/frontend/messages/<locale>.json;
+ *     keys as labels; the texts are in apps/crm-web/messages/<locale>.json;
  *   - contracts and services use msg('invoices.name.required'); the texts
  *     are in packages/contracts/src/messages/<locale>.ts.
  * After a run, `syncMessages` adds the keys the changed files use and the

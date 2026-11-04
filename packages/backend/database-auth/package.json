@@ -1,0 +1,39 @@
+{
+  "name": "@dafne/backend-database-auth",
+  "version": "0.0.1",
+  "description": "dafne_auth: Better Auth's tables (users, sessions) and app_access, in their schema, with their migrations",
+  "private": true,
+  "type": "module",
+  "dafne": {
+    "database": "dafne_auth"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "oxlint -c ../.oxlintrc.json --type-aware src",
+    "test": "vitest run",
+    "migration:generate": "node ../migrator/src/generate.ts",
+    "tables:qualify": "node scripts/qualify-tables.ts"
+  },
+  "dependencies": {
+    "@nestjs/common": "catalog:",
+    "@nestjs/config": "catalog:",
+    "@nestjs/drizzle": "catalog:",
+    "drizzle-orm": "catalog:",
+    "mysql2": "catalog:"
+  },
+  "devDependencies": {
+    "@dafne/backend-migrator": "workspace:*",
+    "@swc/core": "catalog:",
+    "@types/node": "catalog:",
+    "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:",
+    "typescript": "catalog:",
+    "unplugin-swc": "catalog:",
+    "vitest": "catalog:"
+  },
+  "nx": {
+    "tags": ["scope:backend"]
+  }
+}

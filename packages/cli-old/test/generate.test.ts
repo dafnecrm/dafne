@@ -53,10 +53,10 @@ describe('a fullstack resource', () => {
         'packages/backend/invoices/src/invoices.service.spec.ts',
         'packages/contracts/src/invoices.ts',
         'packages/backend/database/src/tables/invoices.ts',
-        'apps/frontend/lib/invoices-table.ts',
-        'apps/frontend/app/[locale]/(app)/invoices/[id]/edit/page.tsx',
-        'apps/frontend/app/[locale]/(app)/invoices/invoice-form.tsx',
-        'apps/frontend/app/[locale]/(app)/invoices/invoice-detail.tsx',
+        'apps/crm-web/lib/invoices-table.ts',
+        'apps/crm-web/app/[locale]/(app)/invoices/[id]/edit/page.tsx',
+        'apps/crm-web/app/[locale]/(app)/invoices/invoice-form.tsx',
+        'apps/crm-web/app/[locale]/(app)/invoices/invoice-detail.tsx',
       ]),
     );
     expect(read('packages/backend/invoices/src/invoices.controller.ts')).toContain(
@@ -71,16 +71,16 @@ describe('a fullstack resource', () => {
     const pkg = JSON.parse(read('packages/backend/invoices/package.json'));
     expect(pkg.name).toBe('@dafne/backend-invoices');
     expect(pkg.dependencies['@dafne/backend-database']).toBe('workspace:*');
-    const app = JSON.parse(read('apps/api/package.json'));
+    const app = JSON.parse(read('apps/crm-api/package.json'));
     expect(app.dependencies['@dafne/backend-invoices']).toBe('workspace:*');
     expect(Object.keys(app.dependencies)).toEqual(Object.keys(app.dependencies).sort());
     // The TypeScript project references nx sync would write.
     expect(read('packages/backend/invoices/tsconfig.json')).toContain('"path": "../database"');
-    expect(JSON.parse(read('apps/api/tsconfig.json')).references).toContainEqual({
+    expect(JSON.parse(read('apps/crm-api/tsconfig.json')).references).toContainEqual({
       path: '../../packages/backend/invoices',
     });
     expect(read('tsconfig.json')).toContain('"path": "./packages/backend/invoices"');
-    const api = read('apps/api/src/api.module.ts');
+    const api = read('apps/crm-api/src/crm-api.module.ts');
     expect(api).toContain("import { InvoicesModule } from '@dafne/backend-invoices';");
     expect(api).toMatch(/CustomersModule,\n {4}InvoicesModule,\n {2}\]/);
     const schema = read('packages/backend/database/src/schema.ts');
@@ -97,12 +97,12 @@ describe('a fullstack resource', () => {
     expect(read('packages/backend/invoices/src/index.ts')).toContain(
       "export * from './invoices.service.js';",
     );
-    const nav = read('apps/frontend/lib/navigation.ts');
+    const nav = read('apps/crm-web/lib/navigation.ts');
     expect(nav).toContain('  FileIcon,\n  type LucideIcon,');
     // Titles are keys of the `nav` messages, whose texts are added too.
     expect(nav).toContain('{ title: "invoices", href: "/invoices", icon: FileIcon }');
-    expect(JSON.parse(read('apps/frontend/messages/en.json')).nav.invoices).toBe('Invoices');
-    expect(JSON.parse(read('apps/frontend/messages/it.json')).nav.invoices).toBe('Invoices');
+    expect(JSON.parse(read('apps/crm-web/messages/en.json')).nav.invoices).toBe('Invoices');
+    expect(JSON.parse(read('apps/crm-web/messages/it.json')).nav.invoices).toBe('Invoices');
   });
 
   it('refuses to overwrite, unless forced', async () => {
@@ -116,15 +116,15 @@ describe('a fullstack resource', () => {
 
   it("doesn't register twice", async () => {
     await fullstack('invoice');
-    const before = read('apps/api/src/api.module.ts');
+    const before = read('apps/crm-api/src/crm-api.module.ts');
     const c = ctx('invoice', new Changes(root, { force: true }));
     generatePieces(backendPieces, BACKEND_RESOURCE, c);
     generatePieces(frontendPieces, ['nav'], c);
     await c.changes.commit();
-    expect(read('apps/api/src/api.module.ts')).toBe(before);
+    expect(read('apps/crm-api/src/crm-api.module.ts')).toBe(before);
     expect(read('tsconfig.json').match(/packages\/backend\/invoices"/g)).toHaveLength(1);
-    expect(read('apps/api/tsconfig.json').match(/packages\/backend\/invoices"/g)).toHaveLength(1);
-    expect(read('apps/frontend/lib/navigation.ts').match(/"\/invoices"/g)).toHaveLength(1);
+    expect(read('apps/crm-api/tsconfig.json').match(/packages\/backend\/invoices"/g)).toHaveLength(1);
+    expect(read('apps/crm-web/lib/navigation.ts').match(/"\/invoices"/g)).toHaveLength(1);
   });
 });
 
@@ -158,26 +158,26 @@ describe('single pieces', () => {
     };
     generatePieces(frontendPieces, ['nav'], c);
     await c.changes.commit();
-    const nav = read('apps/frontend/lib/navigation.ts');
+    const nav = read('apps/crm-web/lib/navigation.ts');
     expect(nav.indexOf('title: "insights"')).toBeLessThan(nav.indexOf('title: "admin"'));
     expect(nav).toContain('items: [{ title: "reports", href: "/reports", icon: ChartBarIcon }]');
-    expect(JSON.parse(read('apps/frontend/messages/en.json')).nav).toMatchObject({ insights: 'Insights', reports: 'Reports' });
+    expect(JSON.parse(read('apps/crm-web/messages/en.json')).nav).toMatchObject({ insights: 'Insights', reports: 'Reports' });
   });
 
   it('only creates files with --skip-wiring', () => {
     const changes = new Changes(root, { skipUpdates: true });
     generatePieces(backendPieces, ['lib'], ctx('invoice', changes));
     expect(changes.summary().every((c) => c.kind === 'create')).toBe(true);
-    expect(changes.skipped).toContain('apps/api/src/api.module.ts');
+    expect(changes.skipped).toContain('apps/crm-api/src/crm-api.module.ts');
   });
 
   it('generates a blank page at a route', async () => {
     const changes = new Changes(root);
     expect(generatePage(changes, 'reports/monthly')).toBe(
-      'apps/frontend/app/[locale]/(app)/reports/monthly/page.tsx',
+      'apps/crm-web/app/[locale]/(app)/reports/monthly/page.tsx',
     );
     await changes.commit();
-    expect(read('apps/frontend/app/[locale]/(app)/reports/monthly/page.tsx')).toContain(
+    expect(read('apps/crm-web/app/[locale]/(app)/reports/monthly/page.tsx')).toContain(
       'export default function MonthlyPage()',
     );
     expect(() => generatePage(new Changes(root), 'Bad Route')).toThrow();
@@ -187,7 +187,7 @@ describe('single pieces', () => {
     const changes = new Changes(root);
     generateComponent(changes, 'StatusBadge', { client: true });
     await changes.commit();
-    const source = read('apps/frontend/components/status-badge.tsx');
+    const source = read('apps/crm-web/components/status-badge.tsx');
     expect(source.startsWith('"use client";')).toBe(true);
     expect(source).toContain('export function StatusBadge(');
     expect(() => generateComponent(new Changes(root), 'x', { dir: '../outside' })).toThrow();

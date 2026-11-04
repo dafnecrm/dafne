@@ -13,7 +13,7 @@
   "dependencies": {
     "@dafne/backend-auth": "workspace:*",
     "@dafne/backend-common": "workspace:*",
-    "@dafne/backend-database": "workspace:*",
+    "@dafne/backend-database-auth": "workspace:*",
     "@dafne/contracts": "workspace:*",
     "@nestjs/common": "catalog:",
     "@nestjs/drizzle": "catalog:",
@@ -30,5 +30,10 @@
     "typescript": "catalog:",
     "unplugin-swc": "catalog:",
     "vitest": "catalog:"
+  },
+  "nx": {
+    "tags": [
+      "scope:backend"
+    ]
   }
 }

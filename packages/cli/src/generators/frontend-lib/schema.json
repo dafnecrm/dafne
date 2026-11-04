@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/schema",
   "$id": "DafneFrontendLib",
   "title": "Frontend lib",
-  "description": "An empty frontend lib, @dafne/frontend-<name> in packages/frontend/<name>, registered in apps/frontend.",
+  "description": "An empty frontend lib, @dafne/frontend-<name> in packages/frontend/<name>, registered in apps/crm-web.",
   "type": "object",
   "properties": {
     "name": {

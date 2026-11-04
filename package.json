@@ -14,12 +14,17 @@
     "affected": "nx affected -t lint typecheck test build",
     "graph": "nx graph",
     "dafne": "node packages/cli/src/index.ts",
-    "dafne-old": "pnpm --filter @dafne/cli-old dev"
+    "dafne-old": "pnpm --filter @dafne/cli-old dev",
+    "boundaries": "node tools/check-boundaries.mjs"
   },
   "devDependencies": {
     "@dafne/cli": "workspace:*",
+    "@nx/eslint-plugin": "catalog:",
     "@nx/js": "24.0.4",
+    "eslint": "catalog:",
+    "eslint-plugin-react-hooks": "catalog:",
     "nx": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:"
   }
 }

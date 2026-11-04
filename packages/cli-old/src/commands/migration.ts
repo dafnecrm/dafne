@@ -5,7 +5,14 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { findRoot } from '../core/workspace.js';
 import { fixMigration } from '../migrations/fix.js';
-import { BACKEND } from '../wiring/backend.js';
+
+/**
+ * The database package of the CRM (dafne_crm): its tables, drizzle.config.ts
+ * and migrations. drizzle-kit runs through @dafne/backend-migrator's
+ * generate script, which also fixes the foreign keys (actions, other databases).
+ */
+const DATABASE = 'packages/backend/database';
+const GENERATE = 'packages/backend/migrator/src/generate.ts';
 
 interface MigrationOptions {
   root?: string;
@@ -14,7 +21,7 @@ interface MigrationOptions {
   yes?: boolean;
 }
 
-/** The `out` folder of backend/drizzle.config.ts. */
+/** The `out` folder of the database package's drizzle.config.ts. */
 function migrationsDir(backend: string): string {
   const config = readFileSync(join(backend, 'drizzle.config.ts'), 'utf8');
   const out = /\bout:\s*['"`]([^'"`]+)['"`]/.exec(config)?.[1] ?? './migrations';
@@ -55,15 +62,15 @@ function report(folder: string, fixes: string[], relative: string) {
 }
 
 /**
- * Runs drizzle-kit generate in apps/api/: a migration from the table changes,
- * or an empty one (`custom`) for SQL written by hand.
+ * Runs drizzle-kit generate in the database package: a migration from the
+ * table changes, or an empty one (`custom`) for SQL written by hand.
  */
 async function generate(nameArg: string | undefined, options: MigrationOptions) {
   p.intro(options.custom ? 'dafne-old migration custom' : 'dafne-old migration generate');
   const root = findRoot(options.root);
-  const backend = join(root, BACKEND);
-  const bin = join(backend, 'node_modules', '.bin', 'drizzle-kit');
-  if (!existsSync(bin)) throw new Error('drizzle-kit not found: run "pnpm install" at the root.');
+  const backend = join(root, DATABASE);
+  const script = join(root, GENERATE);
+  if (!existsSync(script)) throw new Error(`${GENERATE} not found.`);
 
   let name = nameArg?.trim();
   if (!name && !options.yes && process.stdin.isTTY) {
@@ -82,7 +89,7 @@ async function generate(nameArg: string | undefined, options: MigrationOptions) 
   const args = ['generate', ...(name ? ['--name', name] : []), ...(options.custom ? ['--custom'] : [])];
   p.log.step(`drizzle-kit ${args.join(' ')}`);
   // Inherit the terminal: drizzle-kit may ask whether a column was renamed.
-  const run = spawnSync(bin, args, { cwd: backend, stdio: 'inherit' });
+  const run = spawnSync(process.execPath, [script, ...args.slice(1)], { cwd: backend, stdio: 'inherit' });
   if (run.status !== 0) throw new Error(`drizzle-kit failed (exit code ${run.status ?? run.signal}).`);
 
   const created = folders(dir).filter((f) => !before.has(f));
@@ -90,12 +97,12 @@ async function generate(nameArg: string | undefined, options: MigrationOptions) 
     return p.outro(options.custom ? 'Nothing generated.' : 'No changes in the tables: nothing generated.');
   for (const folder of created) {
     const path = join(dir, folder);
-    report(path, options.fix === false || options.custom ? [] : fixFolder(path), `${BACKEND}/${path.slice(backend.length + 1)}/migration.sql`);
+    report(path, options.fix === false || options.custom ? [] : fixFolder(path), `${DATABASE}/${path.slice(backend.length + 1)}/migration.sql`);
   }
   p.note(
     [
       options.custom ? 'Write the SQL in migration.sql.' : 'Review migration.sql.',
-      'The backend applies pending migrations when it starts (DatabaseModule).',
+      'Apply it with pnpm dafne db migrate (dafne dev runs it first).',
     ].join('\n'),
     'Next steps',
   );
@@ -103,7 +110,7 @@ async function generate(nameArg: string | undefined, options: MigrationOptions) 
 }
 
 export function migrationCommand() {
-  const migration = new Command('migration').description('Database migrations (drizzle-kit, in apps/api/)');
+  const migration = new Command('migration').description(`Database migrations (drizzle-kit, in ${DATABASE}/)`);
 
   migration
     .command('generate')
@@ -111,7 +118,7 @@ export function migrationCommand() {
     .argument('[name]', 'migration name, e.g. add-activity-customer (asked if missing)')
     .option('--custom', 'an empty migration, for SQL written by hand')
     .option('--no-fix', "don't put back the foreign key actions drizzle-kit drops")
-    .option('--root <dir>', 'Dafne folder (with apps/api/ and apps/frontend/)')
+    .option('--root <dir>', 'Dafne folder (with apps/crm-api/ and apps/crm-web/)')
     .option('-y, --yes', 'never prompt (drizzle-kit names the migration)')
     .action((name: string | undefined, options: MigrationOptions) => generate(name, options));
 
@@ -119,14 +126,14 @@ export function migrationCommand() {
     .command('custom')
     .description('Create an empty migration, for SQL written by hand (data fixes, backfills…)')
     .argument('[name]', 'migration name, e.g. backfill-countries (asked if missing)')
-    .option('--root <dir>', 'Dafne folder (with apps/api/ and apps/frontend/)')
+    .option('--root <dir>', 'Dafne folder (with apps/crm-api/ and apps/crm-web/)')
     .option('-y, --yes', 'never prompt (drizzle-kit names the migration)')
     .addHelpText(
       'after',
       `
 The same as dafne-old migration generate --custom. Write the SQL in the new
 migration.sql, with a --> statement-breakpoint line between statements.
-The backend applies it when it starts, after the migrations before it.`,
+pnpm dafne db migrate applies it, after the migrations before it.`,
     )
     .action((name: string | undefined, options: MigrationOptions) => generate(name, { ...options, custom: true }));
 
@@ -134,10 +141,10 @@ The backend applies it when it starts, after the migrations before it.`,
     .command('fix')
     .description('Put back the foreign key actions drizzle-kit drops, in a migration made with pnpm migration:generate')
     .argument('[folder]', 'migration folder name (default: the latest)')
-    .option('--root <dir>', 'Dafne folder (with apps/api/ and apps/frontend/)')
+    .option('--root <dir>', 'Dafne folder (with apps/crm-api/ and apps/crm-web/)')
     .action((folderArg: string | undefined, options: MigrationOptions) => {
       p.intro('dafne-old migration fix');
-      const backend = join(findRoot(options.root), BACKEND);
+      const backend = join(findRoot(options.root), DATABASE);
       const dir = migrationsDir(backend);
       const all = folders(dir);
       const folder = folderArg ?? all[all.length - 1];

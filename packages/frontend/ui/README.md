@@ -25,7 +25,7 @@ pnpm --filter @dafne/frontend-ui shadcn:add <component>
 
 `components.json` is here; the components import each other by package
 name, as shadcn writes them (`tsconfig.json` maps it to `src/`). The CSS
-(theme, variables) stays in `apps/frontend/app/globals.css`, which scans
+(theme, variables) stays in `apps/crm-web/app/globals.css`, which scans
 this package for Tailwind classes (`@source`).
 
 ## Texts
@@ -43,5 +43,5 @@ pnpm nx test @dafne/frontend-ui
 pnpm nx typecheck @dafne/frontend-ui
 ```
 
-There is no build: `apps/frontend` compiles the sources (`transpilePackages`
+There is no build: `apps/crm-web` compiles the sources (`transpilePackages`
 in its `next.config.ts`).

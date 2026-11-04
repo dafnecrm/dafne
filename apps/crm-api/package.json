@@ -1,0 +1,100 @@
+{
+  "name": "@dafne/crm-api",
+  "version": "0.0.1",
+  "description": "",
+  "author": "",
+  "private": true,
+  "license": "UNLICENSED",
+  "type": "module",
+  "scripts": {
+    "build": "nest build",
+    "deploy": "nest deploy",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "start": "nest start",
+    "dev": "nest start --watch",
+    "start:dev": "nest start --watch",
+    "start:debug": "nest start --debug --watch",
+    "start:prod": "node dist/main",
+    "lint": "oxlint --type-aware src test",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:cov": "vitest run --coverage",
+    "test:debug": "vitest --inspect-brk --no-file-parallelism",
+    "test:e2e": "vitest run --config ./vitest.config.e2e.ts"
+  },
+  "dependencies": {
+    "@dafne/backend-activities": "workspace:*",
+    "@dafne/backend-common": "workspace:*",
+    "@dafne/backend-customers": "workspace:*",
+    "@dafne/backend-database": "workspace:*",
+    "@dafne/backend-geo": "workspace:*",
+    "@dafne/backend-products": "workspace:*",
+    "@dafne/backend-session": "workspace:*",
+    "@dafne/contracts": "workspace:*",
+    "@keyv/redis": "^6.1.0",
+    "@nestjs/cache-manager": "catalog:",
+    "@nestjs/common": "catalog:",
+    "@nestjs/config": "catalog:",
+    "@nestjs/core": "catalog:",
+    "@nestjs/drizzle": "catalog:",
+    "@nestjs/platform-express": "^12.0.1",
+    "cache-manager": "^7.2.9",
+    "dotenv": "^18.0.9",
+    "drizzle-orm": "catalog:",
+    "keyv": "^6.1.0",
+    "mysql2": "catalog:",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^12.0.0",
+    "@nestjs/mau": "^0.2.6",
+    "@nestjs/schematics": "^12.0.0",
+    "@nestjs/testing": "catalog:",
+    "@rspack/core": "^2.2.9",
+    "@swc/core": "catalog:",
+    "@types/express": "catalog:",
+    "@types/node": "catalog:",
+    "@types/supertest": "^7.0.0",
+    "@vitest/coverage-v8": "^4.1.2",
+    "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:",
+    "prettier": "catalog:",
+    "source-map-support": "^0.5.21",
+    "supertest": "^7.0.0",
+    "tsconfig-paths-webpack-plugin": "^4.2.0",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "unplugin-swc": "catalog:",
+    "vite": "^8.0.0",
+    "vitest": "catalog:",
+    "webpack-node-externals": "^3.0.0"
+  },
+  "engines": {
+    "npm": ">=11.20.0",
+    "node": ">=26.0.0"
+  },
+  "nx": {
+    "tags": [
+      "scope:backend"
+    ],
+    "targets": {
+      "build": {
+        "outputs": [
+          "{projectRoot}/dist"
+        ]
+      },
+      "dev": {
+        "dependsOn": [
+          {
+            "projects": [
+              "@dafne/backend-migrator"
+            ],
+            "target": "migrate:dev"
+          }
+        ]
+      }
+    }
+  }
+}

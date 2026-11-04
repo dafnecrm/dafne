@@ -10,6 +10,7 @@
     "./server": "./src/server.ts"
   },
   "scripts": {
+    "lint": "eslint src",
     "test": "vitest run"
   },
   "dependencies": {
@@ -21,13 +22,19 @@
     "react": "catalog:"
   },
   "devDependencies": {
-    "@dafne/backend-auth": "workspace:*",
+    "@dafne/auth-options": "workspace:*",
     "@types/react": "catalog:",
+    "eslint": "catalog:",
     "next": "catalog:",
     "next-intl": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "nx": {
+    "tags": [
+      "scope:frontend"
+    ]
   }
 }

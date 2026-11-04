@@ -1,4 +1,4 @@
-import { schema } from '@dafne/backend-database';
+import { authSchema as schema } from '@dafne/backend-database-auth';
 import { getDrizzleToken } from '@nestjs/drizzle';
 import { AuthService } from '@dafne/backend-auth';
 import { createUserBodySchema } from '@dafne/contracts';

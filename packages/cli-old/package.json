@@ -40,6 +40,9 @@
     "vitest": "^5.0.5"
   },
   "nx": {
+    "tags": [
+      "scope:tooling"
+    ],
     "targets": {
       "build": {
         "outputs": [

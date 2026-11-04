@@ -1,41 +1,29 @@
-import { Logger, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DrizzleModule } from '@nestjs/drizzle';
 import { drizzle } from 'drizzle-orm/mysql2';
-import { migrate } from 'drizzle-orm/mysql2/migrator';
 import { relations } from './schema.js';
 
 /**
- * The migrations, applied on startup. They belong to the app that applies
- * them: the folder is relative to its working directory (apps/api).
- */
-export const MIGRATIONS = {
-  migrationsFolder: 'migrations',
-  migrationsTable: '_migrations',
-};
-
-/**
- * The MySQL database, through @nestjs/drizzle: inject it with
- * `@InjectDrizzle() private readonly db: Database`. The pending migrations
- * are applied before the database is handed to anyone (Better Auth, the
- * services…), and the module closes the pool on shutdown.
+ * The MySQL database (dafne_crm), through @nestjs/drizzle: inject it with
+ * `@InjectDrizzle() private readonly db: Database`. The module closes the
+ * pool on shutdown.
+ *
+ * It doesn't migrate: @dafne/backend-migrator applies the migrations of
+ * every database, in one order, before the apps start (`pnpm dafne db
+ * migrate`; `dafne dev` runs it first).
  */
 @Module({
   imports: [
     // Global: the database is injectable everywhere.
     DrizzleModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: async (config: ConfigService) => {
-        const db = drizzle({
+      useFactory: (config: ConfigService) => ({
+        db: drizzle({
           connection: config.getOrThrow<string>('DATABASE_URL'),
           relations,
-        });
-
-        await migrate(db, MIGRATIONS);
-        new Logger('DatabaseModule').log('Migrations applied');
-
-        return { db };
-      },
+        }),
+      }),
     }),
   ],
 })

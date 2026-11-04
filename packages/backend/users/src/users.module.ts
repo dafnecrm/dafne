@@ -1,11 +1,11 @@
 import { AuthModule } from '@dafne/backend-auth';
-import { DatabaseModule } from '@dafne/backend-database';
+import { AuthDatabaseModule } from '@dafne/backend-database-auth';
 import { Module } from '@nestjs/common';
 import { UsersService } from './users.service.js';
 import { UsersController } from './users.controller.js';
 
 @Module({
-  imports: [DatabaseModule, AuthModule],
+  imports: [AuthDatabaseModule, AuthModule],
   controllers: [UsersController],
   providers: [UsersService],
   exports: [UsersService],

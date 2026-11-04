@@ -1,0 +1,36 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "out-tsc",
+    "tsBuildInfoFile": "out-tsc/tsconfig.tsbuildinfo",
+    "types": ["node", "vitest/globals"]
+  },
+  "include": ["src", "test"],
+  "references": [
+    {
+      "path": "../../packages/contracts"
+    },
+    {
+      "path": "../../packages/backend/session"
+    },
+    {
+      "path": "../../packages/backend/products"
+    },
+    {
+      "path": "../../packages/backend/geo"
+    },
+    {
+      "path": "../../packages/backend/database"
+    },
+    {
+      "path": "../../packages/backend/customers"
+    },
+    {
+      "path": "../../packages/backend/common"
+    },
+    {
+      "path": "../../packages/backend/activities"
+    }
+  ]
+}

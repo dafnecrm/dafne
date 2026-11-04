@@ -9,6 +9,7 @@
     "./server": "./src/server.ts"
   },
   "scripts": {
+    "lint": "eslint src",
     "test": "vitest run --passWithNoTests"
   },
   "peerDependencies": {
@@ -18,11 +19,17 @@
   },
   "devDependencies": {
     "@types/react": "catalog:",
+    "eslint": "catalog:",
     "next": "catalog:",
     "next-intl": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "nx": {
+    "tags": [
+      "scope:frontend"
+    ]
   }
 }

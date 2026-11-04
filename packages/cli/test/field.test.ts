@@ -40,7 +40,7 @@ beforeEach(async () => {
     generatePieces(backendPieces, ['table'], {
       changes,
       names: resourceNames('activity'),
-      app: 'api',
+      app: 'crm-api',
     }),
   );
 });
