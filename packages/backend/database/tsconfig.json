@@ -7,5 +7,12 @@
     "types": ["node", "vitest/globals"]
   },
   "include": ["src"],
-  "references": []
+  "references": [
+    {
+      "path": "../database-auth"
+    },
+    {
+      "path": "../migrator"
+    }
+  ]
 }

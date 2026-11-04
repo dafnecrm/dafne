@@ -1,0 +1,26 @@
+{
+  "name": "@dafne/auth-options",
+  "version": "0.0.1",
+  "description": "Better Auth options shared by the backend (the auth server) and the frontend (types of the client): no Nest, no database",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "better-auth": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "nx": {
+    "tags": [
+      "scope:shared"
+    ]
+  }
+}

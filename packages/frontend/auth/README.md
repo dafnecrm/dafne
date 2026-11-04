@@ -1,8 +1,8 @@
 # @dafne/frontend-auth
 
 Authentication in the frontend, with the [Better Auth](https://www.better-auth.com)
-client. Better Auth runs on the backend (`@dafne/backend-auth`); the
-frontend proxies `/api/auth/*` to it.
+client. Better Auth runs in `apps/auth` (`@dafne/backend-auth`), shared by
+the apps; the frontend proxies `/api/auth/*` to it (`AUTH_URL`).
 
 ## Entry points
 
@@ -13,14 +13,14 @@ frontend proxies `/api/auth/*` to it.
 | `@dafne/frontend-auth/server` | `createSessionHelpers({ backendUrl, appUrl })` → `getCurrentUser`, `requireUser` |
 
 The user's fields and plugins are inferred from the backend's options
-(`@dafne/backend-auth/options`, type only), so they can't drift.
+(`@dafne/auth-options`, type only), so they can't drift.
 
 ## Usage
 
 ```ts
-// apps/frontend/lib/session.ts: created once
+// apps/crm-web/lib/session.ts: created once
 export const { getCurrentUser, requireUser } = createSessionHelpers({
-  backendUrl: BACKEND_URL,
+  backendUrl: AUTH_URL, // apps/auth
   appUrl: APP_URL,
 });
 
@@ -43,5 +43,5 @@ pnpm nx test @dafne/frontend-auth
 pnpm nx typecheck @dafne/frontend-auth
 ```
 
-There is no build: `apps/frontend` compiles the sources (`transpilePackages`
+There is no build: `apps/crm-web` compiles the sources (`transpilePackages`
 in its `next.config.ts`).

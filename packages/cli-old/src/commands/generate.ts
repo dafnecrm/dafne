@@ -140,7 +140,7 @@ function nextSteps(backend: string[], frontend: string[], withFields: boolean): 
   if (backend.includes('lib')) steps.push('pnpm install   # links the new @dafne/backend-<lib> package');
   if (backend.includes('table'))
     steps.push('dafne-old migration generate   # creates the table migration (and fixes its foreign keys)');
-  if (backend.length) steps.push('npx tsc -b apps/api && pnpm --filter \"@dafne/api...\" test');
+  if (backend.length) steps.push('npx tsc -b apps/crm-api && pnpm --filter \"@dafne/crm-api...\" test');
   if (pages)
     steps.push('dafne-old dev --only frontend   # also generates the PageProps types of new routes');
   if (withFields)
@@ -216,7 +216,7 @@ const resourceOptions = (options: Partial<FrontendOptions>): ResourceOptions => 
 
 function common(command: Command) {
   return command
-    .option('--root <dir>', 'Dafne folder (with apps/api/ and apps/frontend/); found from the current folder by default')
+    .option('--root <dir>', 'Dafne folder (with apps/crm-api/ and apps/crm-web/); found from the current folder by default')
     .option('--dry-run', 'list what would change, write nothing')
     .option('--force', 'overwrite files that already exist')
     .option('--skip-wiring', "don't edit existing files to register the new code")
@@ -338,7 +338,7 @@ sample "name" field stays. Examples:
       .argument('[piece]', Object.keys(frontendChoices).join(' | '))
       .argument('[name]', 'resource name; a route for page (reports/monthly); a name for component')
       .option('--client', 'component: add "use client"')
-      .option('--dir <path>', 'component: folder inside apps/frontend/', 'components'),
+      .option('--dir <path>', 'component: folder inside apps/crm-web/', 'components'),
   )).action(async (piece: string | undefined, name: string | undefined, options: CommonOptions & FrontendOptions) => {
     p.intro('dafne-old generate frontend');
     const key = await askChoice(piece, options, 'Which frontend piece?', frontendChoices);

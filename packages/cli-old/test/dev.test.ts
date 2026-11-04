@@ -33,6 +33,6 @@ describe('resolveScripts', () => {
   });
 
   it('fails on a script the package lacks', () => {
-    expect(() => resolveScripts(available, 'test', {})).toThrow(/frontend\/package.json has no "test" script; it has: dev, build, lint/);
+    expect(() => resolveScripts(available, 'test', {})).toThrow(/crm-web\/package.json has no "test" script; it has: dev, build, lint/);
   });
 });

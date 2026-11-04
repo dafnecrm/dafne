@@ -20,10 +20,7 @@ export class AuthService implements OnModuleInit {
     private readonly config: ConfigService,
   ) {}
 
-  /**
-   * Runs after the migrations: DatabaseModule applies them before the
-   * database can be injected.
-   */
+  /** The migrator (@dafne/backend-migrator) has created the tables before the app starts. */
   async onModuleInit() {
     await this.createAdminUser();
   }

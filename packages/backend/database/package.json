@@ -3,14 +3,19 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
+  "dafne": {
+    "database": "dafne_crm"
+  },
   "exports": {
     ".": "./src/index.ts"
   },
   "scripts": {
     "lint": "oxlint -c ../.oxlintrc.json --type-aware src",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests",
+    "migration:generate": "node ../migrator/src/generate.ts"
   },
   "dependencies": {
+    "@dafne/backend-database-auth": "workspace:*",
     "@nestjs/common": "catalog:",
     "@nestjs/config": "catalog:",
     "@nestjs/drizzle": "catalog:",
@@ -18,6 +23,7 @@
     "mysql2": "catalog:"
   },
   "devDependencies": {
+    "@dafne/backend-migrator": "workspace:*",
     "@swc/core": "catalog:",
     "@types/node": "catalog:",
     "oxlint": "catalog:",
@@ -25,5 +31,10 @@
     "typescript": "catalog:",
     "unplugin-swc": "catalog:",
     "vitest": "catalog:"
+  },
+  "nx": {
+    "tags": [
+      "scope:backend"
+    ]
   }
 }

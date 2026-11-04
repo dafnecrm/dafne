@@ -1,0 +1,12 @@
+{
+  // Source-only package: the backend bundles it (rspack), the frontend
+  // only imports its types.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "out-tsc",
+    "tsBuildInfoFile": "out-tsc/tsconfig.tsbuildinfo",
+    "types": ["vitest/globals"]
+  },
+  "include": ["src"]
+}

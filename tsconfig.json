@@ -36,7 +36,7 @@
       "path": "./packages/contracts"
     },
     {
-      "path": "./apps/api"
+      "path": "./apps/crm-api"
     },
     {
       "path": "./packages/frontend/auth"
@@ -52,6 +52,21 @@
     },
     {
       "path": "./packages/frontend/data-table"
+    },
+    {
+      "path": "./packages/auth-options"
+    },
+    {
+      "path": "./packages/backend/migrator"
+    },
+    {
+      "path": "./packages/backend/database-auth"
+    },
+    {
+      "path": "./packages/backend/session"
+    },
+    {
+      "path": "./apps/auth"
     }
   ]
 }

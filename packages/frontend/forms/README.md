@@ -13,7 +13,7 @@ Building blocks of the frontend's forms, on
 ## Usage
 
 The app builds its form hook with its own fields as well
-(`apps/frontend/lib/app-form/app-form.ts`):
+(`apps/crm-web/lib/app-form/app-form.ts`):
 
 ```ts
 const { useAppForm } = createFormHook({
@@ -42,5 +42,5 @@ pnpm nx test @dafne/frontend-forms
 pnpm nx typecheck @dafne/frontend-forms
 ```
 
-There is no build: `apps/frontend` compiles the sources (`transpilePackages`
+There is no build: `apps/crm-web` compiles the sources (`transpilePackages`
 in its `next.config.ts`).

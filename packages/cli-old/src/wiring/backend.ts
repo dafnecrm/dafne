@@ -19,7 +19,7 @@ import { Node } from 'ts-morph';
 import { BACKEND, backendLib, backendPackage, CONTRACTS_SRC } from '../core/workspace.js';
 
 export { BACKEND, CONTRACTS_SRC };
-export const API_MODULE = `${BACKEND}/src/api.module.ts`;
+export const API_MODULE = `${BACKEND}/src/crm-api.module.ts`;
 export const DB_SCHEMA = `${backendLib('database')}/src/schema.ts`;
 /** The API contracts package, shared by the backend and the frontend. */
 export const CONTRACTS_PACKAGE = '@dafne/contracts';
@@ -55,7 +55,7 @@ function ensureDependency(changes: Changes, file: string, name: string, version:
  * Registers a lib (a workspace package) in the app: its dependency, the
  * TypeScript project references (the app's tsconfig and tsconfig.build, and
  * the root's, as `nx sync`
- * would write them) and the ApiModule import. The new package still needs
+ * would write them) and the CrmApiModule import. The new package still needs
  * `pnpm install` to be linked.
  */
 export function wireLib(changes: Changes, { p }: ResourceNames) {

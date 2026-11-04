@@ -14,8 +14,8 @@ dafne g resource invoice             # contract + table + lib with service and c
 dafne g lib reports                  # empty Nest lib: @dafne/backend-reports
 dafne g app worker --port 3002       # NestJS app in apps/worker
 dafne g contract report              # packages/contracts/src/reports.ts
-dafne g frontend-lib charts          # @dafne/frontend-charts, used by apps/frontend
-dafne g lib jobs --app worker        # wire the lib into another app (default: api)
+dafne g frontend-lib charts          # @dafne/frontend-charts, used by apps/crm-web
+dafne g lib jobs --app worker        # wire the lib into another app (default: crm-api)
 ```
 
 Options: `--dry-run`, `--force` (overwrite), `-y`.
@@ -54,17 +54,28 @@ pnpm nx list @dafne/cli
 ```
 
 After generating: `pnpm install` (links new packages), `pnpm nx sync`
-(project references), and for a table `pnpm dafne-old migration generate`.
+(project references), and for a table `pnpm dafne db generate`.
 The generator prints these steps.
+
+## Databases
+
+```sh
+dafne db generate                    # a migration of @dafne/backend-database (dafne_crm)
+dafne db generate <package> --name x # of another database package
+dafne db migrate                     # apply every database's migrations, in one order
+dafne db move dafne dafne_crm        # one time: move the old `dafne` database
+```
+
+They run the targets of `@dafne/backend-migrator` (see its README).
 
 ## Running tasks
 
 ```sh
-dafne dev                            # @dafne/api and @dafne/frontend in watch mode
+dafne dev                            # @dafne/crm-api and @dafne/crm-web in watch mode
 dafne dev @dafne/worker              # given projects
 dafne test                           # every project; or dafne test @dafne/backend-customers
 dafne build | lint | typecheck [projects...]
-dafne run test:e2e @dafne/api        # any target
+dafne run test:e2e @dafne/crm-api        # any target
 dafne affected                       # lint, typecheck, test and build what changed
 dafne projects -t dev                # list the projects (with a target)
 ```

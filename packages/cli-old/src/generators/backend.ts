@@ -20,7 +20,7 @@ const create = (ctx: Ctx, path: string, template: string) =>
   ctx.changes.create(path, render(`backend/${template}`, ctx.names));
 
 const lib: Piece = {
-  description: 'Nest lib (workspace package: module, index, package.json, tsconfig, vitest) registered in the app and ApiModule',
+  description: 'Nest lib (workspace package: module, index, package.json, tsconfig, vitest) registered in the app and CrmApiModule',
   deps: [],
   marker: (n) => `${libSrc(n)}/${n.p.kebab}.module.ts`,
   generate(ctx) {

@@ -54,6 +54,18 @@
     "start": {
       "continuous": true,
       "cache": false
+    },
+    "migrate": {
+      "cache": false
+    },
+    "migrate:dev": {
+      "cache": false
+    },
+    "move-database": {
+      "cache": false
+    },
+    "migration:generate": {
+      "cache": false
     }
   },
   "plugins": [

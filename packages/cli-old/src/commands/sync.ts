@@ -218,7 +218,7 @@ contract and frontend also take --all; every command takes --dry-run.`,
     .argument('[name]', 'resource name, singular or plural')
     .option('--all', 'every table that has a contract')
     .option('--no-service', "don't update the service's queries (list, detail, create, update)")
-    .option('--root <dir>', 'Dafne folder (with apps/api/ and apps/frontend/)')
+    .option('--root <dir>', 'Dafne folder (with apps/crm-api/ and apps/crm-web/)')
     .option('--dry-run', 'show what would change, write nothing')
     .option('-y, --yes', 'never prompt')
     .addHelpText(
@@ -265,7 +265,7 @@ id, createdById/updatedById, deletedAt and server-filled columns
       await changes.commit();
       p.note(
         [
-          'npx tsc -b apps/api && pnpm --filter \"@dafne/api...\" test',
+          'npx tsc -b apps/crm-api && pnpm --filter \"@dafne/crm-api...\" test',
           'dafne-old sync frontend <resource>   # form, table and detail',
         ].join('\n'),
         'Next steps',
@@ -280,7 +280,7 @@ id, createdById/updatedById, deletedAt and server-filled columns
     .enablePositionalOptions()
     .argument('[name]', 'resource name, singular or plural')
     .option('--all', 'every resource with a table and a contract')
-    .option('--root <dir>', 'Dafne folder (with apps/api/ and apps/frontend/)')
+    .option('--root <dir>', 'Dafne folder (with apps/crm-api/ and apps/crm-web/)')
     .option('--dry-run', 'show what would change, write nothing')
     .option('-y, --yes', 'never prompt')
     .addHelpText(
@@ -324,7 +324,7 @@ table changed.`,
       }
       await changes.commit();
       p.note(
-        ['Check the new inputs, columns and details: their place, labels and defaults.', 'pnpm --filter @dafne/frontend typecheck'].join('\n'),
+        ['Check the new inputs, columns and details: their place, labels and defaults.', 'pnpm --filter @dafne/crm-web typecheck'].join('\n'),
         'Next steps',
       );
       p.outro('Done.');
@@ -336,7 +336,7 @@ table changed.`,
       'Add the contract body fields a frontend form lacks (values type, defaults, inputs), leaving the rest as it is',
     )
     .argument('[name]', 'resource name, singular or plural')
-    .option('--root <dir>', 'Dafne folder (with apps/api/ and apps/frontend/)')
+    .option('--root <dir>', 'Dafne folder (with apps/crm-api/ and apps/crm-web/)')
     .option('--dry-run', 'show what would change, write nothing')
     .option('-y, --yes', 'never prompt')
     .addHelpText(
@@ -380,7 +380,7 @@ the column in the table:
       p.note(
         [
           'Check the new inputs: their place in the form, labels and the default values.',
-          'pnpm --filter @dafne/frontend typecheck',
+          'pnpm --filter @dafne/crm-web typecheck',
         ].join('\n'),
         'Next steps',
       );
@@ -405,7 +405,7 @@ the column in the table:
       .command(command)
       .description(description)
       .argument('[name]', 'resource name, singular or plural')
-      .option('--root <dir>', 'Dafne folder (with apps/api/ and apps/frontend/)')
+      .option('--root <dir>', 'Dafne folder (with apps/crm-api/ and apps/crm-web/)')
       .option('--dry-run', 'show what would change, write nothing')
       .option('-y, --yes', 'never prompt')
       .addHelpText(
@@ -438,7 +438,7 @@ To sync the form, table and detail page together, use dafne-old sync frontend <r
         if (note) p.log.warn(note);
       }
       await changes.commit();
-        p.note(['Check the new entries: their place, labels and formatting.', 'pnpm --filter @dafne/frontend typecheck'].join('\n'), 'Next steps');
+        p.note(['Check the new entries: their place, labels and formatting.', 'pnpm --filter @dafne/crm-web typecheck'].join('\n'), 'Next steps');
         p.outro('Done.');
       });
 

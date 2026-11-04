@@ -10,7 +10,7 @@ Next (`transpilePackages`).
   the same way (tsconfig `paths` points the package name at `src/`).
 - New shadcn components: `pnpm --filter @dafne/frontend-ui shadcn:add
   <name>` (`components.json` here; the CSS stays in
-  `apps/frontend/app/globals.css`, which `@source`s this package).
+  `apps/crm-web/app/globals.css`, which `@source`s this package).
 - Texts are the app's messages (`useTranslations()`); `MessageKey` is
   typed from them when the app compiles this package. Alone, keys are
   plain strings: `Extract<keyof …, string>` where a key type is needed.

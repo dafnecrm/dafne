@@ -1,9 +1,10 @@
 import { drizzleAdapter } from '@better-auth/drizzle-adapter/relations-v2';
 import { betterAuth } from 'better-auth';
-import { schema, type Database } from '@dafne/backend-database';
+import { customSession } from 'better-auth/plugins';
+import { appAccess, authSchema, type AuthDatabase } from '@dafne/backend-database-auth';
 import { Resend } from 'resend';
 import { localeFrom } from '@dafne/backend-common';
-import { authOptions } from './auth.options.js';
+import { authOptions } from '@dafne/auth-options';
 
 /** The verification email, by language. */
 const VERIFY_EMAIL = {
@@ -23,10 +24,26 @@ export interface CreateAuthOptions {
   baseURL?: string;
   trustedOrigins?: string[];
   resendApiKey?: string;
+  /**
+   * The parent domain of the apps (e.g. cliente.it, or localhost): the
+   * session cookie is set for it, so crm.cliente.it and reporting.cliente.it
+   * share the sign-in. Without it, the cookie is the host's only.
+   */
+  cookieDomain?: string;
+  /** Apps a new user can use from the start (app_access), e.g. ['crm']. */
+  defaultApps?: string[];
+}
+
+/** A user's apps and roles in them, as the session carries them. */
+export type UserApps = Record<string, string>;
+
+async function userApps(db: AuthDatabase, userId: string): Promise<UserApps> {
+  const rows = await db.query.appAccess.findMany({ where: { userId }, columns: { app: true, role: true } });
+  return Object.fromEntries(rows.map((row) => [row.app, row.role]));
 }
 
 /** The Better Auth instance: the shared options plus database and environment. */
-export function createAuth(db: Database, options: CreateAuthOptions) {
+export function createAuth(db: AuthDatabase, options: CreateAuthOptions) {
   // The schema CLI passes no API key, and the Resend constructor throws without one.
   const resend = options.resendApiKey ? new Resend(options.resendApiKey) : undefined;
   return betterAuth({
@@ -36,8 +53,42 @@ export function createAuth(db: Database, options: CreateAuthOptions) {
     trustedOrigins: options.trustedOrigins,
     database: drizzleAdapter(db, {
       provider: 'mysql',
-      schema,
+      schema: authSchema,
     }),
+    advanced: {
+      ...authOptions.advanced,
+      crossSubDomainCookies: options.cookieDomain
+        ? { enabled: true, domain: options.cookieDomain }
+        : undefined,
+    },
+    plugins: [
+      ...authOptions.plugins,
+      // The apps the user can use go with the session (user.apps), so each
+      // app's guard checks them without another query.
+      customSession(async ({ user, session }) => ({
+        user: { ...user, apps: await userApps(db, user.id) },
+        session,
+      })),
+    ],
+    databaseHooks: {
+      ...authOptions.databaseHooks,
+      user: {
+        ...authOptions.databaseHooks.user,
+        create: {
+          ...authOptions.databaseHooks.user.create,
+          // A new user (sign-up or created by an admin) gets the default apps.
+          after: async (user) => {
+            const role = (user as { role?: string | null }).role === 'admin' ? 'admin' : 'user';
+            const apps = options.defaultApps ?? [];
+            if (!apps.length) return;
+            await db
+              .insert(appAccess)
+              .values(apps.map((app) => ({ id: crypto.randomUUID(), userId: user.id, app, role })))
+              .onDuplicateKeyUpdate({ set: { role } });
+          },
+        },
+      },
+    },
     emailVerification: {
       sendOnSignUp: true,
       // An unverified user who tries to sign in gets a fresh link.

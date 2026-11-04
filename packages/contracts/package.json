@@ -16,5 +16,10 @@
   "devDependencies": {
     "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "nx": {
+    "tags": [
+      "scope:shared"
+    ]
   }
 }

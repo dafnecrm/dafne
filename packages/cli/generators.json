@@ -5,7 +5,7 @@
     "backend-app": {
       "factory": "./src/generators/backend-app/generator.ts",
       "schema": "./src/generators/backend-app/schema.json",
-      "description": "A NestJS app in apps/<name>, set up like apps/api.",
+      "description": "A NestJS app in apps/<name>, set up like apps/crm-api.",
       "aliases": ["app"]
     },
     "backend-lib": {
@@ -28,7 +28,7 @@
     "frontend-lib": {
       "factory": "./src/generators/frontend-lib/generator.ts",
       "schema": "./src/generators/frontend-lib/schema.json",
-      "description": "An empty frontend lib in packages/frontend/<name> (TypeScript sources), registered in apps/frontend."
+      "description": "An empty frontend lib in packages/frontend/<name> (TypeScript sources), registered in apps/crm-web."
     }
   }
 }

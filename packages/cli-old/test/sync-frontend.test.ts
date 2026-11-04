@@ -10,7 +10,7 @@ import { generatePieces } from '../src/generators/pieces.js';
 
 const FIXTURE = join(import.meta.dirname, 'fixtures', 'project');
 const TABLE = 'packages/backend/database/src/tables/invoices.ts';
-const DIR = 'apps/frontend/app/[locale]/(app)/invoices';
+const DIR = 'apps/crm-web/app/[locale]/(app)/invoices';
 let root: string;
 const read = (path: string) => readFileSync(join(root, path), 'utf8');
 
@@ -45,7 +45,7 @@ describe('syncFrontend', () => {
       expect.arrayContaining([
         `${DIR}/schema.ts`,
         `${DIR}/invoice-form.tsx`,
-        'apps/frontend/lib/invoices-table.ts',
+        'apps/crm-web/lib/invoices-table.ts',
         `${DIR}/invoices-table.tsx`,
         `${DIR}/invoice-detail.tsx`,
       ]),

@@ -11,7 +11,7 @@ import { FRONTEND_RESOURCE } from '../src/generators/frontend.js';
 
 const FIXTURE = join(import.meta.dirname, 'fixtures', 'project');
 const options = { icon: 'FileIcon', section: 'CRM', admin: false };
-const DIR = 'apps/frontend/app/[locale]/(app)/invoices';
+const DIR = 'apps/crm-web/app/[locale]/(app)/invoices';
 let root: string;
 const read = (path: string) => readFileSync(join(root, path), 'utf8');
 
@@ -80,7 +80,7 @@ describe('a resource with fields', () => {
     expect(en).toMatch(/status: \{ required: 'Choose the status' \}/);
     expect(read('packages/contracts/src/messages/it.ts')).toMatch(/number: \{ required: 'Enter the number' \}/);
     for (const locale of ['en', 'it']) {
-      const messages = JSON.parse(read(`apps/frontend/messages/${locale}.json`));
+      const messages = JSON.parse(read(`apps/crm-web/messages/${locale}.json`));
       expect(messages.invoices).toMatchObject({
         title: 'Invoices',
         fields: { name: 'Name', number: 'Number', status: 'Status', notes: 'Notes', createdAt: 'Added' },
@@ -89,7 +89,7 @@ describe('a resource with fields', () => {
       expect(messages.nav.invoices).toBe('Invoices');
     }
     // Existing texts are kept.
-    expect(JSON.parse(read('apps/frontend/messages/it.json')).nav.customers).toBe('Clienti');
+    expect(JSON.parse(read('apps/crm-web/messages/it.json')).nav.customers).toBe('Clienti');
     expect(changes.warnings.join()).toMatch(/still in English: translate them/);
   });
 
@@ -97,12 +97,12 @@ describe('a resource with fields', () => {
     const changes = new Changes(root);
     await generateResource(changes, 'invoice', { backend: BACKEND_RESOURCE, frontend: FRONTEND_RESOURCE }, options);
     await changes.commit();
-    const en = read('apps/frontend/messages/en.json');
+    const en = read('apps/crm-web/messages/en.json');
     const contracts = read('packages/contracts/src/messages/en.ts');
     const again = new Changes(root);
     syncMessages(again, resourceMessages(resourceNames('invoice')));
     await again.commit();
-    expect(read('apps/frontend/messages/en.json')).toBe(en);
+    expect(read('apps/crm-web/messages/en.json')).toBe(en);
     expect(read('packages/contracts/src/messages/en.ts')).toBe(contracts);
   });
 

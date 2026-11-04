@@ -10,7 +10,7 @@ export const FRONTEND_TSCONFIG = `${FRONTEND}/tsconfig.json`;
 const JSON_FORMAT = { formattingOptions: { insertSpaces: true, tabSize: 2, eol: '\n' } };
 
 /**
- * Registers a frontend lib in apps/frontend: its dependency, Next's
+ * Registers a frontend lib in apps/crm-web: its dependency, Next's
  * `transpilePackages` (it ships sources), `nx.sync.ignoredDependencies` in
  * the frontend's tsconfig (Next compiles the sources, no project
  * references) and the root's project reference, as `nx sync` would write

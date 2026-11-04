@@ -36,13 +36,13 @@ describe('backend-resource', () => {
         'CREATE packages/backend/invoices/package.json',
         'CREATE packages/backend/invoices/src/invoices.service.ts',
         'CREATE packages/backend/invoices/src/invoices.controller.ts',
-        'UPDATE apps/api/src/api.module.ts',
+        'UPDATE apps/crm-api/src/crm-api.module.ts',
         'UPDATE packages/backend/database/src/schema.ts',
         'UPDATE packages/contracts/src/index.ts',
       ]),
     );
-    expect(read('apps/api/package.json')).toContain('"@dafne/backend-invoices": "workspace:*"');
-    expect(read('apps/api/src/api.module.ts')).toContain('InvoicesModule');
+    expect(read('apps/crm-api/package.json')).toContain('"@dafne/backend-invoices": "workspace:*"');
+    expect(read('apps/crm-api/src/crm-api.module.ts')).toContain('InvoicesModule');
     expect(read('tsconfig.json')).toContain('./packages/backend/invoices');
     const module = read('packages/backend/invoices/src/invoices.module.ts');
     expect(module).toContain('controllers: [InvoicesController]');
@@ -78,9 +78,10 @@ describe('backend-lib', () => {
   it('creates an empty lib, named as given, registered in the app', async () => {
     await generate(backendLibGenerator, { name: 'geo-data' });
     expect(read('packages/backend/geo-data/package.json')).toContain('"name": "@dafne/backend-geo-data"');
+    expect(JSON.parse(read('packages/backend/geo-data/package.json')).nx.tags).toEqual(['scope:backend']);
     expect(read('packages/backend/geo-data/src/geo-data.module.ts')).toContain('export class GeoDataModule {}');
-    expect(read('apps/api/src/api.module.ts')).toContain("import { GeoDataModule } from '@dafne/backend-geo-data';");
-    expect(read('apps/api/tsconfig.json')).toContain('../../packages/backend/geo-data');
+    expect(read('apps/crm-api/src/crm-api.module.ts')).toContain("import { GeoDataModule } from '@dafne/backend-geo-data';");
+    expect(read('apps/crm-api/tsconfig.json')).toContain('../../packages/backend/geo-data');
   });
 });
 
@@ -88,6 +89,7 @@ describe('backend-app', () => {
   it('creates a Nest app, formatted with its own Prettier config', async () => {
     await generate(backendAppGenerator, { name: 'worker', port: 3002 });
     expect(read('apps/worker/package.json')).toContain('"name": "@dafne/worker"');
+    expect(JSON.parse(read('apps/worker/package.json')).nx.tags).toEqual(['scope:backend']);
     expect(read('apps/worker/.prettierrc')).toContain('singleQuote');
     const main = read('apps/worker/src/main.ts');
     expect(main).toContain("import { WorkerModule } from './worker.module.js';");
@@ -120,12 +122,14 @@ describe('frontend-lib', () => {
   it('creates an empty lib, named as given, registered in the frontend', async () => {
     await generate(frontendLibGenerator, { name: 'charts' });
     expect(read('packages/frontend/charts/package.json')).toContain('"name": "@dafne/frontend-charts"');
+    expect(JSON.parse(read('packages/frontend/charts/package.json')).nx.tags).toEqual(['scope:frontend']);
+    expect(read('packages/frontend/charts/eslint.config.mjs')).toContain('../eslint.config.mjs');
     expect(read('packages/frontend/charts/src/index.ts')).toContain('export {};');
-    expect(read('apps/frontend/package.json')).toContain('"@dafne/frontend-charts": "workspace:*"');
-    expect(read('apps/frontend/next.config.ts')).toMatch(
+    expect(read('apps/crm-web/package.json')).toContain('"@dafne/frontend-charts": "workspace:*"');
+    expect(read('apps/crm-web/next.config.ts')).toMatch(
       /transpilePackages: \[\s*"@dafne\/contracts",\s*"@dafne\/frontend-auth",\s*"@dafne\/frontend-charts",?\s*\]/,
     );
-    expect(parse(read('apps/frontend/tsconfig.json')).nx.sync.ignoredDependencies).toEqual([
+    expect(parse(read('apps/crm-web/tsconfig.json')).nx.sync.ignoredDependencies).toEqual([
       '@dafne/contracts',
       '@dafne/frontend-auth',
       '@dafne/frontend-charts',
@@ -136,7 +140,7 @@ describe('frontend-lib', () => {
   it('wires a lib only once', async () => {
     await generate(frontendLibGenerator, { name: 'charts' });
     await generate(frontendLibGenerator, { name: 'charts', force: true });
-    expect(read('apps/frontend/next.config.ts').match(/@dafne\/frontend-charts/g)).toHaveLength(1);
-    expect(read('apps/frontend/tsconfig.json').match(/@dafne\/frontend-charts/g)).toHaveLength(1);
+    expect(read('apps/crm-web/next.config.ts').match(/@dafne\/frontend-charts/g)).toHaveLength(1);
+    expect(read('apps/crm-web/tsconfig.json').match(/@dafne\/frontend-charts/g)).toHaveLength(1);
   });
 });

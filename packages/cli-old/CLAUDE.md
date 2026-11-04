@@ -4,8 +4,8 @@ The previous `dafne` CLI, kept as `dafne-old` (`pnpm dafne-old ...` from the roo
 for what the new Nx-based CLI in `../cli` does not cover: the frontend
 generators, `sync`, `field` and `migration`. Maintenance only.
 
-Code generator for the Dafne backend (`../../apps/api`, NestJS) and frontend
-(`../../apps/frontend`, Next.js). `dafne-old g resource|backend|frontend ...` writes
+Code generator for the Dafne backend (`../../apps/crm-api`, NestJS) and frontend
+(`../../apps/crm-web`, Next.js). `dafne-old g resource|backend|frontend ...` writes
 new files and registers them in the existing ones. Usage is in
 `README.md`.
 
@@ -25,7 +25,8 @@ TypeScript ESM, Node ≥ 22, pnpm (workspace package of the Dafne monorepo, see 
   resource lacks), with `frontend form|table|detail` for one part.
   `frontend` uses positional options, so options after a part go to it.
 - `src/commands/migration.ts`: `dafne-old migration generate|fix`. It runs
-  drizzle-kit from `apps/api/node_modules/.bin` with the terminal attached.
+  `packages/backend/migrator/src/generate.ts` (drizzle-kit + foreign key
+  fixes) in `packages/backend/database` with the terminal attached.
 - `src/commands/dev.ts`: `dafne-old dev`, package scripts as child processes
   (one process group each, so Ctrl+C or a failure stops what they started).
 - `src/fields/`: `dafne-old field add|remove`. `spec.ts` holds the types and
@@ -66,7 +67,7 @@ TypeScript ESM, Node ≥ 22, pnpm (workspace package of the Dafne monorepo, see 
   dependency resolution (`pieces.ts`).
 - `src/wiring/`: edits to existing files. `backend.ts` handles a new
   lib's registration (`wireLib`: the app's `package.json` dependency, the
-  project references of the app's and the root's tsconfigs, ApiModule), the
+  project references of the app's and the root's tsconfigs, CrmApiModule), the
   database schema, the contracts index and the lib's @Module/index. `frontend.ts` handles the
   sidebar (nav titles are keys of the `nav` messages). `messages.ts`
   fills the message catalogs. Shared AST helpers are in `ast.ts`.
@@ -75,8 +76,8 @@ TypeScript ESM, Node ≥ 22, pnpm (workspace package of the Dafne monorepo, see 
 ## Rules
 
 - **Templates copy the `customers` resource.** `customers` is the
-  reference in both packages, and `../../apps/api/CLAUDE.md` and
-  `../../apps/frontend/CLAUDE.md` hold their rules. When those patterns change,
+  reference in both packages, and `../../apps/crm-api/CLAUDE.md` and
+  `../../apps/crm-web/CLAUDE.md` hold their rules. When those patterns change,
   update the templates too. Templates keep one sample field, `name`, plus
   soft delete and created/updated by.
 - **Template variables:**
@@ -103,7 +104,7 @@ TypeScript ESM, Node ≥ 22, pnpm (workspace package of the Dafne monorepo, see 
   (hence the `() => node` getters).
 - **Formatting:** `format.ts` runs Prettier on created files, and on
   edited files only if they were Prettier-clean before. Several backend
-  files aren't Prettier-clean (e.g. `api.module.ts`), so they're never
+  files aren't Prettier-clean (e.g. `crm-api.module.ts`), so they're never
   reformatted. JSON files keep their layout (they are edited through
   jsonc-parser).
 - **Pieces:** a piece has `deps`, a `marker` file and `generate`.
@@ -141,14 +142,14 @@ TypeScript ESM, Node ≥ 22, pnpm (workspace package of the Dafne monorepo, see 
   and services: `msg('<plural>.<field>.required|invalid')`,
   `msg('<plural>.notFound')`. Before every commit, `syncMessages`
   (`wiring/messages.ts`) adds the keys the run's files use to
-  `apps/frontend/messages/*.json` and `packages/contracts/src/messages/*.ts`, with an
+  `apps/crm-web/messages/*.json` and `packages/contracts/src/messages/*.ts`, with an
   English text derived from the key (`resourceMessages` seeds a new
   resource's titles). Italian gets the English text and a warning. Hooks
   for options (`useOptionLabels`) go after the component's
   `const t = useTranslations()` (`ensureHookLine`), not in render props.
-- **Pages live under `apps/frontend/app/[locale]/(app)/`** (the locale is a
+- **Pages live under `apps/crm-web/app/[locale]/(app)/`** (the locale is a
   hidden root segment), so route types are `PageProps<"/[locale]/…">`.
-- **`apps/api`, `apps/frontend`, `packages/backend` and
+- **`apps/crm-api`, `apps/crm-web`, `packages/backend` and
   `packages/contracts` are fixed paths** under the root
   (`BACKEND`/`FRONTEND`/`BACKEND_LIBS`/`CONTRACTS_SRC` in
   `core/workspace.ts`). A backend lib is the workspace package
@@ -166,10 +167,10 @@ TypeScript ESM, Node ≥ 22, pnpm (workspace package of the Dafne monorepo, see 
 - **Unit tests:** `test/generate.test.ts` copies `test/fixtures/project`
   to a temp folder and runs the generators there. The fixtures are copies
   of the real files the wiring edits (the app's package.json and
-  tsconfigs, the root tsconfig.json, api.module.ts, schema.ts, contracts index, navigation.ts…). Refresh them
+  tsconfigs, the root tsconfig.json, crm-api.module.ts, schema.ts, contracts index, navigation.ts…). Refresh them
   when the real ones change. `tsconfig.json` excludes them.
 - **Changing a template:** also check that the generated code compiles.
-  Never generate into the real `../../apps/api` / `../../apps/frontend` to test.
+  Never generate into the real `../../apps/crm-api` / `../../apps/crm-web` to test.
   1. Copy the whole monorepo into a scratch folder (without
      `node_modules`, `.next`, `.git`, `dist`, `.env`, `.nx`, `out-tsc`).
   2. Run `pnpm dev g resource invoice --root <copy> -y`, then

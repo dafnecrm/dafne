@@ -9,6 +9,7 @@
     "./client": "./src/client.ts"
   },
   "scripts": {
+    "lint": "eslint src",
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
@@ -24,10 +25,16 @@
   },
   "devDependencies": {
     "@types/react": "catalog:",
+    "eslint": "catalog:",
     "next-intl": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "nx": {
+    "tags": [
+      "scope:frontend"
+    ]
   }
 }

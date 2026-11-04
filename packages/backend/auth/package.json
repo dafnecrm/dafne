@@ -4,18 +4,18 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
-    "./options": "./src/auth.options.ts"
+    ".": "./src/index.ts"
   },
   "scripts": {
     "lint": "oxlint -c ../.oxlintrc.json --type-aware src",
     "test": "vitest run --passWithNoTests",
-    "auth:schema:generate": "pnpm dlx auth@latest generate --config src/auth.cli.ts --output ../database/src/tables/auth.ts"
+    "auth:schema:generate": "pnpm dlx auth@latest generate --config src/auth.cli.ts --output ../database-auth/src/kit/better-auth.ts && pnpm --filter @dafne/backend-database-auth tables:qualify"
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "catalog:",
+    "@dafne/auth-options": "workspace:*",
     "@dafne/backend-common": "workspace:*",
-    "@dafne/backend-database": "workspace:*",
+    "@dafne/backend-database-auth": "workspace:*",
     "@dafne/contracts": "workspace:*",
     "@nestjs/common": "catalog:",
     "@nestjs/config": "catalog:",
@@ -35,5 +35,10 @@
     "typescript": "catalog:",
     "unplugin-swc": "catalog:",
     "vitest": "catalog:"
+  },
+  "nx": {
+    "tags": [
+      "scope:backend"
+    ]
   }
 }

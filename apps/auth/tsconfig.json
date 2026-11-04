@@ -1,0 +1,32 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "out-tsc",
+    "tsBuildInfoFile": "out-tsc/tsconfig.tsbuildinfo",
+    "types": ["node", "vitest/globals"]
+  },
+  "include": [
+    "src"
+  ],
+  "references": [
+    {
+      "path": "../../packages/contracts"
+    },
+    {
+      "path": "../../packages/backend/users"
+    },
+    {
+      "path": "../../packages/backend/database-auth"
+    },
+    {
+      "path": "../../packages/backend/common"
+    },
+    {
+      "path": "../../packages/backend/auth"
+    },
+    {
+      "path": "../../packages/auth-options"
+    }
+  ]
+}

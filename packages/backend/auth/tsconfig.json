@@ -12,10 +12,13 @@
       "path": "../../contracts"
     },
     {
-      "path": "../database"
+      "path": "../database-auth"
     },
     {
       "path": "../common"
+    },
+    {
+      "path": "../../auth-options"
     }
   ]
 }

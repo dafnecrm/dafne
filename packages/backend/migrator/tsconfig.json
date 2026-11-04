@@ -1,0 +1,12 @@
+{
+  // Node runs the sources (type stripping): relative imports end in .ts.
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "out-tsc",
+    "tsBuildInfoFile": "out-tsc/tsconfig.tsbuildinfo",
+    "erasableSyntaxOnly": true,
+    "types": ["node", "vitest/globals"]
+  },
+  "include": ["src"]
+}

@@ -152,13 +152,13 @@ function runScripts(root: string, runs: [Package, string][]): Promise<number> {
 
 export function devCommand() {
   return new Command('dev')
-    .description('Run a package script (default: dev) in apps/api/ and apps/frontend/, in this terminal')
+    .description('Run a package script (default: dev) in apps/crm-api/ and apps/crm-web/, in this terminal')
     .argument('[script]', 'the script for both packages (default: dev)')
     .option('-b, --backend <script>', 'the script for the backend')
     .option('-f, --frontend <script>', 'the script for the frontend')
     .addOption(new Option('--only <package>', 'run in one package only').choices(PACKAGES))
     .option('-p, --pick', "choose each package's script from its package.json")
-    .option('--root <dir>', 'Dafne folder (with apps/api/ and apps/frontend/)')
+    .option('--root <dir>', 'Dafne folder (with apps/crm-api/ and apps/crm-web/)')
     .option('-y, --yes', 'never prompt')
     .addHelpText(
       'after',

@@ -14,8 +14,8 @@ pnpm install && pnpm --dir packages/cli build && (cd packages/cli && npm link)  
 # or, without linking, from the root: pnpm dafne-old g ...
 ```
 
-Run it anywhere inside the Dafne folder (the one holding `apps/api/` and
-`apps/frontend/`), or pass `--root`. A missing argument is asked for
+Run it anywhere inside the Dafne folder (the one holding `apps/crm-api/` and
+`apps/crm-web/`), or pass `--root`. A missing argument is asked for
 interactively; `-y` fails instead.
 
 ```sh
@@ -83,10 +83,10 @@ Frontend:
 Each resource starts with one `name` field. It has soft delete and
 created/updated by, as customers do.
 
-It also registers the code in the app (`apps/api/package.json`, the
+It also registers the code in the app (`apps/crm-api/package.json`, the
 project references of its tsconfigs and of the root `tsconfig.json`,
-`ApiModule`), `database/src/schema.ts`, `contracts/src/index.ts` and
-`apps/frontend/lib/navigation.ts`. Re-running never registers twice. Nothing is
+`CrmApiModule`), `database/src/schema.ts`, `contracts/src/index.ts` and
+`apps/crm-web/lib/navigation.ts`. Re-running never registers twice. Nothing is
 written until every file is generated, and new files are formatted with the
 target package's Prettier config. A new lib needs `pnpm install` afterwards,
 to link its package.
@@ -150,21 +150,22 @@ dafne-old migration custom backfill-countries        # empty, for SQL by hand
 dafne-old migration fix [folder]                     # default: the latest
 ```
 
-`generate` runs drizzle-kit in `apps/api/`, with the terminal attached, so you
+`generate` runs drizzle-kit in `packages/backend/database/` (through
+`@dafne/backend-migrator`'s generate script), with the terminal attached, so you
 can answer when it asks whether a column was renamed. It then prints the
 statements of the new migration.
 
 `custom` (or `generate --custom`) creates an empty `migration.sql` for SQL
 the tables can't express: data fixes, backfills, renaming enum values in
 steps. Put a `--> statement-breakpoint` line between statements. It runs in
-order with the others, when the backend starts.
+order with the others, with `pnpm dafne db migrate`.
 
 drizzle-kit 1.0.0-rc.5 drops `ON DELETE`/`ON UPDATE` from foreign keys inside
 `CREATE TABLE`. `generate` puts them back from the migration's
 `snapshot.json`; skip that with `--no-fix`. `fix` does the same for a
 migration made with `pnpm migration:generate`. Only fix migrations no
-database has applied yet. The backend applies pending migrations when it
-starts.
+database has applied yet. `pnpm dafne db migrate` applies the pending
+migrations (`dafne dev` runs it first).
 
 ## Syncing a contract with its table
 
@@ -240,7 +241,7 @@ dafne-old sync frontend form activities     # --dry-run to preview
 ```
 
 It adds the contract body fields that a form lacks, in
-`apps/frontend/app/[locale]/(app)/<plural>/`. It never changes what's already there.
+`apps/crm-web/app/[locale]/(app)/<plural>/`. It never changes what's already there.
 - **`schema.ts`:**
   - the values type: enums, booleans and numbers get their own type, e.g.
     `Record<Exclude<keyof ActivityBody, "type">, string> & { type: ActivityType }`;
@@ -315,7 +316,7 @@ page…) is skipped. Run `dafne-old sync contract` first if the table changed.
 ## Running the backend and the frontend
 
 ```sh
-dafne-old dev                          # pnpm run dev in apps/api/ and apps/frontend/
+dafne-old dev                          # pnpm run dev in apps/crm-api/ and apps/crm-web/
 dafne-old dev build                    # the same script in both
 dafne-old dev -b start:debug           # a different script per package (-b, -f)
 dafne-old dev test --only backend      # one package

@@ -10,8 +10,8 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
-import { Session } from '@thallesp/nestjs-better-auth';
-import type { UserSession } from '@thallesp/nestjs-better-auth';
+import { Session } from '@dafne/backend-session';
+import type { UserSession } from '@dafne/backend-session';
 import { ZodValidationPipe } from '@dafne/backend-common';
 import {
   customerBodySchema,

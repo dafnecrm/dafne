@@ -9,6 +9,7 @@
     "./table": "./src/table.tsx"
   },
   "scripts": {
+    "lint": "eslint src",
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
@@ -23,11 +24,17 @@
   },
   "devDependencies": {
     "@types/react": "catalog:",
+    "eslint": "catalog:",
     "next": "catalog:",
     "next-intl": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "nx": {
+    "tags": [
+      "scope:frontend"
+    ]
   }
 }

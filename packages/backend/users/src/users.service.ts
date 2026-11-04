@@ -1,4 +1,4 @@
-import { schema, type Database } from '@dafne/backend-database';
+import { authSchema as schema, type AuthDatabase as Database } from '@dafne/backend-database-auth';
 import { InjectDrizzle } from '@nestjs/drizzle';
 import { AuthService } from '@dafne/backend-auth';
 import {
