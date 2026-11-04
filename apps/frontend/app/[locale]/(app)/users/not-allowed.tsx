@@ -6,7 +6,7 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "@/components/ui/empty";
+} from "@dafne/frontend-ui/components/empty";
 
 /** Shown on the users pages to non-admins. */
 export function NotAllowed({ children }: { children?: React.ReactNode }) {

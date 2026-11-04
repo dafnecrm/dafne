@@ -16,8 +16,8 @@ import {
 } from "lucide-react";
 import CopyButton from "@/components/copy-button";
 import { Detail, DetailSection } from "@/components/detail";
-import { LocalDate } from "@/components/local-date";
-import { Badge } from "@/components/ui/badge";
+import { LocalDate } from "@dafne/frontend-ui/components/local-date";
+import { Badge } from "@dafne/frontend-ui/components/badge";
 import {
   Table,
   TableBody,
@@ -25,7 +25,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@dafne/frontend-ui/components/table";
 import type { UserDetail, UserSession } from "@/lib/users";
 
 /** The details of a user: profile, access, sign-in methods, sessions and record. */

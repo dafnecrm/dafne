@@ -10,13 +10,13 @@ import {
   ComboboxEmpty,
   ComboboxItem,
   ComboboxList,
-} from "@/components/ui/combobox";
+} from "@dafne/frontend-ui/components/combobox";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
-} from "@/components/ui/input-group";
-import { Spinner } from "@/components/ui/spinner";
+} from "@dafne/frontend-ui/components/input-group";
+import { Spinner } from "@dafne/frontend-ui/components/spinner";
 import { searchPlaces, type GeoPlace } from "@/lib/geo";
 
 /** Waits this long after the last keystroke before searching. */

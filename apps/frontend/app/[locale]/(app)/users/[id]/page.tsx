@@ -13,10 +13,10 @@ import {
   PageContentTitle,
 } from "@/components/page-content";
 import { BreadcrumbLabel } from "@/components/page-breadcrumb";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { BackendError } from "@/lib/backend";
+import { Avatar, AvatarFallback, AvatarImage } from "@dafne/frontend-ui/components/avatar";
+import { Button } from "@dafne/frontend-ui/components/button";
+import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
+import { BackendError } from "@dafne/frontend-api";
 import { isAdmin, requireUser } from "@/lib/session";
 import { getUser } from "@/lib/users";
 import { NotAllowed } from "../not-allowed";

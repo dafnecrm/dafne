@@ -4,8 +4,8 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@dafne/frontend-ui/components/alert";
+import { Button } from "@dafne/frontend-ui/components/button";
 import {
   Card,
   CardContent,
@@ -13,8 +13,8 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { authClient, useAuthErrorMessage } from "@/lib/auth-client";
+} from "@dafne/frontend-ui/components/card";
+import { authClient, useAuthErrorMessage } from "@dafne/frontend-auth/client";
 
 /** Where verification links send the user (back to this page). */
 export const VERIFY_EMAIL_PATH = "/verify-email";

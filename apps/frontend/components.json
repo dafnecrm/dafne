@@ -14,8 +14,8 @@
   "rtl": false,
   "aliases": {
     "components": "@/components",
-    "utils": "@/lib/utils",
-    "ui": "@/components/ui",
+    "utils": "@dafne/frontend-ui/lib/utils",
+    "ui": "@dafne/frontend-ui/components",
     "lib": "@/lib",
     "hooks": "@/hooks"
   },

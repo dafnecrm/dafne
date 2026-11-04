@@ -2,28 +2,40 @@ packages:
   - apps/*
   - packages/*
   - packages/backend/*
+  - packages/frontend/*
 
 # Versions shared by several projects: reference them as "catalog:".
 catalog:
+  "@base-ui/react": ^1.9.0
   "@better-auth/drizzle-adapter": 1.7.12
-  "@nx/devkit": 24.0.4
   "@nestjs/cache-manager": ^12.0.2
   "@nestjs/common": ^12.0.1
   "@nestjs/config": ^12.0.1
   "@nestjs/core": ^12.0.1
   "@nestjs/drizzle": ^0.0.2
   "@nestjs/testing": ^12.0.1
+  "@nx/devkit": 24.0.4
   "@swc/core": ^1.16.20
+  "@tanstack/react-form-nextjs": ^1.33.5
   "@thallesp/nestjs-better-auth": ^2.8.0
   "@types/express": ^5.0.0
   "@types/node": ^24.0.0
+  "@types/react": ^19
+  "@types/react-dom": ^19
   better-auth: 1.7.12
+  class-variance-authority: ^0.7.1
+  cn: ^0.5.0
   drizzle-orm: 1.0.0-rc.5
+  lucide-react: ^1.61.0
   mysql2: ^3.24.6
+  next: 16.4.3
+  next-intl: ^4.14.9
   nx: 24.0.4
   oxlint: ^1.58.0
   oxlint-tsgolint: ^7.0.2001
   prettier: ^3.9.10
+  react: 19.3.0
+  react-dom: 19.3.0
   resend: ^6.34.1
   tsx: ^4.23.15
   typescript: ^6.0.2

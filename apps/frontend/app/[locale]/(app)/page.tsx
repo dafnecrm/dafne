@@ -5,8 +5,8 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+} from "@dafne/frontend-ui/components/card";
+import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { requireUser } from "@/lib/session";
 
 export default function Home() {

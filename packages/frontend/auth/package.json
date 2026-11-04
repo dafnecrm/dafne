@@ -1,0 +1,33 @@
+{
+  "name": "@dafne/frontend-auth",
+  "version": "0.0.1",
+  "description": "Better Auth for the frontend: browser client, server session helpers, cookies and error messages",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts",
+    "./server": "./src/server.ts"
+  },
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "better-auth": "catalog:"
+  },
+  "peerDependencies": {
+    "next": "catalog:",
+    "next-intl": "catalog:",
+    "react": "catalog:"
+  },
+  "devDependencies": {
+    "@dafne/backend-auth": "workspace:*",
+    "@types/react": "catalog:",
+    "next": "catalog:",
+    "next-intl": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

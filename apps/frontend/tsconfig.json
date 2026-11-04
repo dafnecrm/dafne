@@ -3,7 +3,14 @@
   // references (tsc would read their declarations instead).
   "nx": {
     "sync": {
-      "ignoredDependencies": ["@dafne/backend-auth", "@dafne/contracts"]
+      "ignoredDependencies": [
+        "@dafne/contracts",
+        "@dafne/frontend-auth",
+        "@dafne/frontend-api",
+        "@dafne/frontend-ui",
+        "@dafne/frontend-forms",
+        "@dafne/frontend-data-table"
+      ]
     }
   },
   "compilerOptions": {

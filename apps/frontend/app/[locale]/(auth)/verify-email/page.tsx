@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { VerifyEmail } from "./verify-email";
 
 export async function generateMetadata(): Promise<Metadata> {

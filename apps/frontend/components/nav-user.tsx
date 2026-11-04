@@ -10,7 +10,7 @@ import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@dafne/frontend-ui/components/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,16 +24,16 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@dafne/frontend-ui/components/dropdown-menu";
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar";
-import { Spinner } from "@/components/ui/spinner";
+} from "@dafne/frontend-ui/components/sidebar";
+import { Spinner } from "@dafne/frontend-ui/components/spinner";
 import { routing, type AppLocale } from "@/i18n/routing";
-import { authClient } from "@/lib/auth-client";
+import { authClient } from "@dafne/frontend-auth/client";
 import type { User } from "@/lib/session";
 
 type NavUserProps = Pick<

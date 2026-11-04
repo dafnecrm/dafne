@@ -1,7 +1,7 @@
 # @dafne/cli
 
-The `dafne` command: generates backend code through Nx generators, and runs
-Nx tasks. For the frontend generators, `sync`, `field` and `migration` use
+The `dafne` command: generates backend code and frontend libs through Nx
+generators, and runs Nx tasks. For the frontend pages, `sync`, `field` and `migration` use
 the previous CLI, `dafne-old` (`../cli-old`).
 
 From the root: `pnpm dafne <command>` (no build needed). Arguments left out
@@ -14,6 +14,7 @@ dafne g resource invoice             # contract + table + lib with service and c
 dafne g lib reports                  # empty Nest lib: @dafne/backend-reports
 dafne g app worker --port 3002       # NestJS app in apps/worker
 dafne g contract report              # packages/contracts/src/reports.ts
+dafne g frontend-lib charts          # @dafne/frontend-charts, used by apps/frontend
 dafne g lib jobs --app worker        # wire the lib into another app (default: api)
 ```
 
@@ -48,6 +49,7 @@ pnpm nx g @dafne/cli:backend-resource invoice --fields=number:string:required
 pnpm nx g @dafne/cli:backend-lib reports
 pnpm nx g @dafne/cli:backend-app worker
 pnpm nx g @dafne/cli:contract report
+pnpm nx g @dafne/cli:frontend-lib charts
 pnpm nx list @dafne/cli
 ```
 

@@ -4,9 +4,9 @@ import { useTranslations } from "next-intl";
 import { Edit2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { authClient, useAuthErrorMessage } from "@/lib/auth-client";
+import { Avatar, AvatarFallback, AvatarImage } from "@dafne/frontend-ui/components/avatar";
+import { Button } from "@dafne/frontend-ui/components/button";
+import { authClient, useAuthErrorMessage } from "@dafne/frontend-auth/client";
 import {
   AVATAR_ACCEPT,
   AVATAR_MAX_FILE_BYTES,
@@ -19,7 +19,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@dafne/frontend-ui/components/dropdown-menu";
 
 export function AvatarUpload({
   image,

@@ -9,14 +9,14 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@dafne/frontend-ui/components/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@dafne/frontend-ui/components/dropdown-menu";
 import { DeleteCustomerDialog, type CustomerRef } from "./customer-dialogs";
 
 /** Actions on the customer's page, in a menu. */

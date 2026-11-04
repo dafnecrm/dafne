@@ -3,8 +3,8 @@
 import { useTranslations } from "next-intl";
 import { CalendarPlusIcon, MailIcon, ShieldIcon, UserIcon } from "lucide-react";
 import { Detail, DetailSection } from "@/components/detail";
-import { LocalDate } from "@/components/local-date";
-import { Badge } from "@/components/ui/badge";
+import { LocalDate } from "@dafne/frontend-ui/components/local-date";
+import { Badge } from "@dafne/frontend-ui/components/badge";
 import type { User } from "@/lib/session";
 import { AvatarUpload } from "./avatar-upload";
 

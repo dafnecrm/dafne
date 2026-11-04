@@ -5,14 +5,14 @@ import {
   BreadcrumbProvider,
   PageBreadcrumb,
 } from "@/components/page-breadcrumb";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
+import { ThemeToggle } from "@dafne/frontend-ui/components/theme-toggle";
+import { Separator } from "@dafne/frontend-ui/components/separator";
+import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from "@/components/ui/sidebar";
+} from "@dafne/frontend-ui/components/sidebar";
 import { NAV_SECTIONS } from "@/lib/navigation";
 import { getCurrentUser, isAdmin, requireUser } from "@/lib/session";
 

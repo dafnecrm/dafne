@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { SESSION_COOKIES } from "@/lib/auth-cookies";
+import { SESSION_COOKIES } from "@dafne/frontend-auth";
 import { getCurrentUser } from "@/lib/session";
 
 /**

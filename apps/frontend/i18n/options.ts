@@ -1,6 +1,6 @@
 import { useTranslations } from "next-intl";
 import { useMemo } from "react";
-import type { MessageKey } from "./keys";
+import type { MessageKey } from "@dafne/frontend-ui/lib/message-key";
 
 /**
  * Option lists keep message keys as labels (plain data, shared by server and

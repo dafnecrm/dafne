@@ -8,17 +8,17 @@ import {
   createDataTableColumnHelper,
   DataTable,
   useDescribeFilters,
-} from "@/components/data-table";
-import { LocalDate } from "@/components/local-date";
+} from "@dafne/frontend-data-table/table";
+import { LocalDate } from "@dafne/frontend-ui/components/local-date";
 import {
   Empty,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "@/components/ui/empty";
+} from "@dafne/frontend-ui/components/empty";
 import { useOptionLabel } from "@/i18n/options";
-import type { TableParams } from "@/lib/data-table";
+import type { TableParams } from "@dafne/frontend-data-table";
 import type { Listed<%= s.pascal %> } from "@/lib/<%= p.kebab %>";
 import { <%= p.camel %>Table } from "@/lib/<%= p.kebab %>-table";
 import { <%= s.pascal %>TableActions } from "./<%= s.kebab %>-table-actions";

@@ -2,7 +2,7 @@
 
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
-import { BackendError, backendFetch } from "@/lib/backend";
+import { BackendError, backendFetch } from "@dafne/frontend-api/server";
 import type { UserDetail } from "@/lib/users";
 import { userSchema, type UserFormValues } from "./schema";
 

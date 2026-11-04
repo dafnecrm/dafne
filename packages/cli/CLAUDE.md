@@ -1,7 +1,8 @@
 # dafne cli
 
-The `dafne` command and an Nx plugin with the backend generators. Usage is
-in `README.md`. The frontend generators, `sync`, `field` and `migration`
+The `dafne` command and an Nx plugin with the backend generators and the
+frontend lib generator. Usage is
+in `README.md`. The frontend pages, `sync`, `field` and `migration`
 are still in the previous CLI, `../cli-old` (`dafne-old`).
 
 TypeScript ESM, Node ≥ 26, **no build**: Node runs `src/index.ts` (type
@@ -21,6 +22,9 @@ erasable syntax (no enums, namespaces or constructor parameter properties;
   - `backend-lib`: an empty lib, named as given (not pluralized).
   - `backend-app`: a Nest app in `apps/<name>` (`templates/app`).
   - `contract`: a contract and its spec.
+  - `frontend-lib`: an empty lib in `packages/frontend/<name>`
+    (`templates/frontend-lib`), wired into `apps/frontend` (dependency,
+    `transpilePackages`, `nx.sync.ignoredDependencies`, root reference).
   `src/generators/run.ts` (`runGenerator`) wraps them: change set, Prettier,
   warnings, and the next steps printed after Nx writes the files.
 - `src/index.ts`, `src/commands/`: the `dafne` command (commander, clack).
@@ -42,9 +46,11 @@ erasable syntax (no enums, namespaces or constructor parameter properties;
   `resource.ts` (`syncOne`) runs them all; `body.ts` reads a body schema.
 - `src/wiring/`: edits to existing files (`backend.ts`: app module,
   package.json, project references, schema.ts, contracts index;
+  `frontend.ts`: next.config.ts and tsconfig of `apps/frontend`;
   `messages.ts`: message catalogs; `ast.ts`: helpers).
 - `templates/backend` (copies of the `customers` resource), `templates/app`
-  (a minimal `apps/api`). Dotfiles are stored without the dot.
+  (a minimal `apps/api`), `templates/frontend-lib` (set up like
+  `packages/frontend/auth`). Dotfiles are stored without the dot.
 
 ## Rules
 
@@ -70,7 +76,7 @@ messages and formatting still hold here. In short:
 - **Generated code holds message keys**, and `syncMessages` adds them to the
   catalogs before the generator returns.
 - Fixed paths are in `core/workspace.ts` (`apps/<app>`, `packages/backend`,
-  `packages/contracts`). The default app is `api`.
+  `packages/frontend`, `packages/contracts`). The default app is `api`.
 
 ## Testing
 
@@ -84,6 +90,6 @@ messages and formatting still hold here. In short:
   1. Copy the monorepo into a scratch folder (without `node_modules`,
      `.next`, `.git`, `dist`, `.env`, `.nx`, `out-tsc`), `pnpm install --offline`.
   2. There: `pnpm dafne g resource invoice --field … -y`, `g lib`, `g app`,
-     `g contract`, then `pnpm install --offline` and `npx nx sync`.
+     `g contract`, `g frontend-lib`, then `pnpm install --offline` and `npx nx sync`.
   3. `npx nx sync:check` must find nothing, and
      `npx nx run-many -t lint typecheck test build` must pass.

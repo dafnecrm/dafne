@@ -4,7 +4,7 @@ import {
   type ActivityBody,
   type ActivityType,
 } from "@dafne/contracts";
-import { formSchema } from "@/lib/app-form/form-schema";
+import { formSchema } from "@dafne/frontend-forms";
 import type { ActivityDetail } from "@/lib/activities";
 
 /** Form values: every field is text, "" when blank. Keys follow the contract. */

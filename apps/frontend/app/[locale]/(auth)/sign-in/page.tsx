@@ -8,7 +8,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@dafne/frontend-ui/components/card";
 import { SignInForm } from "./sign-in-form";
 import { PawPrint } from "lucide-react";
 

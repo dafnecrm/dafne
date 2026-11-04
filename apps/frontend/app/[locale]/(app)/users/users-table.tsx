@@ -7,10 +7,10 @@ import {
   createDataTableColumnHelper,
   useDescribeFilters,
   DataTable,
-} from "@/components/data-table";
-import { LocalDate } from "@/components/local-date";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+} from "@dafne/frontend-data-table/table";
+import { LocalDate } from "@dafne/frontend-ui/components/local-date";
+import { Avatar, AvatarFallback, AvatarImage } from "@dafne/frontend-ui/components/avatar";
+import { Badge } from "@dafne/frontend-ui/components/badge";
 import type { ListedUser } from "@/lib/users";
 import {
   CopyIcon,
@@ -18,22 +18,22 @@ import {
   UserIcon,
   UsersIcon,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@dafne/frontend-ui/components/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@dafne/frontend-ui/components/dropdown-menu";
 import {
   Empty,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "@/components/ui/empty";
-import type { TableParams } from "@/lib/data-table";
+} from "@dafne/frontend-ui/components/empty";
+import type { TableParams } from "@dafne/frontend-data-table";
 import { usersTable } from "@/lib/users-table";
 
 /*

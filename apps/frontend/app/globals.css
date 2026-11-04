@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+/* The frontend libs (components with Tailwind classes). */
+@source "../../../packages/frontend";
 
 @custom-variant dark (&:is(.dark *));
 

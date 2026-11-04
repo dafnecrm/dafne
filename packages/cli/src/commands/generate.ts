@@ -17,6 +17,7 @@ import { askNewFields, cancelled, interactive } from './field-prompts.ts';
 const KINDS = {
   resource: { generator: 'backend-resource', hint: 'contract + table + lib with service and controller', placeholder: 'invoice' },
   lib: { generator: 'backend-lib', hint: 'an empty Nest lib in packages/backend', placeholder: 'reports' },
+  'frontend-lib': { generator: 'frontend-lib', hint: 'an empty lib in packages/frontend, used by apps/frontend', placeholder: 'charts' },
   app: { generator: 'backend-app', hint: 'a NestJS app in apps/', placeholder: 'worker' },
   contract: { generator: 'contract', hint: 'Zod schemas and response types in packages/contracts', placeholder: 'invoice' },
 } as const;
@@ -72,9 +73,9 @@ async function resourceFields(root: string, name: string, options: GenerateOptio
 export function generateCommand() {
   return new Command('generate')
     .alias('g')
-    .description('Generate a backend resource, lib, app or contract (Nx generators of @dafne/cli)')
+    .description('Generate a backend resource, lib, app, contract or a frontend lib (Nx generators of @dafne/cli)')
     .argument('[kind]', Object.keys(KINDS).join(' | '))
-    .argument('[name]', 'name: a resource or contract is singular or plural (invoice), a lib or app as it is')
+    .argument('[name]', 'name: a resource or contract is singular or plural (invoice), a lib, frontend-lib or app as it is')
     .option('--app <name>', `lib, resource: the backend app to register the lib in (apps/<name>)`, DEFAULT_APP)
     .option('--field <spec>', `resource: a field of the new table, repeatable: ${FIELD_SPEC_HELP}`, (value: string, previous: string[] = []) => [
       ...previous,
@@ -91,10 +92,11 @@ Examples:
   dafne g resource invoice --field number:string:length=20:required:unique \\
     --field status:enum:values=draft|sent|paid:default=draft --field customer:ref:to=customers
   dafne g lib reports
+  dafne g frontend-lib charts
   dafne g app worker --port 3002
   dafne g contract report
 
-Same as: nx g @dafne/cli:<backend-resource|backend-lib|backend-app|contract> <name> ...`,
+Same as: nx g @dafne/cli:<backend-resource|backend-lib|backend-app|contract|frontend-lib> <name> ...`,
     )
     .action(async (kindArg: string | undefined, nameArg: string | undefined, options: GenerateOptions) => {
       const root = findWorkspaceRoot();

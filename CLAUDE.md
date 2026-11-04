@@ -8,8 +8,9 @@ Monorepo (pnpm workspaces + Nx) of the Dafne CRM. Each project has its own
 | `apps/api`           | `@dafne/api`       | NestJS API (the app: `src/`, migrations)          |
 | `packages/backend/*` | `@dafne/backend-*` | The backend's Nest libs (customers, auth…)        |
 | `apps/frontend`      | `@dafne/frontend`  | Next.js app                                       |
+| `packages/frontend/*` | `@dafne/frontend-*` | The frontend's libs (auth…), TypeScript sources compiled by Next |
 | `packages/contracts` | `@dafne/contracts` | API schemas (Zod) and response types, shared      |
-| `packages/cli`       | `@dafne/cli`       | `dafne`: Nx generators (backend) and task runner  |
+| `packages/cli`       | `@dafne/cli`       | `dafne`: Nx generators (backend, frontend libs) and task runner |
 | `packages/cli-old`   | `@dafne/cli-old`   | `dafne-old`: previous CLI (frontend, sync, field, migration) |
 
 `apps/` holds what runs or deploys, `packages/` what is shared or published.
@@ -31,8 +32,8 @@ Monorepo (pnpm workspaces + Nx) of the Dafne CRM. Each project has its own
   scripts, plus `typecheck` from the only Nx plugin, `@nx/js/typescript`
   (`tsc --build` over TypeScript project references). `nx.json` holds caching
   and inputs, the `nx` field of a `package.json` its outputs.
-- **New backend libs, apps and contracts come from the `dafne` CLI**
-  (`dafne g lib|app|resource|contract <name>`), which runs this workspace's
+- **New backend libs, apps, contracts and frontend libs come from the
+  `dafne` CLI** (`dafne g lib|app|resource|contract|frontend-lib <name>`), which runs this workspace's
   own Nx generators (`nx g @dafne/cli:<generator>`), not `@nx/nest`'s (they
   write a `project.json`). They write the package and add it to the app and
   to the project references. Then run `pnpm install` and `pnpm nx sync`.
@@ -46,7 +47,10 @@ Monorepo (pnpm workspaces + Nx) of the Dafne CRM. Each project has its own
   (`"zod": "catalog:"`). Workspace packages are `"workspace:*"`.
 - **`@dafne/contracts` ships TypeScript sources** (no build): Next compiles
   it through `transpilePackages`, the backend bundles it through
-  `apps/api/rspack.config.js`.
+  `apps/api/rspack.config.js`. The frontend libs (`packages/frontend/*`)
+  ship sources too: they are in the frontend's `transpilePackages` and in
+  the `nx.sync.ignoredDependencies` of its `tsconfig.json` (`dafne g
+  frontend-lib` adds them).
 - **The app lists every runtime dependency of its libs** too: rspack
   bundles the `@dafne/*` sources, but loads npm packages from
   `apps/api/node_modules` at runtime.

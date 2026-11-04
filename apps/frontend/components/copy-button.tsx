@@ -1,8 +1,8 @@
 'use client'
 
 import { Check, Copy } from "lucide-react";
-import { Button } from "./ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Button } from "@dafne/frontend-ui/components/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@dafne/frontend-ui/components/popover";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 

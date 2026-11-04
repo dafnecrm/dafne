@@ -10,13 +10,13 @@ import {
   ItemMedia,
   ItemSeparator,
   ItemTitle
-} from "@/components/ui/item";
-import { Card, CardAction, CardContent, CardHeader, CardTitle } from "./ui/card";
+} from "@dafne/frontend-ui/components/item";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@dafne/frontend-ui/components/card";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "./ui/collapsible";
+} from "@dafne/frontend-ui/components/collapsible";
 
 /*
  * Read-only detail lists, e.g. on a record's page:

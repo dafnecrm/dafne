@@ -7,7 +7,7 @@ import {
   type CustomerAddressType,
   type CustomerBody,
 } from "@dafne/contracts";
-import { formSchema } from "@/lib/app-form/form-schema";
+import { formSchema } from "@dafne/frontend-forms";
 import { CUSTOMER_ADDRESS_TYPE_OPTIONS } from "@/lib/customers-table";
 import type { CustomerDetail } from "@/lib/customers";
 

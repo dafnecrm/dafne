@@ -3,15 +3,15 @@
 import { useTranslations } from "next-intl";
 import { revalidateLogic } from "@tanstack/react-form-nextjs";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FieldGroup } from "@/components/ui/field";
+import { Button } from "@dafne/frontend-ui/components/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@dafne/frontend-ui/components/card";
+import { FieldGroup } from "@dafne/frontend-ui/components/field";
 import { setServerError, useAppForm } from "@/lib/app-form/app-form";
-import { useResetOnLeave } from "@/lib/app-form/reset-on-leave";
+import { useResetOnLeave } from "@dafne/frontend-forms/client";
 import type { ProductDetail } from "@/lib/products";
 import { saveProduct } from "./actions";
 import { productFormOpts, productSchema } from "./schema";
-import { InputGroupAddon } from "@/components/ui/input-group";
+import { InputGroupAddon } from "@dafne/frontend-ui/components/input-group";
 
 /** Creates a product, or edits `product`. Saving opens its page. */
 export function ProductForm({ product }: { product?: ProductDetail }) {

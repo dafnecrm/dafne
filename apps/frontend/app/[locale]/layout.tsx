@@ -4,9 +4,9 @@ import { getTranslations } from "next-intl/server";
 import { locale as rootLocale } from "next/root-params";
 import { Geist, Geist_Mono, Inter, Figtree } from "next/font/google";
 import "../globals.css";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { THEME_SCRIPT } from "@/lib/theme";
-import { cn } from "@/lib/utils";
+import { TooltipProvider } from "@dafne/frontend-ui/components/tooltip";
+import { THEME_SCRIPT } from "@dafne/frontend-ui/lib/theme";
+import { cn } from "@dafne/frontend-ui/lib/utils";
 import { routing } from "@/i18n/routing";
 
 const figtree = Figtree({subsets:['latin'],variable:'--font-sans'});

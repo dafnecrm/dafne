@@ -9,7 +9,7 @@ import {
   PageContentTitle,
 } from "@/components/page-content";
 import { BreadcrumbLabel } from "@/components/page-breadcrumb";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { CustomerForm } from "../../customer-form";
 import { loadCustomer } from "../load-customer";
 

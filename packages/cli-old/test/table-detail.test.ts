@@ -53,7 +53,7 @@ describe('syncTableConfig', () => {
     expect(content).toMatch(/field: "type" satisfies ActivityFilterField,\s*label: "activities.fields.type",\s*options: ACTIVITY_TYPE_OPTIONS/);
     expect(content).toContain('{ value: "false", label: "common.no" }');
     expect(content).toContain('{ value: "phone", label: "activities.type.phone" }');
-    expect(content).toMatch(/import \{ type MessageKey \} from "@\/i18n\/keys"/);
+    expect(content).toMatch(/import \{ type MessageKey \} from "@dafne\/frontend-ui\/lib\/message-key"/);
   });
 
   it('keeps hand-made filters and honours dafne-ignore', () => {
@@ -105,7 +105,7 @@ describe('syncDetail', () => {
     expect(content).toMatch(
       /<Detail icon=\{TextIcon\} label=\{t\("activities.fields.description"\)\} wide>\s*\{activity\.description \? \(?\s*<TextEditorContent\s+html=\{activity\.description\}/,
     );
-    expect(content).toMatch(/import \{ TextEditorContent \} from "@\/components\/ui\/text-editor"/);
+    expect(content).toMatch(/import \{ TextEditorContent \} from "@dafne\/frontend-ui\/components\/text-editor"/);
     expect(content).not.toContain('activities.fields.deletedAt');
     expect(content).toMatch(/import \{[^}]*TagIcon[^}]*\} from "lucide-react"/);
   });

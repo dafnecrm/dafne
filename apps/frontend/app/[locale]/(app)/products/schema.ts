@@ -1,6 +1,6 @@
 import { formOptions } from "@tanstack/react-form-nextjs";
 import { productBodySchema, type ProductBody } from "@dafne/contracts";
-import { formSchema } from "@/lib/app-form/form-schema";
+import { formSchema } from "@dafne/frontend-forms";
 import type { ProductDetail } from "@/lib/products";
 
 /** Form values: every field is text, "" when blank. Keys follow the contract. */

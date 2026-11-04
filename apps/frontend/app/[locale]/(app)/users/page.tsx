@@ -12,10 +12,10 @@ import {
   PageContentHeader,
   PageContentTitle,
 } from "@/components/page-content";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { BackendError } from "@/lib/backend";
-import { getTableParams } from "@/lib/data-table";
+import { Button } from "@dafne/frontend-ui/components/button";
+import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
+import { BackendError } from "@dafne/frontend-api";
+import { getTableParams } from "@dafne/frontend-data-table";
 import { isAdmin, requireUser } from "@/lib/session";
 import { listUsers } from "@/lib/users";
 import { usersTable } from "@/lib/users-table";

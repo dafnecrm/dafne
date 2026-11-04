@@ -7,8 +7,8 @@ import {
   createDataTableColumnHelper,
   useDescribeFilters,
   DataTable,
-} from "@/components/data-table";
-import { LocalDate } from "@/components/local-date";
+} from "@dafne/frontend-data-table/table";
+import { LocalDate } from "@dafne/frontend-ui/components/local-date";
 import type { ListedActivity } from "@/lib/activities";
 import {
   ACTIVITY_TYPE_OPTIONS,
@@ -23,10 +23,10 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "@/components/ui/empty";
-import type { TableParams } from "@/lib/data-table";
+} from "@dafne/frontend-ui/components/empty";
+import type { TableParams } from "@dafne/frontend-data-table";
 import { useOptionLabel } from "@/i18n/options";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@dafne/frontend-ui/components/badge";
 
 /*
  * Columns of the activities table. Column ids double as the backend's

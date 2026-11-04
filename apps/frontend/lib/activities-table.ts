@@ -4,8 +4,8 @@ import type {
   ActivityType,
   ActivityStatus,
 } from "@dafne/contracts";
-import type { MessageKey } from "@/i18n/keys";
-import { defineDataTable } from "./data-table";
+import type { MessageKey } from "@dafne/frontend-ui/lib/message-key";
+import { defineDataTable } from "@dafne/frontend-data-table";
 import { CircleIcon, CircleOffIcon, LucideIcon } from "lucide-react";
 
 /** Labels (message keys) of the type values. */

@@ -12,9 +12,9 @@ import {
   PageContentHeader,
   PageContentTitle,
 } from "@/components/page-content";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { getTableParams } from "@/lib/data-table";
+import { Button } from "@dafne/frontend-ui/components/button";
+import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
+import { getTableParams } from "@dafne/frontend-data-table";
 import { listActivities } from "@/lib/activities";
 import { activitiesTable } from "@/lib/activities-table";
 import { requireUser } from "@/lib/session";

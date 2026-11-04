@@ -9,7 +9,7 @@ import {
   PageContentHeader,
   PageContentTitle,
 } from "@/components/page-content";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { isAdmin, requireUser } from "@/lib/session";
 import { NotAllowed } from "../not-allowed";
 import { UserForm } from "../user-form";
