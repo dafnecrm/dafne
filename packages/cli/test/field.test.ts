@@ -9,7 +9,7 @@ import { backendPieces } from '../src/generators/backend.js';
 import { generatePieces } from '../src/generators/pieces.js';
 
 const FIXTURE = join(import.meta.dirname, 'fixtures', 'project');
-const TABLES = 'apps/backend/libs/database/src/tables';
+const TABLES = 'packages/backend/database/src/tables';
 let root: string;
 const read = (path: string) => readFileSync(join(root, path), 'utf8');
 
@@ -76,10 +76,10 @@ describe('field add', () => {
     // customers.ts doesn't import activities: no import cycle.
     expect(read(`${TABLES}/customers.ts`)).not.toContain('activit');
 
-    const schema = read('apps/backend/libs/database/src/schema.ts');
+    const schema = read('packages/backend/database/src/schema.ts');
     expect(schema).toContain("import { mergeRelations } from './merge-relations.js';");
     expect(schema).toMatch(/relations = mergeRelations\(\s*defineRelations\(schema\),\s*authRelations,\s*customerRelations,\s*activityRelations,?\s*\)/);
-    expect(read('apps/backend/libs/database/src/merge-relations.ts')).toContain('export function mergeRelations');
+    expect(read('packages/backend/database/src/merge-relations.ts')).toContain('export function mergeRelations');
   });
 
   it('makes a required key restrict deletes, and refuses set null', async () => {

@@ -2,11 +2,13 @@
 
 # dafne frontend
 
-Next.js app, part of the Dafne monorepo (see `../CLAUDE.md`). It calls the
+Next.js app, part of the Dafne monorepo (see `../../CLAUDE.md`). It calls the
 NestJS backend (`../backend`) from the server through `backendFetch`
 (`lib/backend.ts`). It imports the API contracts from the workspace
 package `@dafne/contracts` and, type-only, the backend's auth options
-(`@backend/auth-options`, a path in `tsconfig.json`).
+(`@dafne/backend-auth/options`, a dev dependency). Its `tsconfig.json`
+tells `nx sync` not to add project references (Next compiles the
+packages' sources).
 
 ## API types come from the backend
 
@@ -27,7 +29,7 @@ a workspace dependency compiled by Next (`transpilePackages`).
   literals with `satisfies CustomerSortField[]`. A value import pulls Zod
   (~100 KB) into the page's bundle.
 - `next.config.ts` sets `turbopack.root` to the monorepo root, so
-  Turbopack can read `../../packages/contracts` and `../backend`. `allowImportingTsExtensions` in
+  Turbopack can read the workspace packages (`../../packages`). `allowImportingTsExtensions` in
   `tsconfig.json` is needed for the contracts' `.ts` imports.
 
 ## Languages (next-intl)

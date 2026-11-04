@@ -16,6 +16,8 @@
     "dafne": "pnpm --filter @dafne/cli dev"
   },
   "devDependencies": {
-    "nx": "^24.0.4"
+    "@nx/js": "24.0.4",
+    "nx": "^24.0.4",
+    "typescript": "catalog:"
   }
 }

@@ -1,0 +1,33 @@
+{
+  "name": "@dafne/backend-geo",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "oxlint -c ../.oxlintrc.json --type-aware src",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@dafne/backend-common": "workspace:*",
+    "@dafne/backend-database": "workspace:*",
+    "@dafne/contracts": "workspace:*",
+    "@nestjs/cache-manager": "catalog:",
+    "@nestjs/common": "catalog:",
+    "@nestjs/config": "catalog:",
+    "@nestjs/drizzle": "catalog:",
+    "drizzle-orm": "catalog:"
+  },
+  "devDependencies": {
+    "@nestjs/testing": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/node": "catalog:",
+    "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:",
+    "typescript": "catalog:",
+    "unplugin-swc": "catalog:",
+    "vitest": "catalog:"
+  }
+}

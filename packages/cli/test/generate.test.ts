@@ -39,7 +39,7 @@ afterEach(() => rmSync(root, { recursive: true, force: true }));
 
 describe('findRoot', () => {
   it('finds the folder with backend/ and frontend/ from inside it', () => {
-    expect(findRoot(join(root, 'apps', 'backend', 'apps'))).toBe(root);
+    expect(findRoot(join(root, 'apps', 'backend', 'src'))).toBe(root);
   });
 });
 
@@ -49,17 +49,17 @@ describe('a fullstack resource', () => {
     const created = changes.summary().filter((c) => c.kind === 'create').map((c) => c.path);
     expect(created).toEqual(
       expect.arrayContaining([
-        'apps/backend/libs/invoices/src/invoices.controller.ts',
-        'apps/backend/libs/invoices/src/invoices.service.spec.ts',
+        'packages/backend/invoices/src/invoices.controller.ts',
+        'packages/backend/invoices/src/invoices.service.spec.ts',
         'packages/contracts/src/invoices.ts',
-        'apps/backend/libs/database/src/tables/invoices.ts',
+        'packages/backend/database/src/tables/invoices.ts',
         'apps/frontend/lib/invoices-table.ts',
         'apps/frontend/app/[locale]/(app)/invoices/[id]/edit/page.tsx',
         'apps/frontend/app/[locale]/(app)/invoices/invoice-form.tsx',
         'apps/frontend/app/[locale]/(app)/invoices/invoice-detail.tsx',
       ]),
     );
-    expect(read('apps/backend/libs/invoices/src/invoices.controller.ts')).toContain(
+    expect(read('packages/backend/invoices/src/invoices.controller.ts')).toContain(
       "@Controller('invoices')",
     );
   });
@@ -67,14 +67,23 @@ describe('a fullstack resource', () => {
   it('registers it everywhere', async () => {
     await fullstack('invoice');
 
-    expect(JSON.parse(read('apps/backend/nest-cli.json')).projects.invoices.root).toBe(
-      'libs/invoices',
-    );
-    expect(read('apps/backend/tsconfig.json')).toContain('"@app/invoices/*"');
-    const api = read('apps/backend/apps/api/src/api.module.ts');
-    expect(api).toContain("import { InvoicesModule } from '@app/invoices';");
+    // A workspace package of its own, depended on by the app.
+    const pkg = JSON.parse(read('packages/backend/invoices/package.json'));
+    expect(pkg.name).toBe('@dafne/backend-invoices');
+    expect(pkg.dependencies['@dafne/backend-database']).toBe('workspace:*');
+    const app = JSON.parse(read('apps/backend/package.json'));
+    expect(app.dependencies['@dafne/backend-invoices']).toBe('workspace:*');
+    expect(Object.keys(app.dependencies)).toEqual(Object.keys(app.dependencies).sort());
+    // The TypeScript project references nx sync would write.
+    expect(read('packages/backend/invoices/tsconfig.json')).toContain('"path": "../database"');
+    expect(JSON.parse(read('apps/backend/tsconfig.json')).references).toContainEqual({
+      path: '../../packages/backend/invoices',
+    });
+    expect(read('tsconfig.json')).toContain('"path": "./packages/backend/invoices"');
+    const api = read('apps/backend/src/api.module.ts');
+    expect(api).toContain("import { InvoicesModule } from '@dafne/backend-invoices';");
     expect(api).toMatch(/CustomersModule,\n {4}InvoicesModule,\n {2}\]/);
-    const schema = read('apps/backend/libs/database/src/schema.ts');
+    const schema = read('packages/backend/database/src/schema.ts');
     expect(schema).toContain("import * as invoices from './tables/invoices.js';");
     expect(schema).toContain('const { invoiceRelations, ...invoiceTables } = invoices;');
     expect(schema).toContain('...customerTables, ...invoiceTables }');
@@ -82,10 +91,10 @@ describe('a fullstack resource', () => {
     expect(read('packages/contracts/src/index.ts')).toContain(
       "export * from './invoices.ts';",
     );
-    const module = read('apps/backend/libs/invoices/src/invoices.module.ts');
+    const module = read('packages/backend/invoices/src/invoices.module.ts');
     expect(module).toContain('controllers: [InvoicesController]');
     expect(module).toContain('exports: [InvoicesService]');
-    expect(read('apps/backend/libs/invoices/src/index.ts')).toContain(
+    expect(read('packages/backend/invoices/src/index.ts')).toContain(
       "export * from './invoices.service.js';",
     );
     const nav = read('apps/frontend/lib/navigation.ts');
@@ -107,12 +116,14 @@ describe('a fullstack resource', () => {
 
   it("doesn't register twice", async () => {
     await fullstack('invoice');
-    const before = read('apps/backend/apps/api/src/api.module.ts');
+    const before = read('apps/backend/src/api.module.ts');
     const c = ctx('invoice', new Changes(root, { force: true }));
     generatePieces(backendPieces, BACKEND_RESOURCE, c);
     generatePieces(frontendPieces, ['nav'], c);
     await c.changes.commit();
-    expect(read('apps/backend/apps/api/src/api.module.ts')).toBe(before);
+    expect(read('apps/backend/src/api.module.ts')).toBe(before);
+    expect(read('tsconfig.json').match(/packages\/backend\/invoices"/g)).toHaveLength(1);
+    expect(read('apps/backend/tsconfig.json').match(/packages\/backend\/invoices"/g)).toHaveLength(1);
     expect(read('apps/frontend/lib/navigation.ts').match(/"\/invoices"/g)).toHaveLength(1);
   });
 });
@@ -157,7 +168,7 @@ describe('single pieces', () => {
     const changes = new Changes(root, { skipUpdates: true });
     generatePieces(backendPieces, ['lib'], ctx('invoice', changes));
     expect(changes.summary().every((c) => c.kind === 'create')).toBe(true);
-    expect(changes.skipped).toContain('apps/backend/apps/api/src/api.module.ts');
+    expect(changes.skipped).toContain('apps/backend/src/api.module.ts');
   });
 
   it('generates a blank page at a route', async () => {

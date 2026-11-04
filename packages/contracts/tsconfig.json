@@ -1,15 +1,11 @@
 {
   // Source-only package: the backend and the frontend compile it themselves.
+  // Relative imports end in .ts (see src/index.ts).
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
-    "target": "ES2023",
-    // Relative imports end in .ts (see src/index.ts).
-    "allowImportingTsExtensions": true,
-    "noEmit": true,
-    "isolatedModules": true,
-    "strict": true,
-    "skipLibCheck": true,
+    "rootDir": "src",
+    "outDir": "out-tsc",
+    "tsBuildInfoFile": "out-tsc/tsconfig.tsbuildinfo",
     "types": ["vitest/globals"]
   },
   "include": ["src"]

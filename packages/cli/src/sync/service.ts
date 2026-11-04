@@ -5,7 +5,7 @@ import { rolesOf } from './roles.js';
 import type { TableInfo } from './table.js';
 
 /*
- * Brings the queries of a generated service (libs/<plural>/src/<plural>.service.ts)
+ * Brings the queries of a generated service (packages/backend/<plural>/src/<plural>.service.ts)
  * in line with the table and its @api tags, editing only what they're about:
  * - list<P>: the `db.select({...})` fields are the listed columns;
  * - get<S>: `findFirst({ columns: {...} })` leaves out (`key: false`) the

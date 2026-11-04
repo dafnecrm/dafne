@@ -1,4 +1,7 @@
 {
+  // TypeScript 7 and noEmit: checked by its own "typecheck" script, not by
+  // the @nx/js/typescript plugin.
+  "nx": { "addTypecheckTarget": false },
   "compilerOptions": {
     "target": "ES2023",
     "module": "nodenext",

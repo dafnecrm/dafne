@@ -1,0 +1,34 @@
+{
+  "name": "@dafne/backend-users",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "oxlint -c ../.oxlintrc.json --type-aware src",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@dafne/backend-auth": "workspace:*",
+    "@dafne/backend-common": "workspace:*",
+    "@dafne/backend-database": "workspace:*",
+    "@dafne/contracts": "workspace:*",
+    "@nestjs/common": "catalog:",
+    "@nestjs/drizzle": "catalog:",
+    "@thallesp/nestjs-better-auth": "catalog:",
+    "better-auth": "catalog:",
+    "drizzle-orm": "catalog:"
+  },
+  "devDependencies": {
+    "@nestjs/testing": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/node": "catalog:",
+    "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:",
+    "typescript": "catalog:",
+    "unplugin-swc": "catalog:",
+    "vitest": "catalog:"
+  }
+}

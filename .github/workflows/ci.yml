@@ -36,4 +36,7 @@ jobs:
       # Sets NX_BASE / NX_HEAD: the PR's base, or main's last green commit.
       - uses: nrwl/nx-set-shas@v4
 
+      # Project references in line with the package.json dependencies (nx sync).
+      - run: pnpm nx sync:check
+
       - run: pnpm nx affected -t lint typecheck test build --outputStyle=static

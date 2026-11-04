@@ -3,7 +3,7 @@ import { Node, type ObjectLiteralExpression, type SourceFile } from 'ts-morph';
 import type { Changes } from '../core/changes.js';
 import { casings, words, type ResourceNames } from '../core/names.js';
 import { appendToList, editSource, quoteOf, variableObject } from './ast.js';
-import { BACKEND, CONTRACTS_SRC, FRONTEND } from '../core/workspace.js';
+import { BACKEND_LIBS, CONTRACTS_SRC, FRONTEND } from '../core/workspace.js';
 
 /*
  * Translated texts. Generated code holds message keys, never text:
@@ -204,7 +204,7 @@ export function syncMessages(
         const text = frontendText(key);
         if (text && !frontend.has(key)) frontend.set(key, text);
       }
-    } else if ((path.startsWith(`${BACKEND}/libs/`) || path.startsWith(`${CONTRACTS_SRC}/`)) && /\.ts$/.test(path) && !path.includes('/messages/')) {
+    } else if ((path.startsWith(`${BACKEND_LIBS}/`) || path.startsWith(`${CONTRACTS_SRC}/`)) && /\.ts$/.test(path) && !path.includes('/messages/')) {
       for (const { key, enumField } of contractKeys(source)) {
         const text = contractText(key, enumField);
         if (text && !contracts.has(key)) contracts.set(key, text);

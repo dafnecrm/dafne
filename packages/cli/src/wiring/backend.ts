@@ -16,49 +16,59 @@ import {
 } from './ast.js';
 import { Node } from 'ts-morph';
 
-import { BACKEND, CONTRACTS_SRC } from '../core/workspace.js';
+import { BACKEND, backendLib, backendPackage, CONTRACTS_SRC } from '../core/workspace.js';
 
 export { BACKEND, CONTRACTS_SRC };
-export const API_MODULE = `${BACKEND}/apps/api/src/api.module.ts`;
-export const DB_SCHEMA = `${BACKEND}/libs/database/src/schema.ts`;
+export const API_MODULE = `${BACKEND}/src/api.module.ts`;
+export const DB_SCHEMA = `${backendLib('database')}/src/schema.ts`;
 /** The API contracts package, shared by the backend and the frontend. */
 export const CONTRACTS_PACKAGE = '@dafne/contracts';
 export const CONTRACTS_INDEX = `${CONTRACTS_SRC}/index.ts`;
 
 const JSON_FORMAT = { formattingOptions: { insertSpaces: true, tabSize: 2, eol: '\n' } };
 
-/** Sets `path` in a JSON(C) file, keeping comments and layout, unless it's already set. */
-function setJson(changes: Changes, file: string, path: string[], value: unknown) {
-  changes.update(file, (source) => {
-    let node: unknown = parse(source);
-    for (const key of path) node = (node as Record<string, unknown> | undefined)?.[key];
-    if (node !== undefined) return source;
-    return applyEdits(source, modify(source, path, value, JSON_FORMAT));
+/** Adds `{ "path": ref }` to a tsconfig's "references", unless it's there. */
+function ensureReference(changes: Changes, tsconfig: string, ref: string) {
+  changes.update(tsconfig, (source) => {
+    const refs = (parse(source) as { references?: { path: string }[] }).references ?? [];
+    if (refs.some((r) => r.path.replace(/\/$/, '') === ref)) return source;
+    return applyEdits(
+      source,
+      modify(source, ['references', refs.length], { path: ref }, { ...JSON_FORMAT, isArrayInsertion: true }),
+    );
   });
 }
 
-/** Registers a lib: nest-cli.json project, tsconfig paths and ApiModule import. */
-export function wireLib(changes: Changes, { p }: ResourceNames) {
-  const lib = `libs/${p.kebab}`;
-  setJson(changes, `${BACKEND}/nest-cli.json`, ['projects', p.kebab], {
-    type: 'library',
-    root: lib,
-    entryFile: 'index',
-    sourceRoot: `${lib}/src`,
-    compilerOptions: { tsConfigPath: `${lib}/tsconfig.lib.json` },
+/** Adds a dependency to a package.json, keeping them sorted, unless it's there. */
+function ensureDependency(changes: Changes, file: string, name: string, version: string) {
+  changes.update(file, (source) => {
+    const pkg = JSON.parse(source) as { dependencies?: Record<string, string> };
+    if (pkg.dependencies?.[name]) return source;
+    pkg.dependencies = Object.fromEntries(
+      Object.entries({ ...pkg.dependencies, [name]: version }).sort(([a], [b]) => a.localeCompare(b)),
+    );
+    return JSON.stringify(pkg, null, 2) + '\n';
   });
-  const tsconfig = `${BACKEND}/tsconfig.json`;
-  setJson(changes, tsconfig, ['compilerOptions', 'paths', `@app/${p.kebab}`], [
-    `./${lib}/src/index.ts`,
-  ]);
-  setJson(changes, tsconfig, ['compilerOptions', 'paths', `@app/${p.kebab}/*`], [
-    `./${lib}/src/*`,
-  ]);
+}
+
+/**
+ * Registers a lib (a workspace package) in the app: its dependency, the
+ * TypeScript project references (the app's tsconfig and tsconfig.build, and
+ * the root's, as `nx sync`
+ * would write them) and the ApiModule import. The new package still needs
+ * `pnpm install` to be linked.
+ */
+export function wireLib(changes: Changes, { p }: ResourceNames) {
+  const name = backendPackage(p.kebab);
+  ensureDependency(changes, `${BACKEND}/package.json`, name, 'workspace:*');
+  for (const tsconfig of ['tsconfig.json', 'tsconfig.build.json'])
+    ensureReference(changes, `${BACKEND}/${tsconfig}`, `../../${backendLib(p.kebab)}`);
+  ensureReference(changes, 'tsconfig.json', `./${backendLib(p.kebab)}`);
 
   const moduleClass = `${p.pascal}Module`;
   changes.update(API_MODULE, (source) =>
     editSource(API_MODULE, source, (file) => {
-      ensureNamedImport(file, `@app/${p.kebab}`, moduleClass);
+      ensureNamedImport(file, name, moduleClass);
       const options = () => decoratorObject(file, 'Module');
       ensureArrayElement(file, arrayProperty(file, options, 'imports'), moduleClass);
     }),
@@ -71,7 +81,7 @@ export function wireIntoLib(
   { p }: ResourceNames,
   kind: 'controller' | 'service',
 ) {
-  const src = `${BACKEND}/libs/${p.kebab}/src`;
+  const src = `${backendLib(p.kebab)}/src`;
   const modulePath = `${src}/${p.kebab}.module.ts`;
   const className = `${p.pascal}${kind === 'controller' ? 'Controller' : 'Service'}`;
   const fileImport = `./${p.kebab}.${kind}.js`;
@@ -130,7 +140,7 @@ export function wireTable(changes: Changes, { s, p }: ResourceNames) {
   );
 }
 
-export const MERGE_RELATIONS = `${BACKEND}/libs/database/src/merge-relations.ts`;
+export const MERGE_RELATIONS = `${backendLib('database')}/src/merge-relations.ts`;
 
 /** The `mergeRelations(...)` call that builds `relations`, if schema.ts uses it. */
 function mergeRelationsCall(file: SourceFile) {

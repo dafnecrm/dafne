@@ -16,7 +16,7 @@ import {
 } from '../wiring/ast.js';
 
 /*
- * Edits one Drizzle table file (libs/database/src/tables/<plural>.ts) as
+ * Edits one Drizzle table file (packages/backend/database/src/tables/<plural>.ts) as
  * text: each method re-parses it, so nodes are never stale.
  */
 

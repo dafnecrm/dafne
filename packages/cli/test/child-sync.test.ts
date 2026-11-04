@@ -8,9 +8,9 @@ import { foreignRelations, readTable } from '../src/sync/table.js';
 
 const FIXTURES = join(import.meta.dirname, 'fixtures');
 const read = (path: string) => readFileSync(join(FIXTURES, path), 'utf8');
-const TABLE = read('project/apps/backend/libs/database/src/tables/customers.ts');
+const TABLE = read('project/packages/backend/database/src/tables/customers.ts');
 const CONTRACT = read('project/packages/contracts/src/customers.ts');
-// A copy of backend/libs/customers/src/customers.service.ts (addresses with a label).
+// A copy of packages/backend/customers/src/customers.service.ts (addresses with a label).
 const SERVICE = read('customers.service.ts');
 
 const customer = resourceNames('customer');

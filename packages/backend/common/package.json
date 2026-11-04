@@ -1,0 +1,29 @@
+{
+  "name": "@dafne/backend-common",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "oxlint -c ../.oxlintrc.json --type-aware src",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@dafne/contracts": "workspace:*",
+    "@nestjs/common": "catalog:",
+    "@nestjs/core": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@swc/core": "catalog:",
+    "@types/express": "catalog:",
+    "@types/node": "catalog:",
+    "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:",
+    "typescript": "catalog:",
+    "unplugin-swc": "catalog:",
+    "vitest": "catalog:"
+  }
+}

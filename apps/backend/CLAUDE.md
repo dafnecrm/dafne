@@ -1,7 +1,10 @@
 # dafne backend
 
-NestJS API (Nest monorepo: `apps/api`, libraries in `libs/*`, imported as
-`@app/<lib>`), part of the Dafne monorepo (see `../CLAUDE.md`). The API
+NestJS API, part of the Dafne monorepo (see `../../CLAUDE.md`). This folder
+is the app (`src/`: `main.ts`, `ApiModule`; `migrations/`; `.env`). The
+feature code lives in Nest libs, one workspace package each in
+`../../packages/backend/<lib>`, imported as `@dafne/backend-<lib>` (e.g.
+`@dafne/backend-customers`). The API
 contracts live in the workspace package `@dafne/contracts`
 (`../../packages/contracts`), shared with the frontend (`../frontend`).
 
@@ -41,7 +44,7 @@ User-facing messages are keys, never text: `msg('customers.name.required')`
 keys of `messages/en.ts`; `it.ts` must have the same keys (typed by
 `ContractMessages`). The frontend shows the same texts.
 
-- `I18nExceptionFilter` (global, `@app/common`) translates key messages
+- `I18nExceptionFilter` (global, `@dafne/backend-common`) translates key messages
   (also `"path: key"`) into the request's `Accept-Language` (Italian by
   default), and re-parses validation failures so Zod's own messages are in
   that language too.
@@ -49,7 +52,7 @@ keys of `messages/en.ts`; `it.ts` must have the same keys (typed by
 
 ## Validation
 
-- Validate with `ZodValidationPipe` from `@app/common`, per parameter:
+- Validate with `ZodValidationPipe` from `@dafne/backend-common`, per parameter:
   `@Body(new ZodValidationPipe(customerBodySchema)) body: CustomerBody`.
   The parameter type is the schema's output (`z.output`).
 - There's no global ValidationPipe and no class-validator: don't add DTO
@@ -62,3 +65,21 @@ keys of `messages/en.ts`; `it.ts` must have the same keys (typed by
    `packages/contracts/src/<resource>.ts`, then export the file from `index.ts`.
 2. Use them in the controller (pipe + return type) and in the service.
 3. In the frontend, add the `Json<...>` alias (see `../frontend/CLAUDE.md`).
+
+## Libs (`packages/backend/*`)
+
+- Each lib is a source-only workspace package: `package.json` (its own
+  dependencies, `exports` → `src/index.ts`), `tsconfig.json` (extends
+  `../../../tsconfig.base.json`; `references` kept by `nx sync`) and
+  `vitest.config.ts`. Its specs run in the lib (`pnpm nx test
+  @dafne/backend-customers`).
+- A lib depends on the libs it imports (`"@dafne/backend-database":
+  "workspace:*"`); never import a lib's files by path.
+- The app bundles the libs with rspack (`rspack.config.js`), but loads npm
+  packages from its own `node_modules` at runtime: a new runtime
+  dependency of a lib goes in the app's `package.json` too.
+- New libs and resources come from the `dafne` CLI, which also wires them
+  into the app. `@dafne/backend-database` holds the tables (`src/tables`);
+  the migrations stay here, in `migrations/` (`dafne migration generate`).
+- `pnpm --filter @dafne/backend-auth auth:schema:generate` regenerates the
+  Better Auth tables (`database/src/tables/auth.ts`).

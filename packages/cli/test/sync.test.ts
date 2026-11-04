@@ -6,7 +6,7 @@ import { syncContract } from '../src/sync/contract.js';
 import { rolesOf } from '../src/sync/roles.js';
 import { readTable } from '../src/sync/table.js';
 
-const FIXTURE = join(import.meta.dirname, 'fixtures', 'project', 'apps', 'backend', 'libs');
+const FIXTURE = join(import.meta.dirname, 'fixtures', 'project', 'packages', 'backend');
 const fixture = (path: string) => readFileSync(join(FIXTURE, path), 'utf8');
 
 const activity = resourceNames('activity');
@@ -80,7 +80,7 @@ describe('rolesOf', () => {
 describe('syncContract', () => {
   it('leaves an up-to-date contract alone (customers, with its addresses)', () => {
     const table = fixture('database/src/tables/customers.ts');
-    const contract = fixture('../../../packages/contracts/src/customers.ts');
+    const contract = fixture('../contracts/src/customers.ts');
     const names = resourceNames('customer');
     const info = readTable('customers.ts', table, names);
     const { report } = syncContract('customers.ts', contract, names, info);

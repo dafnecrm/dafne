@@ -1,5 +1,5 @@
 // Type only: erased at build time, so no backend code reaches the frontend.
-import type { AuthOptions } from "@backend/auth-options";
+import type { AuthOptions } from "@dafne/backend-auth/options";
 import { adminClient, inferAdditionalFields } from "better-auth/client/plugins";
 
 /**
