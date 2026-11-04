@@ -12,5 +12,6 @@ and `@dafne/backend-database-auth`.
 - Better Auth's guard protects every route: public ones need
   `@AllowAnonymous()` (`@thallesp/nestjs-better-auth`).
 - Tables and migrations of dafne_auth are in
-  `../../packages/backend/database-auth`; this app doesn't migrate
-  (`pnpm dafne db migrate`).
+  `../../packages/backend/database-auth`. They're applied by
+  `pnpm dafne db migrate`, or on startup with `MIGRATE_ON_START=true`
+  (`src/main.ts`, see `@dafne/backend-migrator`).

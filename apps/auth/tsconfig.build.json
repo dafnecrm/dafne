@@ -20,6 +20,9 @@
       "path": "../../packages/backend/users"
     },
     {
+      "path": "../../packages/backend/migrator"
+    },
+    {
       "path": "../../packages/backend/database-auth"
     },
     {

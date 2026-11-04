@@ -34,12 +34,48 @@ pnpm dafne db move <from> <to>         # one time: move every table (RENAME TABL
   (ignored by git).
 - `migrate:dev` (`dafne dev` runs it before the API) skips with a warning
   when `MIGRATIONS_DATABASE_URL` isn't set.
-- In production, run `migrate` before deploying the apps.
+- In production, either the apps migrate on startup (below), or a deploy
+  step runs `migrate` before the apps are updated.
 - `generate` (a database package's `migration:generate`) runs drizzle-kit,
   then fixes the foreign keys of the new migrations from their
   `snapshot.json`: drizzle-kit 1.0.0-rc.5 drops `ON DELETE`/`ON UPDATE`
   inside `CREATE TABLE`, and writes keys to tables of other databases
   without the database name.
+
+## Migrations on startup
+
+An app built from `dafne g app` (and `crm-api`, `auth`) can apply the
+migrations itself when it starts, before Nest:
+
+```ts
+// src/main.ts
+await migrateOnStart({
+  migrations: join(import.meta.dirname, 'migrations'),
+  log: (line) => logger.log(line),
+});
+```
+
+- It only runs with `MIGRATE_ON_START=true`, and then needs
+  `MIGRATIONS_DATABASE_URL` (environment or the app's `.env`).
+  Otherwise it does nothing: in development `dafne dev` migrates first.
+- The app's `rspack.config.js` copies the `migration.sql` of **every**
+  database package into `dist/migrations/<database>/`
+  (`migrationCopyPatterns` from `@dafne/backend-migrator/bundle`). Every
+  database's, not just the app's: they run in one order across databases
+  (dafne_auth's first migration moves tables out of dafne_crm), so any
+  app can bring a fresh server up to date. The apps' `build` lists the
+  migrations among its Nx inputs.
+- Apps or replicas that start together are safe: one takes the lock and
+  migrates, the others wait, then find nothing to apply. A failing
+  migration throws, so the app doesn't start on a half-migrated database.
+- The trade-off: the app's environment holds a user with DDL rights, and
+  a restart may migrate other apps' databases. When that's not wanted,
+  leave `MIGRATE_ON_START` off and run `migrate` as a deploy step (e.g. a
+  GitHub Actions job before the deploy: `pnpm install` then
+  `pnpm nx run @dafne/backend-migrator:migrate` with
+  `MIGRATIONS_DATABASE_URL` from the secrets).
+- Either way, a migration must keep working with the version of the apps
+  still running (add first, drop in a later release).
 
 ## Grants
 

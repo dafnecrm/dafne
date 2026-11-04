@@ -1,7 +1,17 @@
+import { migrateOnStart } from '@dafne/backend-migrator/start';
+import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { join } from 'node:path';
 import { <%= a.pascal %>Module } from './<%= a.kebab %>.module.js';
 
 async function bootstrap() {
+  // MIGRATE_ON_START=true: every database's migrations first (copied into dist/ by the build).
+  const logger = new Logger('Migrations');
+  await migrateOnStart({
+    migrations: join(import.meta.dirname, 'migrations'),
+    log: (line) => logger.log(line),
+  });
+
   const app = await NestFactory.create(<%= a.pascal %>Module);
   await app.listen(process.env.PORT ?? <%= port %>);
 }
