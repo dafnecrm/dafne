@@ -15,6 +15,7 @@ describe('productBodySchema', () => {
     ).toEqual({
       name: 'Acme',
       price: '1.00',
+      description: null,
     });
   });
 

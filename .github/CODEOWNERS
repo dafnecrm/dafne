@@ -1,0 +1,16 @@
+# Who reviews what: GitHub asks the owners of the touched paths to review
+# each pull request. The last matching line wins.
+# Replace @lula with each area's owner (GitHub username or @dafnecrm/<team>).
+
+*                    @lula
+
+/backend/            @lula
+/frontend/           @lula
+# Shared by the backend and the frontend: both owners.
+/packages/contracts/ @lula
+/cli/                @lula
+
+# Monorepo setup and CI.
+/.github/            @lula
+/nx.json             @lula
+/pnpm-workspace.yaml @lula
