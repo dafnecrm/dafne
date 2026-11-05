@@ -2,8 +2,7 @@
 
 The `dafne` command and an Nx plugin with the backend generators and the
 frontend lib generator. Usage is
-in `README.md`. The frontend pages, `sync`, `field` and `migration`
-are still in the previous CLI, `../cli-old` (`dafne-old`).
+in `README.md`.
 
 TypeScript ESM, Node ≥ 26, **no build**: Node runs `src/index.ts` (type
 stripping) and Nx loads the generators from their sources too. Hence only
@@ -55,8 +54,7 @@ erasable syntax (no enums, namespaces or constructor parameter properties;
 
 ## Rules
 
-The rules of `../cli-old/CLAUDE.md` about templates, names, wiring, relations,
-messages and formatting still hold here. In short:
+Templates, names, wiring, relations, messages and formatting:
 
 - **Templates copy `customers`** (and `apps/crm-api` for the app). When those
   patterns change, update the templates. They are rendered by

@@ -1,8 +1,7 @@
 # @dafne/cli
 
 The `dafne` command: generates backend code and frontend libs through Nx
-generators, and runs Nx tasks. For the frontend pages, `sync`, `field` and `migration` use
-the previous CLI, `dafne-old` (`../cli-old`).
+generators, runs the database migrations and Nx tasks.
 
 From the root: `pnpm dafne <command>` (no build needed). Arguments left out
 are asked interactively; `-y` fails instead.
@@ -35,8 +34,7 @@ The spec is `name:type[:option…]`. Types: `string`, `text`, `int`, `bigint`,
 `float`, `decimal`, `boolean`, `date`, `datetime`, `enum`, `json`, `ref`.
 Flags: `required`, `unique`, `index`, `editor`. Values: `length`, `values`,
 `default`, `precision`, `scale`, `api`, `to`, `relation`, `on-delete`,
-`inverse` (`-` for none); lists use `|`. They are the options of
-`dafne-old field add`.
+`inverse` (`-` for none); lists use `|`.
 
 The fields go into the table, then the contract, the service and their
 specs are synced with them. The sample `name` field stays.
@@ -71,7 +69,7 @@ They run the targets of `@dafne/backend-migrator` (see its README).
 ## Running tasks
 
 ```sh
-dafne dev                            # @dafne/crm-api and @dafne/crm-web in watch mode
+dafne dev                            # @dafne/auth, @dafne/crm-api and @dafne/crm-web in watch mode
 dafne dev @dafne/worker              # given projects
 dafne test                           # every project; or dafne test @dafne/backend-customers
 dafne build | lint | typecheck [projects...]

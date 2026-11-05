@@ -6,7 +6,7 @@ import { generateCommand } from './commands/generate.ts';
 import { taskCommands } from './commands/tasks.ts';
 
 const program = new Command('dafne')
-  .description('Dafne CLI: backend generators (Nx) and shortcuts for Nx tasks. Frontend pages, sync and field: dafne-old.')
+  .description('Dafne CLI: generators (Nx), database migrations and shortcuts for Nx tasks.')
   .version('0.2.0')
   .addCommand(generateCommand())
   .addCommand(dbCommand());
