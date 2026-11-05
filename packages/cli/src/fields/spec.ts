@@ -76,16 +76,16 @@ export function columnBuilder(spec: FieldSpec, sqlName: string): { code: string;
       code = `text(${name})`;
       break;
     case 'int':
-      builder = 'int';
-      code = `int(${name})`;
+      builder = 'integer';
+      code = `integer(${name})`;
       break;
     case 'bigint':
       builder = 'bigint';
       code = `bigint(${name}, { mode: 'number' })`;
       break;
     case 'float':
-      builder = 'double';
-      code = `double(${name})`;
+      builder = 'doublePrecision';
+      code = `doublePrecision(${name})`;
       break;
     case 'decimal':
       builder = 'decimal';
@@ -97,20 +97,22 @@ export function columnBuilder(spec: FieldSpec, sqlName: string): { code: string;
       break;
     case 'date':
       builder = 'date';
-      code = `date(${name})`;
+      code = `date(${name}, { mode: 'date' })`;
       break;
     case 'datetime':
       builder = 'timestamp';
-      code = `timestamp(${name}, { fsp: 3 })`;
+      code = `timestamp(${name}, { precision: 3, withTimezone: true })`;
       break;
     case 'enum':
       if (!spec.values?.length) throw new Error('An enum needs --values, e.g. --values email,phone.');
-      builder = 'mysqlEnum';
-      code = `mysqlEnum(${name}, [${spec.values.map(q).join(', ')}])`;
+      // A text column typed by its values (no Postgres enum type: adding a
+      // value would need its own migration step).
+      builder = 'text';
+      code = `text(${name}, { enum: [${spec.values.map(q).join(', ')}] })`;
       break;
     case 'json':
-      builder = 'json';
-      code = `json(${name})`;
+      builder = 'jsonb';
+      code = `jsonb(${name})`;
       break;
     default:
       throw new Error(`"${spec.type}" isn't a plain column type.`);

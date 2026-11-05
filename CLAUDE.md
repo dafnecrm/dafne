@@ -26,7 +26,8 @@ keep it in line when these rules change. Each project has its own
 - `pnpm nx <target> <project>`, e.g. `pnpm nx test @dafne/sales-api`.
 - `pnpm dafne dev` starts `@dafne/auth`, `@dafne/sales-api` and `@dafne/sales-web`
   (migrating first, with `MIGRATIONS_DATABASE_URL`); `pnpm dafne db
-  migrate | generate` handles the migrations.
+  create` creates the database and its owner, `pnpm dafne db migrate |
+  generate` handles the migrations.
 - `pnpm dafne <command>` runs the CLI from source (e.g. `pnpm dafne dev`,
   `pnpm dafne g backend-resource invoice`).
 
@@ -72,27 +73,31 @@ keep it in line when these rules change. Each project has its own
   `tools/boundaries.mjs`; ESLint (`@nx/enforce-module-boundaries`, in
   `packages/frontend/eslint.config.mjs`) and `pnpm boundaries` (the whole
   project graph, in CI) enforce them.
-- **Databases**: one per app (`dafne_<app>`), plus `dafne_auth` (users,
-  sessions) and, once a second app needs a table, `dafne_core`. Names are
-  fixed (one environment = one MySQL server). A table is born in the
-  database of the app that creates it and moves to `dafne_core` when
-  another app must read it or reference it (`RENAME TABLE`, same server).
+- **Database**: one PostgreSQL database per environment (`dafne`), one
+  schema per app (`sales`, `<app>`), plus `auth` (users, sessions) and,
+  once a second app needs a table, `core`. Names are fixed. A table is
+  born in the schema of the app that creates it and moves to `core` when
+  another app must read it or reference it (`ALTER TABLE … SET SCHEMA`).
   Dependencies go one way: app → core → auth (foreign keys included).
-  `apps/auth` owns `dafne_auth` (`@dafne/backend-database-auth`); the
+  Tables are declared in their schema (`salesSchema.table`,
+  `authDb.table`), so every query names it.
+  `apps/auth` owns `auth` (`@dafne/backend-database-auth`); the
   apps' APIs never run Better Auth, they check sessions with
   `@dafne/backend-session` (`SessionModule.forRoot({ app })`), and
   `app_access` says who can use which app. Core
   data is written only by its feature lib (e.g. `@dafne/backend-customers`),
   core migrations live in its own package, never in an app.
-- **Migrations belong to the database packages** (`"dafne": { "database":
-  "dafne_sales" }` in their package.json, `migrations/` next to it), not to
-  the apps. `@dafne/backend-migrator` applies those of every database in
-  one order, by timestamp (`pnpm dafne db migrate`), with
-  `MIGRATIONS_DATABASE_URL`. An app migrates on startup only with
-  `MIGRATE_ON_START=true` (`migrateOnStart` in its `main.ts`): its build
-  carries the migrations of **every** database (`dist/migrations`), since
-  they run in one order. `pnpm dafne db generate` runs drizzle-kit and
-  fixes the foreign keys it writes (ON DELETE, tables of other databases).
+- **Migrations belong to the schema packages** (`"dafne": { "schema":
+  "sales" }` in their package.json, `migrations/` next to it), not to
+  the apps. `@dafne/backend-migrator` applies those of every schema in
+  one order, by timestamp, each in a transaction (`pnpm dafne db
+  migrate`), with `MIGRATIONS_DATABASE_URL`. An app migrates on startup
+  only with `MIGRATE_ON_START=true` (`migrateOnStart` in its `main.ts`):
+  its build carries the migrations of **every** schema
+  (`dist/migrations`), since they run in one order. `pnpm dafne db
+  generate` runs drizzle-kit. Tables of another schema are imported from
+  outside `src/tables/` (e.g. `src/auth.ts`): drizzle-kit would put every
+  table its schema files export into the package's migrations.
 - `.nxignore` hides the CLIs' test fixtures, which look like projects.
 
 ## Workflow

@@ -2,7 +2,7 @@ import { schema, type Database } from '@dafne/backend-database';
 import { InjectDrizzle } from '@nestjs/drizzle';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { and, asc, desc, eq, isNull, like, type SQL } from 'drizzle-orm';
+import { and, asc, desc, eq, isNull, ilike, type SQL } from 'drizzle-orm';
 import {
   <%= s.constant %>_FILTER_FIELDS,
   type <%= s.pascal %>Body,
@@ -43,7 +43,7 @@ export class <%= p.pascal %>Service {
     const { db } = this;
     const filters = <%= s.constant %>_FILTER_FIELDS.flatMap((field) => {
       const value = query[field]?.trim();
-      return value ? [like(<%= s.camel %>[field], `%${escapeLike(value)}%`)] : [];
+      return value ? [ilike(<%= s.camel %>[field], `%${escapeLike(value)}%`)] : [];
     });
     const where = and(notDeleted, ...filters) as SQL;
     const direction = sortDirection === 'asc' ? asc : desc;
@@ -84,8 +84,7 @@ export class <%= p.pascal %>Service {
   /** Creates <%= s.a %>; `userId` is the creator. */
   async create<%= s.pascal %>(body: <%= s.pascal %>Body, userId: string): Promise<<%= s.pascal %>Detail> {
     const id = randomUUID();
-    // Set here, not by the column default: MySQL's now() and the driver can
-    // disagree on the time zone, while dates written from JS round-trip.
+    // One instant for both: createdAt and updatedAt start equal.
     const now = new Date();
     await this.db.insert(<%= s.camel %>).values({
       id,
@@ -107,16 +106,16 @@ export class <%= p.pascal %>Service {
     body: <%= s.pascal %>Body,
     userId: string,
   ): Promise<<%= s.pascal %>Detail> {
-    const [result] = await this.db
+    const result = await this.db
       .update(<%= s.camel %>)
       .set({
         name: body.name,
         updatedById: userId,
-        // Set explicitly so the row always changes and is counted below.
+        // The time of this change.
         updatedAt: new Date(),
       })
       .where(and(eq(<%= s.camel %>.id, id), notDeleted));
-    if (result.affectedRows === 0)
+    if (result.rowCount === 0)
       throw new NotFoundException(msg('<%= p.camel %>.notFound'));
     return this.get<%= s.pascal %>(id);
   }
@@ -127,11 +126,11 @@ export class <%= p.pascal %>Service {
    */
   async delete<%= s.pascal %>(id: string, userId: string) {
     const now = new Date();
-    const [result] = await this.db
+    const result = await this.db
       .update(<%= s.camel %>)
       .set({ deletedAt: now, updatedAt: now, updatedById: userId })
       .where(and(eq(<%= s.camel %>.id, id), notDeleted));
-    if (result.affectedRows === 0)
+    if (result.rowCount === 0)
       throw new NotFoundException(msg('<%= p.camel %>.notFound'));
   }
 }

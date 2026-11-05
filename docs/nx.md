@@ -45,7 +45,7 @@ The CLI has shortcuts for the same commands: `pnpm dafne test`,
 - `pnpm-workspace.yaml` is a global input: changing the catalog invalidates
   every cache.
 - `dev` and `start` are continuous and never cached; migration targets
-  (`migrate`, `migrate:dev`, `migration:generate`, `move-database`) are not
+  (`migrate`, `migrate:dev`, `migration:generate`) are not
   cached either.
 
 ## TypeScript project references

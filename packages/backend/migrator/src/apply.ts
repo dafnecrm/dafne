@@ -1,72 +1,110 @@
-import mysql from 'mysql2/promise';
-import { isEmptyStatement, pendingMigrations, readMigrations, type Migration } from './plan.ts';
+import pg from 'pg';
+import {
+  isEmptyStatement,
+  pendingMigrations,
+  readMigrations,
+  type Migration,
+} from './plan.ts';
 import type { DatabasePackage } from './workspace.ts';
 
-/** Same table and columns as drizzle's migrator, so its history stays valid. */
-const MIGRATIONS_TABLE = '_migrations';
-const LOCK = 'dafne_migrations';
-const LOCK_TIMEOUT_SECONDS = 300;
+/**
+ * The history of every schema, in `public`: a schema's first migration
+ * creates it (drizzle-kit writes `CREATE SCHEMA`), so its history can't
+ * live inside it.
+ */
+const MIGRATIONS_TABLE = 'public._migrations';
+/** pg_advisory_lock key: one run at a time. */
+const LOCK = "hashtext('dafne_migrations')";
+const LOCK_TIMEOUT = '300s';
 
-const id = (name: string) => `\`${name.replaceAll('`', '``')}\``;
+const id = (name: string) => `"${name.replaceAll('"', '""')}"`;
 
 export interface MigrateOptions {
-  /** A MySQL server URL, with a user that can create and alter the dafne_* databases. */
+  /** The Postgres database URL, with a user that can create and alter its schemas. */
   url: string;
   packages: DatabasePackage[];
   log?: (line: string) => void;
 }
 
 /**
- * Applies the pending migrations of every database, in one order (see
- * pendingMigrations), each recorded in its database's `_migrations`.
- * Creates the databases that don't exist yet. One run at a time
- * (GET_LOCK). Returns what it applied.
+ * Applies the pending migrations of every schema, in one order (see
+ * pendingMigrations), each in a transaction with its record in
+ * `public._migrations`: a failing migration leaves nothing behind. One
+ * run at a time (pg_advisory_lock). Returns what it applied.
  */
-export async function migrate({ url, packages, log = () => {} }: MigrateOptions): Promise<Migration[]> {
-  const conn = await mysql.createConnection({ uri: url, multipleStatements: false });
+export async function migrate({
+  url,
+  packages,
+  log = () => {},
+}: MigrateOptions): Promise<Migration[]> {
+  const client = new pg.Client({ connectionString: url });
+  await client.connect();
   try {
-    const [[lock]] = await conn.query<mysql.RowDataPacket[]>('SELECT GET_LOCK(?, ?) AS acquired', [
-      LOCK,
-      LOCK_TIMEOUT_SECONDS,
-    ]);
-    if (lock?.acquired !== 1) throw new Error('Another migration is running (lock dafne_migrations).');
+    await client.query(`SET lock_timeout = '${LOCK_TIMEOUT}'`);
+    try {
+      await client.query(`SELECT pg_advisory_lock(${LOCK})`);
+    } catch (error) {
+      throw new Error('Another migration is running (lock dafne_migrations).', {
+        cause: error,
+      });
+    }
+    await client.query('RESET lock_timeout');
 
+    await client.query(
+      `CREATE TABLE IF NOT EXISTS ${MIGRATIONS_TABLE} (
+        id serial PRIMARY KEY,
+        schema text NOT NULL,
+        name text NOT NULL,
+        hash text NOT NULL,
+        created_at bigint,
+        applied_at timestamptz NOT NULL DEFAULT now(),
+        UNIQUE (schema, name)
+      )`,
+    );
+    const { rows } = await client.query<{ schema: string; name: string }>(
+      `SELECT schema, name FROM ${MIGRATIONS_TABLE}`,
+    );
     const applied = new Map<string, Set<string>>();
-    for (const { database } of packages) {
-      await conn.query(`CREATE DATABASE IF NOT EXISTS ${id(database)}`);
-      await conn.query(
-        `CREATE TABLE IF NOT EXISTS ${id(database)}.${id(MIGRATIONS_TABLE)} (
-          id SERIAL PRIMARY KEY,
-          hash TEXT NOT NULL,
-          created_at BIGINT,
-          name TEXT,
-          applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )`,
-      );
-      const [rows] = await conn.query<mysql.RowDataPacket[]>(
-        `SELECT name FROM ${id(database)}.${id(MIGRATIONS_TABLE)}`,
-      );
-      applied.set(database, new Set(rows.map((row) => row.name as string)));
+    for (const { schema, name } of rows) {
+      if (!applied.has(schema)) applied.set(schema, new Set());
+      applied.get(schema)!.add(name);
     }
 
-    const pending = pendingMigrations(packages.flatMap(readMigrations), applied);
+    const pending = pendingMigrations(
+      packages.flatMap(readMigrations),
+      applied,
+    );
     for (const migration of pending) {
-      // Unqualified names in a migration are its own database's.
-      await conn.query(`USE ${id(migration.database)}`);
-      for (const statement of migration.sql) {
-        if (isEmptyStatement(statement)) continue;
-        await conn.query(statement);
+      await client.query('BEGIN');
+      try {
+        // Unqualified names in a migration are its own schema's.
+        await client.query(`SET LOCAL search_path TO ${id(migration.schema)}`);
+        for (const statement of migration.sql) {
+          if (isEmptyStatement(statement)) continue;
+          await client.query(statement);
+        }
+        await client.query(
+          `INSERT INTO ${MIGRATIONS_TABLE} (schema, name, hash, created_at) VALUES ($1, $2, $3, $4)`,
+          [
+            migration.schema,
+            migration.name,
+            migration.hash,
+            migration.folderMillis,
+          ],
+        );
+        await client.query('COMMIT');
+      } catch (error) {
+        await client.query('ROLLBACK').catch(() => {});
+        throw new Error(
+          `${migration.schema}/${migration.name} failed: ${(error as Error).message}`,
+          { cause: error },
+        );
       }
-      await conn.query(`INSERT INTO ${id(MIGRATIONS_TABLE)} (hash, created_at, name) VALUES (?, ?, ?)`, [
-        migration.hash,
-        migration.folderMillis,
-        migration.name,
-      ]);
-      log(`${migration.database}  ${migration.name}`);
+      log(`${migration.schema}  ${migration.name}`);
     }
     return pending;
   } finally {
-    await conn.query('SELECT RELEASE_LOCK(?)', [LOCK]).catch(() => {});
-    await conn.end();
+    await client.query(`SELECT pg_advisory_unlock(${LOCK})`).catch(() => {});
+    await client.end();
   }
 }

@@ -1,30 +1,32 @@
 import { defineRelationsPart } from 'drizzle-orm';
 import {
   index,
-  int,
-  mysqlTable,
+  integer,
   timestamp,
   varchar,
-} from 'drizzle-orm/mysql-core';
-import { user } from './auth.js';
+} from 'drizzle-orm/pg-core';
+import { user } from '../auth.js';
+import { salesSchema } from './sales.js';
 
 /**
  * A customer managed by the users. Deletion is logical: `deletedAt` is set
  * and the row is hidden from every query, but kept in the table.
  */
-export const customer = mysqlTable(
+export const customer = salesSchema.table(
   'customer',
   {
     id: varchar('id', { length: 36 }).primaryKey(),
     name: varchar('name', { length: 255 }).notNull(),
     email: varchar('email', { length: 255 }),
     phone: varchar('phone', { length: 32 }),
-    createdAt: timestamp('created_at', { fsp: 3 }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { fsp: 3 })
+    createdAt: timestamp('created_at', { precision: 3, withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { precision: 3, withTimezone: true })
       .defaultNow()
       .$onUpdate(() => new Date())
       .notNull(),
-    deletedAt: timestamp('deleted_at', { fsp: 3 }),
+    deletedAt: timestamp('deleted_at', { precision: 3, withTimezone: true }),
     // Nullable so removing a user keeps the customers they touched.
     createdById: varchar('created_by_id', { length: 36 }).references(
       () => user.id,
@@ -45,14 +47,14 @@ export const customer = mysqlTable(
  * One of a customer's addresses. The list is replaced as a whole when the
  * customer is saved; `position` keeps the order it was entered in.
  */
-export const customerAddress = mysqlTable(
+export const customerAddress = salesSchema.table(
   'customer_address',
   {
     id: varchar('id', { length: 36 }).primaryKey(),
     customerId: varchar('customer_id', { length: 36 })
       .notNull()
       .references(() => customer.id, { onDelete: 'cascade' }),
-    position: int('position').notNull(),
+    position: integer('position').notNull(),
     /** e.g. "Billing", "Shipping", "Head office". */
     label: varchar('label', { length: 100 }),
     street: varchar('street', { length: 255 }).notNull(),

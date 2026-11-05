@@ -8,7 +8,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { isAPIError } from 'better-auth/api';
-import { and, asc, desc, eq, like, type SQL } from 'drizzle-orm';
+import { and, asc, desc, eq, ilike, type SQL } from 'drizzle-orm';
 import {
   USER_FILTER_FIELDS,
   type CreateUserBody,
@@ -28,7 +28,7 @@ const escapeLike = (value: string) => value.replace(/[\\%_]/g, '\\$&');
 
 const contains =
   (column: typeof user.email | typeof user.name) => (value: string) =>
-    like(column, `%${escapeLike(value)}%`);
+    ilike(column, `%${escapeLike(value)}%`);
 
 /** The condition each filter field uses: the backend picks the operator. */
 const USER_FILTERS: Record<UserFilterField, (value: string) => SQL> = {

@@ -2,7 +2,7 @@ import { schema, type Database } from '@dafne/backend-database';
 import { InjectDrizzle } from '@nestjs/drizzle';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { and, asc, desc, eq, isNull, like, type SQL } from 'drizzle-orm';
+import { and, asc, desc, eq, isNull, ilike, type SQL } from 'drizzle-orm';
 import {
   ORDER_FILTER_FIELDS,
   type OrderBody,
@@ -43,7 +43,7 @@ export class OrdersService {
     const { db } = this;
     const filters = ORDER_FILTER_FIELDS.flatMap((field) => {
       const value = query[field]?.trim();
-      return value ? [like(order[field], `%${escapeLike(value)}%`)] : [];
+      return value ? [ilike(order[field], `%${escapeLike(value)}%`)] : [];
     });
     const where = and(notDeleted, ...filters) as SQL;
     const direction = sortDirection === 'asc' ? asc : desc;
@@ -86,8 +86,7 @@ export class OrdersService {
   /** Creates an order; `userId` is the creator. */
   async createOrder(body: OrderBody, userId: string): Promise<OrderDetail> {
     const id = randomUUID();
-    // Set here, not by the column default: MySQL's now() and the driver can
-    // disagree on the time zone, while dates written from JS round-trip.
+    // One instant for both: createdAt and updatedAt start equal.
     const now = new Date();
     await this.db.insert(order).values({
       id,
@@ -111,18 +110,18 @@ export class OrdersService {
     body: OrderBody,
     userId: string,
   ): Promise<OrderDetail> {
-    const [result] = await this.db
+    const result = await this.db
       .update(order)
       .set({
         name: body.name,
         notes: body.notes,
         customerId: body.customerId,
         updatedById: userId,
-        // Set explicitly so the row always changes and is counted below.
+        // The time of this change.
         updatedAt: new Date(),
       })
       .where(and(eq(order.id, id), notDeleted));
-    if (result.affectedRows === 0)
+    if (result.rowCount === 0)
       throw new NotFoundException(msg('orders.notFound'));
     return this.getOrder(id);
   }
@@ -133,11 +132,11 @@ export class OrdersService {
    */
   async deleteOrder(id: string, userId: string) {
     const now = new Date();
-    const [result] = await this.db
+    const result = await this.db
       .update(order)
       .set({ deletedAt: now, updatedAt: now, updatedById: userId })
       .where(and(eq(order.id, id), notDeleted));
-    if (result.affectedRows === 0)
+    if (result.rowCount === 0)
       throw new NotFoundException(msg('orders.notFound'));
   }
 }

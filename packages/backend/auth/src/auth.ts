@@ -52,7 +52,7 @@ export function createAuth(db: AuthDatabase, options: CreateAuthOptions) {
     baseURL: options.baseURL,
     trustedOrigins: options.trustedOrigins,
     database: drizzleAdapter(db, {
-      provider: 'mysql',
+      provider: 'pg',
       schema: authSchema,
     }),
     advanced: {
@@ -84,7 +84,7 @@ export function createAuth(db: AuthDatabase, options: CreateAuthOptions) {
             await db
               .insert(appAccess)
               .values(apps.map((app) => ({ id: crypto.randomUUID(), userId: user.id, app, role })))
-              .onDuplicateKeyUpdate({ set: { role } });
+              .onConflictDoUpdate({ target: [appAccess.userId, appAccess.app], set: { role } });
           },
         },
       },

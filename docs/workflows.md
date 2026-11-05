@@ -68,8 +68,8 @@ Then:
   `pnpm dafne g backend-resource <name> --app worker`;
 - if it needs signed-in users, add `SessionModule.forRoot({ app: 'worker' })`
   to its root module (see [Architecture](architecture.md#sessions-in-the-apps-apis-dafnebackend-session));
-- if it needs its own tables, they go in its own database, `dafne_worker`
-  (see [Databases](databases.md#one-database-per-app)).
+- if it needs its own tables, they go in its own schema, `worker`
+  (see [Databases](databases.md#one-schema-per-app)).
 
 ## Add a contract
 

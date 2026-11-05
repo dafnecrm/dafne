@@ -1,2 +1,0 @@
-ALTER TABLE `customer_address` ADD `country_code` varchar(2);--> statement-breakpoint
-ALTER TABLE `customer_address` ADD CONSTRAINT `customer_address_country_code_country_id_fkey` FOREIGN KEY (`country_code`) REFERENCES `country`(`id`);

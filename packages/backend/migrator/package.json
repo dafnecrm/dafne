@@ -1,7 +1,7 @@
 {
   "name": "@dafne/backend-migrator",
   "version": "0.0.1",
-  "description": "Applies the migrations of every Dafne database (dafne_auth, dafne_sales, …) in one order, by timestamp; generates them with drizzle-kit",
+  "description": "Creates the Dafne Postgres database; applies the migrations of every schema (auth, sales, \u2026) in one order, by timestamp; generates them with drizzle-kit",
   "private": true,
   "type": "module",
   "exports": {
@@ -14,17 +14,18 @@
   "scripts": {
     "migrate": "node src/main.ts",
     "migrate:dev": "node src/main.ts --optional",
-    "move-database": "node src/move-database.ts",
+    "create-database": "node src/create-main.ts",
     "lint": "oxlint -c ../.oxlintrc.json --type-aware src",
     "test": "vitest run"
   },
   "dependencies": {
     "drizzle-kit": "catalog:",
     "drizzle-orm": "catalog:",
-    "mysql2": "catalog:"
+    "pg": "catalog:"
   },
   "devDependencies": {
     "@types/node": "catalog:",
+    "@types/pg": "catalog:",
     "oxlint": "catalog:",
     "oxlint-tsgolint": "catalog:",
     "typescript": "catalog:",
@@ -41,7 +42,7 @@
       "migrate:dev": {
         "cache": false
       },
-      "move-database": {
+      "create-database": {
         "cache": false
       }
     }

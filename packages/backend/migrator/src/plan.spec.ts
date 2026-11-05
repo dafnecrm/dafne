@@ -1,7 +1,7 @@
 import { isEmptyStatement, pendingMigrations, type Migration } from './plan.ts';
 
-const m = (database: string, name: string): Migration => ({
-  database,
+const m = (schema: string, name: string): Migration => ({
+  schema,
   name,
   folderMillis: Date.UTC(
     Number(name.slice(0, 4)),
@@ -16,31 +16,36 @@ const m = (database: string, name: string): Migration => ({
 });
 
 describe('pendingMigrations', () => {
-  it('interleaves the databases by timestamp', () => {
+  it('interleaves the schemas by timestamp', () => {
     const all = [
-      m('dafne_sales', '20260101000000_init'),
-      m('dafne_auth', '20260201000000_move-users'),
-      m('dafne_sales', '20260301000000_notes'),
-      m('dafne_auth', '20260102000000_init'),
+      m('sales', '20260101000000_init'),
+      m('auth', '20260201000000_move-users'),
+      m('sales', '20260301000000_notes'),
+      m('auth', '20260102000000_init'),
     ];
-    expect(pendingMigrations(all, new Map()).map((x) => `${x.database}/${x.name}`)).toEqual([
-      'dafne_sales/20260101000000_init',
-      'dafne_auth/20260102000000_init',
-      'dafne_auth/20260201000000_move-users',
-      'dafne_sales/20260301000000_notes',
+    expect(
+      pendingMigrations(all, new Map()).map((x) => `${x.schema}/${x.name}`),
+    ).toEqual([
+      'sales/20260101000000_init',
+      'auth/20260102000000_init',
+      'auth/20260201000000_move-users',
+      'sales/20260301000000_notes',
     ]);
   });
 
-  it('leaves out what each database already applied, by name', () => {
-    const all = [m('dafne_sales', '20260101000000_init'), m('dafne_auth', '20260101000000_init')];
-    const applied = new Map([['dafne_sales', new Set(['20260101000000_init'])]]);
+  it('leaves out what each schema already applied, by name', () => {
+    const all = [
+      m('sales', '20260101000000_init'),
+      m('auth', '20260101000000_init'),
+    ];
+    const applied = new Map([['sales', new Set(['20260101000000_init'])]]);
     expect(pendingMigrations(all, applied)).toEqual([all[1]]);
   });
 });
 
 describe('isEmptyStatement', () => {
   it('treats comments and blanks as empty', () => {
-    expect(isEmptyStatement('\n-- moved to dafne_auth\n  \n')).toBe(true);
-    expect(isEmptyStatement('-- x\nDROP TABLE `a`;')).toBe(false);
+    expect(isEmptyStatement('\n-- moved to core\n  \n')).toBe(true);
+    expect(isEmptyStatement('-- x\nDROP TABLE "a";')).toBe(false);
   });
 });

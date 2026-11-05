@@ -1,4 +1,0 @@
--- user, session, account and verification move to dafne_auth: the RENAME
--- TABLE is in @dafne/backend-database-auth's migration of the same name,
--- right after this one (rows, indexes and foreign keys move with them; the
--- CRM's keys to `user` follow it). Here only the snapshot changes.

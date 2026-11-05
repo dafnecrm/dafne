@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { and, asc, desc, eq, isNull, like } from 'drizzle-orm';
+import { and, asc, desc, eq, isNull, ilike } from 'drizzle-orm';
 import { customerBodySchema, type CustomerBodyInput } from '@dafne/contracts';
 import { CustomersService } from './customers.service.js';
 
@@ -46,9 +46,9 @@ describe('CustomersService', () => {
   const duplicateEmail = new Error('Failed query', {
     cause: Object.assign(
       new Error(
-        "Duplicate entry 'info@acme.test' for key 'customer.customer_email_unique_idx'",
+        'duplicate key value violates unique constraint "customer_email_unique_idx"',
       ),
-      { code: 'ER_DUP_ENTRY' },
+      { code: '23505', constraint: 'customer_email_unique_idx' },
     ),
   });
 
@@ -65,7 +65,7 @@ describe('CustomersService', () => {
     insert.values.mockResolvedValue(undefined);
     db.update.mockReturnValue(update);
     update.set.mockReturnValue(update);
-    update.where.mockResolvedValue([{ affectedRows: 1 }]);
+    update.where.mockResolvedValue({ rowCount: 1 });
     db.delete.mockReturnValue(remove);
     remove.where.mockResolvedValue(undefined);
     // The transaction runs on the same mock db.
@@ -108,8 +108,8 @@ describe('CustomersService', () => {
       expect(select.where).toHaveBeenCalledWith(
         and(
           notDeleted,
-          like(customer.name, '%50\\%\\_a%'),
-          like(customer.phone, '%333%'),
+          ilike(customer.name, '%50\\%\\_a%'),
+          ilike(customer.phone, '%333%'),
         ),
       );
     });
@@ -222,9 +222,12 @@ describe('CustomersService', () => {
         new Error('Failed query', {
           cause: Object.assign(
             new Error(
-              'Cannot add or update a child row: a foreign key constraint fails (`customer_address_country_code_country_id_fkey` FOREIGN KEY (`country_code`) REFERENCES `country` (`id`))',
+              'insert or update on table "customer_address" violates foreign key constraint "customer_address_country_code_country_id_fkey"',
             ),
-            { code: 'ER_NO_REFERENCED_ROW_2' },
+            {
+              code: '23503',
+              constraint: 'customer_address_country_code_country_id_fkey',
+            },
           ),
         }),
       );
@@ -311,7 +314,7 @@ describe('CustomersService', () => {
     });
 
     it('throws 400 and changes nothing when the type changes', async () => {
-      update.where.mockResolvedValue([{ affectedRows: 0 }]);
+      update.where.mockResolvedValue({ rowCount: 0 });
       findFirst.mockResolvedValue({ id: 'c1' });
 
       await expect(
@@ -330,7 +333,7 @@ describe('CustomersService', () => {
     });
 
     it('throws 404 and changes nothing when the customer is missing', async () => {
-      update.where.mockResolvedValue([{ affectedRows: 0 }]);
+      update.where.mockResolvedValue({ rowCount: 0 });
       findFirst.mockResolvedValue(undefined);
 
       await expect(
@@ -359,7 +362,7 @@ describe('CustomersService', () => {
     });
 
     it('throws 404 when the customer is missing or already deleted', async () => {
-      update.where.mockResolvedValue([{ affectedRows: 0 }]);
+      update.where.mockResolvedValue({ rowCount: 0 });
 
       await expect(service.deleteCustomer('c1', 'u3')).rejects.toBeInstanceOf(
         NotFoundException,

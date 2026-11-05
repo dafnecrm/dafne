@@ -50,8 +50,8 @@ describe('field add', () => {
   it('adds a column before createdAt, with its import and index', async () => {
     await run((c) => addField(c, 'activities', spec('status', 'enum', { values: ['open', 'done'], required: true, default: 'open', index: true })));
     const table = read(`${TABLES}/activities.ts`);
-    expect(table).toMatch(/name: varchar[^\n]+\n\s+status: mysqlEnum\('status', \['open', 'done'\]\)\s*\.notNull\(\)\s*\.default\('open'\),\n\s+createdAt/);
-    expect(table).toMatch(/import \{[^}]*mysqlEnum[^}]*\} from 'drizzle-orm\/mysql-core'/);
+    expect(table).toMatch(/name: varchar[^\n]+\n\s+status: text\('status', \{ enum: \['open', 'done'\] \}\)\s*\.notNull\(\)\s*\.default\('open'\),\n\s+createdAt/);
+    expect(table).toMatch(/import \{[^}]*\btext\b[^}]*\} from 'drizzle-orm\/pg-core'/);
     expect(table).toContain("index('activity_status_idx').on(table.status)");
   });
 
@@ -96,9 +96,10 @@ describe('field add', () => {
   it('adds a unique key and r.one on both sides for one-to-one', async () => {
     await run((c) => addField(c, 'customers', spec('manager', 'ref', { to: 'users', relation: 'one-to-one', inverse: 'managedCustomer' })));
     const table = read(`${TABLES}/customers.ts`);
-    expect(table).toMatch(/managerId: varchar\('manager_id', \{ length: 36 \}\)\s*\.unique\(\)/);
+    expect(table).toMatch(/managerId: text\('manager_id'\)\s*\.unique\(\)/);
+    expect(table).toContain("import { user } from '../auth.js';");
     expect(table).toMatch(/user: \{\s*managedCustomer: r\.one\.customer\(/);
-    expect(read(`${TABLES}/auth.ts`)).not.toContain('managedCustomer');
+    expect(read('packages/backend/database/src/auth.ts')).not.toContain('managedCustomer');
   });
 
   it('puts the key on the other table for one-to-many', async () => {
@@ -111,7 +112,7 @@ describe('field add', () => {
   it('creates a junction table for many-to-many', async () => {
     await run((c) => addField(c, 'activities', spec('customers', 'ref', { to: 'customers', relation: 'many-to-many' })));
     const table = read(`${TABLES}/activities.ts`);
-    expect(table).toContain("export const activityCustomer = mysqlTable(\n  'activity_customer',");
+    expect(table).toContain("export const activityCustomer = salesSchema.table(\n  'activity_customer',");
     expect(table).toContain('primaryKey({ columns: [table.activityId, table.customerId] })');
     expect(table).toMatch(/customers: r\.many\.customer\(\{\s*from: r\.activity\.id\.through\(r\.activityCustomer\.activityId\)/);
     expect(table).toMatch(/customer: \{\s*activities: r\.many\.activity\(\{\s*from: r\.customer\.id\.through\(r\.activityCustomer\.customerId\)/);

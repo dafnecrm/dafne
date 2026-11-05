@@ -44,7 +44,7 @@
     "dotenv": "^18.0.9",
     "drizzle-orm": "catalog:",
     "keyv": "^6.1.0",
-    "mysql2": "catalog:",
+    "pg": "catalog:",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "zod": "catalog:"

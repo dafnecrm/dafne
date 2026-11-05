@@ -7,7 +7,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { and, asc, desc, eq, isNull, like, type SQL } from 'drizzle-orm';
+import { and, asc, desc, eq, isNull, ilike, type SQL } from 'drizzle-orm';
 import {
   CUSTOMER_FILTER_FIELDS,
   type CustomerAddressBody,
@@ -28,19 +28,25 @@ const escapeLike = (value: string) => value.replace(/[\\%_]/g, '\\$&');
 /** Customers that haven't been deleted. */
 const notDeleted = isNull(customer.deletedAt);
 
+/** Postgres error codes (SQLSTATE). */
+const UNIQUE_VIOLATION = '23505';
+const FOREIGN_KEY_VIOLATION = '23503';
+
 /**
- * Turns the MySQL errors a body can cause (drizzle wraps them as the cause)
- * into client errors: a taken email (409), an address country that isn't in
- * the countries table (400). Rethrows anything else.
+ * Turns the Postgres errors a body can cause (drizzle wraps them as the
+ * cause) into client errors: a taken email (409), an address country that
+ * isn't in the countries table (400). Rethrows anything else.
  */
 function rethrowConstraint(error: unknown): never {
   const cause = error instanceof Error && error.cause ? error.cause : error;
-  const code =
-    cause instanceof Error ? (cause as { code?: unknown }).code : undefined;
-  const message = cause instanceof Error ? cause.message : '';
-  if (code === 'ER_DUP_ENTRY' && message.includes('customer_email_unique_idx'))
+  const { code, constraint } =
+    cause instanceof Error
+      ? (cause as { code?: unknown; constraint?: unknown })
+      : {};
+  const name = typeof constraint === 'string' ? constraint : '';
+  if (code === UNIQUE_VIOLATION && name === 'customer_email_unique_idx')
     throw new ConflictException(msg('customers.email.taken'));
-  if (code === 'ER_NO_REFERENCED_ROW_2' && message.includes('country_code'))
+  if (code === FOREIGN_KEY_VIOLATION && name.includes('country_code'))
     throw new BadRequestException([
       `addresses: ${msg('customers.addresses.country')}`,
     ]);
@@ -70,7 +76,7 @@ export class CustomersService {
     const { db } = this;
     const filters = CUSTOMER_FILTER_FIELDS.flatMap((field) => {
       const value = query[field]?.trim();
-      return value ? [like(customer[field], `%${escapeLike(value)}%`)] : [];
+      return value ? [ilike(customer[field], `%${escapeLike(value)}%`)] : [];
     });
     const where = and(notDeleted, ...filters) as SQL;
     const direction = sortDirection === 'asc' ? asc : desc;
@@ -130,8 +136,7 @@ export class CustomersService {
     userId: string,
   ): Promise<CustomerDetail> {
     const id = randomUUID();
-    // Set here, not by the column default: MySQL's now() and the driver can
-    // disagree on the time zone, while dates written from JS round-trip.
+    // One instant for both: createdAt and updatedAt start equal.
     const now = new Date();
     await this.db
       .transaction(async (tx) => {
@@ -168,7 +173,7 @@ export class CustomersService {
   ): Promise<CustomerDetail> {
     await this.db
       .transaction(async (tx) => {
-        const [result] = await tx
+        const result = await tx
           .update(customer)
           .set({
             // Same as before: the where below only matches the saved type.
@@ -180,13 +185,13 @@ export class CustomersService {
             email: body.email,
             phone: body.phone,
             updatedById: userId,
-            // Set explicitly so the row always changes and is counted below.
+            // The time of this change.
             updatedAt: new Date(),
           })
           .where(
             and(eq(customer.id, id), notDeleted, eq(customer.type, body.type)),
           );
-        if (result.affectedRows === 0) {
+        if (result.rowCount === 0) {
           // Missing (404), or there with another type (400).
           const found = await tx.query.customer.findFirst({
             where: { id, deletedAt: { isNull: true } },
@@ -213,11 +218,11 @@ export class CustomersService {
    */
   async deleteCustomer(id: string, userId: string) {
     const now = new Date();
-    const [result] = await this.db
+    const result = await this.db
       .update(customer)
       .set({ deletedAt: now, updatedAt: now, updatedById: userId })
       .where(and(eq(customer.id, id), notDeleted));
-    if (result.affectedRows === 0)
+    if (result.rowCount === 0)
       throw new NotFoundException(msg('customers.notFound'));
   }
 }

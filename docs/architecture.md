@@ -3,12 +3,13 @@
 # Architecture
 
 Dafne is a family of apps that share sign-in and users. Each app has a
-frontend (Next.js), an API (NestJS) and its own database. One service,
+frontend (Next.js), an API (NestJS) and its own schema in the Postgres
+database. One service,
 `apps/auth`, handles sign-in for all of them.
 
 ```
-browser ──► sales-web ──/api/auth/*──► apps/auth ──► dafne_auth
-                    └─ data ───────► sales-api ──► dafne_sales (FK → dafne_auth.user)
+browser ──► sales-web ──/api/auth/*──► apps/auth ──► auth schema
+                    └─ data ───────► sales-api ──► sales schema (FK → auth.user)
                                        └─ session? ─► apps/auth
 ```
 
@@ -16,10 +17,11 @@ browser ──► sales-web ──/api/auth/*──► apps/auth ──► dafne
 
 - Runs [Better Auth](https://www.better-auth.com) under `/api/auth/*`, the
   users API (`/users`) and the app access (`app_access`), on the
-  `dafne_auth` database. It's built from `@dafne/backend-auth`,
+  `auth` schema. It's built from `@dafne/backend-auth`,
   `@dafne/backend-users` and `@dafne/backend-database-auth`.
-- **Only this app runs Better Auth** and connects to `dafne_auth`. The
-  apps' APIs never add `AuthModule`.
+- **Only this app runs Better Auth** and writes the `auth` schema. The
+  apps' APIs never add `AuthModule`; they only read `auth.user` (joins,
+  foreign keys).
 - The frontends **proxy `/api/auth/*`** to it (`next.config.ts`), so the
   session cookie (`dafne.session_token`) belongs to the frontend's origin.
   With `COOKIE_DOMAIN` (e.g. `cliente.it`) it belongs to the parent domain,
@@ -85,8 +87,8 @@ client.
 ## Adding an app
 
 A new app follows the same shape: its API with
-`SessionModule.forRoot({ app: '<name>' })`, its own database
-(`dafne_<name>`), its frontend proxying `/api/auth`. `dafne g backend-app`
+`SessionModule.forRoot({ app: '<name>' })`, its own schema
+(`<name>`), its frontend proxying `/api/auth`. `dafne g backend-app`
 generates the API (see [CLI](cli.md#g-app)).
 
 ## See also

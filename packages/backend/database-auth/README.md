@@ -1,41 +1,36 @@
 # @dafne/backend-database-auth
 
-**`dafne_auth`**: Better Auth's tables (`user`, `session`, `account`,
+The **`auth`** schema: Better Auth's tables (`user`, `session`, `account`,
 `verification`) and `app_access` (which apps a user can use, with which
 role), with their migrations.
 
 ## Tables in their schema
 
-Every table is defined in `mysqlSchema('dafne_auth')`, so every query names
-the database (`dafne_auth`.`user`). That's what lets the apps, connected to
-their own database, point to the users with foreign keys and join them
-(e.g. `customer.createdBy`). drizzle-kit ignores tables in a `mysqlSchema`,
-so they are written twice from one source:
+Every table is declared in `pgSchema('auth')` (`authDb.table`), so every
+query names the schema (`"auth"."user"`), and the apps' tables point to the
+users with foreign keys and join them (e.g. `customer.createdBy`).
 
-- `src/kit/*.ts`: plain `mysqlTable`s, for drizzle-kit. The Better Auth
-  CLI writes `src/kit/better-auth.ts`
-  (`pnpm --filter @dafne/backend-auth auth:schema:generate`).
-- `src/better-auth.ts`, `src/app-access.ts`: generated from them by
-  `pnpm --filter @dafne/backend-database-auth tables:qualify`; a test fails
-  when they're out of date. Don't edit them.
+- `src/better-auth.ts`: written by the Better Auth CLI, then moved into the
+  schema by `tables:schema` (`pgTable` → `authDb.table`, timestamps with
+  time zone; `src/into-schema.ts`). Regenerate both with
+  `pnpm --filter @dafne/backend-auth auth:schema:generate`; a test fails
+  when the file didn't go through `tables:schema`. Don't edit it.
+- `src/app-access.ts`: Dafne's own table, by hand.
 
 ## Contents
 
 - `user`, `session`, `account`, `verification`, `appAccess`,
-  `authSchema`, `authDatabaseRelations`, `AuthDatabase`.
+  `authSchema`, `authDatabaseRelations`, `AuthDatabase`, `AUTH_SCHEMA`,
+  `authDb`.
 - `AuthDatabaseModule`: the connection (`DATABASE_URL`), for `apps/auth`
   only.
 
 ## Migrations
 
 ```sh
-pnpm dafne db generate @dafne/backend-database-auth   # from src/kit
+pnpm dafne db generate @dafne/backend-database-auth
 pnpm dafne db migrate
 ```
-
-The first one moves Better Auth's tables from `dafne_sales` (where the CRM
-created them) with `RENAME TABLE`, creates `app_access` and gives the
-existing users the `crm` app; a later one renames it `sales`.
 
 ## Tasks
 

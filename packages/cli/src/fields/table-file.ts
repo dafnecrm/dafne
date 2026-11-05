@@ -14,6 +14,10 @@ import {
   removeListElement,
   removeUnusedImports,
 } from '../wiring/ast.ts';
+import { isTableCall } from '../sync/table.ts';
+
+/** Where the column builders come from. */
+export const PG_CORE = 'drizzle-orm/pg-core';
 
 /*
  * Edits one Drizzle table file (packages/backend/database/src/tables/<plural>.ts) as
@@ -41,12 +45,12 @@ export class TableFile {
     return value;
   }
 
-  /** Names of the tables declared in the file (`export const x = mysqlTable(...)`). */
+  /** Names of the tables declared in the file (`export const x = salesSchema.table(...)`). */
   tables(): string[] {
     return this.read((file) =>
       file
         .getVariableDeclarations()
-        .filter((d) => /Table$/.test(d.getInitializerIfKind(SyntaxKind.CallExpression)?.getExpression().getText() ?? ''))
+        .filter((d) => isTableCall(d.getInitializerIfKind(SyntaxKind.CallExpression)?.getExpression().getText() ?? ''))
         .map((d) => d.getName()),
     );
   }
@@ -136,7 +140,7 @@ export class TableFile {
 
   /** Adds `index('<sql>_<key>_idx').on(table.<key>)` to the table's extra config. */
   addIndex(table: string, sqlTable: string, key: string) {
-    this.ensureImport('drizzle-orm/mysql-core', 'index');
+    this.ensureImport(PG_CORE, 'index');
     const element = (param: string) => `index('${sqlTable}_${key}_idx').on(${param}.${key})`;
     this.edit((file) => {
       const array = extraConfig(file, table);
@@ -309,7 +313,7 @@ export class TableFile {
 
 function tableCall(file: SourceFile, table: string): CallExpression {
   const call = file.getVariableDeclaration(table)?.getInitializerIfKind(SyntaxKind.CallExpression);
-  if (!call) throw new Error(`${file.getBaseName()}: no "${table} = mysqlTable(...)".`);
+  if (!call) throw new Error(`${file.getBaseName()}: no "${table} = salesSchema.table(...)".`);
   return call;
 }
 

@@ -79,12 +79,12 @@ keys of `messages/en.ts`; `it.ts` must have the same keys (typed by
   packages from its own `node_modules` at runtime: a new runtime
   dependency of a lib goes in the app's `package.json` too.
 - New libs and resources come from the `dafne` CLI, which also wires them
-  into the app. `@dafne/backend-database` holds the tables of dafne_sales
+  into the app. `@dafne/backend-database` holds the tables of the sales schema
   (`src/tables`) and their migrations (`migrations/`): `pnpm dafne db
   generate` writes one, `pnpm dafne db migrate` applies them
   (`@dafne/backend-migrator`). `dafne dev` runs the migrator first
   (`migrate:dev`, skipped without `MIGRATIONS_DATABASE_URL`). With
-  `MIGRATE_ON_START=true` the built app migrates every database before
+  `MIGRATE_ON_START=true` the built app migrates every schema before
   starting (`src/main.ts`; `rspack.config.js` copies the migrations into
   `dist/migrations`).
 - Sign-in is `apps/auth`'s. This API has no Better Auth: the global
@@ -92,6 +92,7 @@ keys of `messages/en.ts`; `it.ts` must have the same keys (typed by
   'sales' })`) asks `AUTH_URL` for the session of each request's cookie and
   lets in the users with the `sales` app (or global admins). Controllers use
   `@Session()`, `@AllowAnonymous()`, `@Roles()` from
-  `@dafne/backend-session`. The users' table is `dafne_auth.user`
-  (`database/src/tables/auth.ts` re-exports it): the CRM's tables point to
-  it with foreign keys across databases.
+  `@dafne/backend-session`. The users' table is `auth.user`
+  (`database/src/auth.ts` re-exports it, outside `tables/` so drizzle-kit
+  leaves it out of the sales migrations): the sales tables point to it
+  with foreign keys across schemas.

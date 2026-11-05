@@ -1,7 +1,7 @@
 # @dafne/backend-users
 
 Nest lib of the users: `UsersModule`, its controller and `UsersService`.
-Users are Better Auth's (`dafne_auth.user`); creating one goes through
+Users are Better Auth's (`auth.user`); creating one goes through
 `AuthService` (`@dafne/backend-auth`). It runs in **`apps/auth`**, so
 every app shares the same users; the frontends call it with `authFetch`
 (`@dafne/frontend-api/server`).

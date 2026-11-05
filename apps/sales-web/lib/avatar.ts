@@ -1,4 +1,4 @@
-/** Avatars are stored as data URLs in Better Auth's `user.image` (a MySQL TEXT column, max 65,535 bytes). */
+/** Avatars are stored as data URLs in Better Auth's `user.image` (a text column): kept small, since every session read carries it. */
 export const AVATAR_SIZE = 256;
 export const AVATAR_MAX_LENGTH = 60_000;
 export const AVATAR_ACCEPT = "image/png,image/jpeg,image/webp,image/gif";

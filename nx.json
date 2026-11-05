@@ -61,7 +61,7 @@
     "migrate:dev": {
       "cache": false
     },
-    "move-database": {
+    "create-database": {
       "cache": false
     },
     "migration:generate": {

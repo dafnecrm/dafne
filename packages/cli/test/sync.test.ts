@@ -26,10 +26,10 @@ describe('readTable', () => {
   it('reads types, nullability, lengths, enums and tags', () => {
     const { info } = sync(
       activityTable(`
-    type: mysqlEnum(['email', 'phone']).notNull(),
+    type: text({ enum: ['email', 'phone'] }).notNull(),
     /** @api internal */
     testinternal: varchar('testinternal', { length: 10 }),
-    score: int('score').default(0).notNull(),`),
+    score: integer('score').default(0).notNull(),`),
     );
     const byKey = Object.fromEntries(info.columns.map((c) => [c.key, c]));
     expect(byKey.type).toMatchObject({ kind: 'enum', enumValues: ['email', 'phone'], notNull: true });
@@ -92,7 +92,7 @@ describe('syncContract', () => {
   it('adds new columns in table order, leaving out internal ones', () => {
     const { content, report } = sync(
       activityTable(`
-    type: mysqlEnum(['email', 'phone']).notNull(),
+    type: text({ enum: ['email', 'phone'] }).notNull(),
     /** @api internal */
     testinternal: varchar('testinternal', { length: 10 }),`),
     );
@@ -130,7 +130,7 @@ describe('syncContract', () => {
   });
 
   it('is idempotent', () => {
-    const table = activityTable(`    type: mysqlEnum(['email', 'phone']).notNull(),`);
+    const table = activityTable(`    type: text({ enum: ['email', 'phone'] }).notNull(),`);
     const once = sync(table).content;
     const twice = sync(table, once);
     expect(twice.report.added).toEqual([]);

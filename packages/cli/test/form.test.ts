@@ -7,12 +7,12 @@ import { readTable } from '../src/sync/table.ts';
 
 const names = resourceNames('activity');
 const COLUMNS = `
-    type: mysqlEnum(['email', 'phone']).notNull(),
-    priority: int('priority').default(1).notNull(),
-    budget: int('budget'),
+    type: text({ enum: ['email', 'phone'] }).notNull(),
+    priority: integer('priority').default(1).notNull(),
+    budget: integer('budget'),
     done: boolean('done').notNull(),
     dueDate: date('due_date'),
-    startsAt: timestamp('starts_at', { fsp: 3 }),
+    startsAt: timestamp('starts_at', { precision: 3, withTimezone: true }),
     customerId: varchar('customer_id', { length: 36 }),
     notes: text('notes'),
     /** @form editor */

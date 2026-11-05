@@ -11,7 +11,10 @@
   pnpm@12.16.1 self-update`. Dependencies allowed to run install scripts are
   listed in `allowBuilds` (`pnpm-workspace.yaml`): `pnpm install` fails on a
   new one until `pnpm approve-builds` adds it.
-- **MySQL**: one server holds every `dafne_*` database.
+- **PostgreSQL** (≥ 15): one database, `dafne`, with a schema per app
+  (`auth`, `sales`, …). `pnpm dafne db create` creates it (see First run).
+  For development, e.g.
+  `docker run -d --name dafne-pg -e POSTGRES_PASSWORD=secret -p 5432:5432 postgres:18`.
 - **Redis** (optional): the API's cache. Without `REDIS_URL` the cache is in
   memory.
 
@@ -30,14 +33,15 @@ copy:
 
 | File                                 | Main variables                                                                                                                                                                     |
 | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/auth/.env`                     | `PORT` (3001), `DATABASE_URL` (on `dafne_auth`), `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `TRUSTED_ORIGINS`, `COOKIE_DOMAIN`, `DEFAULT_APPS`, `ADMIN_EMAIL` / `ADMIN_PASSWORD`, `RESEND_API_KEY` |
-| `apps/sales-api/.env`                  | `PORT` (3000), `DATABASE_URL` (on `dafne_sales`), `AUTH_URL`, `REDIS_URL`                                                                                                             |
+| `apps/auth/.env`                     | `PORT` (3001), `DATABASE_URL` (on `dafne`), `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `TRUSTED_ORIGINS`, `COOKIE_DOMAIN`, `DEFAULT_APPS`, `ADMIN_EMAIL` / `ADMIN_PASSWORD`, `RESEND_API_KEY` |
+| `apps/sales-api/.env`                  | `PORT` (3000), `DATABASE_URL` (on `dafne`), `AUTH_URL`, `REDIS_URL`                                                                                                             |
 | `apps/sales-web/.env`                  | `BACKEND_URL`, `AUTH_URL`, `APP_URL` (4000)                                                                                                                                        |
-| `packages/backend/migrator/.env`     | `MIGRATIONS_DATABASE_URL`: the MySQL server, with a user that can create and alter the `dafne_*` databases (no database in the URL)                                               |
+| `packages/backend/migrator/.env`     | `MIGRATIONS_DATABASE_URL`: the `dafne` database, with the user that owns it; `ADMIN_DATABASE_URL`: a superuser, only for `db create`                                               |
 
-The apps connect with their own, limited MySQL users (`DATABASE_URL`). Only
+The apps connect with their own, limited roles (`DATABASE_URL`). Only
 the migrator uses the privileged one. See
-[Databases and migrations](databases.md) for the grants the apps' users need.
+[Databases and migrations](databases.md) for the grants the apps' roles need
+(in development, every URL can use the same `dafne` user).
 
 The backend apps also have `MIGRATE_ON_START` / `MIGRATIONS_DATABASE_URL`:
 leave them off in development, where `dafne dev` migrates first.
@@ -45,7 +49,8 @@ leave them off in development, where `dafne dev` migrates first.
 ## First run
 
 ```sh
-pnpm dafne db migrate     # creates the missing databases and applies every migration
+pnpm dafne db create      # the dafne database and user (from MIGRATIONS_DATABASE_URL), as ADMIN_DATABASE_URL
+pnpm dafne db migrate     # creates the schemas and applies every migration
 pnpm dafne dev            # starts @dafne/auth, @dafne/sales-api, @dafne/sales-web
 ```
 
