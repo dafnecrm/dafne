@@ -6,8 +6,11 @@
 
 - **Node.js ≥ 26** (`engines` in the root `package.json`). The CLI runs its
   TypeScript sources directly, through Node's type stripping.
-- **pnpm 9.15.2** (`packageManager` in the root `package.json`; `corepack
-  enable` picks it up).
+- **pnpm 12.16.1** (`packageManager` in the root `package.json`). pnpm 12
+  switches to it on its own; from an older pnpm, install it with `npx
+  pnpm@12.16.1 self-update`. Dependencies allowed to run install scripts are
+  listed in `allowBuilds` (`pnpm-workspace.yaml`): `pnpm install` fails on a
+  new one until `pnpm approve-builds` adds it.
 - **MySQL**: one server holds every `dafne_*` database.
 - **Redis** (optional): the API's cache. Without `REDIS_URL` the cache is in
   memory.
