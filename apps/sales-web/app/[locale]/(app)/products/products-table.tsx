@@ -39,7 +39,7 @@ function useProductColumns() {
     () =>
       col.columns([
         col.accessor("id", {
-          header: t("products.fields.id"),
+          header: t("id"),
           cell: ({ row }) => (
             <Link
               href={`/products/${encodeURIComponent(row.original.id)}`}

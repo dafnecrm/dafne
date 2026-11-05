@@ -103,6 +103,15 @@ describe('syncColumns', () => {
     expect(report.warnings.join()).toMatch(/customerId: an id/);
   });
 
+  it('writes keys relative to the namespace of useTranslations', () => {
+    const source = render('frontend/table.tsx', view).replace('useTranslations()', 'useTranslations("activities.fields")')
+      .replace('t("activities.fields.createdAt")', 't("createdAt")');
+    const { content } = syncColumns('c.tsx', source, names, info());
+    expect(content).toContain('header: t("id")');
+    expect(content).toContain('header: t("type")');
+    expect(content).not.toContain('t("activities.fields.');
+  });
+
   it('is idempotent', () => {
     const once = syncColumns('c.tsx', render('frontend/table.tsx', view), names, info()).content;
     expect(syncColumns('c.tsx', once, names, info()).report.added).toEqual([]);

@@ -21,9 +21,9 @@ const newReport = (): Report => ({ added: [], removed: [], stale: [], warnings: 
 const NO_COLUMN = new Set(['updatedAt']);
 
 /** The id column: first, and the link to the detail page (no field names the record). */
-const idColumn = (names: ResourceNames) =>
+const idColumn = (names: ResourceNames, key: (k: string) => string) =>
   `col.accessor("id", {
-    header: t("${names.p.camel}.fields.id"),
+    header: t("${key(`${names.p.camel}.fields.id`)}"),
     cell: ({ row }) => (
       <Link
         href={\`/${names.p.kebab}/\${encodeURIComponent(row.original.id)}\`}
@@ -179,9 +179,14 @@ export function syncTableConfig(
 }
 
 /** The cell of a column, by kind. */
-function columnCode(names: ResourceNames, field: ResponseField, sortable: boolean): { code: string; imports: [string, string][] } {
+function columnCode(
+  names: ResourceNames,
+  field: ResponseField,
+  sortable: boolean,
+  key: (k: string) => string,
+): { code: string; imports: [string, string][] } {
   const imports: [string, string][] = [];
-  const options: string[] = [`header: t("${names.p.camel}.fields.${field.key}")`];
+  const options: string[] = [`header: t("${key(`${names.p.camel}.fields.${field.key}`)}")`];
   if (field.kind === 'number') options.push('meta: { className: "text-right" }');
   if (!sortable) options.push('enableSorting: false');
   const dash = '"—"';
@@ -189,8 +194,8 @@ function columnCode(names: ResourceNames, field: ResponseField, sortable: boolea
     case 'boolean':
       options.push(
         field.optional
-          ? `cell: (info) => (info.getValue() === null ? ${dash} : t(info.getValue() ? "common.yes" : "common.no"))`
-          : `cell: (info) => t(info.getValue() ? "common.yes" : "common.no")`,
+          ? `cell: (info) => (info.getValue() === null ? ${dash} : t(info.getValue() ? "${key('common.yes')}" : "${key('common.no')}"))`
+          : `cell: (info) => t(info.getValue() ? "${key('common.yes')}" : "${key('common.no')}")`,
       );
       break;
     case 'enum': {
@@ -214,6 +219,22 @@ function columnCode(names: ResourceNames, field: ResponseField, sortable: boolea
       if (field.optional) options.push(`cell: (info) => info.getValue() ?? ${dash}`);
   }
   return { code: `col.accessor("${field.key}", { ${options.join(', ')} })`, imports };
+}
+
+/**
+ * The namespace of `useTranslations("…")` in the function that builds the
+ * columns (none for `useTranslations()`): `t` takes keys relative to it.
+ */
+function columnsNamespace(columns: Node): string | undefined {
+  // The nearest enclosing function that calls it (the useMemo callback doesn't).
+  for (const fn of columns.getAncestors()) {
+    if (!Node.isFunctionDeclaration(fn) && !Node.isArrowFunction(fn) && !Node.isFunctionExpression(fn)) continue;
+    const hook = fn.getDescendantsOfKind(SyntaxKind.CallExpression).find((c) => c.getExpression().getText() === 'useTranslations');
+    if (!hook) continue;
+    const arg = hook.getArguments()[0];
+    return arg && Node.isStringLiteral(arg) ? arg.getLiteralValue() : undefined;
+  }
+  return undefined;
 }
 
 export function syncColumns(
@@ -240,6 +261,14 @@ export function syncColumns(
   const content = editSource(path, source, (file) => {
     const array = columnsArray(file);
     if (!array) return void report.warnings.push(`${path}: no col.columns([...]).`);
+    // A key as `t` takes it; one outside its namespace stays whole, with a warning.
+    const ns = columnsNamespace(array);
+    const key = (k: string) => {
+      if (!ns) return k;
+      if (k.startsWith(`${ns}.`)) return k.slice(ns.length + 1);
+      report.warnings.push(`${path}: ${k} is outside useTranslations("${ns}"): fix its t() call by hand.`);
+      return k;
+    };
     const present = array.getElements().map(keyOf).filter(Boolean) as string[];
     const listed = new Set(info.fields.filter((f) => f.listed).map((f) => f.key));
     for (const key of present) {
@@ -265,8 +294,8 @@ export function syncColumns(
     if (listed.has('id') && !present.includes('id') && !ignored.has('id')) {
       const fresh = columnsArray(file)!;
       const elements = fresh.getElements();
-      if (elements.length) file.insertText(elements[0].getStart(), `${idColumn(names)},\n  `);
-      else appendToList(file, fresh, elements, idColumn(names));
+      if (elements.length) file.insertText(elements[0].getStart(), `${idColumn(names, key)},\n  `);
+      else appendToList(file, fresh, elements, idColumn(names, key));
       if (!file.getImportDeclaration((d) => d.getModuleSpecifierValue() === 'next/link')) insertImportLine(file, 'Link', 'next/link');
       report.added.push('column id');
     }
@@ -279,7 +308,7 @@ export function syncColumns(
         report.warnings.push(`${field.key}: an id, not added as a column; show the related record by hand, or mark it dafne-ignore.`);
         continue;
       }
-      const { code, imports } = columnCode(names, field, info.sortFields.includes(field.key));
+      const { code, imports } = columnCode(names, field, info.sortFields.includes(field.key), key);
       const fresh = columnsArray(file)!;
       const elements = fresh.getElements();
       // Before "Added" (createdAt), which the generated lists keep last.

@@ -40,7 +40,7 @@ function useCustomerColumns() {
     () =>
       col.columns([
         col.accessor("id", {
-          header: t("customers.fields.id"),
+          header: t("id"),
           cell: ({ row }) => (
             <Link
               href={`/customers/${encodeURIComponent(row.original.id)}`}
