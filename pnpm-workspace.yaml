@@ -57,6 +57,9 @@ catalog:
 
 permissions:
   '@tanstack/react-table':
-    skills: true
+    skills: false
+# Dafne CLAUDE.md indicates to generate migrations with 'pnpm dafne db generate', which corrects the foreign key, 
+# and to apply them with project migrator. Skill says to use drizzle-kit directly, push included, 
+# and that might teach the assistant to overcome those rules.
   drizzle-kit:
     skills: false
