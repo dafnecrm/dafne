@@ -28,7 +28,7 @@ export function <%= s.pascal %>DetailActions({ <%= s.camel %> }: { <%= s.camel %
             <Button
               variant="outline"
               size="icon-sm"
-              aria-label={t("common.actionsFor", { name: <%= s.camel %>.name })}
+              aria-label={t("common.actionsFor", { name: `${t("<%= p.camel %>.singular")} ${<%= s.camel %>.id}` })}
             />
           }
         >

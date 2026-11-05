@@ -21,7 +21,7 @@ export interface BackendResourceSchema {
  * A whole backend resource: contract, Drizzle table, Nest lib with service
  * and controller. The fields go into the new table before anything is
  * written; then the contract, the service and their specs are synced with
- * them. The sample `name` field stays.
+ * them. The table starts with only its serial `id` and the audit columns.
  */
 export default async function backendResourceGenerator(tree: Tree, options: BackendResourceSchema) {
   return runGenerator(tree, options, async (changes) => {

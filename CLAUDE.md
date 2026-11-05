@@ -30,6 +30,11 @@ keep it in line when these rules change. Each project has its own
   generate` handles the migrations.
 - `pnpm dafne <command>` runs the CLI from source (e.g. `pnpm dafne dev`,
   `pnpm dafne g backend-resource invoice`).
+- `pnpm dafne remove backend-db-column <table> <columns…>` removes columns
+  (table, contract, service, specs, then the migration);
+  `pnpm dafne sync contract <resource>` brings a contract, its service
+  and specs in line with the table, `pnpm dafne sync frontend-resource
+  <resource>` a resource's pages in line with its contract.
 
 ## Rules
 
@@ -47,6 +52,11 @@ keep it in line when these rules change. Each project has its own
   (`nx g @dafne/cli:<kind>`), not `@nx/nest`'s (they write a
   `project.json`). They write the package and add it to the app and
   to the project references. Then run `pnpm install` and `pnpm nx sync`.
+  **Columns are removed with the CLI too** (`dafne remove
+  backend-db-column`: table, contract, service, specs, migration), a
+  contract follows its table with `dafne sync contract`, and a
+  resource's pages follow its contract with `dafne sync
+  frontend-resource`.
 - **Project references** (`references` in the tsconfigs) follow the
   `package.json` dependencies: `pnpm nx sync` updates them, and CI fails
   when they're out of date. Shared compiler options are in

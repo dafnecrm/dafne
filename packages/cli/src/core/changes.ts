@@ -78,6 +78,29 @@ export class Changes {
     this.tree.write(path, content);
   }
 
+  /** An updated file's content before this run (undefined for new or untouched files). */
+  original(path: string): string | undefined {
+    return this.changes.get(path)?.original;
+  }
+
+  /**
+   * Marks the current state; the returned function undoes what changed
+   * since (e.g. a resource skipped half-way through a sync).
+   */
+  checkpoint(): () => void {
+    const saved = new Map(this.changes);
+    const contents = new Map([...this.changes.keys()].map((path) => [path, this.tree.read(path)]));
+    return () => {
+      for (const [path, change] of this.changes) {
+        if (saved.has(path)) this.tree.write(path, contents.get(path)!);
+        else if (change.kind === 'create') this.tree.delete(path);
+        else this.tree.write(path, change.original!);
+      }
+      this.changes.clear();
+      for (const [path, change] of saved) this.changes.set(path, change);
+    };
+  }
+
   warn(message: string) {
     this.warnings.push(message);
   }

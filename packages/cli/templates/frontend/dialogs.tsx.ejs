@@ -22,7 +22,7 @@ import { delete<%= s.pascal %> } from "./actions";
  * (<%= s.kebab %>-detail-actions.tsx).
  */
 
-export type <%= s.pascal %>Ref = { id: string; name: string };
+export type <%= s.pascal %>Ref = { id: number };
 
 /**
  * Confirms the deletion and runs it, then goes back to the list
@@ -59,7 +59,7 @@ export function Delete<%= s.pascal %>Dialog({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>
-            {t("common.deleteTitle", { name: <%= s.camel %>.name })}
+            {t("common.deleteTitle", { name: `${t("<%= p.camel %>.singular")} ${<%= s.camel %>.id}` })}
           </AlertDialogTitle>
           <AlertDialogDescription>
             {t("<%= p.camel %>.deleteDescription")}

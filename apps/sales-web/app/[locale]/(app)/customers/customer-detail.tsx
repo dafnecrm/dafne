@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import CopyButton from "@/components/copy-button";
-import { Detail, DetailSection } from "@/components/detail";
+import { Detail, DetailSection } from "@dafne/frontend-ui/components/detail";
 import { LocalDate } from "@dafne/frontend-ui/components/local-date";
 import {
   Table,
@@ -157,7 +157,7 @@ export function CustomerDetails({ customer }: { customer: CustomerDetail }) {
         <Detail icon={FingerprintIcon} label={t("customers.fields.id")}>
           <div className="flex items-center gap-2">
             <code className="truncate font-mono text-xs">{customer.id}</code>
-            <CopyButton variant="ghost" value={customer.id} />
+            <CopyButton variant="ghost" value={String(customer.id)} />
           </div>
         </Detail>
         <Detail icon={CalendarPlusIcon} label={t("common.record.created")}>

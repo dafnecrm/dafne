@@ -1,3 +1,4 @@
 export * from './zod-validation.pipe.js';
+export * from './id.pipe.js';
 export * from './i18n.js';
 export * from './i18n-exception.filter.js';

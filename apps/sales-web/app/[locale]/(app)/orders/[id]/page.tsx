@@ -10,7 +10,7 @@ import {
   PageContentBody,
   PageContentHeader,
   PageContentTitle,
-} from "@/components/page-content";
+} from "@dafne/frontend-ui/components/page-content";
 import { Button } from "@dafne/frontend-ui/components/button";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { OrderDetailActions } from "../order-detail-actions";
@@ -43,10 +43,10 @@ async function OrderProfile({
     <PageContent>
       <BreadcrumbLabel
         href={`/orders/${encodeURIComponent(order.id)}`}
-        label={order.name}
+        label={`${t("orders.singular")} ${order.id}`}
       />
       <PageContentHeader>
-        <PageContentTitle>{order.name}</PageContentTitle>
+        <PageContentTitle>{`${t("orders.singular")} ${order.id}`}</PageContentTitle>
         <PageContentAction className="flex flex-wrap justify-end gap-2">
           <Button
             variant="outline"

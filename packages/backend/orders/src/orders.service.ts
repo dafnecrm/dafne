@@ -1,7 +1,6 @@
 import { schema, type Database } from '@dafne/backend-database';
 import { InjectDrizzle } from '@nestjs/drizzle';
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { randomUUID } from 'node:crypto';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { and, asc, desc, eq, isNull, ilike, type SQL } from 'drizzle-orm';
 import {
   ORDER_FILTER_FIELDS,
@@ -27,6 +26,8 @@ const userSummary = { columns: { id: true, name: true } } as const;
 
 @Injectable()
 export class OrdersService {
+  logger = new Logger(OrdersService.name);
+
   constructor(@InjectDrizzle() private readonly db: Database) {}
 
   /**
@@ -37,13 +38,19 @@ export class OrdersService {
     const {
       limit = DEFAULT_PAGE_SIZE,
       offset = 0,
-      sortBy = 'name',
+      sortBy = 'createdAt',
       sortDirection = 'asc',
     } = query;
     const { db } = this;
     const filters = ORDER_FILTER_FIELDS.flatMap((field) => {
       const value = query[field]?.trim();
-      return value ? [ilike(order[field], `%${escapeLike(value)}%`)] : [];
+      if (!value) return [];
+      // The id matches exactly (an integer column), the other fields contain the text.
+      return [
+        field === 'id'
+          ? eq(order.id, Number(value))
+          : ilike(order[field], `%${escapeLike(value)}%`),
+      ];
     });
     const where = and(notDeleted, ...filters) as SQL;
     const direction = sortDirection === 'asc' ? asc : desc;
@@ -52,8 +59,6 @@ export class OrdersService {
       db
         .select({
           id: order.id,
-          name: order.name,
-          notes: order.notes,
           customerId: order.customerId,
           createdAt: order.createdAt,
           updatedAt: order.updatedAt,
@@ -73,31 +78,32 @@ export class OrdersService {
    * One order that isn't deleted, with who created and last
    * updated it. Throws 404 otherwise.
    */
-  async getOrder(id: string): Promise<OrderDetail> {
+  async getOrder(id: number): Promise<OrderDetail> {
     const found = await this.db.query.order.findFirst({
       where: { id, deletedAt: { isNull: true } },
       columns: { createdById: false, updatedById: false },
       with: { createdBy: userSummary, updatedBy: userSummary },
     });
+
     if (!found) throw new NotFoundException(msg('orders.notFound'));
     return found;
   }
 
   /** Creates an order; `userId` is the creator. */
   async createOrder(body: OrderBody, userId: string): Promise<OrderDetail> {
-    const id = randomUUID();
     // One instant for both: createdAt and updatedAt start equal.
     const now = new Date();
-    await this.db.insert(order).values({
-      id,
-      name: body.name,
-      notes: body.notes,
-      customerId: body.customerId,
-      createdAt: now,
-      updatedAt: now,
-      createdById: userId,
-      updatedById: userId,
-    });
+    const [{ id }] = await this.db
+      .insert(order)
+      .values({
+        notes: body.notes,
+        customerId: body.customerId,
+        createdAt: now,
+        updatedAt: now,
+        createdById: userId,
+        updatedById: userId,
+      })
+      .returning({ id: order.id });
     return this.getOrder(id);
   }
 
@@ -106,14 +112,13 @@ export class OrdersService {
    * if the order doesn't exist or is deleted.
    */
   async updateOrder(
-    id: string,
+    id: number,
     body: OrderBody,
     userId: string,
   ): Promise<OrderDetail> {
     const result = await this.db
       .update(order)
       .set({
-        name: body.name,
         notes: body.notes,
         customerId: body.customerId,
         updatedById: userId,
@@ -130,7 +135,7 @@ export class OrdersService {
    * Deletes an order logically: sets deletedAt, so it disappears
    * from the API but stays in the database. Throws 404 if already deleted.
    */
-  async deleteOrder(id: string, userId: string) {
+  async deleteOrder(id: number, userId: string) {
     const now = new Date();
     const result = await this.db
       .update(order)

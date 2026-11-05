@@ -33,7 +33,9 @@ export function OrderTableActions({ order }: { order: OrderRef }) {
             <Button
               variant="ghost"
               size="icon-sm"
-              aria-label={t("common.actionsFor", { name: order.name })}
+              aria-label={t("common.actionsFor", {
+                name: `${t("orders.singular")} ${order.id}`,
+              })}
             />
           }
         >

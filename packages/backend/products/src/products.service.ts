@@ -1,7 +1,6 @@
 import { schema, type Database } from '@dafne/backend-database';
 import { InjectDrizzle } from '@nestjs/drizzle';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { randomUUID } from 'node:crypto';
 import { and, asc, desc, eq, isNull, ilike, type SQL } from 'drizzle-orm';
 import {
   PRODUCT_FILTER_FIELDS,
@@ -43,7 +42,13 @@ export class ProductsService {
     const { db } = this;
     const filters = PRODUCT_FILTER_FIELDS.flatMap((field) => {
       const value = query[field]?.trim();
-      return value ? [ilike(product[field], `%${escapeLike(value)}%`)] : [];
+      if (!value) return [];
+      // The id matches exactly (an integer column), the other fields contain the text.
+      return [
+        field === 'id'
+          ? eq(product.id, Number(value))
+          : ilike(product[field], `%${escapeLike(value)}%`),
+      ];
     });
     const where = and(notDeleted, ...filters) as SQL;
     const direction = sortDirection === 'asc' ? asc : desc;
@@ -72,7 +77,7 @@ export class ProductsService {
    * One product that isn't deleted, with who created and last
    * updated it. Throws 404 otherwise.
    */
-  async getProduct(id: string): Promise<ProductDetail> {
+  async getProduct(id: number): Promise<ProductDetail> {
     const found = await this.db.query.product.findFirst({
       where: { id, deletedAt: { isNull: true } },
       columns: { createdById: false, updatedById: false },
@@ -87,19 +92,20 @@ export class ProductsService {
     body: ProductBody,
     userId: string,
   ): Promise<ProductDetail> {
-    const id = randomUUID();
     // One instant for both: createdAt and updatedAt start equal.
     const now = new Date();
-    await this.db.insert(product).values({
-      id,
-      name: body.name,
-      description: body.description,
-      price: body.price,
-      createdAt: now,
-      updatedAt: now,
-      createdById: userId,
-      updatedById: userId,
-    });
+    const [{ id }] = await this.db
+      .insert(product)
+      .values({
+        name: body.name,
+        description: body.description,
+        price: body.price,
+        createdAt: now,
+        updatedAt: now,
+        createdById: userId,
+        updatedById: userId,
+      })
+      .returning({ id: product.id });
     return this.getProduct(id);
   }
 
@@ -108,7 +114,7 @@ export class ProductsService {
    * if the product doesn't exist or is deleted.
    */
   async updateProduct(
-    id: string,
+    id: number,
     body: ProductBody,
     userId: string,
   ): Promise<ProductDetail> {
@@ -132,7 +138,7 @@ export class ProductsService {
    * Deletes a product logically: sets deletedAt, so it disappears
    * from the API but stays in the database. Throws 404 if already deleted.
    */
-  async deleteProduct(id: string, userId: string) {
+  async deleteProduct(id: number, userId: string) {
     const now = new Date();
     const result = await this.db
       .update(product)

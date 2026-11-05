@@ -34,14 +34,16 @@ export function rolesOf(column: Column): Roles {
   const writeonly = tags.has('writeonly');
   const detailOnly = tags.has('detail');
   const generated = column.primaryKey || column.serverManaged;
+  // The id is always a filter (an exact match, see filterZod), unless tagged nofilter.
+  const idFilter = column.primaryKey && kind === 'int';
   const roles: Roles = {
     body: !generated && !tags.has('readonly'),
     listed: !writeonly && !detailOnly,
     detail: !writeonly && detailOnly,
-    filter: FILTERABLE.has(kind) && !generated && !column.references && !writeonly && !detailOnly,
+    filter: (idFilter || (FILTERABLE.has(kind) && !generated && !column.references)) && !writeonly && !detailOnly,
     sort: SORTABLE.has(kind) && !column.primaryKey && !column.references && !writeonly && !detailOnly,
   };
-  if (tags.has('filter')) roles.filter = FILTERABLE.has(kind);
+  if (tags.has('filter')) roles.filter = idFilter || FILTERABLE.has(kind);
   if (tags.has('nofilter')) roles.filter = false;
   if (tags.has('sort')) roles.sort = SORTABLE.has(kind);
   if (tags.has('nosort')) roles.sort = false;
@@ -77,6 +79,13 @@ export function bodyZod(names: ResourceNames, column: Column): string {
     if (required) return `requiredText(${max}, ${required_})`;
     if (optionalDefault) return `requiredText(${max}, ${required_}).optional()`;
     return `optionalText(z.string().max(${max}))`;
+  }
+
+  // A key to another table's identity id: a positive integer, which a form sends as text.
+  if (column.references && column.kind === 'int') {
+    if (required) return `requiredId(${required_})`;
+    if (optionalDefault) return `requiredId(${required_}).optional()`;
+    return `optionalId(${required_})`;
   }
 
   // A form sends "" for an empty date: optionalDate turns it into null.
@@ -117,6 +126,8 @@ function baseZod(names: ResourceNames, column: Column, required: string): string
 
 /** Zod for the list's query string (each filter is a param of its own). */
 export function filterZod(names: ResourceNames, column: Column): string {
+  // The id: digits (an int4), which the service matches exactly.
+  if (column.primaryKey) return 'z.string().regex(/^\\s*\\d{0,9}\\s*$/).optional()';
   if (column.kind === 'enum') return `z.enum(${enumNames(names, column).constant}).optional()`;
   if (column.kind === 'boolean') return `z.enum(['true', 'false']).optional()`;
   return `z.string().max(${column.length ?? 255}).optional()`;

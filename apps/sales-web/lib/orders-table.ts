@@ -13,15 +13,9 @@ export const ordersTable = defineDataTable({
   path: "/orders",
   // The backend allows up to 100.
   pageSizes: [10, 20, 50],
-  sortable: [
-    "name",
-    "notes",
-    "createdAt",
-    "updatedAt",
-  ] satisfies OrderSortField[],
-  defaultSort: { id: "name", desc: false },
+  sortable: ["createdAt", "updatedAt"] satisfies OrderSortField[],
+  defaultSort: { id: "createdAt", desc: false },
   filters: [
-    { field: "name" satisfies OrderFilterField, label: "orders.fields.name" },
-    { field: "notes" satisfies OrderFilterField, label: "orders.fields.notes" },
+    { field: "id" satisfies OrderFilterField, label: "orders.fields.id" },
   ],
 });

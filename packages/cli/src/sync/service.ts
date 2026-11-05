@@ -256,10 +256,11 @@ function applySections(path: string, source: string, sections: Section[], report
         const present = props.map(keyOf);
         // A key already set to something else (e.g. a computed value) is left alone.
         if (present.includes(want.key)) continue;
-        // After the wanted key before it, else before the one after it, else last.
+        // After the wanted key before it, else before the one after it, else
+        // first (no field there yet: they go before createdAt, updatedById…).
         const before = section.wanted.slice(0, index).map((w) => w.key).reverse().find((k) => present.includes(k));
         const after = section.wanted.slice(index + 1).map((w) => w.key).find((k) => present.includes(k));
-        const at = before !== undefined ? present.indexOf(before) + 1 : after !== undefined ? present.indexOf(after) : props.length;
+        const at = before !== undefined ? present.indexOf(before) + 1 : after !== undefined ? present.indexOf(after) : 0;
         if (at >= props.length) appendToList(file, object, props, want.text);
         else if (at === 0) {
           const first = props[0];

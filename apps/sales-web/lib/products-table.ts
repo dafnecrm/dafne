@@ -25,5 +25,6 @@ export const productsTable = defineDataTable({
       field: "name" satisfies ProductFilterField,
       label: "products.fields.name",
     },
+    { field: "id" satisfies ProductFilterField, label: "products.fields.id" },
   ],
 });

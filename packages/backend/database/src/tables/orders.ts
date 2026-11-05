@@ -1,10 +1,12 @@
 import { defineRelationsPart } from 'drizzle-orm';
 import {
   index,
+  integer,
   timestamp,
   varchar,
   text,
   primaryKey,
+  serial,
 } from 'drizzle-orm/pg-core';
 import { salesSchema } from './sales.js';
 import { user } from '../auth.js';
@@ -18,11 +20,10 @@ import { product } from './products.js';
 export const order = salesSchema.table(
   'order',
   {
-    id: varchar('id', { length: 36 }).primaryKey(),
-    name: varchar('name', { length: 255 }).notNull(),
-    /** @form editor */
+    id: serial('id').primaryKey(),
+    /** @api detail @form editor */
     notes: text('notes'),
-    customerId: varchar('customer_id', { length: 36 })
+    customerId: integer('customer_id')
       .notNull()
       .references(() => customer.id, { onDelete: 'restrict' }),
     createdAt: timestamp('created_at', { precision: 3, withTimezone: true })
@@ -45,7 +46,6 @@ export const order = salesSchema.table(
   },
   (table) => [
     index('order_deletedAt_idx').on(table.deletedAt),
-    index('order_name_idx').on(table.name),
     index('order_customerId_idx').on(table.customerId),
   ],
 );
@@ -54,10 +54,10 @@ export const order = salesSchema.table(
 export const orderProduct = salesSchema.table(
   'order_product',
   {
-    orderId: varchar('order_id', { length: 36 })
+    orderId: integer('order_id')
       .notNull()
       .references(() => order.id, { onDelete: 'cascade' }),
-    productId: varchar('product_id', { length: 36 })
+    productId: integer('product_id')
       .notNull()
       .references(() => product.id, { onDelete: 'cascade' }),
   },

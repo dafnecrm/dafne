@@ -16,6 +16,8 @@ export type FormKind =
   | 'decimal'
   | 'date'
   | 'datetime'
+  /** A reference to another record: its id (requiredId/optionalId), sent as text. */
+  | 'id'
   | 'unsupported';
 
 export interface FormField {
@@ -87,6 +89,8 @@ function classify(key: string, raw: string, table?: TableInfo): FormField {
   }
   if (zod.startsWith('requiredText(')) return { ...base, kind: /z\.email\(/.test(zod) ? 'email' : textKind, optional: false };
   if (zod.startsWith('optionalDate(')) return { ...base, kind: dateKind, optional: true };
+  if (zod.startsWith('requiredId(')) return { ...base, kind: 'id', optional: /^requiredId\([^)]*\)\)?\.optional\(/.test(zod) };
+  if (zod.startsWith('optionalId(')) return { ...base, kind: 'id', optional: true };
   const enumConst = /^z\.enum\((\w+)/.exec(zod)?.[1];
   if (enumConst) return { ...base, kind: 'enum', optional: nullable, enumConst };
   if (zod.startsWith('z.boolean(')) return { ...base, kind: 'boolean', optional: nullable };

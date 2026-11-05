@@ -67,8 +67,10 @@ templates in `packages/cli/templates`.
      `pnpm install --offline`;
   2. there, run the generators (`pnpm dafne g backend-resource invoice --field … -y`,
      `g frontend-resource invoice`, `g backend-lib`, `g backend-app`,
-     `g contract`, `g frontend-app`, `g frontend-lib`), then
-     `pnpm install --offline` and `npx nx sync`;
+     `g contract`, `g frontend-app`, `g frontend-lib`; after changing
+     `remove` or `sync`, also `remove backend-db-column <resource>
+     <column> -y` and `sync frontend-resource <resource> -y` on a
+     generated resource), then `pnpm install --offline` and `npx nx sync`;
   3. `npx nx sync:check` must find nothing, and
      `npx nx run-many -t lint typecheck test build` must pass.
 

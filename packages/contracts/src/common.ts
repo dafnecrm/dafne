@@ -52,3 +52,33 @@ export const optionalDate = (error: ContractMessageKey) =>
     // Without it the key is required in z.input (preprocess takes unknown).
     .optional()
     .transform((value) => value ?? null);
+
+/** A form sends ids as text: "" is no value, other text becomes a number (NaN fails). */
+const idFromText = (value: unknown) =>
+  typeof value === 'string'
+    ? value.trim() === ''
+      ? null
+      : Number(value.trim())
+    : value;
+
+/** The id of another record (a serial column): a positive integer. */
+const id = (error: ContractMessageKey) =>
+  z.number({ error }).int({ error }).positive({ error });
+
+/**
+ * Required reference to another record, e.g. an order's customerId: its id,
+ * as a number or as the text a form sends. Blank fails with `error`.
+ */
+export const requiredId = (error: ContractMessageKey) =>
+  z.preprocess((value) => idFromText(value) ?? undefined, id(error));
+
+/**
+ * Optional reference to another record: blank, null or missing all become
+ * null; anything else must be an id.
+ */
+export const optionalId = (error: ContractMessageKey) =>
+  z
+    .preprocess(idFromText, id(error).nullable())
+    // Without it the key is required in z.input (preprocess takes unknown).
+    .optional()
+    .transform((value) => value ?? null);

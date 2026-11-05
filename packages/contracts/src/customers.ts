@@ -137,9 +137,11 @@ export type CustomerSortField = (typeof CUSTOMER_SORT_FIELDS)[number];
 
 /**
  * Customer fields the list can be filtered by, each a query param of its
- * own. Filters combine with AND and match text the field contains.
+ * own. Filters combine with AND and match text the field contains
+ * (the id matches exactly).
  */
 export const CUSTOMER_FILTER_FIELDS = [
+  'id',
   'type',
   'name',
   'fiscalCode',
@@ -152,6 +154,10 @@ export type CustomerFilterField = (typeof CUSTOMER_FILTER_FIELDS)[number];
 /** Query string of GET /customers. Deleted customers are never listed. */
 export const listCustomersQuerySchema = z.strictObject({
   ...pageQuery,
+  id: z
+    .string()
+    .regex(/^\s*\d{0,9}\s*$/)
+    .optional(),
   type: z.enum(CUSTOMER_TYPES).optional(),
   name: z.string().max(255).optional(),
   fiscalCode: z.string().max(16).optional(),
@@ -169,7 +175,7 @@ export type ListCustomersQuery = z.output<typeof listCustomersQuerySchema>;
 
 /** A customer in GET /customers. */
 export interface ListedCustomer {
-  id: string;
+  id: number;
   type: CustomerType;
   name: string;
   birthDate: Date | null;
@@ -190,7 +196,7 @@ export interface CustomersList {
 }
 
 export interface CustomerAddress {
-  id: string;
+  id: number;
   type: CustomerAddressType;
   street: string;
   city: string;

@@ -59,5 +59,9 @@ export const activitiesTable = defineDataTable({
       label: "activities.fields.status",
       options: ACTIVITY_STATUS_OPTIONS,
     },
+    {
+      field: "id" satisfies ActivityFilterField,
+      label: "activities.fields.id",
+    },
   ],
 });

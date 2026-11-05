@@ -66,6 +66,21 @@
       "factory": "./src/generators/frontend-nav/generator.ts",
       "schema": "./src/generators/frontend-nav/schema.json",
       "description": "A resource's link in the sidebar (lib/navigation.ts)."
+    },
+    "remove-backend-db-column": {
+      "factory": "./src/generators/remove-backend-db-column/generator.ts",
+      "schema": "./src/generators/remove-backend-db-column/schema.json",
+      "description": "Removes columns (or relations) from a Drizzle table, then syncs the contract, the service and their specs."
+    },
+    "frontend-resource-sync": {
+      "factory": "./src/generators/frontend-resource-sync/generator.ts",
+      "schema": "./src/generators/frontend-resource-sync/schema.json",
+      "description": "Brings the pages of a resource (form, list, detail) in line with its contract: adds the fields it lacks, removes those the contract dropped."
+    },
+    "contract-sync": {
+      "factory": "./src/generators/contract-sync/generator.ts",
+      "schema": "./src/generators/contract-sync/schema.json",
+      "description": "Brings a resource's contract in line with its table, then the service's queries and the specs' sample bodies."
     }
   }
 }

@@ -13,11 +13,16 @@ const activity = resourceNames('activity');
 /** The generated table, with the columns added after it was generated. */
 const activityTable = (extra: string) =>
   render('backend/table.ts', activity).replace(
-    "name: varchar('name', { length: 255 }).notNull(),",
-    `name: varchar('name', { length: 255 }).notNull(),\n${extra}`,
+    "id: serial('id').primaryKey(),",
+    `id: serial('id').primaryKey(),\n    name: varchar('name', { length: 255 }).notNull(),\n${extra}`,
   );
 
-function sync(table: string, contract = render('backend/contract.ts', activity)) {
+/** The contract of a resource generated with a `name` field (the template has none). */
+const generated = () =>
+  syncContract('contracts/activities.ts', render('backend/contract.ts', activity), activity, readTable('tables/activities.ts', activityTable(''), activity))
+    .content;
+
+function sync(table: string, contract = generated()) {
   const info = readTable('tables/activities.ts', table, activity);
   return { info, ...syncContract('contracts/activities.ts', contract, activity, info) };
 }
@@ -69,7 +74,7 @@ describe('rolesOf', () => {
   it('follows the customers contract', () => {
     const { info } = sync(activityTable(''));
     const roles = Object.fromEntries(info.columns.map((c) => [c.key, rolesOf(c)]));
-    expect(roles.id).toMatchObject({ body: false, listed: true, filter: false, sort: false });
+    expect(roles.id).toMatchObject({ body: false, listed: true, filter: true, sort: false });
     expect(roles.name).toMatchObject({ body: true, listed: true, filter: true, sort: true });
     expect(roles.createdAt).toMatchObject({ body: false, listed: true, filter: false, sort: true });
     expect(roles.deletedAt).toMatchObject({ body: false, listed: false, detail: true });
@@ -100,14 +105,15 @@ describe('syncContract', () => {
     expect(content).toContain("export const ACTIVITY_TYPES = ['email', 'phone'] as const;");
     expect(content).toContain("type: z.enum(ACTIVITY_TYPES, { error: msg('activities.type.required') })");
     expect(content).toContain("['name', 'type', 'createdAt', 'updatedAt']");
-    expect(content).toContain("['name', 'type'] as const");
+    expect(content).toContain("['id', 'name', 'type'] as const");
+    expect(content).toContain('id: z.string().regex(/^\\s*\\d{0,9}\\s*$/).optional()');
     expect(content).toContain('type: z.enum(ACTIVITY_TYPES).optional()');
     expect(content).toMatch(/name: string;\s+type: ActivityType;\s+createdAt: Date;/);
     expect(report.required).toEqual(['type']);
   });
 
   it('keeps hand-written validation and drops columns that became internal', () => {
-    const contract = render('backend/contract.ts', activity)
+    const contract = generated()
       .replace("requiredText(255, msg('activities.name.required'))", "requiredText(100, 'Name it')")
       .replace("name: requiredText(100, 'Name it'),", "name: requiredText(100, 'Name it'),\n  code: optionalText(z.string().max(10)),");
     const { content, report } = sync(
@@ -120,7 +126,7 @@ describe('syncContract', () => {
   });
 
   it('flags members that are no longer columns', () => {
-    const contract = render('backend/contract.ts', activity).replace(
+    const contract = generated().replace(
       'name: string;\n',
       'name: string;\n  legacy: string;\n',
     );

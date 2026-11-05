@@ -8,7 +8,7 @@ import {
   PageContentDescription,
   PageContentHeader,
   PageContentTitle,
-} from "@/components/page-content";
+} from "@dafne/frontend-ui/components/page-content";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { OrderForm } from "../../order-form";
 import { loadOrder } from "../load-order";
@@ -38,11 +38,13 @@ async function EditOrder({
     <PageContent>
       <BreadcrumbLabel
         href={`/orders/${encodeURIComponent(order.id)}`}
-        label={order.name}
+        label={`${t("orders.singular")} ${order.id}`}
       />
       <PageContentHeader>
         <PageContentTitle>
-          {t("common.editTitle", { name: order.name })}
+          {t("common.editTitle", {
+            name: `${t("orders.singular")} ${order.id}`,
+          })}
         </PageContentTitle>
         <PageContentDescription>
           {t("orders.editDescription")}

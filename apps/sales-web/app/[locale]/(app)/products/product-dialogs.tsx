@@ -22,7 +22,7 @@ import { deleteProduct } from "./actions";
  * (product-detail-actions.tsx).
  */
 
-export type ProductRef = { id: string; name: string };
+export type ProductRef = { id: number; name: string };
 
 /**
  * Confirms the deletion and runs it, then goes back to the list

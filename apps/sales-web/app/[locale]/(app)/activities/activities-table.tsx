@@ -44,6 +44,17 @@ function useActivityColumns() {
   return useMemo(
     () =>
       col.columns([
+        col.accessor("id", {
+          header: t("activities.fields.id"),
+          cell: ({ row }) => (
+            <Link
+              href={`/activities/${encodeURIComponent(row.original.id)}`}
+              className="font-medium underline-offset-4 hover:underline"
+            >
+              {row.original.id}
+            </Link>
+          ),
+        }),
         col.accessor("name", {
           header: t("activities.fields.name"),
           cell: ({ row }) => (
@@ -104,7 +115,7 @@ const activityActions = (activity: ListedActivity) => (
   <ActivityTableActions activity={activity} />
 );
 
-const getRowId = (activity: ListedActivity) => activity.id;
+const getRowId = (activity: ListedActivity) => String(activity.id);
 
 /** Activities list; the server page passes one page of activities. */
 export function ActivitiesTable({

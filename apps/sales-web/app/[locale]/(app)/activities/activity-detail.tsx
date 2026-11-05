@@ -12,7 +12,7 @@ import {
   TextIcon,
 } from "lucide-react";
 import CopyButton from "@/components/copy-button";
-import { Detail, DetailSection } from "@/components/detail";
+import { Detail, DetailSection } from "@dafne/frontend-ui/components/detail";
 import { LocalDate } from "@dafne/frontend-ui/components/local-date";
 import { TextEditorContent } from "@dafne/frontend-ui/components/text-editor";
 import type { ActivityDetail } from "@/lib/activities";
@@ -70,7 +70,7 @@ export function ActivityDetails({ activity }: { activity: ActivityDetail }) {
         <Detail icon={FingerprintIcon} label={t("activities.fields.id")}>
           <div className="flex items-center gap-2">
             <code className="truncate font-mono text-xs">{activity.id}</code>
-            <CopyButton variant="ghost" value={activity.id} />
+            <CopyButton variant="ghost" value={String(activity.id)} />
           </div>
         </Detail>
         <Detail icon={CalendarPlusIcon} label={t("common.record.created")}>

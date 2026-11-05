@@ -37,14 +37,19 @@ export type ProductSortField = (typeof PRODUCT_SORT_FIELDS)[number];
 
 /**
  * Product fields the list can be filtered by, each a query param of
- * its own. Filters combine with AND and match text the field contains.
+ * its own. Filters combine with AND and match text the field contains
+ * (the id matches exactly).
  */
-export const PRODUCT_FILTER_FIELDS = ['name'] as const;
+export const PRODUCT_FILTER_FIELDS = ['id', 'name'] as const;
 export type ProductFilterField = (typeof PRODUCT_FILTER_FIELDS)[number];
 
 /** Query string of GET /products. Deleted products are never listed. */
 export const listProductsQuerySchema = z.strictObject({
   ...pageQuery,
+  id: z
+    .string()
+    .regex(/^\s*\d{0,9}\s*$/)
+    .optional(),
   name: z.string().max(255).optional(),
   /** Defaults to name. */
   sortBy: z.enum(PRODUCT_SORT_FIELDS).optional(),
@@ -57,7 +62,7 @@ export type ListProductsQuery = z.output<typeof listProductsQuerySchema>;
 
 /** A product in GET /products. */
 export interface ListedProduct {
-  id: string;
+  id: number;
   name: string;
   price: string;
   createdAt: Date;

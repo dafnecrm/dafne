@@ -437,7 +437,6 @@
       "details": "Details"
     },
     "fields": {
-      "name": "Name",
       "createdAt": "Added",
       "id": "Order ID",
       "notes": "Notes",

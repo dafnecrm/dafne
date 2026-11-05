@@ -10,6 +10,18 @@ import { findWorkspaceRoot, runNx } from "../core/nx.ts";
 const MIGRATOR = "@dafne/backend-migrator";
 const DEFAULT_DATABASE_PACKAGE = "@dafne/backend-database";
 
+/** Runs drizzle-kit generate for a schema package (`dafne db generate`). */
+export function generateMigration(
+  root: string,
+  project: string = DEFAULT_DATABASE_PACKAGE,
+  options: { name?: string; custom?: boolean } = {},
+) {
+  const args = ["run", `${project}:migration:generate`, "--"];
+  if (options.name) args.push("--name", options.name);
+  if (options.custom) args.push("--custom");
+  return runNx(root, args);
+}
+
 export function dbCommand() {
   const db = new Command("db").description(
     "The database: create it, and its migrations (every schema, one order)",
@@ -60,10 +72,7 @@ export function dbCommand() {
     .option("--custom", "an empty migration, for SQL written by hand")
     .action(
       async (project: string, options: { name?: string; custom?: boolean }) => {
-        const args = ["run", `${project}:migration:generate`, "--"];
-        if (options.name) args.push("--name", options.name);
-        if (options.custom) args.push("--custom");
-        process.exitCode = await runNx(findWorkspaceRoot(), args);
+        process.exitCode = await generateMigration(findWorkspaceRoot(), project, options);
       },
     );
 

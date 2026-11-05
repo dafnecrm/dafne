@@ -13,7 +13,7 @@ import {
   PageContentDescription,
   PageContentHeader,
   PageContentTitle,
-} from "@/components/page-content";
+} from "@dafne/frontend-ui/components/page-content";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("account");

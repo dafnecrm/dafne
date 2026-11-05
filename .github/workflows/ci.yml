@@ -63,5 +63,5 @@ jobs:
       - run: pnpm boundaries
         if: steps.changes.outputs.code == 'true'
 
-      - run: pnpm nx affected -t lint typecheck test build --outputStyle=static
+      - run: pnpm nx affected -t lint typecheck test build --outputStyle=static --parallel=4
         if: steps.changes.outputs.code == 'true'

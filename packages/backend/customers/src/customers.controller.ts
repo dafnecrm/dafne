@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { Session } from '@dafne/backend-session';
 import type { UserSession } from '@dafne/backend-session';
-import { ZodValidationPipe } from '@dafne/backend-common';
+import { IdPipe, ZodValidationPipe } from '@dafne/backend-common';
 import {
   customerBodySchema,
   listCustomersQuerySchema,
@@ -37,7 +37,7 @@ export class CustomersController {
   }
 
   @Get(':id')
-  getCustomer(@Param('id') id: string): Promise<CustomerDetail> {
+  getCustomer(@Param('id', IdPipe) id: number): Promise<CustomerDetail> {
     return this.customersService.getCustomer(id);
   }
 
@@ -51,7 +51,7 @@ export class CustomersController {
 
   @Put(':id')
   updateCustomer(
-    @Param('id') id: string,
+    @Param('id', IdPipe) id: number,
     @Body(new ZodValidationPipe(customerBodySchema)) body: CustomerBody,
     @Session() session: UserSession,
   ): Promise<CustomerDetail> {
@@ -62,7 +62,7 @@ export class CustomersController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteCustomer(
-    @Param('id') id: string,
+    @Param('id', IdPipe) id: number,
     @Session() session: UserSession,
   ): Promise<void> {
     await this.customersService.deleteCustomer(id, session.user.id);

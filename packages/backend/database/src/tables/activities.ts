@@ -1,5 +1,5 @@
 import { defineRelationsPart } from 'drizzle-orm';
-import { index, timestamp, varchar, text } from 'drizzle-orm/pg-core';
+import { index, timestamp, varchar, text, serial } from 'drizzle-orm/pg-core';
 import { salesSchema } from './sales.js';
 import { user } from '../auth.js';
 
@@ -10,7 +10,7 @@ import { user } from '../auth.js';
 export const activity = salesSchema.table(
   'activity',
   {
-    id: varchar('id', { length: 36 }).primaryKey(),
+    id: serial('id').primaryKey(),
     name: varchar('name', { length: 255 }).notNull(),
     type: text({ enum: ['call', 'email', 'meeting', 'task'] }).notNull(),
     dueDate: timestamp('due_date', { precision: 3, withTimezone: true }),

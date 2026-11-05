@@ -1,0 +1,60 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "0351f304-7a9d-4692-bff6-6c5a4169ac63",
+  "prevIds": [
+    "40d873d9-9ab1-4cf0-b3f3-94e506e9abb0"
+  ],
+  "footprints": [
+    {
+      "statementType": "drop_index",
+      "statementTarget": [
+        "index",
+        "sales",
+        "order",
+        "order_name_idx"
+      ],
+      "writes": [
+        "s|idx|sales.order_name_idx",
+        "n|idx|sales.order_name_idx",
+        "e|idx|sales.order_name_idx",
+        "n|rel|sales.order_name_idx"
+      ],
+      "reads": [
+        "e|tbl|sales.order",
+        "n|sch|sales",
+        "e|col|sales.order.name"
+      ],
+      "sharedWrites": []
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "sales",
+        "order",
+        "name"
+      ],
+      "writes": [
+        "s|col|sales.order.name",
+        "n|col|sales.order.name",
+        "e|col|sales.order.name"
+      ],
+      "reads": [
+        "n|tbl|sales.order",
+        "n|sch|sales"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"sales\",\"order\",\"name\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"sales\",\"order_name_idx\"]"
+    }
+  ]
+}

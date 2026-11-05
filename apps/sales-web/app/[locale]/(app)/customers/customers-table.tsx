@@ -39,6 +39,17 @@ function useCustomerColumns() {
   return useMemo(
     () =>
       col.columns([
+        col.accessor("id", {
+          header: t("id"),
+          cell: ({ row }) => (
+            <Link
+              href={`/customers/${encodeURIComponent(row.original.id)}`}
+              className="font-medium underline-offset-4 hover:underline"
+            >
+              {row.original.id}
+            </Link>
+          ),
+        }),
         col.accessor("name", {
           header: t("name"),
           cell: ({ row }) => (
@@ -121,7 +132,7 @@ const customerActions = (customer: ListedCustomer) => (
   <CustomerTableActions customer={customer} />
 );
 
-const getRowId = (customer: ListedCustomer) => customer.id;
+const getRowId = (customer: ListedCustomer) => String(customer.id);
 
 /** Customers list; the server page passes one page of customers. */
 export function CustomersTable({

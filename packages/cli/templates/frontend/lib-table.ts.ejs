@@ -1,7 +1,4 @@
-import type {
-  <%= s.pascal %>FilterField,
-  <%= s.pascal %>SortField,
-} from "@dafne/contracts";
+import type { <%= s.pascal %>SortField } from "@dafne/contracts";
 import { defineDataTable } from "@dafne/frontend-data-table";
 
 /**
@@ -16,9 +13,8 @@ export const <%= p.camel %>Table = defineDataTable({
   path: "/<%= p.kebab %>",
   // The backend allows up to 100.
   pageSizes: [10, 20, 50],
-  sortable: ["name", "createdAt", "updatedAt"] satisfies <%= s.pascal %>SortField[],
-  defaultSort: { id: "name", desc: false },
-  filters: [
-    { field: "name" satisfies <%= s.pascal %>FilterField, label: "<%= p.camel %>.fields.name" },
-  ],
+  sortable: ["createdAt", "updatedAt"] satisfies <%= s.pascal %>SortField[],
+  defaultSort: { id: "createdAt", desc: false },
+  // { field: "…" satisfies <%= s.pascal %>FilterField, label: "…" }, added with the fields.
+  filters: [],
 });

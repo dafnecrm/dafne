@@ -14,7 +14,7 @@ const notDeleted = isNull(product.deletedAt);
 
 describe('ProductsService', () => {
   let service: ProductsService;
-  const rows = [{ id: 'r1', name: 'Acme' }];
+  const rows = [{ id: 1, name: 'Acme' }];
   // Chainable stand-in for db.select().from().where().orderBy().limit().offset()
   const select = {
     from: vi.fn(),
@@ -23,8 +23,8 @@ describe('ProductsService', () => {
     limit: vi.fn(),
     offset: vi.fn(),
   };
-  // Stand-ins for insert().values() and update().set().where()
-  const insert = { values: vi.fn() };
+  // Stand-ins for insert().values().returning() and update().set().where()
+  const insert = { values: vi.fn(), returning: vi.fn() };
   const update = { set: vi.fn(), where: vi.fn() };
   const findFirst = vi.fn();
   const db = {
@@ -35,7 +35,7 @@ describe('ProductsService', () => {
     delete: vi.fn(),
     query: { product: { findFirst } },
   };
-  const found = { id: 'r1', name: 'Acme' };
+  const found = { id: 1, name: 'Acme' };
 
   beforeEach(async () => {
     vi.resetAllMocks();
@@ -47,7 +47,8 @@ describe('ProductsService', () => {
     select.offset.mockResolvedValue(rows);
     db.$count.mockResolvedValue(42);
     db.insert.mockReturnValue(insert);
-    insert.values.mockResolvedValue(undefined);
+    insert.values.mockReturnValue(insert);
+    insert.returning.mockResolvedValue([{ id: 1 }]);
     db.update.mockReturnValue(update);
     update.set.mockReturnValue(update);
     update.where.mockResolvedValue({ rowCount: 1 });
@@ -108,10 +109,10 @@ describe('ProductsService', () => {
 
   describe('getProduct', () => {
     it('returns a product that is not deleted, with its users', async () => {
-      await expect(service.getProduct('r1')).resolves.toBe(found);
+      await expect(service.getProduct(1)).resolves.toBe(found);
 
       const options = findFirst.mock.calls[0][0];
-      expect(options.where).toEqual({ id: 'r1', deletedAt: { isNull: true } });
+      expect(options.where).toEqual({ id: 1, deletedAt: { isNull: true } });
       expect(options.with.createdBy.columns).toEqual({ id: true, name: true });
       expect(options.with.updatedBy.columns).toEqual({ id: true, name: true });
     });
@@ -119,7 +120,7 @@ describe('ProductsService', () => {
     it('throws 404 when the product does not exist or is deleted', async () => {
       findFirst.mockResolvedValue(undefined);
 
-      await expect(service.getProduct('nope')).rejects.toBeInstanceOf(
+      await expect(service.getProduct(999)).rejects.toBeInstanceOf(
         NotFoundException,
       );
     });
@@ -137,14 +138,14 @@ describe('ProductsService', () => {
         createdById: 'u1',
         updatedById: 'u1',
       });
-      expect(findFirst.mock.calls[0][0].where.id).toBe(row.id);
+      expect(findFirst.mock.calls[0][0].where.id).toBe(1);
     });
   });
 
   describe('updateProduct', () => {
     it('updates the product', async () => {
       await service.updateProduct(
-        'r1',
+        1,
         body({ name: 'Acme Inc', price: '1.00' }),
         'u2',
       );
@@ -154,7 +155,7 @@ describe('ProductsService', () => {
         updatedById: 'u2',
       });
       expect(update.where).toHaveBeenCalledWith(
-        and(eq(product.id, 'r1'), notDeleted),
+        and(eq(product.id, 1), notDeleted),
       );
     });
 
@@ -162,20 +163,20 @@ describe('ProductsService', () => {
       update.where.mockResolvedValue({ rowCount: 0 });
 
       await expect(
-        service.updateProduct('nope', body({ name: 'X', price: '1.00' }), 'u2'),
+        service.updateProduct(999, body({ name: 'X', price: '1.00' }), 'u2'),
       ).rejects.toBeInstanceOf(NotFoundException);
     });
   });
 
   describe('deleteProduct', () => {
     it('sets deletedAt instead of deleting the row', async () => {
-      await service.deleteProduct('r1', 'u3');
+      await service.deleteProduct(1, 'u3');
 
       const values = update.set.mock.calls[0][0];
       expect(values.deletedAt).toBeInstanceOf(Date);
       expect(values.updatedById).toBe('u3');
       expect(update.where).toHaveBeenCalledWith(
-        and(eq(product.id, 'r1'), notDeleted),
+        and(eq(product.id, 1), notDeleted),
       );
       expect(db.delete).not.toHaveBeenCalled();
     });
@@ -183,7 +184,7 @@ describe('ProductsService', () => {
     it('throws 404 when the product is missing or already deleted', async () => {
       update.where.mockResolvedValue({ rowCount: 0 });
 
-      await expect(service.deleteProduct('r1', 'u3')).rejects.toBeInstanceOf(
+      await expect(service.deleteProduct(1, 'u3')).rejects.toBeInstanceOf(
         NotFoundException,
       );
     });

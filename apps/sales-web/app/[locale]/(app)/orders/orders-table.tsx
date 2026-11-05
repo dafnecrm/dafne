@@ -1,7 +1,6 @@
 "use client";
 
 import { FileIcon } from "lucide-react";
-import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useMemo } from "react";
 import {
@@ -22,6 +21,7 @@ import type { TableParams } from "@dafne/frontend-data-table";
 import type { ListedOrder } from "@/lib/orders";
 import { ordersTable } from "@/lib/orders-table";
 import { OrderTableActions } from "./order-table-actions";
+import Link from "next/link";
 
 /*
  * Columns of the orders table. Column ids double as the backend's
@@ -39,20 +39,16 @@ function useOrderColumns() {
   return useMemo(
     () =>
       col.columns([
-        col.accessor("name", {
-          header: t("orders.fields.name"),
+        col.accessor("id", {
+          header: t("orders.fields.id"),
           cell: ({ row }) => (
             <Link
               href={`/orders/${encodeURIComponent(row.original.id)}`}
               className="font-medium underline-offset-4 hover:underline"
             >
-              {row.original.name}
+              {row.original.id}
             </Link>
           ),
-        }),
-        col.accessor("notes", {
-          header: t("orders.fields.notes"),
-          cell: (info) => info.getValue() ?? "—",
         }),
         col.accessor("createdAt", {
           header: t("orders.fields.createdAt"),
@@ -74,7 +70,7 @@ const orderActions = (order: ListedOrder) => (
   <OrderTableActions order={order} />
 );
 
-const getRowId = (order: ListedOrder) => order.id;
+const getRowId = (order: ListedOrder) => String(order.id);
 
 /** Orders list; the server page passes one page of orders. */
 export function OrdersTable({

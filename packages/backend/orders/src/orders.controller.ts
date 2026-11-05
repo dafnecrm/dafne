@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { Session } from '@dafne/backend-session';
 import type { UserSession } from '@dafne/backend-session';
-import { ZodValidationPipe } from '@dafne/backend-common';
+import { IdPipe, ZodValidationPipe } from '@dafne/backend-common';
 import {
   orderBodySchema,
   listOrdersQuerySchema,
@@ -37,7 +37,7 @@ export class OrdersController {
   }
 
   @Get(':id')
-  getOrder(@Param('id') id: string): Promise<OrderDetail> {
+  getOrder(@Param('id', IdPipe) id: number): Promise<OrderDetail> {
     return this.ordersService.getOrder(id);
   }
 
@@ -51,7 +51,7 @@ export class OrdersController {
 
   @Put(':id')
   updateOrder(
-    @Param('id') id: string,
+    @Param('id', IdPipe) id: number,
     @Body(new ZodValidationPipe(orderBodySchema)) body: OrderBody,
     @Session() session: UserSession,
   ): Promise<OrderDetail> {
@@ -62,7 +62,7 @@ export class OrdersController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteOrder(
-    @Param('id') id: string,
+    @Param('id', IdPipe) id: number,
     @Session() session: UserSession,
   ): Promise<void> {
     await this.ordersService.deleteOrder(id, session.user.id);

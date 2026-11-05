@@ -1,22 +1,25 @@
 import { Node, type SourceFile, SyntaxKind } from 'ts-morph';
 import { casings, words, type ResourceNames } from '../core/names.ts';
 import type { FormField } from './body.ts';
-import { appendToList, editSource, ensureHookLine, ensureNamedImport } from '../wiring/ast.ts';
+import { appendToList, editSource, ensureHookLine, ensureNamedImport, removeJsxElement, removeListElement } from '../wiring/ast.ts';
 import { CONTRACTS_PACKAGE } from '../wiring/backend.ts';
 
 /*
  * Adds the body fields of a contract that a form lacks: to its values type,
- * its default values and its JSX. Nothing that's already there changes.
+ * its default values and its JSX. Nothing that's already there changes,
+ * unless `prune`: then what the body no longer has is removed too.
  */
 
 export interface FormReport {
   added: string[];
-  /** In the form but not in the contract body any more. */
+  /** Removed because the contract doesn't have it any more (with `prune`). */
+  removed?: string[];
+  /** In the form but not in the contract body any more (kept). */
   stale: string[];
   warnings: string[];
 }
 
-const newReport = (): FormReport => ({ added: [], stale: [], warnings: [] });
+const newReport = (): FormReport => ({ added: [], removed: [], stale: [], warnings: [] });
 
 /** Form values are text, except these (users' role, a number…). */
 const typed = (f: FormField) => f.kind === 'enum' || f.kind === 'boolean' || f.kind === 'number';
@@ -53,6 +56,8 @@ function defaultValue(f: FormField, param?: string): string {
   if (f.kind === 'date') return `${from}?.slice(0, 10) ?? ${literal}`;
   if (f.kind === 'datetime') return `${from}?.slice(0, 16) ?? ${literal}`;
   if (f.kind === 'decimal') return `${from} ?? ${literal}`;
+  // Ids are numbers; the input holds text.
+  if (f.kind === 'id') return `${from}?.toString() ?? ${literal}`;
   return `${from} ?? ${literal}`;
 }
 
@@ -66,9 +71,11 @@ export function syncFormSchema(
   names: ResourceNames,
   fields: FormField[],
   responseKeys: Set<string>,
+  { prune = false }: { prune?: boolean } = {},
 ): { content: string; report: FormReport } {
   const report = newReport();
   const { s } = names;
+  const bodyKeys = new Set(fields.map((f) => f.key));
   const usable = fields.filter((f) => f.kind !== 'unsupported');
   const step = (edit: (file: SourceFile) => void) => {
     source = editSource(path, source, edit);
@@ -102,16 +109,32 @@ export function syncFormSchema(
     const others = parts.filter((t) => t !== record && t !== literal).map((t) => t.getText());
 
     const newTyped = usable.filter((f) => typed(f) && !excluded.includes(f.key) && !memberNames.has(f.key));
-    if (!newTyped.length) return;
+    // Typed members of fields the body dropped: from the literal and the Exclude list.
+    const gone = prune ? [...memberNames].filter((key) => !bodyKeys.has(key)) : [];
+    if (!newTyped.length && !gone.length) return;
+    if (gone.length) {
+      excluded = excluded.filter((key) => !gone.includes(key));
+      for (const key of gone) report.removed!.push(`${s.pascal}FormValues: ${key}`);
+    }
+    if (gone.length)
+      members.splice(
+        0,
+        members.length,
+        ...(literal
+          ?.getMembers()
+          .filter((m) => !(Node.isPropertySignature(m) && gone.includes(m.getName())))
+          .map((m) => m.getText(true)) ?? []),
+      );
     excluded.push(...newTyped.map((f) => f.key));
     members.push(...newTyped.map((f) => `${f.key}: ${valueType(f)};`));
     for (const f of newTyped) {
       if (f.kind === 'enum') ensureNamedImport(file, CONTRACTS_PACKAGE, f.enumType!, { typeOnly: true });
       report.added.push(`${s.pascal}FormValues: ${f.key}`);
     }
+    const keysText = excluded.length ? `Exclude<keyof ${body}, ${excluded.map((k) => `"${k}"`).join(' | ')}>` : `keyof ${body}`;
     const text = [
-      `Record<Exclude<keyof ${body}, ${excluded.map((k) => `"${k}"`).join(' | ')}>, string>`,
-      `{\n${members.map((m) => (/[;,]$/.test(m) ? m : `${m};`)).join('\n')}\n}`,
+      `Record<${keysText}, string>`,
+      ...(members.length ? [`{\n${members.map((m) => (/[;,]$/.test(m) ? m : `${m};`)).join('\n')}\n}`] : []),
       ...others,
     ].join(' & ');
     // Re-find: the import above may have moved the node.
@@ -123,7 +146,11 @@ export function syncFormSchema(
   for (const f of usable.filter((f) => f.kind === 'enum')) {
     step((file) => {
       const name = optionsName(f);
-      if (file.getVariableDeclaration(name)) return;
+      // Declared here, or re-exported (`export { CUSTOMER_TYPE_OPTIONS as TYPE_OPTIONS } from …`).
+      const exported = file
+        .getExportDeclarations()
+        .some((d) => d.getNamedExports().some((e) => (e.getAliasNode()?.getText() ?? e.getName()) === name));
+      if (file.getVariableDeclaration(name) || exported) return;
       // Labels are message keys, translated by the form (useOptionLabels).
       const options = f.values!.map((v) => `{ value: "${v}", label: "${names.p.camel}.${f.key}.${v}" }`).join(',\n  ');
       const code = `export const ${name} = [\n  ${options},\n] satisfies { value: ${f.enumType}; label: MessageKey }[];\n\n`;
@@ -153,8 +180,17 @@ export function syncFormSchema(
       appendToList(file, current, current.getProperties(), `${f.key}: ${defaultValue(f, responseKeys.has(f.key) ? param : undefined)}`);
       report.added.push(`defaultValues: ${f.key}`);
     }
-    const body = new Set(fields.map((f) => f.key));
-    for (const key of present) if (!body.has(key)) report.stale.push(`defaultValues: ${key}`);
+    for (const key of present) {
+      if (bodyKeys.has(key)) continue;
+      if (!prune) {
+        report.stale.push(`defaultValues: ${key}`);
+        continue;
+      }
+      const current = freshDefaults(file, s.camel);
+      const prop = current.getProperties().find((p) => (Node.isPropertyAssignment(p) || Node.isShorthandPropertyAssignment(p)) && p.getName() === key);
+      if (prop) removeListElement(file, current.getProperties(), prop);
+      report.removed!.push(`defaultValues: ${key}`);
+    }
   });
 
   return { content: source, report };
@@ -188,6 +224,8 @@ function fieldJsx(f: FormField, ns: string): string {
         return `<field.NumberField label=${label} />`;
       case 'decimal':
         return `<field.TextField label=${label} inputMode="decimal" autoComplete="off" />`;
+      case 'id':
+        return `<field.TextField label=${label} inputMode="numeric" autoComplete="off" />`;
       case 'email':
         return `<field.TextField label=${label} type="email" autoComplete="off" />`;
       case 'date':
@@ -215,6 +253,7 @@ export function syncFormComponent(
   source: string,
   fields: FormField[],
   names: ResourceNames,
+  { prune = false }: { prune?: boolean } = {},
 ): { content: string; report: FormReport } {
   const report = newReport();
   const ignored = new Set(
@@ -235,21 +274,42 @@ export function syncFormComponent(
     const missing = fields.filter((f) => !present.has(f.key) && !ignored.has(f.key));
 
     const body = new Set(fields.map((f) => f.key));
-    for (const name of present) if (!body.has(name) && !/[[.]/.test(name)) report.stale.push(`<form.AppField name="${name}">`);
+    for (const name of present) {
+      if (body.has(name) || /[[.]/.test(name)) continue;
+      if (!prune) {
+        report.stale.push(`<form.AppField name="${name}">`);
+        continue;
+      }
+      // Looked up again after each removal: editing the text forgets the old nodes.
+      const next = () => appFields().find((e) => nameOf(e) === name);
+      for (let element = next(); element; element = next()) removeJsxElement(file, element);
+      report.removed!.push(`<form.AppField name="${name}">`);
+    }
     for (const f of missing.filter((f) => f.kind === 'unsupported'))
       report.warnings.push(`${f.key}: no input for this kind of field; add it by hand, or mark it {/* dafne-ignore: ${f.key} */}.`);
 
     for (const f of missing.filter((f) => f.kind !== 'unsupported')) {
       const topLevel = appFields().filter((e) => !e.getAncestors().some((a) => Node.isJsxElement(a) && a.getOpeningElement().getTagNameNode().getText() === 'form.AppField'));
       const last = topLevel[topLevel.length - 1];
-      if (!last) {
-        report.warnings.push(`${path}: no <form.AppField> to put ${f.key} next to; add it by hand.`);
-        continue;
-      }
       const text = file.getFullText();
-      const lineStart = text.lastIndexOf('\n', last.getStart() - 1) + 1;
-      const indent = /^[ \t]*/.exec(text.slice(lineStart))![0];
-      file.insertText(last.getEnd(), `\n${indent}${fieldJsx(f, names.p.camel).replace(/\n/g, `\n${indent}`)}`);
+      const indentOf = (pos: number) => /^[ \t]*/.exec(text.slice(text.lastIndexOf('\n', pos - 1) + 1))![0];
+      if (last) {
+        const indent = indentOf(last.getStart());
+        file.insertText(last.getEnd(), `\n${indent}${fieldJsx(f, names.p.camel).replace(/\n/g, `\n${indent}`)}`);
+      } else {
+        // A form with no field yet: into the fields' grid (the first <div className="grid …">).
+        const grid = file
+          .getDescendantsOfKind(SyntaxKind.JsxElement)
+          .find((e) => e.getOpeningElement().getTagNameNode().getText() === 'div' && /^"grid\b/.test(e.getOpeningElement().getAttribute('className')?.getText().replace(/^className=/, '') ?? ''));
+        if (!grid) {
+          report.warnings.push(`${path}: no <form.AppField> to put ${f.key} next to; add it by hand.`);
+          continue;
+        }
+        const indent = indentOf(grid.getStart());
+        const closing = grid.getClosingElement();
+        const jsx = fieldJsx(f, names.p.camel).replace(/\n/g, `\n${indent}  `);
+        file.insertText(closing.getStart(), `\n${indent}  ${jsx}\n${indent}`);
+      }
       if (f.kind === 'enum') {
         ensureNamedImport(file, './schema', optionsName(f));
         if (ensureHookLine(file, `const ${optionsVar(f)} = useOptionLabels(${optionsName(f)});`))

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/schema",
+  "$id": "DafneFrontendResourceSync",
+  "title": "Frontend resource sync",
+  "description": "Brings the pages of a resource (form, list, detail) in line with its contract: adds the fields it lacks, removes those the contract dropped.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Resource name, singular or plural (e.g. orders).",
+      "$default": { "$source": "argv", "index": 0 },
+      "x-prompt": "Resource name (e.g. orders)"
+    },
+    "app": { "type": "string", "description": "Frontend app of the pages (apps/<app>).", "default": "sales-web" },
+    "keep": {
+      "type": "boolean",
+      "description": "Only add the missing fields: keep (and report) what the contract dropped.",
+      "default": false
+    }
+  },
+  "required": ["name"]
+}

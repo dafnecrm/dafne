@@ -50,7 +50,7 @@ describe('field add', () => {
   it('adds a column before createdAt, with its import and index', async () => {
     await run((c) => addField(c, 'activities', spec('status', 'enum', { values: ['open', 'done'], required: true, default: 'open', index: true })));
     const table = read(`${TABLES}/activities.ts`);
-    expect(table).toMatch(/name: varchar[^\n]+\n\s+status: text\('status', \{ enum: \['open', 'done'\] \}\)\s*\.notNull\(\)\s*\.default\('open'\),\n\s+createdAt/);
+    expect(table).toMatch(/id: serial[^\n]+\n\s+status: text\('status', \{ enum: \['open', 'done'\] \}\)\s*\.notNull\(\)\s*\.default\('open'\),\n\s+createdAt/);
     expect(table).toMatch(/import \{[^}]*\btext\b[^}]*\} from 'drizzle-orm\/pg-core'/);
     expect(table).toContain("index('activity_status_idx').on(table.status)");
   });
@@ -69,7 +69,7 @@ describe('field add', () => {
     await run((c) => addField(c, 'activities', spec('customer', 'ref', { to: 'customers' })));
     const table = read(`${TABLES}/activities.ts`);
     expect(table).toContain("import { customer } from './customers.js';");
-    expect(table).toMatch(/customerId: varchar\('customer_id', \{ length: 36 \}\)\.references\(\s*\(\) => customer\.id,\s*\{ onDelete: 'set null' \},?\s*\)/);
+    expect(table).toMatch(/customerId: integer\('customer_id'\)\.references\(\s*\(\) => customer\.id,\s*\{\s*onDelete: 'set null',?\s*\},?\s*\)/);
     expect(table).toContain("index('activity_customerId_idx').on(table.customerId)");
     expect(table).toMatch(/customer: r\.one\.customer\(\{\s*from: r\.activity\.customerId,\s*to: r\.customer\.id,/);
     expect(table).toMatch(/customer: \{\s*activities: r\.many\.activity\(\{\s*from: r\.customer\.id,\s*to: r\.activity\.customerId,/);
@@ -105,7 +105,7 @@ describe('field add', () => {
   it('puts the key on the other table for one-to-many', async () => {
     await run((c) => addField(c, 'customers', spec('tasks', 'ref', { to: 'activities', relation: 'one-to-many' })));
     const table = read(`${TABLES}/activities.ts`);
-    expect(table).toContain("customerId: varchar('customer_id'");
+    expect(table).toContain("customerId: integer('customer_id')");
     expect(table).toMatch(/customer: \{\s*tasks: r\.many\.activity\(/);
   });
 
@@ -123,7 +123,7 @@ describe('field add', () => {
   });
 
   it('refuses a column that exists', () => {
-    expect(() => addField(diskChanges(root), 'activities', spec('name', 'string'))).toThrow(/already has/);
+    expect(() => addField(diskChanges(root), 'activities', spec('createdAt', 'datetime'))).toThrow(/already has/);
   });
 });
 

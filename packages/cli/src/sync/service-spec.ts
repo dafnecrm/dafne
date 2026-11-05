@@ -27,6 +27,7 @@ function sample(field: FormField): string {
     case 'boolean':
       return 'false';
     case 'number':
+    case 'id':
       return '1';
     case 'decimal':
       return "'1.00'";

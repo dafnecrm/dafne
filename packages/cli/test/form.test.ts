@@ -21,8 +21,8 @@ const COLUMNS = `
 /** Contract synced from a table with more columns than the generated one. */
 function setup() {
   const table = render('backend/table.ts', names).replace(
-    "name: varchar('name', { length: 255 }).notNull(),",
-    `name: varchar('name', { length: 255 }).notNull(),${COLUMNS}`,
+    "id: serial('id').primaryKey(),",
+    `id: serial('id').primaryKey(),\n    name: varchar('name', { length: 255 }).notNull(),${COLUMNS}`,
   );
   const info = readTable('activities.ts', table, names);
   const contract = syncContract('activities.ts', render('backend/contract.ts', names), names, info).content;
@@ -32,6 +32,19 @@ function setup() {
 }
 
 const view = { ...names, icon: 'FileIcon' };
+
+/* The pages of a resource generated with a `name` field (the templates have none). */
+const namedSchema = () =>
+  render('frontend/schema.ts', view).replace('defaultValues: {} satisfies', 'defaultValues: {\n      name: activity?.name ?? "",\n    } satisfies');
+const GRID = '<div className="grid grid-cols-1 gap-4 md:grid-cols-3"></div>';
+const namedForm = () =>
+  render('frontend/form.tsx', view).replace(
+    GRID,
+    GRID.replace(
+      '></div>',
+      '>\n                <form.AppField name="name">\n                  {(field) => (\n                    <field.TextField label={t("activities.fields.name")} autoComplete="off" autoFocus />\n                  )}\n                </form.AppField>\n              </div>',
+    ),
+  );
 
 describe('readBody', () => {
   it('maps contract fields to inputs', () => {
@@ -52,7 +65,7 @@ describe('readBody', () => {
 describe('syncFormSchema', () => {
   it('adds typed values, enum options and defaults, keeping the rest', () => {
     const { fields, responseKeys } = setup();
-    const source = render('frontend/schema.ts', view).replace('name: activity?.name ?? ""', 'name: activity?.name ?? "Untitled"');
+    const source = namedSchema().replace('name: activity?.name ?? ""', 'name: activity?.name ?? "Untitled"');
     const { content } = syncFormSchema('schema.ts', source, names, fields, responseKeys);
     expect(content).toContain('name: activity?.name ?? "Untitled"');
     expect(content).toMatch(/Record<Exclude<keyof ActivityBody, "type" \| "priority" \| "budget" \| "done">, string> & \{\s*type: ActivityType;\s*priority: number;\s*budget: number \| null;\s*done: boolean;\s*\}/);
@@ -67,7 +80,7 @@ describe('syncFormSchema', () => {
 
   it('adds to an existing Exclude and type literal (users style)', () => {
     const { fields, responseKeys } = setup();
-    const source = render('frontend/schema.ts', view).replace(
+    const source = namedSchema().replace(
       'export type ActivityFormValues = Record<keyof ActivityBody, string>;',
       'export type ActivityFormValues = Record<Exclude<keyof ActivityBody, "type">, string> & {\n  /** Picked from a list. */\n  type: ActivityType;\n};',
     );
@@ -79,7 +92,7 @@ describe('syncFormSchema', () => {
 
   it('is idempotent', () => {
     const { fields, responseKeys } = setup();
-    const once = syncFormSchema('schema.ts', render('frontend/schema.ts', view), names, fields, responseKeys).content;
+    const once = syncFormSchema('schema.ts', namedSchema(), names, fields, responseKeys).content;
     const twice = syncFormSchema('schema.ts', once, names, fields, responseKeys);
     expect(twice.content).toBe(once);
     expect(twice.report.added).toEqual([]);
@@ -89,7 +102,7 @@ describe('syncFormSchema', () => {
 describe('syncFormComponent', () => {
   it('adds the missing inputs after the last one, leaving the others alone', () => {
     const { fields } = setup();
-    const source = render('frontend/form.tsx', view).replace('label={t("activities.fields.name")}', 'label="Title"');
+    const source = namedForm().replace('label={t("activities.fields.name")}', 'label="Title"');
     const { content, report } = syncFormComponent('form.tsx', source, fields, names);
     expect(content).toContain('label="Title"');
     expect(content).toContain('<field.SelectField label={t("activities.fields.type")} options={typeOptions} />');
@@ -110,7 +123,7 @@ describe('syncFormComponent', () => {
 
   it('skips fields marked dafne-ignore and fields already there', () => {
     const { fields } = setup();
-    const source = render('frontend/form.tsx', view).replace(
+    const source = namedForm().replace(
       '<form.FormErrors />',
       '<form.FormErrors />\n          {/* dafne-ignore: customerId, budget */}',
     );
@@ -120,9 +133,18 @@ describe('syncFormComponent', () => {
     expect(syncFormComponent('form.tsx', once, fields, names).report.added).toEqual([]);
   });
 
+  it('puts the first input into the empty fields grid of a new form', () => {
+    const { fields } = setup();
+    const { content, report } = syncFormComponent('form.tsx', render('frontend/form.tsx', view), fields, names);
+    expect(content).not.toContain(GRID);
+    expect(content).toMatch(/md:grid-cols-3">\s*<form\.AppField name="name">/);
+    expect(content.indexOf('name="name"')).toBeLessThan(content.indexOf('name="type"'));
+    expect(report.warnings).toEqual([]);
+  });
+
   it('reports inputs whose field left the contract', () => {
     const { fields } = setup();
-    const source = render('frontend/form.tsx', view).replace('name="name"', 'name="title"');
+    const source = namedForm().replace('name="name"', 'name="title"');
     expect(syncFormComponent('form.tsx', source, fields, names).report.stale).toEqual(['<form.AppField name="title">']);
   });
 });

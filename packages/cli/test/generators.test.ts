@@ -1,16 +1,20 @@
 import { logger } from '@nx/devkit';
 import { parse } from 'jsonc-parser';
-import { rmSync } from 'node:fs';
+import { rmSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { flushChanges } from 'nx/src/generators/tree.js';
 import backendAppGenerator from '../src/generators/backend-app/generator.ts';
 import backendLibGenerator from '../src/generators/backend-lib/generator.ts';
 import backendResourceGenerator from '../src/generators/backend-resource/generator.ts';
 import contractGenerator from '../src/generators/contract/generator.ts';
+import contractSyncGenerator from '../src/generators/contract-sync/generator.ts';
 import frontendAppGenerator from '../src/generators/frontend-app/generator.ts';
 import frontendDetailGenerator from '../src/generators/frontend-detail/generator.ts';
 import frontendLibGenerator from '../src/generators/frontend-lib/generator.ts';
 import frontendNavGenerator from '../src/generators/frontend-nav/generator.ts';
 import frontendResourceGenerator from '../src/generators/frontend-resource/generator.ts';
+import frontendResourceSyncGenerator from '../src/generators/frontend-resource-sync/generator.ts';
+import removeBackendDbColumnGenerator from '../src/generators/remove-backend-db-column/generator.ts';
 import { diskTree, fixtureCopy, reader } from './helpers.ts';
 
 let root: string;
@@ -53,6 +57,12 @@ describe('backend-resource', () => {
     expect(module).toContain('controllers: [InvoicesController]');
     expect(module).toContain('providers: [InvoicesService]');
     expect(read('packages/contracts/src/messages/en.ts')).toContain('Invoice not found');
+    // Only an identity id: no sample field.
+    const table = read('packages/backend/database/src/tables/invoices.ts');
+    expect(table).toContain("id: serial('id').primaryKey()");
+    expect(table).not.toMatch(/\bname:/);
+    expect(read('packages/contracts/src/invoices.ts')).toMatch(/invoiceBodySchema = z\.strictObject\(\{\}\)[\s\S]*id: number;/);
+    expect(read('packages/backend/invoices/src/invoices.controller.ts')).toContain("@Param('id', IdPipe) id: number");
   });
 
   it('adds the fields to the table, the contract, the service and the specs', async () => {
@@ -67,7 +77,7 @@ describe('backend-resource', () => {
     const contract = read('packages/contracts/src/invoices.ts');
     expect(contract).toContain("number: requiredText(20, msg('invoices.number.required'))");
     expect(contract).toContain('INVOICE_STATUSES');
-    expect(contract).toContain('customerId: optionalText(');
+    expect(contract).toContain("customerId: optionalId(msg('invoices.customerId.required'))");
     expect(read('packages/backend/invoices/src/invoices.service.ts')).toContain('number: body.number');
     // parse() gives null for the optional fields a sample leaves out.
     expect(read('packages/contracts/src/invoices.spec.ts')).toMatch(/number: 'Number',\s*status: null,\s*customerId: null/);
@@ -187,6 +197,10 @@ describe('frontend-resource', () => {
     const en = JSON.parse(read('apps/sales-web/messages/en.json'));
     expect(en.invoices.title).toBe('Invoices');
     expect(en.nav.invoices).toBe('Invoices');
+    // No field names the record: the pages show its id.
+    expect(read(`${PAGES}/[id]/page.tsx`)).toContain('label={`${t("invoices.singular")} ${invoice.id}`}');
+    expect(read(`${PAGES}/invoices-table.tsx`)).toContain('col.accessor("id"');
+    expect(en.invoices.fields.name).toBeUndefined();
   });
 
   it('syncs the pages with the fields of the contract', async () => {
@@ -214,6 +228,130 @@ describe('frontend-resource', () => {
     await frontendResourceGenerator(tree, { name: 'invoice' });
     expect(warn.mock.calls.flat().join('\n')).toContain("packages/contracts/src/invoices.ts doesn't exist");
     warn.mockRestore();
+  });
+});
+
+describe('remove-backend-db-column', () => {
+  const FIELDS = ['name:string:required', 'number:string:length=20:required', 'status:enum:values=draft|sent|paid:default=draft'];
+
+  it('removes the columns from the table, the contract, the service, the specs and the messages', async () => {
+    await generate(backendResourceGenerator, { name: 'invoice', fields: FIELDS });
+    const changes = await generate(removeBackendDbColumnGenerator, { name: 'invoices', columns: ['name', 'status'] });
+    expect(changes).toEqual(
+      expect.arrayContaining([
+        'UPDATE packages/backend/database/src/tables/invoices.ts',
+        'UPDATE packages/contracts/src/invoices.ts',
+        'UPDATE packages/backend/invoices/src/invoices.service.ts',
+      ]),
+    );
+    const table = read('packages/backend/database/src/tables/invoices.ts');
+    expect(table).not.toMatch(/\bname:|status:|invoice_name_idx/);
+    expect(table).toContain("number: varchar('number'");
+    const contract = read('packages/contracts/src/invoices.ts');
+    expect(contract).not.toMatch(/\bname: requiredText|INVOICE_STATUSES|InvoiceStatus|status/);
+    expect(contract).toContain('/** Defaults to createdAt. */');
+    const service = read('packages/backend/invoices/src/invoices.service.ts');
+    expect(service).toContain("sortBy = 'createdAt'");
+    expect(service).not.toMatch(/body\.name|invoice\.name/);
+    // The specs follow: the default order, the filter test, the expected rows and failures.
+    const serviceSpec = read('packages/backend/invoices/src/invoices.service.spec.ts');
+    expect(serviceSpec).toContain('asc(invoice.createdAt)');
+    expect(serviceSpec).not.toMatch(/invoice\.name\b|body\(\{ name/);
+    const contractSpec = read('packages/contracts/src/invoices.spec.ts');
+    expect(contractSpec).not.toMatch(/rejects a blank name|name: /);
+    expect(read('packages/contracts/src/messages/en.ts')).not.toContain('invoices: {\n    notFound: \'Invoice not found\',\n    name:');
+    expect(read('packages/contracts/src/messages/en.ts')).toMatch(/number: \{ required:/);
+  });
+
+  it('refuses a column the table lacks', async () => {
+    await generate(backendResourceGenerator, { name: 'invoice' });
+    await expect(generate(removeBackendDbColumnGenerator, { name: 'invoice', columns: ['nope'] })).rejects.toThrow('no "nope" column');
+  });
+});
+
+describe('contract-sync', () => {
+  const TABLE = 'packages/backend/database/src/tables/invoices.ts';
+
+  it('brings the contract, the service and the specs in line with the table', async () => {
+    await generate(backendResourceGenerator, { name: 'invoice', fields: ['name:string:required'] });
+    // A column added to the table by hand.
+    writeFileSync(join(root, TABLE), read(TABLE).replace(/(\n\s*name: )/, "\n    notes: text('notes'),$1"));
+    vi.spyOn(logger, 'info').mockImplementation(() => {});
+    const changes = await generate(contractSyncGenerator, { name: 'invoices' });
+    expect(changes).toEqual(
+      expect.arrayContaining(['UPDATE packages/contracts/src/invoices.ts', 'UPDATE packages/backend/invoices/src/invoices.service.ts']),
+    );
+    expect(read('packages/contracts/src/invoices.ts')).toMatch(/\bnotes\b/);
+    expect(read('packages/backend/invoices/src/invoices.service.ts')).toContain('body.notes');
+    vi.restoreAllMocks();
+  });
+
+  it('leaves the service alone with service: false, and syncs every contract with all', async () => {
+    await generate(backendResourceGenerator, { name: 'invoice', fields: ['name:string:required'] });
+    writeFileSync(join(root, TABLE), read(TABLE).replace(/(\n\s*name: )/, "\n    notes: text('notes'),$1"));
+    vi.spyOn(logger, 'info').mockImplementation(() => {});
+    const changes = await generate(contractSyncGenerator, { all: true, service: false });
+    expect(changes).toContain('UPDATE packages/contracts/src/invoices.ts');
+    expect(changes).not.toContain('UPDATE packages/backend/invoices/src/invoices.service.ts');
+    vi.restoreAllMocks();
+  });
+
+  it('needs a resource or all', async () => {
+    await expect(generate(contractSyncGenerator, {})).rejects.toThrow('Missing argument');
+  });
+});
+
+describe('frontend-resource-sync', () => {
+  it('removes from the pages what the contract dropped, and adds what it gained', async () => {
+    await generate(backendResourceGenerator, {
+      name: 'invoice',
+      fields: ['name:string:required', 'number:string:length=20:required', 'status:enum:values=draft|sent|paid:default=draft'],
+    });
+    await generate(frontendResourceGenerator, { name: 'invoice' });
+    await generate(removeBackendDbColumnGenerator, { name: 'invoice', columns: ['number', 'status'] });
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {});
+    vi.spyOn(logger, 'info').mockImplementation(() => {});
+    await generate(frontendResourceSyncGenerator, { name: 'invoices' });
+    expect(read(`${PAGES}/invoice-form.tsx`)).not.toMatch(/name="number"|name="status"|STATUS_OPTIONS|statusOptions/);
+    expect(read(`${PAGES}/invoice-form.tsx`)).toContain('name="name"');
+    // The enum went from the contract: its labels and their imports go too.
+    expect(read(`${PAGES}/schema.ts`)).not.toMatch(/STATUS_OPTIONS|InvoiceStatus/);
+    expect(read('apps/sales-web/lib/invoices-table.ts')).not.toMatch(/INVOICE_STATUS_OPTIONS|InvoiceStatus/);
+    expect(read(`${PAGES}/invoice-detail.tsx`)).not.toMatch(/INVOICE_STATUS_OPTIONS|useOptionLabel/);
+    expect(read(`${PAGES}/schema.ts`)).not.toMatch(/number: /);
+    expect(read(`${PAGES}/invoices-table.tsx`)).not.toContain('col.accessor("number"');
+    const table = read('apps/sales-web/lib/invoices-table.ts');
+    expect(table).not.toMatch(/"number"|"status"/);
+    expect(JSON.parse(read('apps/sales-web/messages/en.json')).invoices.fields.number).toBeUndefined();
+    // Nothing left to read the field: no warning about it.
+    expect(warn.mock.calls.flat().join('\n')).not.toContain('invoice.number');
+    vi.restoreAllMocks();
+  });
+
+  it('keeps what the contract dropped with keep, and reports reads it can not remove', async () => {
+    await generate(backendResourceGenerator, { name: 'invoice', fields: ['name:string:required'] });
+    await generate(frontendResourceGenerator, { name: 'invoice' });
+    // The user made the name the page title (the generated one shows the id).
+    const page = `${PAGES}/[id]/page.tsx`;
+    writeFileSync(
+      join(root, page),
+      read(page).replace('{`${t("invoices.singular")} ${invoice.id}`}</PageContentTitle>', '{invoice.name}</PageContentTitle>'),
+    );
+    expect(read(page)).toContain('{invoice.name}</PageContentTitle>');
+    await generate(removeBackendDbColumnGenerator, { name: 'invoice', columns: ['name'] });
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {});
+    vi.spyOn(logger, 'info').mockImplementation(() => {});
+    await generate(frontendResourceSyncGenerator, { name: 'invoice', keep: true });
+    expect(read(`${PAGES}/invoice-form.tsx`)).toContain('name="name"');
+    // With keep, the title's read of invoice.name is listed, left to fix.
+    expect(warn.mock.calls.flat().join('\n')).toMatch(/\[id\]\/page\.tsx:\d+: invoice\.name/);
+    warn.mockClear();
+    await generate(frontendResourceSyncGenerator, { name: 'invoice' });
+    expect(read(`${PAGES}/invoice-form.tsx`)).not.toContain('name="name"');
+    // Otherwise the record's label takes its place.
+    expect(read(page)).toContain('<PageContentTitle>{`${t("invoices.singular")} ${invoice.id}`}</PageContentTitle>');
+    expect(warn.mock.calls.flat().join('\n')).not.toContain('invoice.name');
+    vi.restoreAllMocks();
   });
 });
 

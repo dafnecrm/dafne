@@ -10,7 +10,7 @@ import {
   ItemMedia,
   ItemSeparator,
   ItemTitle
-} from "@dafne/frontend-ui/components/item";
+} from "./item";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@dafne/frontend-ui/components/card";
 import {
   Collapsible,

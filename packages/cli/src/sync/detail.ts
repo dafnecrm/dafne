@@ -1,6 +1,6 @@
 import { Node, type SourceFile, SyntaxKind } from 'ts-morph';
 import type { ResourceNames } from '../core/names.ts';
-import { editSource, ensureHookLine, ensureNamedImport } from '../wiring/ast.ts';
+import { editSource, ensureHookLine, ensureNamedImport, removeJsxElement, removeUnusedImports } from '../wiring/ast.ts';
 import type { FormReport as Report } from './form.ts';
 import { enumOptionsName, ignoredKeys, type ResponseField, type ResponseInfo } from './response.ts';
 
@@ -8,7 +8,8 @@ import { enumOptionsName, ignoredKeys, type ResponseField, type ResponseInfo } f
  * `sync frontend detail`: a <Detail> for each response field the detail page
  * doesn't show, in its "Details" section (created before "Record" if
  * missing). A field counts as shown when the page reads `<record>.<field>`
- * anywhere. Nothing that's there changes. Labels are message keys
+ * anywhere. Nothing that's there changes, unless `prune`: then the <Detail>s
+ * that read a field the contract dropped go too. Labels are message keys
  * (`<plural>.fields.<key>`), translated with the page's `t`.
  */
 
@@ -92,7 +93,8 @@ function indentAt(file: SourceFile, pos: number) {
 
 /**
  * `alsoShownIn`: other files that show the record, e.g. the [id] page with
- * the title (`activity.name`); what they read isn't added again.
+ * the title (`activity.id`, or a field the user put there); what they read
+ * isn't added again.
  */
 export function syncDetail(
   path: string,
@@ -100,8 +102,9 @@ export function syncDetail(
   names: ResourceNames,
   info: ResponseInfo,
   alsoShownIn: string[] = [],
+  { prune = false }: { prune?: boolean } = {},
 ): { content: string; report: Report } {
-  const report: Report = { added: [], stale: [], warnings: [] };
+  const report: Report = { added: [], removed: [], stale: [], warnings: [] };
   const record = names.s.camel;
   const ignored = ignoredKeys(source);
   if (!new RegExp(`\\b${record}\\.`).test(source)) {
@@ -113,7 +116,28 @@ export function syncDetail(
     (f) => !NOT_SHOWN.has(f.key) && !ignored.has(f.key) && ![source, ...alsoShownIn].some((text) => shown(text, f.key)),
   );
 
+  const known = new Set([...info.fields.map((f) => f.key), ...info.skipped]);
+  const reads = (text: string) => new Set([...text.matchAll(new RegExp(`\\b${record}\\??\\.(\\w+)`, 'g'))].map((m) => m[1]));
   const content = editSource(path, source, (file) => {
+    if (prune) {
+      const goneIn = (e: Node) => [...reads(e.getText())].filter((key) => !known.has(key));
+      // Looked up again after each removal: editing the text forgets the old nodes.
+      const next = () =>
+        file
+          .getDescendantsOfKind(SyntaxKind.JsxElement)
+          .find((e) => e.getOpeningElement().getTagNameNode().getText() === 'Detail' && goneIn(e).length);
+      for (let detail = next(); detail; detail = next()) {
+        report.removed!.push(`<Detail> ${goneIn(detail).join(', ')}`);
+        removeJsxElement(file, detail);
+      }
+      // The enum-label hook, icons and helpers only the removed details used.
+      const hook = file
+        .getDescendantsOfKind(SyntaxKind.VariableStatement)
+        .find((st) => st.getDeclarations()[0]?.getInitializer()?.getText() === 'useOptionLabel()');
+      if (report.removed!.length && hook && !/\boptionLabel\(/.test(file.getFullText())) hook.remove();
+      if (report.removed!.length)
+        removeUnusedImports(file, (module) => module === 'lucide-react' || module.startsWith('@dafne/frontend-ui/') || module.startsWith('@/lib/') || module === '@/i18n/options');
+    }
     for (const field of missing) {
       const { code, imports } = detailCode(names, record, field);
       const details = sections(file).find((e) => titleOf(e) === 'Details');
@@ -139,9 +163,7 @@ export function syncDetail(
     }
   });
 
-  // Fields the page reads that the contract doesn't have any more.
-  const known = new Set([...info.fields.map((f) => f.key), ...info.skipped]);
-  for (const m of new Set([...content.matchAll(new RegExp(`\\b${record}\\??\\.(\\w+)`, 'g'))].map((m) => m[1])))
-    if (!known.has(m)) report.stale.push(`${record}.${m}`);
+  // Fields the page still reads that the contract doesn't have any more.
+  for (const m of reads(content)) if (!known.has(m)) report.stale.push(`${record}.${m}`);
   return { content, report };
 }

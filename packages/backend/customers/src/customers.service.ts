@@ -6,7 +6,6 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { randomUUID } from 'node:crypto';
 import { and, asc, desc, eq, isNull, ilike, type SQL } from 'drizzle-orm';
 import {
   CUSTOMER_FILTER_FIELDS,
@@ -76,7 +75,13 @@ export class CustomersService {
     const { db } = this;
     const filters = CUSTOMER_FILTER_FIELDS.flatMap((field) => {
       const value = query[field]?.trim();
-      return value ? [ilike(customer[field], `%${escapeLike(value)}%`)] : [];
+      if (!value) return [];
+      // The id matches exactly (an integer column), the other fields contain the text.
+      return [
+        field === 'id'
+          ? eq(customer.id, Number(value))
+          : ilike(customer[field], `%${escapeLike(value)}%`),
+      ];
     });
     const where = and(notDeleted, ...filters) as SQL;
     const direction = sortDirection === 'asc' ? asc : desc;
@@ -110,7 +115,7 @@ export class CustomersService {
    * One customer that isn't deleted, with their addresses and who created
    * and last updated them. Throws 404 otherwise.
    */
-  async getCustomer(id: string): Promise<CustomerDetail> {
+  async getCustomer(id: number): Promise<CustomerDetail> {
     const found = await this.db.query.customer.findFirst({
       where: { id, deletedAt: { isNull: true } },
       columns: { createdById: false, updatedById: false },
@@ -135,26 +140,28 @@ export class CustomersService {
     body: CustomerBody,
     userId: string,
   ): Promise<CustomerDetail> {
-    const id = randomUUID();
     // One instant for both: createdAt and updatedAt start equal.
     const now = new Date();
-    await this.db
+    const id = await this.db
       .transaction(async (tx) => {
-        await tx.insert(customer).values({
-          id,
-          type: body.type,
-          name: body.name,
-          birthDate: body.birthDate,
-          fiscalCode: body.fiscalCode,
-          vatNumber: body.vatNumber,
-          email: body.email,
-          phone: body.phone,
-          createdAt: now,
-          updatedAt: now,
-          createdById: userId,
-          updatedById: userId,
-        });
-        await insertAddresses(tx, id, body.addresses);
+        const [created] = await tx
+          .insert(customer)
+          .values({
+            type: body.type,
+            name: body.name,
+            birthDate: body.birthDate,
+            fiscalCode: body.fiscalCode,
+            vatNumber: body.vatNumber,
+            email: body.email,
+            phone: body.phone,
+            createdAt: now,
+            updatedAt: now,
+            createdById: userId,
+            updatedById: userId,
+          })
+          .returning({ id: customer.id });
+        await insertAddresses(tx, created.id, body.addresses);
+        return created.id;
       })
       .catch(rethrowConstraint);
     return this.getCustomer(id);
@@ -167,7 +174,7 @@ export class CustomersService {
    * another customer has the email.
    */
   async updateCustomer(
-    id: string,
+    id: number,
     body: CustomerBody,
     userId: string,
   ): Promise<CustomerDetail> {
@@ -216,7 +223,7 @@ export class CustomersService {
    * Deletes a customer logically: sets deletedAt, so they disappear from
    * the API but stay in the database. Throws 404 if already deleted.
    */
-  async deleteCustomer(id: string, userId: string) {
+  async deleteCustomer(id: number, userId: string) {
     const now = new Date();
     const result = await this.db
       .update(customer)
@@ -229,13 +236,12 @@ export class CustomersService {
 
 async function insertAddresses(
   tx: Transaction,
-  customerId: string,
+  customerId: number,
   addresses: CustomerAddressBody[],
 ) {
   if (!addresses.length) return;
   await tx.insert(customerAddress).values(
     addresses.map((address, position) => ({
-      id: randomUUID(),
       customerId,
       position,
       type: address.type,

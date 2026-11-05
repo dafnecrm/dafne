@@ -8,8 +8,8 @@ const tableWith = (extra: string) =>
   readTable(
     'activities.ts',
     render('backend/table.ts', names).replace(
-      "name: varchar('name', { length: 255 }).notNull(),",
-      `name: varchar('name', { length: 255 }).notNull(),\n${extra}`,
+      "id: serial('id').primaryKey(),",
+      `id: serial('id').primaryKey(),\n    name: varchar('name', { length: 255 }).notNull(),\n${extra}`,
     ),
     names,
   );

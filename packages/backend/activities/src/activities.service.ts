@@ -1,7 +1,6 @@
 import { schema, type Database } from '@dafne/backend-database';
 import { InjectDrizzle } from '@nestjs/drizzle';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { randomUUID } from 'node:crypto';
 import { and, asc, desc, eq, isNull, ilike, ne, type SQL } from 'drizzle-orm';
 import {
   ACTIVITY_FILTER_FIELDS,
@@ -46,7 +45,13 @@ export class ActivitiesService {
     const { db } = this;
     const filters = ACTIVITY_FILTER_FIELDS.flatMap((field) => {
       const value = query[field]?.trim();
-      return value ? [ilike(activity[field], `%${escapeLike(value)}%`)] : [];
+      if (!value) return [];
+      // The id matches exactly (an integer column), the other fields contain the text.
+      return [
+        field === 'id'
+          ? eq(activity.id, Number(value))
+          : ilike(activity[field], `%${escapeLike(value)}%`),
+      ];
     });
     const where = and(notDeleted, ...filters) as SQL;
     const direction = sortDirection === 'asc' ? asc : desc;
@@ -79,7 +84,7 @@ export class ActivitiesService {
    * One activity that isn't deleted, with who created and last updated
    * it. Throws 404 otherwise.
    */
-  async getActivity(id: string): Promise<ActivityDetail> {
+  async getActivity(id: number): Promise<ActivityDetail> {
     const found = await this.db.query.activity.findFirst({
       where: { id, deletedAt: { isNull: true } },
       columns: { createdById: false, updatedById: false },
@@ -97,20 +102,21 @@ export class ActivitiesService {
     body: ActivityBody,
     userId: string,
   ): Promise<ActivityDetail> {
-    const id = randomUUID();
     // One instant for both: createdAt and updatedAt start equal.
     const now = new Date();
-    await this.db.insert(activity).values({
-      id,
-      name: body.name,
-      type: body.type,
-      dueDate: body.dueDate,
-      notes: body.notes,
-      createdAt: now,
-      updatedAt: now,
-      createdById: userId,
-      updatedById: userId,
-    });
+    const [{ id }] = await this.db
+      .insert(activity)
+      .values({
+        name: body.name,
+        type: body.type,
+        dueDate: body.dueDate,
+        notes: body.notes,
+        createdAt: now,
+        updatedAt: now,
+        createdById: userId,
+        updatedById: userId,
+      })
+      .returning({ id: activity.id });
     return this.getActivity(id);
   }
 
@@ -119,7 +125,7 @@ export class ActivitiesService {
    * Throws 404 if the activity doesn't exist, is deleted or is closed.
    */
   async updateActivity(
-    id: string,
+    id: number,
     body: ActivityBody,
     userId: string,
   ): Promise<ActivityDetail> {
@@ -144,7 +150,7 @@ export class ActivitiesService {
    * Deletes a activity logically: sets deletedAt, so it disappears
    * from the API but stays in the database. Throws 404 if already deleted.
    */
-  async deleteActivity(id: string, userId: string) {
+  async deleteActivity(id: number, userId: string) {
     const now = new Date();
     const result = await this.db
       .update(activity)
@@ -155,7 +161,7 @@ export class ActivitiesService {
   }
 
   /** Completes an activity */
-  async closeActivity(id: string, userId: string) {
+  async closeActivity(id: number, userId: string) {
     const now = new Date();
     const result = await this.db
       .update(activity)
@@ -169,7 +175,7 @@ export class ActivitiesService {
    * Reopens a closed activity: open again, and no longer completed. Throws
    * 404 if the activity doesn't exist, is deleted or isn't closed.
    */
-  async reopenActivity(id: string) {
+  async reopenActivity(id: number) {
     const result = await this.db
       .update(activity)
       .set({ status: 'open', completedAt: null, completedById: null })

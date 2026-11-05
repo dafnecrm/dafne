@@ -50,13 +50,8 @@ export function <%= s.pascal %>Form({ <%= s.camel %> }: { <%= s.camel %>?: <%= s
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                <form.AppField name="name">
-                  {(field) => (
-                    <field.TextField label={t("<%= p.camel %>.fields.name")} autoComplete="off" autoFocus />
-                  )}
-                </form.AppField>
-              </div>
+              {/* The fields: dafne g/sync add one <form.AppField> per field of the contract's body. */}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3"></div>
             </CardContent>
           </Card>
 

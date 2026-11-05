@@ -48,14 +48,19 @@ export type ActivitySortField = (typeof ACTIVITY_SORT_FIELDS)[number];
 
 /**
  * Activity fields the list can be filtered by, each a query param of
- * its own. Filters combine with AND and match text the field contains.
+ * its own. Filters combine with AND and match text the field contains
+ * (the id matches exactly).
  */
-export const ACTIVITY_FILTER_FIELDS = ['name', 'type', 'status'] as const;
+export const ACTIVITY_FILTER_FIELDS = ['id', 'name', 'type', 'status'] as const;
 export type ActivityFilterField = (typeof ACTIVITY_FILTER_FIELDS)[number];
 
 /** Query string of GET /activities. Deleted activities are never listed. */
 export const listActivitiesQuerySchema = z.strictObject({
   ...pageQuery,
+  id: z
+    .string()
+    .regex(/^\s*\d{0,9}\s*$/)
+    .optional(),
   name: z.string().max(255).optional(),
   type: z.enum(ACTIVITY_TYPES).optional(),
   status: z.enum(ACTIVITY_STATUSES).optional(),
@@ -70,7 +75,7 @@ export type ListActivitiesQuery = z.output<typeof listActivitiesQuerySchema>;
 
 /** A activity in GET /activities. */
 export interface ListedActivity {
-  id: string;
+  id: number;
   name: string;
   type: ActivityType;
   dueDate: Date | null;

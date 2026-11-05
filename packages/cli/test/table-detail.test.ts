@@ -19,10 +19,10 @@ const COLUMNS = `
     description: text('description'),
     customerId: varchar('customer_id', { length: 36 }).references(() => customer.id),`;
 
-function info() {
+function info(idTags = '') {
   const table = render('backend/table.ts', names).replace(
-    "name: varchar('name', { length: 255 }).notNull(),",
-    `name: varchar('name', { length: 255 }).notNull(),${COLUMNS}`,
+    "id: serial('id').primaryKey(),",
+    `${idTags}id: serial('id').primaryKey(),\n    name: varchar('name', { length: 255 }).notNull(),${COLUMNS}`,
   );
   const tableInfo = readTable('activities.ts', table, names);
   const contract = syncContract('activities.ts', render('backend/contract.ts', names), names, tableInfo).content;
@@ -41,7 +41,7 @@ describe('readResponse', () => {
     expect(byKey.description).toMatchObject({ kind: 'text', richText: true });
     expect(byKey.customerId).toMatchObject({ kind: 'id', label: 'Customer' });
     expect(sortFields).toContain('type');
-    expect(filterFields).toEqual(['name', 'type', 'done']);
+    expect(filterFields).toEqual(['id', 'name', 'type', 'done']);
   });
 });
 
@@ -58,7 +58,7 @@ describe('syncTableConfig', () => {
 
   it('keeps hand-made filters and honours dafne-ignore', () => {
     const source = render('frontend/lib-table.ts', view)
-      .replace('label: "activities.fields.name" }', 'label: "Title" }')
+      .replace('filters: [],', 'filters: [{ field: "name" satisfies ActivityFilterField, label: "Title" }],')
       .replace('export const', '// dafne-ignore: done\nexport const');
     const { content } = syncTableConfig('t.ts', source, names, info());
     expect(content).toContain('label: "Title"');
@@ -67,6 +67,29 @@ describe('syncTableConfig', () => {
 });
 
 describe('syncColumns', () => {
+  it('adds the id first, as the link to the detail page', () => {
+    const { content, report } = syncColumns('c.tsx', render('frontend/table.tsx', view), names, info());
+    expect(content.indexOf('col.accessor("id"')).toBeLessThan(content.indexOf('col.accessor("name"'));
+    expect(content).toMatch(/col\.accessor\("id", \{\s*header: t\("activities\.fields\.id"\),\s*cell: \(\{ row \}\) => \(\s*<Link\s+href=\{`\/activities\/\$\{encodeURIComponent\(row\.original\.id\)\}`\}/);
+    expect(content).toContain('import Link from "next/link";');
+    expect(report.added[0]).toBe('column id');
+    expect(syncColumns('c.tsx', content, names, info()).report.added).toEqual([]);
+  });
+
+  it('leaves the id out when its @api tags keep it out of the list, and says what needs it', () => {
+    const detailOnly = info('/** @api detail */\n    ');
+    expect(detailOnly.fields.find((f) => f.key === 'id')?.listed).toBe(false);
+    const { content, report } = syncColumns('c.tsx', render('frontend/table.tsx', view), names, detailOnly);
+    expect(content).not.toContain('col.accessor("id"');
+    expect(content).not.toContain('next/link');
+    expect(report.warnings.join('\n')).toContain('ListedActivity has no id');
+    // An id column already there goes with prune.
+    const withId = syncColumns('c.tsx', render('frontend/table.tsx', view), names, info()).content;
+    const pruned = syncColumns('c.tsx', withId, names, detailOnly, { prune: true });
+    expect(pruned.content).not.toContain('col.accessor("id"');
+    expect(pruned.report.removed).toContain('column id');
+  });
+
   it('adds the listed fields before "Added", not ids or detail-only fields', () => {
     const { content, report } = syncColumns('c.tsx', render('frontend/table.tsx', view), names, info());
     expect(content.indexOf('col.accessor("type"')).toBeLessThan(content.indexOf('col.accessor("createdAt"'));
@@ -80,6 +103,15 @@ describe('syncColumns', () => {
     expect(report.warnings.join()).toMatch(/customerId: an id/);
   });
 
+  it('writes keys relative to the namespace of useTranslations', () => {
+    const source = render('frontend/table.tsx', view).replace('useTranslations()', 'useTranslations("activities.fields")')
+      .replace('t("activities.fields.createdAt")', 't("createdAt")');
+    const { content } = syncColumns('c.tsx', source, names, info());
+    expect(content).toContain('header: t("id")');
+    expect(content).toContain('header: t("type")');
+    expect(content).not.toContain('t("activities.fields.');
+  });
+
   it('is idempotent', () => {
     const once = syncColumns('c.tsx', render('frontend/table.tsx', view), names, info()).content;
     expect(syncColumns('c.tsx', once, names, info()).report.added).toEqual([]);
@@ -88,7 +120,11 @@ describe('syncColumns', () => {
 
 describe('syncDetail', () => {
   it("doesn't add what the page shows (the title)", () => {
-    const page = render('frontend/detail-page.tsx', view);
+    // A page whose title is the name (the template's shows the id).
+    const page = render('frontend/detail-page.tsx', view).replace(
+      '{`${t("activities.singular")} ${activity.id}`}</PageContentTitle>',
+      '{activity.name}</PageContentTitle>',
+    );
     const { content } = syncDetail('d.tsx', render('frontend/detail.tsx', view), names, info(), [page]);
     expect(content).not.toContain('label={t("activities.fields.name")}');
     const alone = syncDetail('d.tsx', render('frontend/detail.tsx', view), names, info()).content;

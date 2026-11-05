@@ -21,8 +21,10 @@ pnpm dafne db migrate
 pnpm dafne test @dafne/backend-invoices
 ```
 
-Then replace or remove the sample `name` field, and adjust the service and
-controller to the real use cases. Try it first with `--dry-run`.
+The table has only a `serial` `id` besides the given fields: the pages
+name a record "Invoice 12" (title, breadcrumb, dialogs) and the list links
+to it from the id column, until you pick a field for them. Then adjust the service and controller to the real use cases.
+Try it first with `--dry-run`.
 
 ## Add the pages of a resource
 
@@ -39,6 +41,53 @@ in `apps/sales-web/messages/it.json`. One part at a time:
 `g frontend-list | frontend-detail | frontend-form | frontend-actions |
 frontend-data | frontend-nav invoice`; `--app <name>` targets another
 frontend app.
+
+## Remove columns from a resource
+
+E.g. `notes` from orders:
+
+```sh
+pnpm dafne remove backend-db-column orders notes   # or with no arguments: asks for the table and the columns
+pnpm dafne test @dafne/backend-orders @dafne/contracts
+pnpm dafne sync frontend-resource orders           # the pages
+pnpm dafne typecheck @dafne/sales-web
+pnpm dafne db migrate
+```
+
+The first command removes the columns from the table (with their indexes
+and relations), syncs the contract, the service and their specs, drops the
+message keys only those columns used, then generates the migration
+(`drop-order-notes`; it asks first, default yes, `--no-migration` skips it).
+The sync removes the inputs, columns, filters and details of the dropped
+fields; where the pages read one elsewhere (a page title, a dialog), it
+puts the record's label instead ("Order 12"). Check the migration's SQL before
+applying it: dropping a column deletes its data.
+
+## Sync the contract with the table
+
+After editing a table file by hand (a column added, an `@api` tag changed):
+
+```sh
+pnpm dafne sync contract invoices            # contract, service queries, specs
+pnpm dafne sync contract --all --dry-run     # shows what would change everywhere
+pnpm dafne test @dafne/backend-invoices @dafne/contracts
+pnpm dafne db generate --name add-invoice-notes
+```
+
+## Sync the pages with the contract
+
+After a contract changes (columns added to the table and synced, or
+removed):
+
+```sh
+pnpm dafne sync frontend-resource invoices            # adds the new fields, removes the dropped ones
+pnpm dafne sync frontend-resource invoices --keep     # only adds
+pnpm dafne sync frontend-resource invoices --dry-run  # shows what would change
+```
+
+New inputs, columns and details go at the end of their section, with
+English labels in the catalogs: move them where they belong and translate
+the Italian texts.
 
 ## Add a backend lib
 
