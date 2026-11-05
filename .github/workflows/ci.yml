@@ -23,23 +23,45 @@ jobs:
           # nx affected compares with the base commit, so it needs the history.
           fetch-depth: 0
 
+      # Only documentation changed (*.md, docs/): the job passes without
+      # running the rest, so the required "affected" check still turns green.
+      - id: changes
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if ! files=$(git diff --name-only "$BASE" HEAD); then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+          elif echo "$files" | grep -qvE '(\.md$|^docs/)'; then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Only documentation changed: skipping the checks."
+            echo "code=false" >> "$GITHUB_OUTPUT"
+          fi
+
       # Version from "packageManager" in package.json.
       - uses: pnpm/action-setup@v4
+        if: steps.changes.outputs.code == 'true'
 
       - uses: actions/setup-node@v4
+        if: steps.changes.outputs.code == 'true'
         with:
           node-version: 26
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
+        if: steps.changes.outputs.code == 'true'
 
       # Sets NX_BASE / NX_HEAD: the PR's base, or main's last green commit.
       - uses: nrwl/nx-set-shas@v4
+        if: steps.changes.outputs.code == 'true'
 
       # Project references in line with the package.json dependencies (nx sync).
       - run: pnpm nx sync:check
+        if: steps.changes.outputs.code == 'true'
 
       # Who may depend on whom (tools/boundaries.mjs): the frontend never on the backend.
       - run: pnpm boundaries
+        if: steps.changes.outputs.code == 'true'
 
       - run: pnpm nx affected -t lint typecheck test build --outputStyle=static
+        if: steps.changes.outputs.code == 'true'

@@ -98,5 +98,7 @@ Monorepo (pnpm workspaces + Nx) of the Dafne CRM. Each project has its own
   (`.github/workflows/ci.yml`) runs `nx sync:check`, `pnpm boundaries` and
   `nx affected -t lint typecheck test build` on each PR, so only the
   touched projects and their dependents.
+  A PR that changes only documentation (`*.md`, `docs/`) skips them: the
+  `affected` job still runs, and passes, since `main` requires it.
 - `.github/CODEOWNERS` assigns the reviewers of each folder; a change to
   `packages/contracts` needs both the backend and the frontend owners.
