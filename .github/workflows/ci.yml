@@ -39,7 +39,7 @@ jobs:
           fi
 
       # Version from "packageManager" in package.json.
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         if: steps.changes.outputs.code == 'true'
 
       - uses: actions/setup-node@v4
