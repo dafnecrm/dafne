@@ -37,7 +37,7 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [{ title: "dashboard", href: "/", icon: HouseIcon }],
   },
   {
-    title: "crm",
+    title: "sales",
     href: "/customers",
     items: [
       { title: "customers", href: "/customers", icon: ContactIcon },
