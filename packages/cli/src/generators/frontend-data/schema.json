@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/schema",
+  "$id": "DafneFrontendData",
+  "title": "Frontend data",
+  "description": "lib/<plural>.ts (API types and fetchers) and lib/<plural>-table.ts (table config) of a resource.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Resource name, singular or plural (e.g. invoice).",
+      "$default": { "$source": "argv", "index": 0 },
+      "x-prompt": "Resource name (e.g. invoice)"
+    },
+    "app": { "type": "string", "description": "Frontend app the pages go into (apps/<app>).", "default": "sales-web" },
+    "force": { "type": "boolean", "description": "Overwrite files that already exist.", "default": false }
+  },
+  "required": ["name"]
+}

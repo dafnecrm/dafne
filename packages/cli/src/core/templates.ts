@@ -1,6 +1,6 @@
 import ejs from 'ejs';
-import { existsSync, readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 /** templates/ next to src/ (dev) or dist/ (built). */
@@ -24,4 +24,18 @@ export function render(name: string, data: object): string {
     filename: file,
     escape: (value: unknown) => String(value),
   });
+}
+
+/** The files under templates/<dir>, as paths relative to it (e.g. "app/page.tsx.ejs"). */
+export function templateFiles(dir: string): string[] {
+  const root = join(TEMPLATES, dir);
+  return readdirSync(root, { recursive: true, withFileTypes: true })
+    .filter((entry) => entry.isFile())
+    .map((entry) => relative(root, join(entry.parentPath, entry.name)).split('\\').join('/'))
+    .sort();
+}
+
+/** A template file as it is (binaries, e.g. a favicon). */
+export function readTemplate(path: string): Buffer {
+  return readFileSync(join(TEMPLATES, path));
 }

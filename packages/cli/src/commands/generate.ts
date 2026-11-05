@@ -4,29 +4,50 @@ import { FsTree } from 'nx/src/generators/tree.js';
 import { Changes } from '../core/changes.ts';
 import { resourceNames } from '../core/names.ts';
 import { findWorkspaceRoot, runNx } from '../core/nx.ts';
-import { DEFAULT_APP } from '../core/workspace.ts';
+import { DEFAULT_APP, DEFAULT_FRONTEND_APP } from '../core/workspace.ts';
 import { FIELD_SPEC_HELP, formatFieldSpec, parseFieldSpec } from '../fields/parse.ts';
 import { tableFile } from '../pieces/backend.ts';
 import { askNewFields, cancelled, interactive } from './field-prompts.ts';
 
 /*
- * `dafne g <kind> [name]`: asks for what's missing, then runs the matching
- * generator of this package through `nx g @dafne/cli:<generator>`.
+ * `dafne g <kind> [name]`: asks for what's missing, then runs the generator
+ * of this package with the same name, through `nx g @dafne/cli:<kind>`.
  */
 
 const KINDS = {
-  resource: { generator: 'backend-resource', hint: 'contract + table + lib with service and controller', placeholder: 'invoice' },
-  lib: { generator: 'backend-lib', hint: 'an empty Nest lib in packages/backend', placeholder: 'reports' },
-  'frontend-lib': { generator: 'frontend-lib', hint: 'an empty lib in packages/frontend, used by apps/sales-web', placeholder: 'charts' },
-  app: { generator: 'backend-app', hint: 'a NestJS app in apps/', placeholder: 'worker' },
-  contract: { generator: 'contract', hint: 'Zod schemas and response types in packages/contracts', placeholder: 'invoice' },
+  'backend-resource': { hint: 'contract + table + lib with service and controller', placeholder: 'invoice' },
+  'backend-lib': { hint: 'an empty Nest lib in packages/backend', placeholder: 'reports' },
+  'backend-app': { hint: 'a NestJS app in apps/', placeholder: 'worker' },
+  contract: { hint: 'Zod schemas and response types in packages/contracts', placeholder: 'invoice' },
+  'frontend-resource': { hint: 'the pages of a resource: list, detail, form, actions, data, sidebar link', placeholder: 'invoice' },
+  'frontend-list': { hint: 'the list page of a resource', placeholder: 'invoice' },
+  'frontend-detail': { hint: 'the detail page of a resource', placeholder: 'invoice' },
+  'frontend-form': { hint: 'the create/edit form of a resource', placeholder: 'invoice' },
+  'frontend-actions': { hint: 'server actions, form schema and delete dialog of a resource', placeholder: 'invoice' },
+  'frontend-data': { hint: 'API types, fetchers and table config of a resource', placeholder: 'invoice' },
+  'frontend-nav': { hint: "a resource's sidebar link", placeholder: 'invoice' },
+  'frontend-lib': { hint: 'an empty lib in packages/frontend, used by a frontend app', placeholder: 'charts' },
+  'frontend-app': { hint: 'a Next.js app in apps/', placeholder: 'billing-web' },
 } as const;
 type Kind = keyof typeof KINDS;
+
+/** Kinds named after a resource (singular or plural). */
+const RESOURCE_KINDS: Kind[] = ['backend-resource', 'contract', 'frontend-resource', 'frontend-list', 'frontend-detail', 'frontend-form', 'frontend-actions', 'frontend-data', 'frontend-nav'];
+/** Kinds with an --app: a backend app, or a frontend one. */
+const BACKEND_APP_KINDS: Kind[] = ['backend-resource', 'backend-lib'];
+const FRONTEND_APP_KINDS: Kind[] = ['frontend-resource', 'frontend-list', 'frontend-detail', 'frontend-form', 'frontend-actions', 'frontend-data', 'frontend-nav', 'frontend-lib'];
+/** Kinds with --icon, and with --section/--admin. */
+const ICON_KINDS: Kind[] = ['frontend-resource', 'frontend-list', 'frontend-nav'];
+const SECTION_KINDS: Kind[] = ['frontend-resource', 'frontend-nav'];
 
 interface GenerateOptions {
   app?: string;
   field?: string[];
   port?: string;
+  backendUrl?: string;
+  icon?: string;
+  section?: string;
+  admin?: boolean;
   dryRun?: boolean;
   force?: boolean;
   yes?: boolean;
@@ -51,7 +72,7 @@ async function askName(value: string | undefined, kind: Kind, options: GenerateO
   if (!interactive(options)) throw new Error('Missing argument: the name.');
   return cancelled<string>(
     await p.text({
-      message: kind === 'resource' || kind === 'contract' ? 'Resource name (singular or plural)' : 'Name',
+      message: RESOURCE_KINDS.includes(kind) ? 'Resource name (singular or plural)' : 'Name',
       placeholder: KINDS[kind].placeholder,
       validate: (input) => (input?.trim() ? undefined : 'Required'),
     }),
@@ -73,15 +94,22 @@ async function resourceFields(root: string, name: string, options: GenerateOptio
 export function generateCommand() {
   return new Command('generate')
     .alias('g')
-    .description('Generate a backend resource, lib, app, contract or a frontend lib (Nx generators of @dafne/cli)')
+    .description('Generate backend and frontend code: resources, their parts, libs, apps, contracts (Nx generators of @dafne/cli)')
     .argument('[kind]', Object.keys(KINDS).join(' | '))
-    .argument('[name]', 'name: a resource or contract is singular or plural (invoice), a lib, frontend-lib or app as it is')
-    .option('--app <name>', `lib, resource: the backend app to register the lib in (apps/<name>)`, DEFAULT_APP)
-    .option('--field <spec>', `resource: a field of the new table, repeatable: ${FIELD_SPEC_HELP}`, (value: string, previous: string[] = []) => [
+    .argument('[name]', 'name: a resource or contract is singular or plural (invoice), a lib or app as it is')
+    .option(
+      '--app <name>',
+      `the app to generate into (apps/<name>): backend-lib, backend-resource (default ${DEFAULT_APP}); frontend-resource and its parts, frontend-lib (default ${DEFAULT_FRONTEND_APP})`,
+    )
+    .option('--field <spec>', `backend-resource: a field of the new table, repeatable: ${FIELD_SPEC_HELP}`, (value: string, previous: string[] = []) => [
       ...previous,
       value,
     ])
-    .option('--port <port>', 'app: default port')
+    .option('--port <port>', 'backend-app, frontend-app: default port')
+    .option('--backend-url <url>', "frontend-app: the app's API (BACKEND_URL)")
+    .option('--icon <name>', 'frontend-resource, frontend-list, frontend-nav: lucide-react icon (e.g. ReceiptIcon)')
+    .option('--section <title>', 'frontend-resource, frontend-nav: sidebar section (created if missing; default CRM, or Admin with --admin)')
+    .option('--admin', 'frontend-resource, frontend-nav: put the link in an admin-only section')
     .option('--dry-run', 'show what would change, write nothing')
     .option('--force', 'overwrite files that already exist')
     .option('-y, --yes', 'never prompt; fail when an argument is missing')
@@ -89,26 +117,42 @@ export function generateCommand() {
       'after',
       `
 Examples:
-  dafne g resource invoice --field number:string:length=20:required:unique \\
+  dafne g backend-resource invoice --field number:string:length=20:required:unique \\
     --field status:enum:values=draft|sent|paid:default=draft --field customer:ref:to=customers
-  dafne g lib reports
-  dafne g frontend-lib charts
-  dafne g app worker --port 3002
+  dafne g frontend-resource invoice --icon ReceiptIcon
+  dafne g frontend-detail invoice          # one part (and the parts it needs)
+  dafne g backend-lib reports
+  dafne g backend-app worker --port 3002
+  dafne g frontend-app billing-web --port 4001
+  dafne g frontend-lib charts --app billing-web
   dafne g contract report
 
-Same as: nx g @dafne/cli:<backend-resource|backend-lib|backend-app|contract|frontend-lib> <name> ...`,
+Same as: nx g @dafne/cli:<kind> <name> ...`,
     )
     .action(async (kindArg: string | undefined, nameArg: string | undefined, options: GenerateOptions) => {
       const root = findWorkspaceRoot();
       if (interactive(options)) p.intro('dafne generate');
       const kind = await askKind(kindArg, options);
       const name = await askName(nameArg, kind, options);
-      if (options.field?.length && kind !== 'resource') throw new Error('--field is only for a resource.');
+      const only = (option: string, kinds: Kind[], set: unknown) => {
+        if (set !== undefined && !kinds.includes(kind)) throw new Error(`${option} is only for ${kinds.join(', ')}.`);
+      };
+      only('--field', ['backend-resource'], options.field);
+      only('--app', [...BACKEND_APP_KINDS, ...FRONTEND_APP_KINDS], options.app);
+      only('--port', ['backend-app', 'frontend-app'], options.port);
+      only('--backend-url', ['frontend-app'], options.backendUrl);
+      only('--icon', ICON_KINDS, options.icon);
+      only('--section', SECTION_KINDS, options.section);
+      only('--admin', SECTION_KINDS, options.admin);
 
-      const args = ['g', `@dafne/cli:${KINDS[kind].generator}`, name, '--no-interactive'];
-      if (kind === 'resource') for (const spec of await resourceFields(root, name, options)) args.push(`--fields=${spec}`);
-      if ((kind === 'resource' || kind === 'lib') && options.app !== DEFAULT_APP) args.push(`--app=${options.app}`);
-      if (kind === 'app' && options.port) args.push(`--port=${options.port}`);
+      const args = ['g', `@dafne/cli:${kind}`, name, '--no-interactive'];
+      if (kind === 'backend-resource') for (const spec of await resourceFields(root, name, options)) args.push(`--fields=${spec}`);
+      if (options.app) args.push(`--app=${options.app}`);
+      if (options.port) args.push(`--port=${options.port}`);
+      if (options.backendUrl) args.push(`--backendUrl=${options.backendUrl}`);
+      if (options.icon) args.push(`--icon=${options.icon}`);
+      if (options.section) args.push(`--section=${options.section}`);
+      if (options.admin) args.push('--admin');
       if (options.force) args.push('--force');
       if (options.dryRun) args.push('--dry-run');
 

@@ -5,20 +5,17 @@
     "backend-app": {
       "factory": "./src/generators/backend-app/generator.ts",
       "schema": "./src/generators/backend-app/schema.json",
-      "description": "A NestJS app in apps/<name>, set up like apps/sales-api.",
-      "aliases": ["app"]
+      "description": "A NestJS app in apps/<name>, set up like apps/sales-api."
     },
     "backend-lib": {
       "factory": "./src/generators/backend-lib/generator.ts",
       "schema": "./src/generators/backend-lib/schema.json",
-      "description": "An empty Nest lib in packages/backend/<name>, registered in a backend app.",
-      "aliases": ["lib"]
+      "description": "An empty Nest lib in packages/backend/<name>, registered in a backend app."
     },
     "backend-resource": {
       "factory": "./src/generators/backend-resource/generator.ts",
       "schema": "./src/generators/backend-resource/schema.json",
-      "description": "Contract, Drizzle table and Nest lib (module, service, controller) of a resource.",
-      "aliases": ["resource"]
+      "description": "Contract, Drizzle table and Nest lib (module, service, controller) of a resource."
     },
     "contract": {
       "factory": "./src/generators/contract/generator.ts",
@@ -29,6 +26,46 @@
       "factory": "./src/generators/frontend-lib/generator.ts",
       "schema": "./src/generators/frontend-lib/schema.json",
       "description": "An empty frontend lib in packages/frontend/<name> (TypeScript sources), registered in apps/sales-web."
+    },
+    "frontend-app": {
+      "factory": "./src/generators/frontend-app/generator.ts",
+      "schema": "./src/generators/frontend-app/schema.json",
+      "description": "A Next.js app in apps/<name>, set up like apps/sales-web: sign-in, account and an empty dashboard."
+    },
+    "frontend-resource": {
+      "factory": "./src/generators/frontend-resource/generator.ts",
+      "schema": "./src/generators/frontend-resource/schema.json",
+      "description": "The pages of a resource in a frontend app: data, actions, list, detail, form and the sidebar link, synced with the contract."
+    },
+    "frontend-data": {
+      "factory": "./src/generators/frontend-data/generator.ts",
+      "schema": "./src/generators/frontend-data/schema.json",
+      "description": "lib/<plural>.ts (API types and fetchers) and lib/<plural>-table.ts (table config) of a resource."
+    },
+    "frontend-actions": {
+      "factory": "./src/generators/frontend-actions/generator.ts",
+      "schema": "./src/generators/frontend-actions/schema.json",
+      "description": "Server actions (save, delete), the form schema and the delete confirmation of a resource."
+    },
+    "frontend-list": {
+      "factory": "./src/generators/frontend-list/generator.ts",
+      "schema": "./src/generators/frontend-list/schema.json",
+      "description": "The list page of a resource: the table, its columns and row actions."
+    },
+    "frontend-detail": {
+      "factory": "./src/generators/frontend-detail/generator.ts",
+      "schema": "./src/generators/frontend-detail/schema.json",
+      "description": "The detail page of a resource ([id]), its loader and the <singular>-detail component."
+    },
+    "frontend-form": {
+      "factory": "./src/generators/frontend-form/generator.ts",
+      "schema": "./src/generators/frontend-form/schema.json",
+      "description": "The create/edit form of a resource, with the new and [id]/edit pages."
+    },
+    "frontend-nav": {
+      "factory": "./src/generators/frontend-nav/generator.ts",
+      "schema": "./src/generators/frontend-nav/schema.json",
+      "description": "A resource's link in the sidebar (lib/navigation.ts)."
     }
   }
 }

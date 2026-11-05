@@ -44,7 +44,7 @@ pnpm dafne db move <from> <to>         # one time: move every table (RENAME TABL
 
 ## Migrations on startup
 
-An app built from `dafne g app` (and `sales-api`, `auth`) can apply the
+An app built from `dafne g backend-app` (and `sales-api`, `auth`) can apply the
 migrations itself when it starts, before Nest:
 
 ```ts

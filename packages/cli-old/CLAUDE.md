@@ -1,8 +1,10 @@
 # dafne-old cli
 
 The previous `dafne` CLI, kept as `dafne-old` (`pnpm dafne-old ...` from the root)
-for what the new Nx-based CLI in `../cli` does not cover: the frontend
-generators, `sync`, `field` and `migration`. Maintenance only.
+for what the new Nx-based CLI in `../cli` does not cover: `sync` (as a
+command), `field`, `migration`, `g frontend page|component`. Maintenance
+only. The frontend resource generators and their sync are now in `../cli`
+(`dafne g frontend-resource`, `frontend-list`…).
 
 Code generator for the Dafne backend (`../../apps/crm-api`, NestJS) and frontend
 (`../../apps/crm-web`, Next.js). `dafne-old g resource|backend|frontend ...` writes

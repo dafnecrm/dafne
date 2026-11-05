@@ -1,7 +1,8 @@
 # @dafne/cli
 
-The `dafne` command: generates backend code and frontend libs through Nx
-generators, runs the database migrations and Nx tasks.
+The `dafne` command: generates backend and frontend code (resources and
+their parts, libs, apps, contracts) through Nx generators, runs the
+database migrations and Nx tasks.
 
 From the root: `pnpm dafne <command>` (no build needed). Arguments left out
 are asked interactively; `-y` fails instead.
@@ -9,21 +10,27 @@ are asked interactively; `-y` fails instead.
 ## Generating
 
 ```sh
-dafne g resource invoice             # contract + table + lib with service and controller
-dafne g lib reports                  # empty Nest lib: @dafne/backend-reports
-dafne g app worker --port 3002       # NestJS app in apps/worker
-dafne g contract report              # packages/contracts/src/reports.ts
-dafne g frontend-lib charts          # @dafne/frontend-charts, used by apps/sales-web
-dafne g lib jobs --app worker        # wire the lib into another app (default: sales-api)
+dafne g backend-resource invoice         # contract + table + lib with service and controller
+dafne g backend-lib reports              # empty Nest lib: @dafne/backend-reports
+dafne g backend-lib jobs --app worker    # wire the lib into another app (default: sales-api)
+dafne g backend-app worker --port 3002   # NestJS app in apps/worker
+dafne g contract report                  # packages/contracts/src/reports.ts
+dafne g frontend-resource invoice        # list, detail, form, actions, data and sidebar link
+dafne g frontend-list invoice            # one part: list | detail | form | actions | data | nav
+dafne g frontend-app billing-web         # Next.js app in apps/billing-web
+dafne g frontend-lib charts              # @dafne/frontend-charts, used by apps/sales-web
 ```
 
-Options: `--dry-run`, `--force` (overwrite), `-y`.
+The kind is the generator's name. Options: `--dry-run`, `--force`
+(overwrite), `-y`; `--app` picks the app to generate into (a backend app
+for `backend-*`, a frontend one for `frontend-*`); `--icon`, `--section`,
+`--admin` set the sidebar link of a frontend resource.
 
-`g resource` asks for the fields of the new table (an empty name ends the
+`g backend-resource` asks for the fields of the new table (an empty name ends the
 list), or takes them with `--field`, repeatable:
 
 ```sh
-dafne g resource invoice \
+dafne g backend-resource invoice \
   --field number:string:length=20:required:unique \
   --field status:enum:values=draft|sent|paid:default=draft \
   --field dueDate:date \
@@ -39,6 +46,11 @@ Flags: `required`, `unique`, `index`, `editor`. Values: `length`, `values`,
 The fields go into the table, then the contract, the service and their
 specs are synced with them. The sample `name` field stays.
 
+`g frontend-resource` (and each part) writes the pages in
+`apps/<app>/app/[locale]/(app)/<plural>/`, synced with the contract's
+fields, and adds their message keys to the app's catalogs. A part also
+generates the parts it needs.
+
 Each command runs a generator of this package, which can also be run with
 Nx directly:
 
@@ -47,6 +59,8 @@ pnpm nx g @dafne/cli:backend-resource invoice --fields=number:string:required
 pnpm nx g @dafne/cli:backend-lib reports
 pnpm nx g @dafne/cli:backend-app worker
 pnpm nx g @dafne/cli:contract report
+pnpm nx g @dafne/cli:frontend-resource invoice
+pnpm nx g @dafne/cli:frontend-app billing-web
 pnpm nx g @dafne/cli:frontend-lib charts
 pnpm nx list @dafne/cli
 ```

@@ -1,0 +1,114 @@
+"use client";
+
+import { <%= icon %> } from "lucide-react";
+import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { useMemo } from "react";
+import {
+  createDataTableColumnHelper,
+  DataTable,
+  useDescribeFilters,
+} from "@dafne/frontend-data-table/table";
+import { LocalDate } from "@dafne/frontend-ui/components/local-date";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@dafne/frontend-ui/components/empty";
+import { useOptionLabel } from "@/i18n/options";
+import type { TableParams } from "@dafne/frontend-data-table";
+import type { Listed<%= s.pascal %> } from "@/lib/<%= p.kebab %>";
+import { <%= p.camel %>Table } from "@/lib/<%= p.kebab %>-table";
+import { <%= s.pascal %>TableActions } from "./<%= s.kebab %>-table-actions";
+
+/*
+ * Columns of the <%= p.lower %> table. Column ids double as the backend's
+ * sort fields, so they must match <%= p.camel %>Table.sortable in
+ * lib/<%= p.kebab %>-table.ts.
+ */
+
+const col = createDataTableColumnHelper<Listed<%= s.pascal %>>();
+
+/** Translated per language; memoized, so the table sees the same columns on every render. */
+function use<%= s.pascal %>Columns() {
+  const t = useTranslations();
+  // Labels of enum values, for their columns.
+  const optionLabel = useOptionLabel();
+  return useMemo(
+    () =>
+      col.columns([
+  col.accessor("name", {
+    header: t("<%= p.camel %>.fields.name"),
+    cell: ({ row }) => (
+      <Link
+        href={`/<%= p.kebab %>/${encodeURIComponent(row.original.id)}`}
+        className="font-medium underline-offset-4 hover:underline"
+      >
+        {row.original.name}
+      </Link>
+    ),
+  }),
+  col.accessor("createdAt", {
+    header: t("<%= p.camel %>.fields.createdAt"),
+    meta: { className: "text-right" },
+    cell: (info) => (
+      <LocalDate value={info.getValue()} className="text-muted-foreground" />
+    ),
+  }),
+      ]),
+    [t, optionLabel],
+  );
+}
+
+// Module scope, so the table sees the same function on every render.
+const <%= s.camel %>Actions = (<%= s.camel %>: Listed<%= s.pascal %>) => (
+  <<%= s.pascal %>TableActions <%= s.camel %>={<%= s.camel %>} />
+);
+
+const getRowId = (<%= s.camel %>: Listed<%= s.pascal %>) => <%= s.camel %>.id;
+
+/** <%= p.title %> list; the server page passes one page of <%= p.lower %>. */
+export function <%= p.pascal %>Table({
+  <%= p.camel %>,
+  total,
+  params,
+}: {
+  <%= p.camel %>: Listed<%= s.pascal %>[];
+  total: number;
+  params: TableParams;
+}) {
+  const t = useTranslations();
+  const describeFilters = useDescribeFilters();
+  const columns = use<%= s.pascal %>Columns();
+  return (
+    <DataTable
+      columns={columns}
+      data={<%= p.camel %>}
+      getRowId={getRowId}
+      config={<%= p.camel %>Table}
+      rowActions={<%= s.camel %>Actions}
+      params={params}
+      total={total}
+      noun={t("<%= p.camel %>.noun")}
+      empty={
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <<%= icon %> />
+            </EmptyMedia>
+            <EmptyTitle>{t("<%= p.camel %>.empty.title")}</EmptyTitle>
+            <EmptyDescription>
+              {Object.keys(params.filters).length
+                ? t("<%= p.camel %>.empty.filtered", {
+                    filter: describeFilters(params.filters, <%= p.camel %>Table.filters),
+                  })
+                : t("<%= p.camel %>.empty.none")}
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      }
+    />
+  );
+}

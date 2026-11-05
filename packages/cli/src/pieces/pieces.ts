@@ -4,18 +4,18 @@ import type { ResourceNames } from '../core/names.ts';
 export interface Ctx {
   changes: Changes;
   names: ResourceNames;
-  /** The backend app new libs are wired into (apps/<app>). */
+  /** The app the resource goes into (apps/<app>): a backend app for backend pieces, a frontend one for frontend pieces. */
   app: string;
 }
 
 /** A piece of a resource: the files it creates and what it registers. */
-export interface Piece {
+export interface Piece<C extends Ctx = Ctx> {
   description: string;
   /** Pieces this one needs; generated too when their `marker` is missing. */
   deps: string[];
-  /** A file whose existence means the piece is already there. */
-  marker: (names: ResourceNames) => string;
-  generate: (ctx: Ctx) => void;
+  /** A file whose existence means the piece is already there (none: always generated as a dependency). */
+  marker: (names: ResourceNames, app: string) => string | undefined;
+  generate: (ctx: C) => void;
 }
 
 /**
@@ -23,7 +23,7 @@ export interface Piece {
  * pieces it depends on. Returns the keys of the pieces added as
  * dependencies.
  */
-export function generatePieces(pieces: Record<string, Piece>, requested: string[], ctx: Ctx): string[] {
+export function generatePieces<C extends Ctx>(pieces: Record<string, Piece<C>>, requested: string[], ctx: C): string[] {
   const done = new Set<string>();
   const addedDeps: string[] = [];
 
@@ -33,7 +33,8 @@ export function generatePieces(pieces: Record<string, Piece>, requested: string[
     const piece = pieces[key];
     if (!piece) throw new Error(`Unknown piece "${key}".`);
     if (!explicit) {
-      if (ctx.changes.exists(piece.marker(ctx.names))) return;
+      const marker = piece.marker(ctx.names, ctx.app);
+      if (marker && ctx.changes.exists(marker)) return;
       addedDeps.push(key);
     }
     for (const dep of piece.deps) visit(dep, requested.includes(dep));

@@ -3,12 +3,12 @@ import { Node, type ObjectLiteralExpression, type SourceFile } from 'ts-morph';
 import type { Changes } from '../core/changes.ts';
 import { casings, words, type ResourceNames } from '../core/names.ts';
 import { appendToList, editSource, quoteOf, variableObject } from './ast.ts';
-import { BACKEND_LIBS, CONTRACTS_SRC, FRONTEND } from '../core/workspace.ts';
+import { BACKEND_LIBS, CONTRACTS_SRC, DEFAULT_FRONTEND_APP, frontendApp } from '../core/workspace.ts';
 
 /*
  * Translated texts. Generated code holds message keys, never text:
  *   - the frontend calls t("invoices.fields.name"), and table configs hold
- *     keys as labels; the texts are in apps/sales-web/messages/<locale>.json;
+ *     keys as labels; the texts are in apps/<frontend app>/messages/<locale>.json;
  *   - contracts and services use msg('invoices.name.required'); the texts
  *     are in packages/contracts/src/messages/<locale>.ts.
  * After a run, `syncMessages` adds the keys the changed files use and the
@@ -18,7 +18,8 @@ import { BACKEND_LIBS, CONTRACTS_SRC, FRONTEND } from '../core/workspace.ts';
  */
 
 export const LOCALES = ['en', 'it'] as const;
-export const FRONTEND_MESSAGES = (locale: string) => `${FRONTEND}/messages/${locale}.json`;
+export const FRONTEND_MESSAGES = (locale: string, app = DEFAULT_FRONTEND_APP) =>
+  `${frontendApp(app)}/messages/${locale}.json`;
 export const CONTRACT_MESSAGES = (locale: string) => `${CONTRACTS_SRC}/messages/${locale}.ts`;
 
 /** Key → English text. */
@@ -113,11 +114,11 @@ function jsonHas(tree: unknown, key: string): boolean {
   return true;
 }
 
-/** Adds the missing keys to frontend/messages/<locale>.json. Returns how many. */
-export function ensureFrontendMessages(changes: Changes, messages: MessageMap): number {
+/** Adds the missing keys to apps/<app>/messages/<locale>.json. Returns how many. */
+export function ensureFrontendMessages(changes: Changes, messages: MessageMap, app = DEFAULT_FRONTEND_APP): number {
   let added = 0;
   for (const locale of LOCALES) {
-    const path = FRONTEND_MESSAGES(locale);
+    const path = FRONTEND_MESSAGES(locale, app);
     if (!changes.exists(path)) continue;
     changes.update(path, (source) => {
       for (const [key, text] of messages) {
@@ -193,13 +194,14 @@ export function ensureContractMessages(changes: Changes, messages: MessageMap): 
  */
 export function syncMessages(
   changes: Changes,
-  seed: { frontend?: MessageMap; contracts?: MessageMap } = {},
+  seed: { frontend?: MessageMap; contracts?: MessageMap; app?: string } = {},
 ) {
+  const app = seed.app ?? DEFAULT_FRONTEND_APP;
   const frontend: MessageMap = new Map(seed.frontend);
   const contracts: MessageMap = new Map(seed.contracts);
   for (const { path } of changes.summary()) {
     const source = changes.read(path) ?? '';
-    if (path.startsWith(`${FRONTEND}/`) && /\.tsx?$/.test(path)) {
+    if (path.startsWith(`${frontendApp(app)}/`) && /\.tsx?$/.test(path)) {
       for (const key of frontendKeys(source)) {
         const text = frontendText(key);
         if (text && !frontend.has(key)) frontend.set(key, text);
@@ -212,11 +214,11 @@ export function syncMessages(
     }
   }
   const untranslated =
-    ensureFrontendMessages(changes, frontend) + ensureContractMessages(changes, contracts);
+    ensureFrontendMessages(changes, frontend, app) + ensureContractMessages(changes, contracts);
   if (!untranslated) return undefined;
   const note =
     `${untranslated} new message${untranslated === 1 ? '' : 's'} in the Italian catalogs ` +
-    `(${FRONTEND_MESSAGES('it')}, ${CONTRACT_MESSAGES('it')}) ${untranslated === 1 ? 'is' : 'are'} still in English: translate ${untranslated === 1 ? 'it' : 'them'}.`;
+    `(${FRONTEND_MESSAGES('it', app)}, ${CONTRACT_MESSAGES('it')}) ${untranslated === 1 ? 'is' : 'are'} still in English: translate ${untranslated === 1 ? 'it' : 'them'}.`;
   changes.warn(note);
   return note;
 }

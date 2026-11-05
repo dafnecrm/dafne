@@ -1,0 +1,46 @@
+import type * as contracts from "@dafne/contracts";
+import type { Json } from "@dafne/contracts";
+import { backendFetch } from "@dafne/frontend-api/server";
+import type { TableFilters, TableSort } from "@dafne/frontend-data-table";
+import { <%= p.camel %>Table } from "./<%= p.kebab %>-table";
+
+/*
+ * API types come from the backend's contracts (dates arrive as strings,
+ * hence Json<...>), so they can't drift from what the backend returns.
+ */
+export type Listed<%= s.pascal %> = Json<contracts.Listed<%= s.pascal %>>;
+export type <%= p.pascal %>List = Json<contracts.<%= p.pascal %>List>;
+export type <%= s.pascal %>User = Json<contracts.<%= s.pascal %>User>;
+export type <%= s.pascal %>Detail = Json<contracts.<%= s.pascal %>Detail>;
+
+/**
+ * Calls the backend's GET /<%= p.kebab %>/:id. Throws a BackendError with
+ * status 404 when the <%= s.lower %> doesn't exist or was deleted.
+ */
+export async function get<%= s.pascal %>(id: string): Promise<<%= s.pascal %>Detail> {
+  const res = await backendFetch(`/<%= p.kebab %>/${encodeURIComponent(id)}`);
+  return res.json();
+}
+
+/** Calls the backend's GET /<%= p.kebab %> (deleted <%= p.lower %> are left out). */
+export async function list<%= p.pascal %>({
+  limit,
+  offset,
+  filters = {},
+  sort = <%= p.camel %>Table.defaultSort,
+}: {
+  limit: number;
+  offset: number;
+  filters?: TableFilters;
+  sort?: TableSort;
+}): Promise<<%= p.pascal %>List> {
+  const query = new URLSearchParams({
+    limit: String(limit),
+    offset: String(offset),
+  });
+  for (const [field, value] of Object.entries(filters)) query.set(field, value);
+  query.set("sortBy", sort.id);
+  query.set("sortDirection", sort.desc ? "desc" : "asc");
+  const res = await backendFetch(`/<%= p.kebab %>?${query}`);
+  return res.json();
+}
