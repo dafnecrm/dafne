@@ -25,7 +25,7 @@ pnpm dafne db generate --custom --name backfill-x   # empty, SQL by hand
 pnpm dafne db migrate                  # apply (every database)
 ```
 
-New tables come from the CLI (`pnpm dafne g resource <name>`), which adds
+New tables come from the CLI (`pnpm dafne g backend-resource <name>`), which adds
 them to `schema.ts`.
 
 ## Databases of the apps

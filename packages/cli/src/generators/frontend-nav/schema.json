@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/schema",
+  "$id": "DafneFrontendNav",
+  "title": "Frontend nav",
+  "description": "A resource's link in the sidebar (lib/navigation.ts).",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Resource name, singular or plural (e.g. invoice).",
+      "$default": { "$source": "argv", "index": 0 },
+      "x-prompt": "Resource name (e.g. invoice)"
+    },
+    "app": { "type": "string", "description": "Frontend app the pages go into (apps/<app>).", "default": "sales-web" },
+    "icon": { "type": "string", "description": "lucide-react icon for the sidebar and the empty list (e.g. ReceiptIcon).", "default": "FileIcon" },
+    "section": { "type": "string", "description": "Sidebar section, created if missing (default CRM, or Admin with admin)." },
+    "admin": { "type": "boolean", "description": "Put the link in an admin-only section.", "default": false },
+    "force": { "type": "boolean", "description": "Overwrite files that already exist.", "default": false }
+  },
+  "required": ["name"]
+}

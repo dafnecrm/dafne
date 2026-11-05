@@ -28,7 +28,7 @@ keep it in line when these rules change. Each project has its own
   (migrating first, with `MIGRATIONS_DATABASE_URL`); `pnpm dafne db
   migrate | generate` handles the migrations.
 - `pnpm dafne <command>` runs the CLI from source (e.g. `pnpm dafne dev`,
-  `pnpm dafne g resource invoice`).
+  `pnpm dafne g backend-resource invoice`).
 
 ## Rules
 
@@ -37,10 +37,14 @@ keep it in line when these rules change. Each project has its own
   scripts, plus `typecheck` from the only Nx plugin, `@nx/js/typescript`
   (`tsc --build` over TypeScript project references). `nx.json` holds caching
   and inputs, the `nx` field of a `package.json` its outputs.
-- **New backend libs, apps, contracts and frontend libs come from the
-  `dafne` CLI** (`dafne g lib|app|resource|contract|frontend-lib <name>`), which runs this workspace's
-  own Nx generators (`nx g @dafne/cli:<generator>`), not `@nx/nest`'s (they
-  write a `project.json`). They write the package and add it to the app and
+- **New backend libs, apps, resources, contracts, frontend apps, libs and
+  pages come from the `dafne` CLI** (`dafne g <kind> <name>`, the kind being
+  the generator's name: `backend-resource|backend-lib|backend-app`,
+  `contract`, `frontend-resource` and its parts
+  `frontend-list|detail|form|actions|data|nav`, `frontend-app`,
+  `frontend-lib`), which runs this workspace's own Nx generators
+  (`nx g @dafne/cli:<kind>`), not `@nx/nest`'s (they write a
+  `project.json`). They write the package and add it to the app and
   to the project references. Then run `pnpm install` and `pnpm nx sync`.
 - **Project references** (`references` in the tsconfigs) follow the
   `package.json` dependencies: `pnpm nx sync` updates them, and CI fails

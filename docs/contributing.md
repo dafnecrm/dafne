@@ -52,9 +52,9 @@ since both sides depend on it.
 
 ## Changing the CLI
 
-The generators copy real code: the backend templates are copies of the
-`customers` resource, the app template of `apps/sales-api`, the frontend lib
-template of `packages/frontend/auth`. When those patterns change, update the
+The generators copy real code: the backend and frontend resource templates
+are copies of the `customers` resource, the app templates of `apps/sales-api`
+and `apps/sales-web`, the frontend lib template of `packages/frontend/auth`. When those patterns change, update the
 templates in `packages/cli/templates`.
 
 - `pnpm nx test @dafne/cli` runs each generator on a copy of
@@ -65,8 +65,9 @@ templates in `packages/cli/templates`.
   1. copy the monorepo into a scratch folder (without `node_modules`,
      `.next`, `.git`, `dist`, `.env`, `.nx`, `out-tsc`) and run
      `pnpm install --offline`;
-  2. there, run the generators (`pnpm dafne g resource invoice --field … -y`,
-     `g lib`, `g app`, `g contract`, `g frontend-lib`), then
+  2. there, run the generators (`pnpm dafne g backend-resource invoice --field … -y`,
+     `g frontend-resource invoice`, `g backend-lib`, `g backend-app`,
+     `g contract`, `g frontend-app`, `g frontend-lib`), then
      `pnpm install --offline` and `npx nx sync`;
   3. `npx nx sync:check` must find nothing, and
      `npx nx run-many -t lint typecheck test build` must pass.

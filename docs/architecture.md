@@ -86,7 +86,7 @@ client.
 
 A new app follows the same shape: its API with
 `SessionModule.forRoot({ app: '<name>' })`, its own database
-(`dafne_<name>`), its frontend proxying `/api/auth`. `dafne g app`
+(`dafne_<name>`), its frontend proxying `/api/auth`. `dafne g backend-app`
 generates the API (see [CLI](cli.md#g-app)).
 
 ## See also

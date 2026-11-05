@@ -10,7 +10,7 @@ root.
 E.g. invoices, in the sales API.
 
 ```sh
-pnpm dafne g resource invoice \
+pnpm dafne g backend-resource invoice \
   --field number:string:length=20:required:unique \
   --field status:enum:values=draft|sent|paid:default=draft \
   --field customer:ref:to=customers
@@ -24,13 +24,29 @@ pnpm dafne test @dafne/backend-invoices
 Then replace or remove the sample `name` field, and adjust the service and
 controller to the real use cases. Try it first with `--dry-run`.
 
+## Add the pages of a resource
+
+Once its contract exists (e.g. after `g backend-resource invoice`):
+
+```sh
+pnpm dafne g frontend-resource invoice --icon ReceiptIcon
+pnpm dafne typecheck @dafne/sales-web   # also generates the new routes' types
+```
+
+List, detail and form pages, server actions, `lib/invoices.ts` and the
+sidebar link, with the contract's fields. Translate the new Italian texts
+in `apps/sales-web/messages/it.json`. One part at a time:
+`g frontend-list | frontend-detail | frontend-form | frontend-actions |
+frontend-data | frontend-nav invoice`; `--app <name>` targets another
+frontend app.
+
 ## Add a backend lib
 
 A lib with no table (e.g. a reporting service):
 
 ```sh
-pnpm dafne g lib reports              # wired into apps/sales-api
-pnpm dafne g lib reports --app worker # or into another app
+pnpm dafne g backend-lib reports              # wired into apps/sales-api
+pnpm dafne g backend-lib reports --app worker # or into another app
 pnpm install && pnpm nx sync
 ```
 
@@ -40,7 +56,7 @@ If the lib uses npm packages at runtime, add them to the app's
 ## Add a backend app
 
 ```sh
-pnpm dafne g app worker --port 3002
+pnpm dafne g backend-app worker --port 3002
 pnpm install && pnpm nx sync
 pnpm dafne dev @dafne/worker
 ```
@@ -48,8 +64,8 @@ pnpm dafne dev @dafne/worker
 Then:
 
 - give it its env (`apps/worker/.env`);
-- add libs with `pnpm dafne g lib <name> --app worker` or
-  `pnpm dafne g resource <name> --app worker`;
+- add libs with `pnpm dafne g backend-lib <name> --app worker` or
+  `pnpm dafne g backend-resource <name> --app worker`;
 - if it needs signed-in users, add `SessionModule.forRoot({ app: 'worker' })`
   to its root module (see [Architecture](architecture.md#sessions-in-the-apps-apis-dafnebackend-session));
 - if it needs its own tables, they go in its own database, `dafne_worker`
@@ -75,8 +91,22 @@ pnpm install && pnpm nx sync
 pnpm dafne typecheck @dafne/frontend-charts @dafne/sales-web
 ```
 
-Import it from `apps/sales-web` as `@dafne/frontend-charts`. Remember the
-boundaries: a frontend lib may import only frontend and shared packages.
+Import it from `apps/sales-web` as `@dafne/frontend-charts` (`--app <name>`
+wires it into another frontend app). Remember the boundaries: a frontend
+lib may import only frontend and shared packages.
+
+## Add a frontend app
+
+```sh
+pnpm dafne g frontend-app billing-web --port 4001 --backend-url http://localhost:3002
+pnpm install && pnpm nx sync
+cp apps/billing-web/.env.example apps/billing-web/.env
+pnpm dafne dev @dafne/auth @dafne/billing-web   # plus its API
+```
+
+A Next.js app like `apps/sales-web`, without its resources. Add
+`http://localhost:4001` to `TRUSTED_ORIGINS` of `apps/auth`, then its pages
+with `pnpm dafne g frontend-resource <name> --app billing-web`.
 
 ## Add a shadcn component
 

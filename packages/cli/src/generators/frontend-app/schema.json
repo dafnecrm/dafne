@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/schema",
+  "$id": "DafneFrontendApp",
+  "title": "Frontend app",
+  "description": "A Next.js app in apps/<name>, set up like apps/sales-web: sign-in, account and an empty dashboard.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "App name, used as it is (e.g. billing-web).",
+      "$default": { "$source": "argv", "index": 0 },
+      "x-prompt": "App name (e.g. billing-web)"
+    },
+    "port": { "type": "number", "description": "Port of next dev (and APP_URL).", "default": 4001 },
+    "backendUrl": { "type": "string", "description": "The app's API (BACKEND_URL in .env.example).", "default": "http://localhost:3000" },
+    "force": { "type": "boolean", "description": "Overwrite files that already exist.", "default": false }
+  },
+  "required": ["name"]
+}

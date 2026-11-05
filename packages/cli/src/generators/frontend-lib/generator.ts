@@ -1,12 +1,14 @@
 import type { Tree } from '@nx/devkit';
 import { casings, words } from '../../core/names.ts';
 import { render } from '../../core/templates.ts';
-import { frontendLib, frontendPackage } from '../../core/workspace.ts';
+import { DEFAULT_FRONTEND_APP, frontendLib, frontendPackage } from '../../core/workspace.ts';
 import { wireFrontendLib } from '../../wiring/frontend.ts';
 import { runGenerator } from '../run.ts';
 
 export interface FrontendLibSchema {
   name: string;
+  /** Frontend app the lib is registered in (apps/<app>). */
+  app?: string;
   force?: boolean;
 }
 
@@ -14,7 +16,7 @@ const FILES = ['package.json', 'tsconfig.json', 'vitest.config.ts', 'eslint.conf
 
 /**
  * An empty frontend lib, `@dafne/frontend-<name>` in packages/frontend/<name>
- * (TypeScript sources, compiled by Next), registered in apps/sales-web. The
+ * (TypeScript sources, compiled by Next), registered in a frontend app. The
  * name is used as it is (not pluralized).
  */
 export default async function frontendLibGenerator(tree: Tree, options: FrontendLibSchema) {
@@ -24,12 +26,13 @@ export default async function frontendLibGenerator(tree: Tree, options: Frontend
     const l = casings(parts);
     const dir = frontendLib(l.kebab);
     for (const file of FILES) changes.create(`${dir}/${file}`, render(`frontend-lib/${file}`, { l }));
-    wireFrontendLib(changes, l.kebab);
+    const app = options.app ?? DEFAULT_FRONTEND_APP;
+    wireFrontendLib(changes, l.kebab, app);
     return {
       next: [
         'pnpm install   # links the new package',
         'pnpm nx sync   # TypeScript project references',
-        `pnpm dafne typecheck ${frontendPackage(l.kebab)} @dafne/sales-web`,
+        `pnpm dafne typecheck ${frontendPackage(l.kebab)} @dafne/${app}`,
       ],
     };
   });

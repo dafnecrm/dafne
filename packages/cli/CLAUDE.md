@@ -1,7 +1,7 @@
 # dafne cli
 
-The `dafne` command and an Nx plugin with the backend generators and the
-frontend lib generator. Usage is
+The `dafne` command and an Nx plugin with the backend and frontend
+generators. Usage is
 in `README.md`.
 
 TypeScript ESM, Node ≥ 26, **no build**: Node runs `src/index.ts` (type
@@ -23,20 +23,33 @@ erasable syntax (no enums, namespaces or constructor parameter properties;
     migrates on startup with `MIGRATE_ON_START=true` (`@dafne/backend-migrator`).
   - `contract`: a contract and its spec.
   - `frontend-lib`: an empty lib in `packages/frontend/<name>`
-    (`templates/frontend-lib`), wired into `apps/sales-web` (dependency,
-    `transpilePackages`, `nx.sync.ignoredDependencies`, root reference).
+    (`templates/frontend-lib`), wired into a frontend app, `--app` (default
+    `sales-web`): dependency, `transpilePackages`,
+    `nx.sync.ignoredDependencies`, root reference.
+  - `frontend-resource` and one generator per part, `frontend-data`,
+    `frontend-actions`, `frontend-list`, `frontend-detail`, `frontend-form`,
+    `frontend-nav`: thin wrappers of `generateFrontendPieces`
+    (`src/generators/frontend-pieces.ts`) over the frontend pieces, in
+    `apps/<app>` (`--app`, default `sales-web`). The list, detail and form
+    are synced with the contract; message keys go into the app's catalogs.
+  - `frontend-app`: a Next app in `apps/<name>` (`templates/frontend-app`,
+    every file rendered, binaries copied as they are).
   `src/generators/run.ts` (`runGenerator`) wraps them: change set, Prettier,
   warnings, and the next steps printed after Nx writes the files.
 - `src/index.ts`, `src/commands/`: the `dafne` command (commander, clack).
-  `generate.ts` asks for what's missing (for a resource, the fields, with
-  the questions in `field-prompts.ts`) and runs `nx g`. `tasks.ts` maps
+  `generate.ts` asks for what's missing (for a backend resource, the
+  fields, with the questions in `field-prompts.ts`) and runs `nx g`: its
+  kinds are the generators' names, and it rejects options a kind doesn't
+  take. `tasks.ts` maps
   `dev`, `test`, `build`, `lint`, `typecheck`, `run`, `affected` to
   `nx run-many`/`nx affected` (`core/nx.ts`).
 - `src/core/changes.ts`: `Changes`, the old CLI's change set rebuilt on the
   Nx `Tree` (`exists`, `read`, `list`, `create`, `update`, `warn`), so the
   field, sync and wiring code from the old CLI works unchanged on it.
-- `src/pieces/`: the pieces of a backend resource (`backendPieces`,
-  dependency order in `generatePieces`).
+- `src/pieces/`: the pieces of a resource, `backendPieces` and
+  `frontendPieces` (`data`, `actions`, `list`, `detail`, `form`, `nav`);
+  `generatePieces` adds the missing dependencies (by marker file). `Ctx.app`
+  is the backend app for backend pieces, the frontend app for frontend ones.
 - `src/fields/`: column types and builders (`spec.ts`), `--field` specs
   (`parse.ts`: `parseFieldSpec`, and `formatFieldSpec` back), table file
   edits (`table-file.ts`, `operations.ts`: `addField`).
@@ -44,19 +57,27 @@ erasable syntax (no enums, namespaces or constructor parameter properties;
   column goes (`roles.ts`), merges into the contract (`contract.ts`), the
   service (`service.ts`) and the specs' samples (`service-spec.ts`);
   `resource.ts` (`syncOne`) runs them all; `body.ts` reads a body schema.
+  Frontend: `response.ts` reads a contract's responses, `form.ts`,
+  `table-page.ts` and `detail.ts` add the missing fields to the form, the
+  list and the detail; `frontend.ts` runs them on a resource's files
+  (`syncForm`, `syncList`, `syncDetailPage`) and holds their paths.
 - `src/wiring/`: edits to existing files (`backend.ts`: app module,
   package.json, project references, schema.ts, contracts index;
-  `frontend.ts`: next.config.ts and tsconfig of `apps/sales-web`;
+  `frontend.ts`: next.config.ts and tsconfig of a frontend app, sidebar
+  links (`wireNav`, `lib/navigation.ts`);
   `messages.ts`: message catalogs; `ast.ts`: helpers).
-- `templates/backend` (copies of the `customers` resource), `templates/app`
-  (a minimal `apps/sales-api`), `templates/frontend-lib` (set up like
+- `templates/backend` and `templates/frontend` (copies of the `customers`
+  resource), `templates/app` (a minimal `apps/sales-api`),
+  `templates/frontend-app` (`apps/sales-web` without its resources and
+  users pages), `templates/frontend-lib` (set up like
   `packages/frontend/auth`). Dotfiles are stored without the dot.
 
 ## Rules
 
 Templates, names, wiring, relations, messages and formatting:
 
-- **Templates copy `customers`** (and `apps/sales-api` for the app). When those
+- **Templates copy `customers`** (and `apps/sales-api`, `apps/sales-web`
+  for the apps). When those
   patterns change, update the templates. They are rendered by
   `core/templates.ts` (EJS, escaping off), not by devkit's `generateFiles`,
   which escapes `<%= %>`.
@@ -77,7 +98,8 @@ Templates, names, wiring, relations, messages and formatting:
 - **Scope tags:** generated packages get their `nx.tags` (`scope:backend`,
   `scope:frontend`), see `../../tools/boundaries.mjs`.
 - Fixed paths are in `core/workspace.ts` (`apps/<app>`, `packages/backend`,
-  `packages/frontend`, `packages/contracts`). The default app is `sales-api`.
+  `packages/frontend`, `packages/contracts`). The default apps are
+  `sales-api` (backend) and `sales-web` (frontend).
 
 ## Testing
 
@@ -85,12 +107,14 @@ Templates, names, wiring, relations, messages and formatting:
   `test/fixtures/project` through an Nx `FsTree` (`test/helpers.ts`). The
   fixtures are copies of the real files the wiring edits: refresh them
   when those change.
-- The other tests come from the old CLI (fields, contract/service sync).
+- The other tests come from the old CLI (fields, contract/service sync,
+  form/list/detail sync).
 - **Changing a template or a generator:** also check the generated code.
   Never generate into the real workspace to test.
   1. Copy the monorepo into a scratch folder (without `node_modules`,
      `.next`, `.git`, `dist`, `.env`, `.nx`, `out-tsc`), `pnpm install --offline`.
-  2. There: `pnpm dafne g resource invoice --field … -y`, `g lib`, `g app`,
-     `g contract`, `g frontend-lib`, then `pnpm install --offline` and `npx nx sync`.
+  2. There: `pnpm dafne g backend-resource invoice --field … -y`,
+     `g frontend-resource invoice`, `g backend-lib`, `g backend-app`,
+     `g contract`, `g frontend-app`, `g frontend-lib`, then `pnpm install --offline` and `npx nx sync`.
   3. `npx nx sync:check` must find nothing, and
      `npx nx run-many -t lint typecheck test build` must pass.

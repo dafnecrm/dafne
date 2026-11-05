@@ -30,7 +30,7 @@ Plus:
   the backend bundles them (rspack).
 - Relative imports end in `.ts` (Turbopack doesn't map `.js` to `.ts`).
 - A new contract: `pnpm dafne g contract <name>` (or with a whole resource,
-  `pnpm dafne g resource <name>`).
+  `pnpm dafne g backend-resource <name>`).
 - A change here needs both the backend and the frontend owners
   (`.github/CODEOWNERS`).
 

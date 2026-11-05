@@ -14,7 +14,7 @@
     "fields": {
       "type": "array",
       "items": { "type": "string" },
-      "description": "Fields of the new table, as name:type[:option…] (e.g. status:enum:values=draft|sent:required). `dafne g resource` asks for them."
+      "description": "Fields of the new table, as name:type[:option…] (e.g. status:enum:values=draft|sent:required). `dafne g backend-resource` asks for them."
     },
     "app": {
       "type": "string",

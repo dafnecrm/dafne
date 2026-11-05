@@ -1,3 +1,4 @@
+import { logger } from '@nx/devkit';
 import { parse } from 'jsonc-parser';
 import { rmSync } from 'node:fs';
 import { flushChanges } from 'nx/src/generators/tree.js';
@@ -5,7 +6,11 @@ import backendAppGenerator from '../src/generators/backend-app/generator.ts';
 import backendLibGenerator from '../src/generators/backend-lib/generator.ts';
 import backendResourceGenerator from '../src/generators/backend-resource/generator.ts';
 import contractGenerator from '../src/generators/contract/generator.ts';
+import frontendAppGenerator from '../src/generators/frontend-app/generator.ts';
+import frontendDetailGenerator from '../src/generators/frontend-detail/generator.ts';
 import frontendLibGenerator from '../src/generators/frontend-lib/generator.ts';
+import frontendNavGenerator from '../src/generators/frontend-nav/generator.ts';
+import frontendResourceGenerator from '../src/generators/frontend-resource/generator.ts';
 import { diskTree, fixtureCopy, reader } from './helpers.ts';
 
 let root: string;
@@ -148,5 +153,126 @@ describe('frontend-lib', () => {
     await generate(frontendLibGenerator, { name: 'charts', force: true });
     expect(read('apps/sales-web/next.config.ts').match(/@dafne\/frontend-charts/g)).toHaveLength(1);
     expect(read('apps/sales-web/tsconfig.json').match(/@dafne\/frontend-charts/g)).toHaveLength(1);
+  });
+});
+
+const PAGES = 'apps/sales-web/app/[locale]/(app)/invoices';
+
+describe('frontend-resource', () => {
+  it('generates the pages, the data module and the sidebar link, with their messages', async () => {
+    await generate(backendResourceGenerator, { name: 'invoice' });
+    const changes = await generate(frontendResourceGenerator, { name: 'invoice', icon: 'ReceiptIcon' });
+    expect(changes).toEqual(
+      expect.arrayContaining([
+        'CREATE apps/sales-web/lib/invoices.ts',
+        'CREATE apps/sales-web/lib/invoices-table.ts',
+        `CREATE ${PAGES}/actions.ts`,
+        `CREATE ${PAGES}/schema.ts`,
+        `CREATE ${PAGES}/invoice-dialogs.tsx`,
+        `CREATE ${PAGES}/page.tsx`,
+        `CREATE ${PAGES}/invoices-table.tsx`,
+        `CREATE ${PAGES}/invoice-detail.tsx`,
+        `CREATE ${PAGES}/[id]/page.tsx`,
+        `CREATE ${PAGES}/[id]/load-invoice.ts`,
+        `CREATE ${PAGES}/invoice-form.tsx`,
+        `CREATE ${PAGES}/new/page.tsx`,
+        `CREATE ${PAGES}/[id]/edit/page.tsx`,
+        'UPDATE apps/sales-web/lib/navigation.ts',
+        'UPDATE apps/sales-web/messages/en.json',
+        'UPDATE apps/sales-web/messages/it.json',
+      ]),
+    );
+    expect(read(`${PAGES}/invoices-table.tsx`)).toContain('ReceiptIcon');
+    expect(read('apps/sales-web/lib/navigation.ts')).toContain('{ title: "invoices", href: "/invoices", icon: ReceiptIcon }');
+    const en = JSON.parse(read('apps/sales-web/messages/en.json'));
+    expect(en.invoices.title).toBe('Invoices');
+    expect(en.nav.invoices).toBe('Invoices');
+  });
+
+  it('syncs the pages with the fields of the contract', async () => {
+    await generate(backendResourceGenerator, {
+      name: 'invoice',
+      fields: ['number:string:length=20:required', 'status:enum:values=draft|sent|paid:default=draft'],
+    });
+    await generate(frontendResourceGenerator, { name: 'invoice' });
+    expect(read(`${PAGES}/schema.ts`)).toMatch(/number: /);
+    expect(read(`${PAGES}/invoice-form.tsx`)).toContain('name="number"');
+    expect(read(`${PAGES}/invoice-form.tsx`)).toContain('name="status"');
+    expect(read(`${PAGES}/invoices-table.tsx`)).toContain('col.accessor("status"');
+    expect(read('apps/sales-web/lib/invoices-table.ts')).toContain('INVOICE_STATUS_OPTIONS');
+    expect(JSON.parse(read('apps/sales-web/messages/en.json')).invoices.fields.number).toBe('Number');
+  });
+
+  it('refuses a resource whose pages exist', async () => {
+    await generate(frontendResourceGenerator, { name: 'invoice' });
+    await expect(generate(frontendResourceGenerator, { name: 'invoice' })).rejects.toThrow('already exists');
+  });
+
+  it('warns when the resource has no contract', async () => {
+    const tree = diskTree(root);
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {});
+    await frontendResourceGenerator(tree, { name: 'invoice' });
+    expect(warn.mock.calls.flat().join('\n')).toContain("packages/contracts/src/invoices.ts doesn't exist");
+    warn.mockRestore();
+  });
+});
+
+describe('frontend parts', () => {
+  it('generates a part with the parts it needs, and only those', async () => {
+    await generate(backendResourceGenerator, { name: 'invoice' });
+    const changes = await generate(frontendDetailGenerator, { name: 'invoice' });
+    expect(changes).toEqual(
+      expect.arrayContaining([
+        'CREATE apps/sales-web/lib/invoices.ts',
+        `CREATE ${PAGES}/actions.ts`,
+        `CREATE ${PAGES}/invoice-detail.tsx`,
+        `CREATE ${PAGES}/[id]/page.tsx`,
+      ]),
+    );
+    expect(changes).not.toContain(`CREATE ${PAGES}/page.tsx`);
+    expect(changes).not.toContain(`CREATE ${PAGES}/invoice-form.tsx`);
+    expect(changes).not.toContain('UPDATE apps/sales-web/lib/navigation.ts');
+  });
+
+  it('adds a sidebar link once, in a new section when asked', async () => {
+    await generate(frontendNavGenerator, { name: 'invoice', section: 'Billing' });
+    await generate(frontendNavGenerator, { name: 'invoice', section: 'Billing' });
+    const nav = read('apps/sales-web/lib/navigation.ts');
+    expect(nav.match(/href: "\/invoices"/g)).toHaveLength(2); // the section's and the link's
+    expect(nav).toContain('title: "billing"');
+    expect(JSON.parse(read('apps/sales-web/messages/en.json')).nav.billing).toBe('Billing');
+  });
+});
+
+describe('frontend-app', () => {
+  it('creates a Next app like sales-web, without its resources', async () => {
+    const changes = await generate(frontendAppGenerator, { name: 'billing-web', port: 4100 });
+    const pkg = JSON.parse(read('apps/billing-web/package.json'));
+    expect(pkg.name).toBe('@dafne/billing-web');
+    expect(pkg.scripts.dev).toBe('next dev --port 4100');
+    expect(pkg.nx.tags).toEqual(['scope:frontend']);
+    expect(read('apps/billing-web/.env.example')).toContain('APP_URL=http://localhost:4100');
+    expect(read('apps/billing-web/.gitignore')).toContain('/.next/');
+    expect(changes).toContain('CREATE apps/billing-web/app/favicon.ico');
+    expect(changes).toContain('CREATE apps/billing-web/app/[locale]/(app)/account/page.tsx');
+    expect(changes).toContain('CREATE apps/billing-web/app/[locale]/(auth)/sign-in/page.tsx');
+    expect(changes.filter((change) => /customers|products|activities|users|country|geo/.test(change))).toEqual([]);
+    const en = JSON.parse(read('apps/billing-web/messages/en.json'));
+    expect(en.nav.tagline).toBe('Billing web');
+    expect(en.customers).toBeUndefined();
+    expect(read('apps/billing-web/lib/navigation.ts')).not.toContain('customers');
+    expect(read('apps/billing-web/lib/app-form/app-form.ts')).not.toContain('CountrySelectField');
+  });
+
+  it('takes the pages of a resource and the frontend libs', async () => {
+    await generate(frontendAppGenerator, { name: 'billing-web' });
+    await generate(frontendResourceGenerator, { name: 'invoice', app: 'billing-web' });
+    await generate(frontendLibGenerator, { name: 'charts', app: 'billing-web' });
+    expect(read('apps/billing-web/app/[locale]/(app)/invoices/page.tsx')).toContain('InvoicesPage');
+    expect(read('apps/billing-web/lib/navigation.ts')).toContain('href: "/invoices"');
+    expect(JSON.parse(read('apps/billing-web/messages/it.json')).invoices.title).toBe('Invoices');
+    expect(read('apps/billing-web/next.config.ts')).toContain('"@dafne/frontend-charts"');
+    expect(read('apps/billing-web/package.json')).toContain('"@dafne/frontend-charts": "workspace:*"');
+    expect(read('apps/sales-web/package.json')).not.toContain('frontend-charts');
   });
 });

@@ -55,8 +55,8 @@ export class Changes {
     return this.tree.exists(dir) ? this.tree.children(dir) : [];
   }
 
-  /** Adds a new file. Fails if it already exists, unless `force`. */
-  create(path: string, content: string) {
+  /** Adds a new file (text, or a Buffer for binaries). Fails if it already exists, unless `force`. */
+  create(path: string, content: string | Buffer) {
     if (this.changes.has(path)) throw new Error(`${path} is generated twice in the same run.`);
     if (this.exists(path) && !this.force) throw new Error(`${path} already exists. Pass --force to overwrite it.`);
     this.changes.set(path, { kind: 'create' });

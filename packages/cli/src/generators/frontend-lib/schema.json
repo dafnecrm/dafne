@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/schema",
   "$id": "DafneFrontendLib",
   "title": "Frontend lib",
-  "description": "An empty frontend lib, @dafne/frontend-<name> in packages/frontend/<name>, registered in apps/sales-web.",
+  "description": "An empty frontend lib, @dafne/frontend-<name> in packages/frontend/<name>, registered in a frontend app (default apps/sales-web).",
   "type": "object",
   "properties": {
     "name": {
@@ -11,6 +11,7 @@
       "$default": { "$source": "argv", "index": 0 },
       "x-prompt": "Lib name (e.g. charts)"
     },
+    "app": { "type": "string", "description": "Frontend app the lib is registered in (apps/<app>).", "default": "sales-web" },
     "force": { "type": "boolean", "description": "Overwrite files that already exist.", "default": false }
   },
   "required": ["name"]

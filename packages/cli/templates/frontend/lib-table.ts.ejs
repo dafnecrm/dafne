@@ -1,0 +1,24 @@
+import type {
+  <%= s.pascal %>FilterField,
+  <%= s.pascal %>SortField,
+} from "@dafne/contracts";
+import { defineDataTable } from "@dafne/frontend-data-table";
+
+/**
+ * The <%= p.lower %> table: plain data with no server-only imports (unlike
+ * lib/<%= p.kebab %>.ts), so it's shared by the server page (reads the URL)
+ * and the client table (builds links). Sort and filter fields are checked
+ * against the backend's contract (type-only import: keeps Zod out of the
+ * list page's bundle); every filter matches text the field contains, and
+ * they combine with AND.
+ */
+export const <%= p.camel %>Table = defineDataTable({
+  path: "/<%= p.kebab %>",
+  // The backend allows up to 100.
+  pageSizes: [10, 20, 50],
+  sortable: ["name", "createdAt", "updatedAt"] satisfies <%= s.pascal %>SortField[],
+  defaultSort: { id: "name", desc: false },
+  filters: [
+    { field: "name" satisfies <%= s.pascal %>FilterField, label: "<%= p.camel %>.fields.name" },
+  ],
+});

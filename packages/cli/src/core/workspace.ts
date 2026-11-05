@@ -3,7 +3,8 @@
 /** The default backend app: the one the CLI wires new libs into. */
 export const DEFAULT_APP = 'sales-api';
 export const BACKEND = backendApp(DEFAULT_APP);
-export const FRONTEND = 'apps/sales-web';
+/** The default frontend app: the one frontend pages and libs go into. */
+export const DEFAULT_FRONTEND_APP = 'sales-web';
 export const CONTRACTS_SRC = 'packages/contracts/src';
 /** The backend's libs: one workspace package each, `@dafne/backend-<lib>`. */
 export const BACKEND_LIBS = 'packages/backend';
@@ -20,6 +21,9 @@ export function appModule(app: string) {
 }
 /** A backend app's package name, e.g. @dafne/sales-api. */
 export const appPackage = (app: string) => `@dafne/${app}`;
+
+/** A frontend (Next) app's folder, e.g. apps/sales-web. */
+export const frontendApp = (app: string) => `apps/${app}`;
 
 /** A backend lib's folder, e.g. packages/backend/customers. */
 export const backendLib = (lib: string) => `${BACKEND_LIBS}/${lib}`;

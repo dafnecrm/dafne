@@ -31,7 +31,7 @@ const FILES: Record<string, (app: string) => string> = {
 /**
  * A NestJS app in apps/<name>, built like apps/sales-api (nest + rspack, vitest
  * with SWC, oxlint) but empty: a root module with a health controller.
- * Backend libs are added with `dafne g lib|resource ... --app <name>`.
+ * Backend libs are added with `dafne g backend-lib|backend-resource ... --app <name>`.
  */
 export default async function backendAppGenerator(tree: Tree, options: BackendAppSchema) {
   return runGenerator(tree, options, (changes) => {
@@ -49,7 +49,7 @@ export default async function backendAppGenerator(tree: Tree, options: BackendAp
         'pnpm install   # installs the app and links it',
         'pnpm nx sync   # TypeScript project references',
         `pnpm dafne dev ${appPackage(a.kebab)}`,
-        `pnpm dafne g lib <name> --app ${a.kebab}   # or g resource`,
+        `pnpm dafne g backend-lib <name> --app ${a.kebab}   # or g backend-resource`,
       ],
     };
   });
