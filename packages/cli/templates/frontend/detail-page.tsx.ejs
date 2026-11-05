@@ -30,7 +30,7 @@ export default function <%= s.pascal %>Page({ params }: PageProps<"/[locale]/<%=
   );
 }
 
-/** Loads the <%= s.lower %>: its name and actions, then its details. */
+/** Loads the <%= s.lower %>: its id and actions, then its details. */
 async function <%= s.pascal %>Profile({
   params,
 }: Pick<PageProps<"/[locale]/<%= p.kebab %>/[id]">, "params">) {
@@ -41,10 +41,10 @@ async function <%= s.pascal %>Profile({
     <PageContent>
       <BreadcrumbLabel
         href={`/<%= p.kebab %>/${encodeURIComponent(<%= s.camel %>.id)}`}
-        label={<%= s.camel %>.name}
+        label={`${t("<%= p.camel %>.singular")} ${<%= s.camel %>.id}`}
       />
       <PageContentHeader>
-        <PageContentTitle>{<%= s.camel %>.name}</PageContentTitle>
+        <PageContentTitle>{`${t("<%= p.camel %>.singular")} ${<%= s.camel %>.id}`}</PageContentTitle>
         <PageContentAction className="flex flex-wrap justify-end gap-2">
           <Button
             variant="outline"

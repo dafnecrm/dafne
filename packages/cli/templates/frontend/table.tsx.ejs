@@ -1,7 +1,6 @@
 "use client";
 
 import { <%= icon %> } from "lucide-react";
-import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useMemo } from "react";
 import {
@@ -39,17 +38,6 @@ function use<%= s.pascal %>Columns() {
   return useMemo(
     () =>
       col.columns([
-  col.accessor("name", {
-    header: t("<%= p.camel %>.fields.name"),
-    cell: ({ row }) => (
-      <Link
-        href={`/<%= p.kebab %>/${encodeURIComponent(row.original.id)}`}
-        className="font-medium underline-offset-4 hover:underline"
-      >
-        {row.original.name}
-      </Link>
-    ),
-  }),
   col.accessor("createdAt", {
     header: t("<%= p.camel %>.fields.createdAt"),
     meta: { className: "text-right" },
@@ -67,7 +55,7 @@ const <%= s.camel %>Actions = (<%= s.camel %>: Listed<%= s.pascal %>) => (
   <<%= s.pascal %>TableActions <%= s.camel %>={<%= s.camel %>} />
 );
 
-const getRowId = (<%= s.camel %>: Listed<%= s.pascal %>) => <%= s.camel %>.id;
+const getRowId = (<%= s.camel %>: Listed<%= s.pascal %>) => String(<%= s.camel %>.id);
 
 /** <%= p.title %> list; the server page passes one page of <%= p.lower %>. */
 export function <%= p.pascal %>Table({

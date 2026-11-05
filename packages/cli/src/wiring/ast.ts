@@ -206,6 +206,21 @@ export function removeListElement(file: SourceFile, elements: Node[], element: N
 
 /** Removes unused named imports (and imports left empty) from `module`. */
 export function removeUnusedImports(file: SourceFile, module: (specifier: string) => boolean) {
+  // Default imports (`import Link from "next/link"`) that only they make up.
+  for (;;) {
+    // Re-read after each removal: editing the text forgets the old nodes.
+    const decl = file.getImportDeclarations().find((d) => {
+      const name = d.getDefaultImport()?.getText();
+      if (!name || d.getNamedImports().length || d.getNamespaceImport() || !module(d.getModuleSpecifierValue())) return false;
+      return !file
+        .getDescendantsOfKind(SyntaxKind.Identifier)
+        .some((id) => id.getText() === name && !id.getFirstAncestorByKind(SyntaxKind.ImportDeclaration));
+    });
+    if (!decl) break;
+    const end = decl.getEnd();
+    const next = file.getFullText().slice(end).match(/^\r?\n/)?.[0].length ?? 0;
+    file.removeText(decl.getStart(), end + next);
+  }
   for (;;) {
     const unused = file
       .getImportDeclarations()
@@ -249,4 +264,14 @@ export function ensureHookLine(file: SourceFile, line: string): boolean {
   if (!t) return false;
   file.insertText(t.index + t[0].length, `${t[1]}${line}\n`);
   return true;
+}
+
+/** Removes a JSX element; on a line of its own, the whole line goes. */
+export function removeJsxElement(file: SourceFile, element: Node) {
+  const text = file.getFullText();
+  const lineStart = text.lastIndexOf('\n', element.getStart() - 1) + 1;
+  const alone = /^[ \t]*$/.test(text.slice(lineStart, element.getStart()));
+  const after = /^[ \t]*\r?\n/.exec(text.slice(element.getEnd()));
+  if (alone && after) file.removeText(lineStart, element.getEnd() + after[0].length);
+  else file.removeText(element.getStart(), element.getEnd());
 }

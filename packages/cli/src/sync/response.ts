@@ -66,7 +66,8 @@ export function readResponse(path: string, contract: string, names: ResourceName
         const column = table?.columns.find((c) => c.key === key);
         let kind: ResponseKind | undefined;
         if (base === 'string') kind = /Id$/.test(key) ? 'id' : column?.kind === 'date' ? 'date' : column?.kind === 'datetime' ? 'datetime' : 'text';
-        else if (base === 'number') kind = 'number';
+        // customerId: number is a key to another record, like a string one.
+        else if (base === 'number') kind = /Id$/.test(key) ? 'id' : 'number';
         else if (base === 'boolean') kind = 'boolean';
         else if (base === 'Date') kind = column?.kind === 'date' ? 'date' : 'datetime';
         else if (enums.has(base)) kind = 'enum';

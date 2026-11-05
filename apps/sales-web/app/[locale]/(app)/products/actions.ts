@@ -29,14 +29,14 @@ async function errorMessage(error: unknown) {
  * Returns an error message when it fails.
  */
 export async function saveProduct(
-  id: string | null,
+  id: number | null,
   values: ProductFormValues,
 ): Promise<ActionError> {
   const parsed = productSchema.safeParse(values);
   if (!parsed.success)
     return { error: (await getTranslations())("common.errors.invalid") };
 
-  let savedId: string;
+  let savedId: number;
   try {
     const res = await backendFetch(
       id ? `/products/${encodeURIComponent(id)}` : "/products",
@@ -57,7 +57,7 @@ export async function saveProduct(
  * Deletes a product (logically: the backend sets deletedAt). The
  * caller refreshes or leaves the page. Returns an error message when it fails.
  */
-export async function deleteProduct(id: string): Promise<ActionError | null> {
+export async function deleteProduct(id: number): Promise<ActionError | null> {
   try {
     await backendFetch(`/products/${encodeURIComponent(id)}`, {
       method: "DELETE",

@@ -22,7 +22,7 @@ import { deleteOrder } from "./actions";
  * (order-detail-actions.tsx).
  */
 
-export type OrderRef = { id: string; name: string };
+export type OrderRef = { id: number; };
 
 /**
  * Confirms the deletion and runs it, then goes back to the list
@@ -59,7 +59,7 @@ export function DeleteOrderDialog({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>
-            {t("common.deleteTitle", { name: order.name })}
+            {t("common.deleteTitle", { name: `${t("orders.singular")} ${order.id}` })}
           </AlertDialogTitle>
           <AlertDialogDescription>
             {t("orders.deleteDescription")}

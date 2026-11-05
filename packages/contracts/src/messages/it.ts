@@ -55,7 +55,6 @@ export const it: ContractMessages = {
   },
   orders: {
     notFound: 'Order not found',
-    name: { required: 'Enter the name' },
     customerId: { required: 'Enter the customer id' },
   },
 };

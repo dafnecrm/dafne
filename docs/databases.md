@@ -67,6 +67,16 @@ are written by its CLI, then moved into the auth schema
 
 ### Column types
 
+- Ids are `serial('id').primaryKey()` (an `integer` with a sequence).
+  The database picks them (`insert(…).values(…).returning({ id })`), and a
+  key to another table is `integer('<name>_id')`. The exceptions: the
+  tables of the `auth` schema (Better Auth's text ids, and `app_access`),
+  so the `created_by_id` / `updated_by_id` keys to `auth.user` are text,
+  and `country`, whose key is its ISO 3166-1 code.
+- In the API an id is a number: `@Param('id', IdPipe) id: number`
+  (`@dafne/backend-common`, a 404 for anything that isn't a positive
+  integer), `requiredId` / `optionalId` (`@dafne/contracts`) for a key in a
+  body, which a form sends as text.
 - Timestamps are `timestamp(..., { precision: 3, withTimezone: true })`
   (`timestamptz`): stored in UTC, whatever the server's time zone.
 - Enums are `text('x', { enum: [...] })`: typed in TypeScript, plain `text`

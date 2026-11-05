@@ -2,7 +2,9 @@ import type { Changes } from '../core/changes.ts';
 import type { ResourceNames } from '../core/names.ts';
 import { frontendApp } from '../core/workspace.ts';
 import { contractFile, tableFile } from '../pieces/backend.ts';
-import { editSource } from '../wiring/ast.ts';
+import { CONTRACTS_PACKAGE } from '../wiring/backend.ts';
+import { editSource, removeUnusedImports } from '../wiring/ast.ts';
+import { SyntaxKind } from 'ts-morph';
 import { readBody } from './body.ts';
 import { syncDetail } from './detail.ts';
 import { syncFormComponent, syncFormSchema, type FormReport } from './form.ts';
@@ -12,11 +14,16 @@ import { readTable } from './table.ts';
 
 /*
  * Brings a resource's pages in line with its contract: the form gets the
- * body's fields, the list and the detail the response's. They only add what
- * is missing; what the contract no longer has is kept and reported.
+ * body's fields, the list and the detail the response's. They add what is
+ * missing; what the contract no longer has is kept and reported, or, with
+ * `prune`, removed.
  */
 
 export type FrontendReports = [path: string, report: FormReport][];
+export interface SyncOptions {
+  /** Remove what the contract no longer has, instead of reporting it. */
+  prune?: boolean;
+}
 
 /** The folder of a resource's pages, e.g. apps/sales-web/app/[locale]/(app)/invoices. */
 export const routeDir = ({ p }: ResourceNames, app: string) => `${frontendApp(app)}/app/[locale]/(app)/${p.kebab}`;
@@ -62,20 +69,20 @@ function apply(
 }
 
 /** The list page: table config (filters, sort, enum labels) and columns. */
-export function syncList(changes: Changes, names: ResourceNames, app: string): FrontendReports {
+export function syncList(changes: Changes, names: ResourceNames, app: string, options: SyncOptions = {}): FrontendReports {
   const source = contractOf(changes, names);
   if (!source) return [];
   const info = readResponse(source.contractPath, source.contract, names, source.table);
   const { table } = dataFiles(names, app);
   const { columns } = listFiles(names, app);
   return [
-    apply(changes, table, (text) => syncTableConfig(table, text, names, info)),
-    apply(changes, columns, (text) => syncColumns(columns, text, names, info)),
+    apply(changes, table, (text) => syncTableConfig(table, text, names, info, options)),
+    apply(changes, columns, (text) => syncColumns(columns, text, names, info, options)),
   ];
 }
 
 /** The detail component, and the enum labels it reads in lib/<plural>-table.ts. */
-export function syncDetailPage(changes: Changes, names: ResourceNames, app: string): FrontendReports {
+export function syncDetailPage(changes: Changes, names: ResourceNames, app: string, options: SyncOptions = {}): FrontendReports {
   const source = contractOf(changes, names);
   if (!source) return [];
   const info = readResponse(source.contractPath, source.contract, names, source.table);
@@ -83,7 +90,7 @@ export function syncDetailPage(changes: Changes, names: ResourceNames, app: stri
   // The page shows the title and the actions: what it reads counts too.
   const pageSource = changes.read(page);
   const reports = [
-    apply(changes, component, (text) => syncDetail(component, text, names, info, pageSource ? [pageSource] : [])),
+    apply(changes, component, (text) => syncDetail(component, text, names, info, pageSource ? [pageSource] : [], options)),
   ];
   const detail = changes.read(component)!;
   const used = info.fields.filter((f) => f.kind === 'enum' && detail.includes(enumOptionsName(names, f)));
@@ -94,15 +101,15 @@ export function syncDetailPage(changes: Changes, names: ResourceNames, app: stri
 }
 
 /** The form: the values, defaults and options in schema.ts, the inputs in <singular>-form.tsx. */
-export function syncForm(changes: Changes, names: ResourceNames, app: string): FrontendReports {
+export function syncForm(changes: Changes, names: ResourceNames, app: string, options: SyncOptions = {}): FrontendReports {
   const source = contractOf(changes, names);
   if (!source) return [];
   const fields = readBody(source.contractPath, source.contract, names, source.table);
   const responseKeys = responseFields(source.contractPath, source.contract, names);
   const files = formFiles(names, app);
   return [
-    apply(changes, files.schema, (text) => syncFormSchema(files.schema, text, names, fields, responseKeys)),
-    apply(changes, files.form, (text) => syncFormComponent(files.form, text, fields, names)),
+    apply(changes, files.schema, (text) => syncFormSchema(files.schema, text, names, fields, responseKeys, options)),
+    apply(changes, files.form, (text) => syncFormComponent(files.form, text, fields, names, options)),
   ];
 }
 
@@ -114,6 +121,180 @@ function responseFields(path: string, contract: string, names: ResourceNames): S
       for (const prop of file.getInterface(name)?.getProperties() ?? []) keys.add(prop.getName());
   });
   return keys;
+}
+
+/** The parts of a resource's pages, each with the files it needs (a part without them is skipped). */
+const PARTS = [
+  { part: 'list', files: (n: ResourceNames, app: string) => [dataFiles(n, app).table, listFiles(n, app).columns], sync: syncList },
+  { part: 'detail', files: (n: ResourceNames, app: string) => [detailFiles(n, app).component], sync: syncDetailPage },
+  { part: 'form', files: (n: ResourceNames, app: string) => [formFiles(n, app).schema, formFiles(n, app).form], sync: syncForm },
+] as const;
+
+/**
+ * The whole resource: list, detail and form, those it has. Then the fields
+ * the contract dropped that the pages still read elsewhere (titles, dialogs,
+ * links), as `file:line` for the warnings.
+ */
+export function syncResourcePages(changes: Changes, names: ResourceNames, app: string, options: SyncOptions = {}) {
+  const source = contractOf(changes, names);
+  if (!source) throw new Error(`${contractFile(names)} not found: generate the backend first (dafne g backend-resource ${names.p.kebab}).`);
+  const reports: FrontendReports = [];
+  const skipped: string[] = [];
+  for (const { part, files, sync } of PARTS) {
+    if (files(names, app).every((path) => changes.exists(path))) reports.push(...sync(changes, names, app, options));
+    else skipped.push(part);
+  }
+  if (skipped.length === PARTS.length) throw new Error(`${routeDir(names, app)}: no list, detail or form to sync (dafne g frontend-resource ${names.p.kebab}).`);
+  if (options.prune) {
+    reports.push(...pruneEnumOptions(changes, names, app, source.contract));
+    reports.push(...useIdForDropped(changes, names, app, source.contractPath, source.contract));
+  }
+  return { reports, skipped, leftovers: leftoverReads(changes, names, app, source.contractPath, source.contract) };
+}
+
+/** The .ts/.tsx files under a folder of the tree. */
+function filesIn(changes: Changes, dir: string): string[] {
+  return changes.list(dir).flatMap((name) => {
+    const path = `${dir}/${name}`;
+    return changes.exists(path) ? (/\.tsx?$/.test(name) ? [path] : []) : filesIn(changes, path);
+  });
+}
+
+/**
+ * The labels of enums the contract no longer exports (STATUS_OPTIONS in
+ * schema.ts, INVOICE_STATUS_OPTIONS in lib/<plural>-table.ts, typed
+ * `satisfies { value: InvoiceStatus; … }`), then what used only them in the
+ * resource's pages: `const statusOptions = useOptionLabels(STATUS_OPTIONS)`
+ * and the imports.
+ */
+function pruneEnumOptions(changes: Changes, names: ResourceNames, app: string, contract: string): FrontendReports {
+  const exported = (type: string) => new RegExp(`\\bexport\\s+type\\s+${type}\\b`).test(contract);
+  const removed = new Set<string>();
+  const reports: FrontendReports = [];
+  for (const path of [dataFiles(names, app).table, formFiles(names, app).schema]) {
+    if (!changes.exists(path)) continue;
+    const report: FormReport = { added: [], removed: [], stale: [], warnings: [] };
+    changes.update(
+      path,
+      (text) =>
+        editSource(path, text, (file) => {
+          for (;;) {
+            // Looked up again after each removal (ts-morph forgets the old nodes).
+            const statement = file.getVariableStatements().find((st) => {
+              const type = /satisfies\s*\{\s*value:\s*(\w+)/.exec(st.getText())?.[1];
+              return type && /_OPTIONS$/.test(st.getDeclarations()[0]?.getName() ?? '') && !exported(type);
+            });
+            if (!statement) break;
+            const name = statement.getDeclarations()[0].getName();
+            statement.remove();
+            removed.add(name);
+            report.removed!.push(name);
+          }
+          if (report.removed!.length)
+            removeUnusedImports(file, (m) => m === CONTRACTS_PACKAGE || m === '@dafne/frontend-ui/lib/message-key');
+        }),
+      { format: true },
+    );
+    if (report.removed!.length) reports.push([path, report]);
+  }
+  if (!removed.size) return reports;
+
+  const uses = (text: string, name: string) => [...text.matchAll(new RegExp(`\\b${name}\\b`, 'g'))].length;
+  for (const path of filesIn(changes, routeDir(names, app))) {
+    const source = changes.read(path)!;
+    if (![...removed].some((name) => uses(source, name))) continue;
+    const report: FormReport = { added: [], removed: [], stale: [], warnings: [] };
+    changes.update(
+      path,
+      (text) =>
+        editSource(path, text, (file) => {
+          for (;;) {
+            // `const statusOptions = useOptionLabels(STATUS_OPTIONS);`, unless statusOptions is still used.
+            const hook = file.getDescendantsOfKind(SyntaxKind.VariableStatement).find((st) => {
+              const decl = st.getDeclarations()[0];
+              const init = decl?.getInitializer()?.getText() ?? '';
+              return [...removed].some((name) => new RegExp(`^use\\w+\\(\\s*${name}\\s*\\)$`).test(init)) && uses(file.getFullText(), decl.getName()) === 1;
+            });
+            if (!hook) break;
+            report.removed!.push(hook.getDeclarations()[0].getName());
+            hook.remove();
+          }
+          removeUnusedImports(file, (m) => m === './schema' || m.startsWith('@/lib/') || m === '@/i18n/options');
+        }),
+      { format: true },
+    );
+    const left = [...removed].filter((name) => uses(changes.read(path)!, name));
+    for (const name of left) report.warnings.push(`${path}: still uses ${name}, whose enum the contract dropped: fix it by hand.`);
+    if (report.removed!.length || left.length) reports.push([path, report]);
+  }
+  return reports;
+}
+
+/**
+ * Where the pages still read a field the contract dropped (`order.name` as
+ * the title, the breadcrumb, a dialog's text…), the record's label takes
+ * its place: `${t("orders.singular")} ${order.id}` ("Order 12"), or
+ * `String(order.id)` in a file without `t`. The field also leaves the
+ * `<S>Ref` type (what the dialogs take).
+ */
+function useIdForDropped(changes: Changes, names: ResourceNames, app: string, contractPath: string, contract: string): FrontendReports {
+  const info = readResponse(contractPath, contract, names);
+  const known = new Set([...info.fields.map((f) => f.key), ...info.skipped, 'id']);
+  const records = new Set([names.s.camel, 'row.original']);
+  const reports: FrontendReports = [];
+  for (const path of filesIn(changes, routeDir(names, app))) {
+    const report: FormReport = { added: [], removed: [], stale: [], warnings: [] };
+    changes.update(
+      path,
+      (text) =>
+        editSource(path, text, (file) => {
+          const hasT = /\bconst t = (await getTranslations|useTranslations)\(/.test(file.getFullText());
+          // Looked up again after each edit (ts-morph forgets the old nodes).
+          const next = () =>
+            file.getDescendantsOfKind(SyntaxKind.PropertyAccessExpression).find(
+              (pa) => records.has(pa.getExpression().getText()) && !known.has(pa.getName()),
+            );
+          for (let read = next(); read; read = next()) {
+            const record = read.getExpression().getText();
+            const id = `${record}${read.hasQuestionDotToken() ? '?.' : '.'}id`;
+            const label = hasT ? `\`\${t("${names.p.camel}.singular")} \${${id}}\`` : `String(${id})`;
+            report.removed!.push(`${read.getText()} (now ${label})`);
+            read.replaceWithText(label);
+          }
+          // export type OrderRef = { id: number; name: string } loses name.
+          const ref = () =>
+            file
+              .getTypeAlias(`${names.s.pascal}Ref`)
+              ?.getTypeNode()
+              ?.asKind(SyntaxKind.TypeLiteral)
+              ?.getProperties()
+              .find((prop) => !known.has(prop.getName()));
+          for (let prop = ref(); prop; prop = ref()) {
+            report.removed!.push(`${names.s.pascal}Ref: ${prop.getName()}`);
+            prop.remove();
+          }
+        }),
+      { format: true },
+    );
+    if (report.removed!.length) reports.push([path, report]);
+  }
+  return reports;
+}
+
+/** `<record>.x` and `row.original.x` reads, in the resource's files, of fields the contract doesn't have. */
+function leftoverReads(changes: Changes, names: ResourceNames, app: string, contractPath: string, contract: string): string[] {
+  const info = readResponse(contractPath, contract, names);
+  const known = new Set([...info.fields.map((f) => f.key), ...info.skipped]);
+  const { lib, table } = dataFiles(names, app);
+  const found: string[] = [];
+  const read = new RegExp(`\\b(?:${names.s.camel}\\??|row\\.original)\\.(\\w+)\\b`, 'g');
+  for (const path of [...filesIn(changes, routeDir(names, app)), lib, table]) {
+    const lines = (changes.read(path) ?? '').split('\n');
+    lines.forEach((line, i) => {
+      for (const m of line.matchAll(read)) if (!known.has(m[1])) found.push(`${path}:${i + 1}: ${m[0]}`);
+    });
+  }
+  return found;
 }
 
 /** Turns the reports into warnings of the change set (what was added is in the files). */

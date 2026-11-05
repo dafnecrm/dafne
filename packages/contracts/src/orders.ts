@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import {
   pageQuery,
-  requiredText,
+  requiredId,
   SORT_DIRECTIONS,
   optionalText,
 } from './common.ts';
@@ -14,9 +14,8 @@ import { msg } from './messages/index.ts';
  * whole order: omitted optional fields are cleared.
  */
 export const orderBodySchema = z.strictObject({
-  name: requiredText(255, msg('orders.name.required')),
   notes: optionalText(z.string().max(65535)),
-  customerId: requiredText(36, msg('orders.customerId.required')),
+  customerId: requiredId(msg('orders.customerId.required')),
 });
 
 /** What a client sends: blank optional fields may be "", null or missing. */
@@ -25,27 +24,25 @@ export type OrderBodyInput = z.input<typeof orderBodySchema>;
 export type OrderBody = z.output<typeof orderBodySchema>;
 
 /** Order fields the list can be sorted by. */
-export const ORDER_SORT_FIELDS = [
-  'name',
-  'notes',
-  'createdAt',
-  'updatedAt',
-] as const;
+export const ORDER_SORT_FIELDS = ['createdAt', 'updatedAt'] as const;
 export type OrderSortField = (typeof ORDER_SORT_FIELDS)[number];
 
 /**
  * Order fields the list can be filtered by, each a query param of
- * its own. Filters combine with AND and match text the field contains.
+ * its own. Filters combine with AND and match text the field contains
+ * (the id matches exactly).
  */
-export const ORDER_FILTER_FIELDS = ['name', 'notes'] as const;
+export const ORDER_FILTER_FIELDS = ['id'] as const;
 export type OrderFilterField = (typeof ORDER_FILTER_FIELDS)[number];
 
 /** Query string of GET /orders. Deleted orders are never listed. */
 export const listOrdersQuerySchema = z.strictObject({
   ...pageQuery,
-  name: z.string().max(255).optional(),
-  notes: z.string().max(255).optional(),
-  /** Defaults to name. */
+  id: z
+    .string()
+    .regex(/^\s*\d{0,9}\s*$/)
+    .optional(),
+  /** Defaults to createdAt. */
   sortBy: z.enum(ORDER_SORT_FIELDS).optional(),
   /** Defaults to asc. */
   sortDirection: z.enum(SORT_DIRECTIONS).optional(),
@@ -56,10 +53,8 @@ export type ListOrdersQuery = z.output<typeof listOrdersQuerySchema>;
 
 /** An order in GET /orders. */
 export interface ListedOrder {
-  id: string;
-  name: string;
-  notes: string | null;
-  customerId: string;
+  id: number;
+  customerId: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -80,6 +75,7 @@ export interface OrderUser {
 
 /** Response of GET /orders/:id, POST /orders and PUT /orders/:id. */
 export interface OrderDetail extends ListedOrder {
+  notes: string | null;
   createdBy: OrderUser | null;
   updatedBy: OrderUser | null;
   /** Always null: deleted orders aren't returned. */

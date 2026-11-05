@@ -1,5 +1,5 @@
 import { defineRelationsPart } from 'drizzle-orm';
-import { index, timestamp, varchar } from 'drizzle-orm/pg-core';
+import { index, timestamp, varchar, serial } from 'drizzle-orm/pg-core';
 import { user } from '../auth.js';
 import { salesSchema } from './sales.js';
 
@@ -10,8 +10,7 @@ import { salesSchema } from './sales.js';
 export const <%= s.camel %> = salesSchema.table(
   '<%= s.snake %>',
   {
-    id: varchar('id', { length: 36 }).primaryKey(),
-    name: varchar('name', { length: 255 }).notNull(),
+    id: serial('id').primaryKey(),
     createdAt: timestamp('created_at', { precision: 3, withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -32,7 +31,6 @@ export const <%= s.camel %> = salesSchema.table(
   },
   (table) => [
     index('<%= s.snake %>_deletedAt_idx').on(table.deletedAt),
-    index('<%= s.snake %>_name_idx').on(table.name),
   ],
 );
 

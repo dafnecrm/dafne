@@ -38,11 +38,11 @@ async function Edit<%= s.pascal %>({
     <PageContent>
       <BreadcrumbLabel
         href={`/<%= p.kebab %>/${encodeURIComponent(<%= s.camel %>.id)}`}
-        label={<%= s.camel %>.name}
+        label={`${t("<%= p.camel %>.singular")} ${<%= s.camel %>.id}`}
       />
       <PageContentHeader>
         <PageContentTitle>
-          {t("common.editTitle", { name: <%= s.camel %>.name })}
+          {t("common.editTitle", { name: `${t("<%= p.camel %>.singular")} ${<%= s.camel %>.id}` })}
         </PageContentTitle>
         <PageContentDescription>
           {t("<%= p.camel %>.editDescription")}

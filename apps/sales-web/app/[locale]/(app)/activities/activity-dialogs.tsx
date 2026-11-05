@@ -30,7 +30,7 @@ import {
 
 type ActivityStatus = ActivityDetail["status"];
 
-export type ActivityRef = { id: string; name: string; status: ActivityStatus };
+export type ActivityRef = { id: number; name: string; status: ActivityStatus };
 
 /** Statuses an activity can be edited, closed or reopened from. */
 export const ACTIVITY_STATUSES_ALLOW_EDIT: ActivityStatus[] = ["open"];
@@ -96,7 +96,7 @@ function ConfirmDialog({
   title: string;
   description: string;
   label: string;
-  run: (id: string) => Promise<ActionError | null>;
+  run: (id: number) => Promise<ActionError | null>;
 }) {
   const router = useRouter();
   const [error, setError] = useState<string>();

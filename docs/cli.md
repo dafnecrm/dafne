@@ -2,10 +2,12 @@
 
 # The `dafne` CLI
 
-`@dafne/cli` (`packages/cli`) is the `dafne` command. It does three things:
+`@dafne/cli` (`packages/cli`) is the `dafne` command. It does four things:
 
 - **generates** backend and frontend code (resources and their parts,
   libs, apps, contracts), through this workspace's own Nx generators;
+- **changes** resources: removes table columns and syncs the code that
+  follows them (contract, service, specs, pages);
 - runs the **database** migrations;
 - gives **shortcuts** for Nx tasks.
 
@@ -91,9 +93,13 @@ And wires them: the lib into the app (`package.json`, app module, project
 references), the table into `schema.ts`, the contract into the contracts'
 index, the message keys into the catalogs.
 
-Each resource starts with a sample `name` field, soft delete (`deletedAt`)
-and created/updated by. Without `--field`, the CLI asks for the fields one
-by one (an empty name ends the list). The fields go into the table; then the
+Each resource starts with only a `serial` `id` (an `integer` the database
+picks), soft delete (`deletedAt`) and created/updated by: no sample field.
+Its pages name a record by its id: the title, the breadcrumb, the edit
+page and the dialogs show `${t("invoices.singular")} ${invoice.id}`
+("Invoice 12"), and the list's first column is the id, linking to the
+detail page. Change them once a field names the record. Without
+`--field`, the CLI asks for the fields one by one (an empty name ends the list). The fields go into the table; then the
 contract, the service and the specs are synced with them.
 
 #### Field specs
@@ -235,11 +241,90 @@ pnpm nx g @dafne/cli:frontend-resource invoice --icon=ReceiptIcon
 pnpm nx g @dafne/cli:frontend-list invoice --app=billing-web
 pnpm nx g @dafne/cli:frontend-app billing-web
 pnpm nx g @dafne/cli:frontend-lib charts
+pnpm nx g @dafne/cli:remove-backend-db-column orders --columns=name
+pnpm nx g @dafne/cli:frontend-resource-sync orders
 pnpm nx list @dafne/cli
 ```
 
 Don't use `@nx/nest`'s generators: they write a `project.json`, which this
 workspace doesn't use.
+
+## Changing a resource: `dafne remove`, `dafne sync`
+
+```sh
+dafne remove backend-db-column [table] [columns...]   # remove columns, sync the backend, generate the migration
+dafne sync contract [resource]                        # bring the contract, service and specs in line with the table
+dafne sync frontend-resource [resource]               # bring the pages in line with the contract
+```
+
+### `remove backend-db-column`
+
+```sh
+dafne remove backend-db-column                     # asks for the table and the columns (several)
+dafne remove backend-db-column orders name
+dafne remove backend-db-column orders name notes --no-migration
+```
+
+Removes the columns from the table file, with their indexes; a foreign key
+(`customer` or `customerId`) takes its relations, a one-to-many removes the
+key on the other table, a many-to-many its junction table. Then, for each
+table that changed, it syncs the contract (body, query, sort and filter
+fields, responses, enums only those columns used), the service (queries,
+default sort) and the specs (samples, expected rows and failures, filter and
+sort tests; a test only about a removed field goes). Message keys only the
+removed columns used leave the contracts' catalogs.
+
+Last, it asks whether to generate the migration (default yes;
+`--migration` / `--no-migration` skip the question, `-y` means yes):
+`dafne db generate --name drop-<table>-<columns>`. Never with `--dry-run`.
+
+### `sync contract`
+
+```sh
+dafne sync contract                      # asks for the resource
+dafne sync contract orders
+dafne sync contract --all --dry-run      # every table that has a contract
+dafne sync contract orders --no-service  # only the contract and its spec
+```
+
+Brings `packages/contracts/src/<plural>.ts` in line with
+`packages/backend/database/src/tables/<plural>.ts`: the body schema, the
+sort and filter fields, the list query and the response types (child
+tables, e.g. customer addresses, too). New columns are added, columns gone
+from the API are removed, hand-written validation and members that aren't
+columns are kept (and listed). Then the service's queries (list select,
+detail columns, insert, update) and the sample bodies of the specs.
+`/** @api <tag> */` above a column decides where it goes: `internal`,
+`readonly`, `writeonly`, `detail`, `filter`, `nofilter`, `sort`, `nosort`.
+The `id` is always a filter, matched exactly (`?id=12`), unless tagged
+`nofilter`; the other filters match text the field contains. With `--all`, a contract the sync can't read (e.g. `countries`, with no
+body) is skipped. Then `dafne sync frontend-resource <resource>`.
+
+### `sync frontend-resource`
+
+```sh
+dafne sync frontend-resource orders
+dafne sync frontend-resource invoices --app billing-web --dry-run
+dafne sync frontend-resource orders --keep   # only add, keep what the contract dropped
+```
+
+Brings the pages of a resource in `apps/<app>` (default `sales-web`) in line
+with its contract: the form with the body, the list and the detail with the
+responses. Fields the contract gained are added; those it dropped are
+removed (inputs, defaults, columns, sort and filter fields, `<Detail>`s, enum
+labels and the imports and message keys only they used), and a default sort
+on a dropped field moves to `createdAt`. Where the pages still read a
+dropped field (the title in `[id]/page.tsx`, the breadcrumb, the dialogs,
+the row actions), the record's label takes its place,
+`${t("orders.singular")} ${order.id}` ("Order 12"), and the field leaves
+the `<Singular>Ref` type. With `--keep` those reads are only listed, as
+`file:line`. Then `pnpm dafne typecheck @dafne/sales-web`.
+
+The list's first column is the id, linking to the detail page, unless the
+id's `@api` tags keep it out of the list (`detail`, `internal`): then there
+is no id column (an existing one goes), and the sync warns that the row
+links, actions and ids read it. A field that must stay off a page: `{/* dafne-ignore:
+<field> */}`.
 
 ## Databases
 

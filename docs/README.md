@@ -19,8 +19,8 @@ app's `README.md`.
 | [Project boundaries](boundaries.md)      | Scope tags, who may depend on whom, how it is enforced                            |
 | [Architecture](architecture.md)          | Apps, shared sign-in (`apps/auth`), sessions, app access, contracts               |
 | [Databases and migrations](databases.md) | One schema per app, `auth`, `core`, the migrator, deploy                           |
-| [The `dafne` CLI](cli.md)                | Generators (`g backend-resource`, `g frontend-resource`, `g frontend-app`…), `db` commands, task shortcuts       |
-| [Recipes](workflows.md)                  | Step-by-step: add a resource and its pages, a lib, an app, a frontend app or lib, a dependency         |
+| [The `dafne` CLI](cli.md)                | Generators (`g backend-resource`, `g frontend-resource`, `g frontend-app`…), `remove backend-db-column`, `sync contract`, `sync frontend-resource`, `db` commands, task shortcuts |
+| [Recipes](workflows.md)                  | Step-by-step: add a resource and its pages, remove a column, sync the pages, a lib, an app, a frontend app or lib, a dependency |
 | [CI and contributing](contributing.md)   | Pull requests, CI checks, code owners, testing the CLI                            |
 
 Planned work that isn't implemented yet is in [ROADMAP.md](../ROADMAP.md).

@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/schema",
+  "$id": "DafneRemoveBackendDbColumn",
+  "title": "Remove backend DB columns",
+  "description": "Removes columns (or relations) from a Drizzle table, then syncs the contract, the service and their specs.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "The table, by resource name, singular or plural (e.g. orders).",
+      "$default": {
+        "$source": "argv",
+        "index": 0
+      },
+      "x-prompt": "Table (resource name, e.g. orders)"
+    },
+    "columns": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Columns or relations to remove (e.g. name, customer, customerId, tags). `dafne remove backend-db-column` asks for them."
+    },
+    "migration": {
+      "type": "boolean",
+      "description": "The migration is generated right after (dafne remove backend-db-column does it): leave it out of the next steps.",
+      "default": false
+    }
+  },
+  "required": [
+    "name",
+    "columns"
+  ]
+}

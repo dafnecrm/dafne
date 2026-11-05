@@ -29,14 +29,14 @@ async function errorMessage(error: unknown) {
  * Returns an error message when it fails.
  */
 export async function saveOrder(
-  id: string | null,
+  id: number | null,
   values: OrderFormValues,
 ): Promise<ActionError> {
   const parsed = orderSchema.safeParse(values);
   if (!parsed.success)
     return { error: (await getTranslations())("common.errors.invalid") };
 
-  let savedId: string;
+  let savedId: number;
   try {
     const res = await backendFetch(
       id ? `/orders/${encodeURIComponent(id)}` : "/orders",
@@ -57,7 +57,7 @@ export async function saveOrder(
  * Deletes an order (logically: the backend sets deletedAt). The
  * caller refreshes or leaves the page. Returns an error message when it fails.
  */
-export async function deleteOrder(id: string): Promise<ActionError | null> {
+export async function deleteOrder(id: number): Promise<ActionError | null> {
   try {
     await backendFetch(`/orders/${encodeURIComponent(id)}`, {
       method: "DELETE",

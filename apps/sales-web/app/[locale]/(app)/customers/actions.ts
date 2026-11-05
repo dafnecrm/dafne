@@ -29,14 +29,14 @@ async function errorMessage(error: unknown) {
  * Returns an error message when it fails.
  */
 export async function saveCustomer(
-  id: string | null,
+  id: number | null,
   values: CustomerFormValues,
 ): Promise<ActionError> {
   const parsed = customerSchema.safeParse(values);
   if (!parsed.success)
     return { error: (await getTranslations())("common.errors.invalid") };
 
-  let savedId: string;
+  let savedId: number;
   try {
     const res = await backendFetch(
       id ? `/customers/${encodeURIComponent(id)}` : "/customers",
@@ -58,7 +58,7 @@ export async function saveCustomer(
  * Deletes a customer (logically: the backend sets deletedAt). The caller
  * refreshes or leaves the page. Returns an error message when it fails.
  */
-export async function deleteCustomer(id: string): Promise<ActionError | null> {
+export async function deleteCustomer(id: number): Promise<ActionError | null> {
   try {
     await backendFetch(`/customers/${encodeURIComponent(id)}`, {
       method: "DELETE",

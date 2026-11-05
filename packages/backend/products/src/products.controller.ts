@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { Session } from '@dafne/backend-session';
 import type { UserSession } from '@dafne/backend-session';
-import { ZodValidationPipe } from '@dafne/backend-common';
+import { IdPipe, ZodValidationPipe } from '@dafne/backend-common';
 import {
   productBodySchema,
   listProductsQuerySchema,
@@ -37,7 +37,7 @@ export class ProductsController {
   }
 
   @Get(':id')
-  getProduct(@Param('id') id: string): Promise<ProductDetail> {
+  getProduct(@Param('id', IdPipe) id: number): Promise<ProductDetail> {
     return this.productsService.getProduct(id);
   }
 
@@ -51,7 +51,7 @@ export class ProductsController {
 
   @Put(':id')
   updateProduct(
-    @Param('id') id: string,
+    @Param('id', IdPipe) id: number,
     @Body(new ZodValidationPipe(productBodySchema)) body: ProductBody,
     @Session() session: UserSession,
   ): Promise<ProductDetail> {
@@ -62,7 +62,7 @@ export class ProductsController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteProduct(
-    @Param('id') id: string,
+    @Param('id', IdPipe) id: number,
     @Session() session: UserSession,
   ): Promise<void> {
     await this.productsService.deleteProduct(id, session.user.id);

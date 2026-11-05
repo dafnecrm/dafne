@@ -1,6 +1,7 @@
 import { Node, type ObjectLiteralExpression, type SourceFile, SyntaxKind } from 'ts-morph';
 import type { ResourceNames } from '../core/names.ts';
-import { appendToList, editSource, ensureHookLine, ensureNamedImport, insertListElement } from '../wiring/ast.ts';
+import { appendToList, editSource, ensureHookLine, ensureNamedImport, insertImportLine, insertListElement, removeListElement, removeUnusedImports } from '../wiring/ast.ts';
+import { fallbackSort } from './dropped.ts';
 import { CONTRACTS_PACKAGE } from '../wiring/backend.ts';
 import type { FormReport as Report } from './form.ts';
 import { enumOptionsName, ignoredKeys, optionLabel, type ResponseField, type ResponseInfo } from './response.ts';
@@ -9,14 +10,29 @@ import { enumOptionsName, ignoredKeys, optionLabel, type ResponseField, type Res
  * `sync frontend table`: adds what the contract has and the table lacks, in
  * lib/<plural>-table.ts (sort fields, filters, enum labels) and in
  * app/[locale]/(app)/<plural>/<plural>-table.tsx (columns). Nothing that's there
- * changes. Labels are message keys (`<plural>.fields.<key>`), whose texts
+ * changes, unless `prune`: then what the contract dropped goes too (and a
+ * default sort on a dropped field moves to createdAt). Labels are message keys (`<plural>.fields.<key>`), whose texts
  * syncMessages adds to the catalogs.
  */
 
-const newReport = (): Report => ({ added: [], stale: [], warnings: [] });
+const newReport = (): Report => ({ added: [], removed: [], stale: [], warnings: [] });
 
-/** Never added as columns: the id is in the link, the update date on the detail page. */
-const NO_COLUMN = new Set(['id', 'updatedAt']);
+/** Never added as columns: the update date is on the detail page. */
+const NO_COLUMN = new Set(['updatedAt']);
+
+/** The id column: first, and the link to the detail page (no field names the record). */
+const idColumn = (names: ResourceNames) =>
+  `col.accessor("id", {
+    header: t("${names.p.camel}.fields.id"),
+    cell: ({ row }) => (
+      <Link
+        href={\`/${names.p.kebab}/\${encodeURIComponent(row.original.id)}\`}
+        className="font-medium underline-offset-4 hover:underline"
+      >
+        {row.original.id}
+      </Link>
+    ),
+  })`;
 
 /** The `{ value, label }` list of an enum, shared by filters, columns and the detail page; labels are message keys. */
 export function ensureEnumOptions(file: SourceFile, names: ResourceNames, field: ResponseField, before: string, report: Report) {
@@ -57,7 +73,13 @@ function arrayOf(config: ObjectLiteralExpression, property: string) {
     : undefined;
 }
 
-export function syncTableConfig(path: string, source: string, names: ResourceNames, info: ResponseInfo): { content: string; report: Report } {
+export function syncTableConfig(
+  path: string,
+  source: string,
+  names: ResourceNames,
+  info: ResponseInfo,
+  { prune = false }: { prune?: boolean } = {},
+): { content: string; report: Report } {
   const report = newReport();
   const { s, p } = names;
   const variable = `${p.camel}Table`;
@@ -76,7 +98,17 @@ export function syncTableConfig(path: string, source: string, names: ResourceNam
     const sortable = config && arrayOf(config, 'sortable');
     if (!sortable) return void report.warnings.push(`${path}: no ${variable}.sortable list.`);
     const present = sortable.getElements().filter(Node.isStringLiteral).map((e) => e.getLiteralValue());
-    for (const key of present) if (!info.sortFields.includes(key)) report.stale.push(`sortable: ${key}`);
+    for (const key of present) {
+      if (info.sortFields.includes(key)) continue;
+      if (!prune) {
+        report.stale.push(`sortable: ${key}`);
+        continue;
+      }
+      const elements = arrayOf(tableConfig(file, variable)!, 'sortable')!.getElements();
+      const element = elements.find((e) => Node.isStringLiteral(e) && e.getLiteralValue() === key);
+      if (element) removeListElement(file, elements, element);
+      report.removed!.push(`sortable: ${key}`);
+    }
     for (const key of info.sortFields.filter((k) => !present.includes(k) && !ignored.has(k))) {
       const fresh = arrayOf(tableConfig(file, variable)!, 'sortable')!;
       const elements = fresh.getElements();
@@ -103,7 +135,17 @@ export function syncTableConfig(path: string, source: string, names: ResourceNam
         : undefined;
     };
     const present = filters.getElements().map(fieldOf).filter(Boolean) as string[];
-    for (const key of present) if (!info.filterFields.includes(key)) report.stale.push(`filters: ${key}`);
+    for (const key of present) {
+      if (info.filterFields.includes(key)) continue;
+      if (!prune) {
+        report.stale.push(`filters: ${key}`);
+        continue;
+      }
+      const elements = arrayOf(tableConfig(file, variable)!, 'filters')!.getElements();
+      const element = elements.find((e) => fieldOf(e) === key);
+      if (element) removeListElement(file, elements, element);
+      report.removed!.push(`filters: ${key}`);
+    }
     for (const key of info.filterFields.filter((k) => !present.includes(k) && !ignored.has(k))) {
       const field = byKey.get(key);
       // A message key; the filter shows "Any <label>" when empty.
@@ -118,6 +160,20 @@ export function syncTableConfig(path: string, source: string, names: ResourceNam
     if (report.added.some((a) => a.startsWith('filters:')))
       ensureNamedImport(file, CONTRACTS_PACKAGE, `${s.pascal}FilterField`, { typeOnly: true });
   });
+
+  // defaultSort: { id: "name", … } on a field the contract can't sort by any more.
+  if (prune)
+    step((file) => {
+      const prop = tableConfig(file, variable)?.getProperty('defaultSort');
+      const object = prop && Node.isPropertyAssignment(prop) ? prop.getInitializer()?.asKind(SyntaxKind.ObjectLiteralExpression) : undefined;
+      const id = object?.getProperty('id');
+      const value = id && Node.isPropertyAssignment(id) ? id.getInitializer() : undefined;
+      if (!value || !Node.isStringLiteral(value) || info.sortFields.includes(value.getLiteralValue())) return;
+      const sort = fallbackSort(info.sortFields);
+      if (!sort) return void report.warnings.push(`${path}: defaultSort is on ${value.getLiteralValue()}, which can't be sorted by any more: fix it by hand.`);
+      report.removed!.push(`defaultSort: ${value.getLiteralValue()} (now ${sort})`);
+      value.replaceWithText(`"${sort}"`);
+    });
 
   return { content: source, report };
 }
@@ -160,7 +216,13 @@ function columnCode(names: ResourceNames, field: ResponseField, sortable: boolea
   return { code: `col.accessor("${field.key}", { ${options.join(', ')} })`, imports };
 }
 
-export function syncColumns(path: string, source: string, names: ResourceNames, info: ResponseInfo): { content: string; report: Report } {
+export function syncColumns(
+  path: string,
+  source: string,
+  names: ResourceNames,
+  info: ResponseInfo,
+  { prune = false }: { prune?: boolean } = {},
+): { content: string; report: Report } {
   const report = newReport();
   const ignored = ignoredKeys(source);
   const columnsArray = (file: SourceFile) =>
@@ -180,9 +242,39 @@ export function syncColumns(path: string, source: string, names: ResourceNames, 
     if (!array) return void report.warnings.push(`${path}: no col.columns([...]).`);
     const present = array.getElements().map(keyOf).filter(Boolean) as string[];
     const listed = new Set(info.fields.filter((f) => f.listed).map((f) => f.key));
-    for (const key of present) if (!listed.has(key)) report.stale.push(`column ${key}`);
+    for (const key of present) {
+      if (listed.has(key)) continue;
+      if (!prune) {
+        report.stale.push(`column ${key}`);
+        continue;
+      }
+      const elements = columnsArray(file)!.getElements();
+      const element = elements.find((e) => keyOf(e) === key);
+      if (!element) continue;
+      // The generated lists link to the detail page from the first column.
+      if (/<Link\b/.test(element.getText()))
+        report.warnings.push(`${path}: the ${key} column linked to the detail page: link another column to it.`);
+      removeListElement(file, elements, element);
+      report.removed!.push(`column ${key}`);
+    }
+    // Imports only the removed cells used (Link, LocalDate, enum labels…).
+    if (report.removed!.length)
+      removeUnusedImports(file, (m) => ['next/link', 'lucide-react'].includes(m) || m.startsWith('@dafne/frontend-ui/') || m.startsWith('@/lib/'));
 
-    for (const field of info.fields.filter((f) => f.listed && !present.includes(f.key) && !ignored.has(f.key) && !NO_COLUMN.has(f.key))) {
+    // The id, listed unless its @api tags say otherwise (detail, internal…): the first column.
+    if (listed.has('id') && !present.includes('id') && !ignored.has('id')) {
+      const fresh = columnsArray(file)!;
+      const elements = fresh.getElements();
+      if (elements.length) file.insertText(elements[0].getStart(), `${idColumn(names)},\n  `);
+      else appendToList(file, fresh, elements, idColumn(names));
+      if (!file.getImportDeclaration((d) => d.getModuleSpecifierValue() === 'next/link')) insertImportLine(file, 'Link', 'next/link');
+      report.added.push('column id');
+    }
+    // Without the id the rows can't link to their page, nor have actions.
+    if (!listed.has('id') && /\.id\b/.test(file.getFullText()))
+      report.warnings.push(`${path}: Listed${names.s.pascal} has no id (its @api tags): the row ids, links and actions read it; remove them or list the id.`);
+
+    for (const field of info.fields.filter((f) => f.listed && f.key !== 'id' && !present.includes(f.key) && !ignored.has(f.key) && !NO_COLUMN.has(f.key))) {
       if (field.kind === 'id') {
         report.warnings.push(`${field.key}: an id, not added as a column; show the related record by hand, or mark it dafne-ignore.`);
         continue;

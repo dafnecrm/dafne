@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { Session } from '@dafne/backend-session';
 import type { UserSession } from '@dafne/backend-session';
-import { ZodValidationPipe } from '@dafne/backend-common';
+import { IdPipe, ZodValidationPipe } from '@dafne/backend-common';
 import {
   <%= s.camel %>BodySchema,
   list<%= p.pascal %>QuerySchema,
@@ -37,7 +37,7 @@ export class <%= p.pascal %>Controller {
   }
 
   @Get(':id')
-  get<%= s.pascal %>(@Param('id') id: string): Promise<<%= s.pascal %>Detail> {
+  get<%= s.pascal %>(@Param('id', IdPipe) id: number): Promise<<%= s.pascal %>Detail> {
     return this.<%= p.camel %>Service.get<%= s.pascal %>(id);
   }
 
@@ -51,7 +51,7 @@ export class <%= p.pascal %>Controller {
 
   @Put(':id')
   update<%= s.pascal %>(
-    @Param('id') id: string,
+    @Param('id', IdPipe) id: number,
     @Body(new ZodValidationPipe(<%= s.camel %>BodySchema)) body: <%= s.pascal %>Body,
     @Session() session: UserSession,
   ): Promise<<%= s.pascal %>Detail> {
@@ -62,7 +62,7 @@ export class <%= p.pascal %>Controller {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async delete<%= s.pascal %>(
-    @Param('id') id: string,
+    @Param('id', IdPipe) id: number,
     @Session() session: UserSession,
   ): Promise<void> {
     await this.<%= p.camel %>Service.delete<%= s.pascal %>(id, session.user.id);

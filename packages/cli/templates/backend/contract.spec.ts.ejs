@@ -1,6 +1,6 @@
 import { <%= s.camel %>BodySchema, list<%= p.pascal %>QuerySchema } from './<%= p.kebab %>.ts';
 
-/** Paths of the fields that failed, e.g. ['name']. */
+/** Paths of the fields that failed, e.g. ['email']. */
 function failedFields(body: unknown) {
   const result = <%= s.camel %>BodySchema.safeParse(body);
   return result.success
@@ -9,18 +9,12 @@ function failedFields(body: unknown) {
 }
 
 describe('<%= s.camel %>BodySchema', () => {
-  it('trims values', () => {
-    expect(<%= s.camel %>BodySchema.parse({ name: '  Acme  ' })).toEqual({
-      name: 'Acme',
-    });
-  });
-
-  it('rejects a blank name', () => {
-    expect(failedFields({ name: '   ' })).toEqual(['name']);
+  it('parses a body', () => {
+    expect(<%= s.camel %>BodySchema.parse({})).toEqual({});
   });
 
   it('rejects unknown properties such as deletedAt', () => {
-    expect(failedFields({ name: 'Acme', deletedAt: '2026-01-01' })).toEqual([
+    expect(failedFields({ deletedAt: '2026-01-01' })).toEqual([
       'unrecognized_keys',
     ]);
   });

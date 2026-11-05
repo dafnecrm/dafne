@@ -38,6 +38,17 @@ function useProductColumns() {
   return useMemo(
     () =>
       col.columns([
+        col.accessor("id", {
+          header: t("products.fields.id"),
+          cell: ({ row }) => (
+            <Link
+              href={`/products/${encodeURIComponent(row.original.id)}`}
+              className="font-medium underline-offset-4 hover:underline"
+            >
+              {row.original.id}
+            </Link>
+          ),
+        }),
         col.accessor("name", {
           header: t("name"),
           cell: ({ row }) => (
@@ -73,7 +84,7 @@ const productActions = (product: ListedProduct) => (
   <ProductTableActions product={product} />
 );
 
-const getRowId = (product: ListedProduct) => product.id;
+const getRowId = (product: ListedProduct) => String(product.id);
 
 /** Products list; the server page passes one page of products. */
 export function ProductsTable({

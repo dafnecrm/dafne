@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/schema",
+  "$id": "DafneContractSync",
+  "title": "Contract sync",
+  "description": "Brings a resource's contract in line with its Drizzle table (body schema, sort and filter fields, list query, responses), then the service's queries and the specs' sample bodies.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Resource name, singular or plural (e.g. orders). Leave it out with --all.",
+      "$default": { "$source": "argv", "index": 0 }
+    },
+    "all": { "type": "boolean", "description": "Every table that has a contract.", "default": false },
+    "service": {
+      "type": "boolean",
+      "description": "Also sync the service's queries (list, detail, create, update) and its spec.",
+      "default": true
+    }
+  }
+}

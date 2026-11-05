@@ -16,9 +16,8 @@ export const orderSchema = formSchema<OrderFormValues>()(orderBodySchema);
 export function orderFormOpts(order?: OrderDetail) {
   return formOptions({
     defaultValues: {
-      name: order?.name ?? "",
       notes: order?.notes ?? "",
-      customerId: order?.customerId ?? "",
+      customerId: order ? String(order.customerId) : "",
     } satisfies OrderFormValues as OrderFormValues,
   });
 }

@@ -44,7 +44,8 @@ Flags: `required`, `unique`, `index`, `editor`. Values: `length`, `values`,
 `inverse` (`-` for none); lists use `|`.
 
 The fields go into the table, then the contract, the service and their
-specs are synced with them. The sample `name` field stays.
+specs are synced with them. A resource starts with only a `serial` `id`
+(no sample field); its pages name a record "Invoice 12" and list it by id.
 
 `g frontend-resource` (and each part) writes the pages in
 `apps/<app>/app/[locale]/(app)/<plural>/`, synced with the contract's
@@ -68,6 +69,29 @@ pnpm nx list @dafne/cli
 After generating: `pnpm install` (links new packages), `pnpm nx sync`
 (project references), and for a table `pnpm dafne db generate`.
 The generator prints these steps.
+
+## Changing a resource
+
+```sh
+dafne remove backend-db-column orders name   # table, contract, service, specs, then the migration (asked, default yes)
+dafne remove backend-db-column               # asks for the table and the columns
+dafne sync contract orders                   # contract, service queries and specs follow the table (or --all)
+dafne sync frontend-resource orders          # form, list and detail follow the contract: adds and removes fields
+```
+
+`sync contract` takes `--all`, `--no-service` (only the contract and its
+spec) and `--dry-run`. It edits, it doesn't regenerate: hand-written
+validation and members that aren't columns stay. `/** @api <tag> */`
+above a column in the table decides where it goes (`internal`,
+`readonly`, `writeonly`, `detail`, `filter`, `nofilter`, `sort`, `nosort`).
+The `id` is always a filter (exact match), unless tagged `nofilter`.
+
+`remove backend-db-column` takes `--no-migration` and `--dry-run`;
+`sync frontend-resource` takes `--app`, `--keep` (only add) and
+`--dry-run`. A dropped field the pages still read (the page title, a
+dialog…) becomes the record's label, "Order 12" (with `--keep` it's only
+listed). The id is the list's first column unless its `@api` tags keep it
+out of the list.
 
 ## Databases
 

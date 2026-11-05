@@ -7,6 +7,7 @@ import {
   varchar,
   date,
   text,
+  serial,
 } from 'drizzle-orm/pg-core';
 import { salesSchema } from './sales.js';
 import { user } from '../auth.js';
@@ -19,7 +20,7 @@ import { country } from './countries.js';
 export const customer = salesSchema.table(
   'customer',
   {
-    id: varchar('id', { length: 36 }).primaryKey(),
+    id: serial('id').primaryKey(),
     type: text('type', { enum: ['person', 'company'] }).notNull(),
     name: varchar('name', { length: 255 }).notNull(),
     birthDate: date('birth_date', { mode: 'date' }),
@@ -59,8 +60,8 @@ export const customer = salesSchema.table(
 export const customerAddress = salesSchema.table(
   'customer_address',
   {
-    id: varchar('id', { length: 36 }).primaryKey(),
-    customerId: varchar('customer_id', { length: 36 })
+    id: serial('id').primaryKey(),
+    customerId: integer('customer_id')
       .notNull()
       .references(() => customer.id, { onDelete: 'cascade' }),
     position: integer('position').notNull(),

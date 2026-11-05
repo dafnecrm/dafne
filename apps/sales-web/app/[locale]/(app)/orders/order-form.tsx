@@ -56,19 +56,8 @@ export function OrderForm({ order }: { order?: OrderDetail }) {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                <form.AppField name="name">
-                  {(field) => (
-                    <field.TextField
-                      label={t("orders.fields.name")}
-                      autoComplete="off"
-                      autoFocus
-                    />
-                  )}
-                </form.AppField>
                 <form.AppField name="notes">
-                  {(field) => (
-                    <field.TextEditorField label={t("orders.fields.notes")} />
-                  )}
+                  {(field) => (<field.TextEditorField label={t("orders.fields.notes")} />)}
                 </form.AppField>
                 <form.AppField name="customerId">
                   {(field) => (

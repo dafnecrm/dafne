@@ -1,7 +1,7 @@
 CREATE SCHEMA "sales";
 --> statement-breakpoint
 CREATE TABLE "sales"."activity" (
-	"id" varchar(36) PRIMARY KEY,
+	"id" serial PRIMARY KEY,
 	"name" varchar(255) NOT NULL,
 	"type" text NOT NULL,
 	"due_date" timestamp(3) with time zone,
@@ -27,7 +27,7 @@ CREATE TABLE "sales"."country" (
 );
 --> statement-breakpoint
 CREATE TABLE "sales"."customer" (
-	"id" varchar(36) PRIMARY KEY,
+	"id" serial PRIMARY KEY,
 	"type" text NOT NULL,
 	"name" varchar(255) NOT NULL,
 	"birth_date" date,
@@ -43,8 +43,8 @@ CREATE TABLE "sales"."customer" (
 );
 --> statement-breakpoint
 CREATE TABLE "sales"."customer_address" (
-	"id" varchar(36) PRIMARY KEY,
-	"customer_id" varchar(36) NOT NULL,
+	"id" serial PRIMARY KEY,
+	"customer_id" integer NOT NULL,
 	"position" integer NOT NULL,
 	"type" text NOT NULL,
 	"street" varchar(255) NOT NULL,
@@ -55,10 +55,10 @@ CREATE TABLE "sales"."customer_address" (
 );
 --> statement-breakpoint
 CREATE TABLE "sales"."order" (
-	"id" varchar(36) PRIMARY KEY,
+	"id" serial PRIMARY KEY,
 	"name" varchar(255) NOT NULL,
 	"notes" text,
-	"customer_id" varchar(36) NOT NULL,
+	"customer_id" integer NOT NULL,
 	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
 	"deleted_at" timestamp(3) with time zone,
@@ -67,13 +67,13 @@ CREATE TABLE "sales"."order" (
 );
 --> statement-breakpoint
 CREATE TABLE "sales"."order_product" (
-	"order_id" varchar(36),
-	"product_id" varchar(36),
+	"order_id" integer,
+	"product_id" integer,
 	CONSTRAINT "order_product_pkey" PRIMARY KEY("order_id","product_id")
 );
 --> statement-breakpoint
 CREATE TABLE "sales"."product" (
-	"id" varchar(36) PRIMARY KEY,
+	"id" serial PRIMARY KEY,
 	"name" varchar(255) NOT NULL,
 	"description" text,
 	"price" numeric(10,2) NOT NULL,

@@ -1,5 +1,12 @@
 import { defineRelationsPart } from 'drizzle-orm';
-import { index, timestamp, varchar, text, decimal } from 'drizzle-orm/pg-core';
+import {
+  index,
+  timestamp,
+  varchar,
+  text,
+  decimal,
+  serial,
+} from 'drizzle-orm/pg-core';
 import { salesSchema } from './sales.js';
 import { user } from '../auth.js';
 
@@ -10,7 +17,7 @@ import { user } from '../auth.js';
 export const product = salesSchema.table(
   'product',
   {
-    id: varchar('id', { length: 36 }).primaryKey(),
+    id: serial('id').primaryKey(),
     name: varchar('name', { length: 255 }).notNull(),
     /** @api detail @form editor */
     description: text('description'),

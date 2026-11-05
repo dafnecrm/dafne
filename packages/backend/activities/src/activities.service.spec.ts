@@ -16,7 +16,7 @@ const notClosed = ne(activity.status, 'closed');
 
 describe('ActivitiesService', () => {
   let service: ActivitiesService;
-  const rows = [{ id: 'r1', name: 'Acme' }];
+  const rows = [{ id: 1, name: 'Acme' }];
   // Chainable stand-in for db.select().from().where().orderBy().limit().offset()
   const select = {
     from: vi.fn(),
@@ -25,8 +25,8 @@ describe('ActivitiesService', () => {
     limit: vi.fn(),
     offset: vi.fn(),
   };
-  // Stand-ins for insert().values() and update().set().where()
-  const insert = { values: vi.fn() };
+  // Stand-ins for insert().values().returning() and update().set().where()
+  const insert = { values: vi.fn(), returning: vi.fn() };
   const update = { set: vi.fn(), where: vi.fn() };
   const findFirst = vi.fn();
   const db = {
@@ -37,7 +37,7 @@ describe('ActivitiesService', () => {
     delete: vi.fn(),
     query: { activity: { findFirst } },
   };
-  const found = { id: 'r1', name: 'Acme' };
+  const found = { id: 1, name: 'Acme' };
 
   beforeEach(async () => {
     vi.resetAllMocks();
@@ -49,7 +49,8 @@ describe('ActivitiesService', () => {
     select.offset.mockResolvedValue(rows);
     db.$count.mockResolvedValue(42);
     db.insert.mockReturnValue(insert);
-    insert.values.mockResolvedValue(undefined);
+    insert.values.mockReturnValue(insert);
+    insert.returning.mockResolvedValue([{ id: 1 }]);
     db.update.mockReturnValue(update);
     update.set.mockReturnValue(update);
     update.where.mockResolvedValue({ rowCount: 1 });
@@ -110,10 +111,10 @@ describe('ActivitiesService', () => {
 
   describe('getActivity', () => {
     it('returns a activity that is not deleted, with its users', async () => {
-      await expect(service.getActivity('r1')).resolves.toBe(found);
+      await expect(service.getActivity(1)).resolves.toBe(found);
 
       const options = findFirst.mock.calls[0][0];
-      expect(options.where).toEqual({ id: 'r1', deletedAt: { isNull: true } });
+      expect(options.where).toEqual({ id: 1, deletedAt: { isNull: true } });
       expect(options.with.createdBy.columns).toEqual({ id: true, name: true });
       expect(options.with.updatedBy.columns).toEqual({ id: true, name: true });
     });
@@ -121,7 +122,7 @@ describe('ActivitiesService', () => {
     it('throws 404 when the activity does not exist or is deleted', async () => {
       findFirst.mockResolvedValue(undefined);
 
-      await expect(service.getActivity('nope')).rejects.toBeInstanceOf(
+      await expect(service.getActivity(999)).rejects.toBeInstanceOf(
         NotFoundException,
       );
     });
@@ -139,14 +140,14 @@ describe('ActivitiesService', () => {
         createdById: 'u1',
         updatedById: 'u1',
       });
-      expect(findFirst.mock.calls[0][0].where.id).toBe(row.id);
+      expect(findFirst.mock.calls[0][0].where.id).toBe(1);
     });
   });
 
   describe('updateActivity', () => {
     it('updates the activity', async () => {
       await service.updateActivity(
-        'r1',
+        1,
         body({ name: 'Acme Inc', type: 'email' }),
         'u2',
       );
@@ -156,7 +157,7 @@ describe('ActivitiesService', () => {
         updatedById: 'u2',
       });
       expect(update.where).toHaveBeenCalledWith(
-        and(eq(activity.id, 'r1'), notDeleted, notClosed),
+        and(eq(activity.id, 1), notDeleted, notClosed),
       );
     });
 
@@ -164,24 +165,20 @@ describe('ActivitiesService', () => {
       update.where.mockResolvedValue({ rowCount: 0 });
 
       await expect(
-        service.updateActivity(
-          'nope',
-          body({ name: 'X', type: 'email' }),
-          'u2',
-        ),
+        service.updateActivity(999, body({ name: 'X', type: 'email' }), 'u2'),
       ).rejects.toBeInstanceOf(NotFoundException);
     });
   });
 
   describe('deleteActivity', () => {
     it('sets deletedAt instead of deleting the row', async () => {
-      await service.deleteActivity('r1', 'u3');
+      await service.deleteActivity(1, 'u3');
 
       const values = update.set.mock.calls[0][0];
       expect(values.deletedAt).toBeInstanceOf(Date);
       expect(values.updatedById).toBe('u3');
       expect(update.where).toHaveBeenCalledWith(
-        and(eq(activity.id, 'r1'), notDeleted),
+        and(eq(activity.id, 1), notDeleted),
       );
       expect(db.delete).not.toHaveBeenCalled();
     });
@@ -189,7 +186,7 @@ describe('ActivitiesService', () => {
     it('throws 404 when the activity is missing or already deleted', async () => {
       update.where.mockResolvedValue({ rowCount: 0 });
 
-      await expect(service.deleteActivity('r1', 'u3')).rejects.toBeInstanceOf(
+      await expect(service.deleteActivity(1, 'u3')).rejects.toBeInstanceOf(
         NotFoundException,
       );
     });

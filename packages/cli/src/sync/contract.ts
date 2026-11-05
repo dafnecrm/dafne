@@ -13,7 +13,7 @@ import type { Column, TableInfo } from './table.ts';
  */
 
 /** Helpers from contracts/src/common.ts the generated fields use. */
-export const COMMON_HELPERS = ['requiredText', 'optionalText', 'optionalDate'];
+export const COMMON_HELPERS = ['requiredText', 'optionalText', 'optionalDate', 'requiredId', 'optionalId'];
 
 /** Imported by common.ts for OPTIONAL_DATE_HELPER. */
 export const MESSAGE_KEY_IMPORT = "import type { ContractMessageKey } from './messages/index.ts';";

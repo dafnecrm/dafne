@@ -22,7 +22,7 @@ import { deleteCustomer } from "./actions";
  * (customer-detail-actions.tsx).
  */
 
-export type CustomerRef = { id: string; name: string; email: string | null };
+export type CustomerRef = { id: number; name: string; email: string | null };
 
 /**
  * Confirms the deletion and runs it, then goes back to the list

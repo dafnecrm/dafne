@@ -33,7 +33,7 @@ export function <%= s.pascal %>TableActions({ <%= s.camel %> }: { <%= s.camel %>
             <Button
               variant="ghost"
               size="icon-sm"
-              aria-label={t("common.actionsFor", { name: <%= s.camel %>.name })}
+              aria-label={t("common.actionsFor", { name: `${t("<%= p.camel %>.singular")} ${<%= s.camel %>.id}` })}
             />
           }
         >

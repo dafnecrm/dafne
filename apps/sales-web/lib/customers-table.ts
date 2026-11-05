@@ -99,5 +99,6 @@ export const customersTable = defineDataTable({
       field: "vatNumber" satisfies CustomerFilterField,
       label: "customers.fields.vatNumber",
     },
+    { field: "id" satisfies CustomerFilterField, label: "customers.fields.id" },
   ],
 });

@@ -1,7 +1,6 @@
 import { schema, type Database } from '@dafne/backend-database';
 import { InjectDrizzle } from '@nestjs/drizzle';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { randomUUID } from 'node:crypto';
 import { and, asc, desc, eq, isNull, ilike, type SQL } from 'drizzle-orm';
 import {
   <%= s.constant %>_FILTER_FIELDS,
@@ -37,13 +36,15 @@ export class <%= p.pascal %>Service {
     const {
       limit = DEFAULT_PAGE_SIZE,
       offset = 0,
-      sortBy = 'name',
+      sortBy = 'createdAt',
       sortDirection = 'asc',
     } = query;
     const { db } = this;
     const filters = <%= s.constant %>_FILTER_FIELDS.flatMap((field) => {
       const value = query[field]?.trim();
-      return value ? [ilike(<%= s.camel %>[field], `%${escapeLike(value)}%`)] : [];
+      if (!value) return [];
+      // The id matches exactly (an integer column), the other fields contain the text.
+      return [field === 'id' ? eq(<%= s.camel %>.id, Number(value)) : ilike(<%= s.camel %>[field], `%${escapeLike(value)}%`)];
     });
     const where = and(notDeleted, ...filters) as SQL;
     const direction = sortDirection === 'asc' ? asc : desc;
@@ -52,7 +53,6 @@ export class <%= p.pascal %>Service {
       db
         .select({
           id: <%= s.camel %>.id,
-          name: <%= s.camel %>.name,
           createdAt: <%= s.camel %>.createdAt,
           updatedAt: <%= s.camel %>.updatedAt,
         })
@@ -71,7 +71,7 @@ export class <%= p.pascal %>Service {
    * One <%= s.lower %> that isn't deleted, with who created and last
    * updated it. Throws 404 otherwise.
    */
-  async get<%= s.pascal %>(id: string): Promise<<%= s.pascal %>Detail> {
+  async get<%= s.pascal %>(id: number): Promise<<%= s.pascal %>Detail> {
     const found = await this.db.query.<%= s.camel %>.findFirst({
       where: { id, deletedAt: { isNull: true } },
       columns: { createdById: false, updatedById: false },
@@ -83,17 +83,18 @@ export class <%= p.pascal %>Service {
 
   /** Creates <%= s.a %>; `userId` is the creator. */
   async create<%= s.pascal %>(body: <%= s.pascal %>Body, userId: string): Promise<<%= s.pascal %>Detail> {
-    const id = randomUUID();
     // One instant for both: createdAt and updatedAt start equal.
     const now = new Date();
-    await this.db.insert(<%= s.camel %>).values({
-      id,
-      name: body.name,
-      createdAt: now,
-      updatedAt: now,
-      createdById: userId,
-      updatedById: userId,
-    });
+    // The id is serial: the database picks it.
+    const [{ id }] = await this.db
+      .insert(<%= s.camel %>)
+      .values({
+        createdAt: now,
+        updatedAt: now,
+        createdById: userId,
+        updatedById: userId,
+      })
+      .returning({ id: <%= s.camel %>.id });
     return this.get<%= s.pascal %>(id);
   }
 
@@ -102,14 +103,13 @@ export class <%= p.pascal %>Service {
    * if the <%= s.lower %> doesn't exist or is deleted.
    */
   async update<%= s.pascal %>(
-    id: string,
+    id: number,
     body: <%= s.pascal %>Body,
     userId: string,
   ): Promise<<%= s.pascal %>Detail> {
     const result = await this.db
       .update(<%= s.camel %>)
       .set({
-        name: body.name,
         updatedById: userId,
         // The time of this change.
         updatedAt: new Date(),
@@ -124,7 +124,7 @@ export class <%= p.pascal %>Service {
    * Deletes <%= s.a %> logically: sets deletedAt, so it disappears
    * from the API but stays in the database. Throws 404 if already deleted.
    */
-  async delete<%= s.pascal %>(id: string, userId: string) {
+  async delete<%= s.pascal %>(id: number, userId: string) {
     const now = new Date();
     const result = await this.db
       .update(<%= s.camel %>)

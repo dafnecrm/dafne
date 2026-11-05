@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { Session } from '@dafne/backend-session';
 import type { UserSession } from '@dafne/backend-session';
-import { ZodValidationPipe } from '@dafne/backend-common';
+import { IdPipe, ZodValidationPipe } from '@dafne/backend-common';
 import {
   activityBodySchema,
   listActivitiesQuerySchema,
@@ -38,7 +38,7 @@ export class ActivitiesController {
   }
 
   @Get(':id')
-  getActivity(@Param('id') id: string): Promise<ActivityDetail> {
+  getActivity(@Param('id', IdPipe) id: number): Promise<ActivityDetail> {
     return this.activitiesService.getActivity(id);
   }
 
@@ -52,7 +52,7 @@ export class ActivitiesController {
 
   @Put(':id')
   updateActivity(
-    @Param('id') id: string,
+    @Param('id', IdPipe) id: number,
     @Body(new ZodValidationPipe(activityBodySchema)) body: ActivityBody,
     @Session() session: UserSession,
   ): Promise<ActivityDetail> {
@@ -63,7 +63,7 @@ export class ActivitiesController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteActivity(
-    @Param('id') id: string,
+    @Param('id', IdPipe) id: number,
     @Session() session: UserSession,
   ): Promise<void> {
     await this.activitiesService.deleteActivity(id, session.user.id);
@@ -71,14 +71,14 @@ export class ActivitiesController {
 
   @Patch(':id/close')
   async completeActivity(
-    @Param('id') id: string,
+    @Param('id', IdPipe) id: number,
     @Session() session: UserSession,
   ) {
     return this.activitiesService.closeActivity(id, session.user.id);
   }
 
   @Patch(':id/reopen')
-  async reopenActivity(@Param('id') id: string) {
+  async reopenActivity(@Param('id', IdPipe) id: number) {
     return this.activitiesService.reopenActivity(id);
   }
 }

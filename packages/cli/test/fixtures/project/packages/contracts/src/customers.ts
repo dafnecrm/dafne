@@ -58,12 +58,13 @@ export type CustomerSortField = (typeof CUSTOMER_SORT_FIELDS)[number];
  * Customer fields the list can be filtered by, each a query param of its
  * own. Filters combine with AND and match text the field contains.
  */
-export const CUSTOMER_FILTER_FIELDS = ['name', 'email', 'phone'] as const;
+export const CUSTOMER_FILTER_FIELDS = ['id', 'name', 'email', 'phone'] as const;
 export type CustomerFilterField = (typeof CUSTOMER_FILTER_FIELDS)[number];
 
 /** Query string of GET /customers. Deleted customers are never listed. */
 export const listCustomersQuerySchema = z.strictObject({
   ...pageQuery,
+  id: z.string().regex(/^\s*\d{0,9}\s*$/).optional(),
   name: z.string().max(255).optional(),
   email: z.string().max(255).optional(),
   phone: z.string().max(32).optional(),

@@ -38,11 +38,13 @@ async function EditOrder({
     <PageContent>
       <BreadcrumbLabel
         href={`/orders/${encodeURIComponent(order.id)}`}
-        label={order.name}
+        label={`${t("orders.singular")} ${order.id}`}
       />
       <PageContentHeader>
         <PageContentTitle>
-          {t("common.editTitle", { name: order.name })}
+          {t("common.editTitle", {
+            name: `${t("orders.singular")} ${order.id}`,
+          })}
         </PageContentTitle>
         <PageContentDescription>
           {t("orders.editDescription")}

@@ -18,7 +18,7 @@ const notDeleted = isNull(customer.deletedAt);
 
 describe('CustomersService', () => {
   let service: CustomersService;
-  const rows = [{ id: 'c1', name: 'Acme' }];
+  const rows = [{ id: 1, name: 'Acme' }];
   // Chainable stand-in for db.select().from().where().orderBy().limit().offset()
   const select = {
     from: vi.fn(),
@@ -27,8 +27,8 @@ describe('CustomersService', () => {
     limit: vi.fn(),
     offset: vi.fn(),
   };
-  // Stand-ins for insert().values(), update().set().where(), delete().where()
-  const insert = { values: vi.fn() };
+  // Stand-ins for insert().values().returning(), update().set().where(), delete().where()
+  const insert = { values: vi.fn(), returning: vi.fn() };
   const update = { set: vi.fn(), where: vi.fn() };
   const remove = { where: vi.fn() };
   const findFirst = vi.fn();
@@ -41,7 +41,7 @@ describe('CustomersService', () => {
     transaction: vi.fn(),
     query: { customer: { findFirst } },
   };
-  const found = { id: 'c1', name: 'Acme', addresses: [] };
+  const found = { id: 1, name: 'Acme', addresses: [] };
   // What drizzle throws when the unique email index rejects a row.
   const duplicateEmail = new Error('Failed query', {
     cause: Object.assign(
@@ -62,7 +62,8 @@ describe('CustomersService', () => {
     select.offset.mockResolvedValue(rows);
     db.$count.mockResolvedValue(42);
     db.insert.mockReturnValue(insert);
-    insert.values.mockResolvedValue(undefined);
+    insert.values.mockReturnValue(insert);
+    insert.returning.mockResolvedValue([{ id: 1 }]);
     db.update.mockReturnValue(update);
     update.set.mockReturnValue(update);
     update.where.mockResolvedValue({ rowCount: 1 });
@@ -133,10 +134,10 @@ describe('CustomersService', () => {
 
   describe('getCustomer', () => {
     it('returns a customer that is not deleted, with addresses and users', async () => {
-      await expect(service.getCustomer('c1')).resolves.toBe(found);
+      await expect(service.getCustomer(1)).resolves.toBe(found);
 
       const options = findFirst.mock.calls[0][0];
-      expect(options.where).toEqual({ id: 'c1', deletedAt: { isNull: true } });
+      expect(options.where).toEqual({ id: 1, deletedAt: { isNull: true } });
       expect(options.with).toHaveProperty('addresses');
       expect(options.with.createdBy.columns).toEqual({ id: true, name: true });
       expect(options.with.updatedBy.columns).toEqual({ id: true, name: true });
@@ -145,7 +146,7 @@ describe('CustomersService', () => {
     it('throws 404 when the customer does not exist or is deleted', async () => {
       findFirst.mockResolvedValue(undefined);
 
-      await expect(service.getCustomer('nope')).rejects.toBeInstanceOf(
+      await expect(service.getCustomer(999)).rejects.toBeInstanceOf(
         NotFoundException,
       );
     });
@@ -190,23 +191,23 @@ describe('CustomersService', () => {
       const [addressRows] = insert.values.mock.calls[1];
       expect(addressRows).toMatchObject([
         {
-          customerId: customerRow.id,
+          customerId: 1,
           position: 0,
           city: 'Milano',
           type: 'billing',
         },
         {
-          customerId: customerRow.id,
+          customerId: 1,
           position: 1,
           city: 'Boston',
           type: 'head_office',
         },
       ]);
-      expect(findFirst.mock.calls[0][0].where.id).toBe(customerRow.id);
+      expect(findFirst.mock.calls[0][0].where.id).toBe(1);
     });
 
     it('throws 409 when another customer has the email', async () => {
-      insert.values.mockRejectedValue(duplicateEmail);
+      insert.returning.mockRejectedValue(duplicateEmail);
 
       await expect(
         service.createCustomer(
@@ -218,7 +219,7 @@ describe('CustomersService', () => {
 
     it('throws 400 when an address country is not in the countries table', async () => {
       // The customer row goes in; its address fails the foreign key.
-      insert.values.mockResolvedValueOnce(undefined).mockRejectedValueOnce(
+      insert.values.mockReturnValueOnce(insert).mockRejectedValueOnce(
         new Error('Failed query', {
           cause: Object.assign(
             new Error(
@@ -265,7 +266,7 @@ describe('CustomersService', () => {
   describe('updateCustomer', () => {
     it('updates the customer and replaces the addresses', async () => {
       await service.updateCustomer(
-        'c1',
+        1,
         body({
           type: 'company',
           name: 'Acme Inc',
@@ -289,14 +290,14 @@ describe('CustomersService', () => {
         updatedById: 'u2',
       });
       expect(update.where).toHaveBeenCalledWith(
-        and(eq(customer.id, 'c1'), notDeleted, eq(customer.type, 'company')),
+        and(eq(customer.id, 1), notDeleted, eq(customer.type, 'company')),
       );
       expect(db.delete).toHaveBeenCalledWith(customerAddress);
       expect(remove.where).toHaveBeenCalledWith(
-        eq(customerAddress.customerId, 'c1'),
+        eq(customerAddress.customerId, 1),
       );
       expect(insert.values.mock.calls[0][0]).toMatchObject([
-        { customerId: 'c1', position: 0 },
+        { customerId: 1, position: 0 },
       ]);
     });
 
@@ -305,7 +306,7 @@ describe('CustomersService', () => {
 
       await expect(
         service.updateCustomer(
-          'c1',
+          1,
           body({ type: 'company', name: 'Acme', email: 'info@acme.test' }),
           'u2',
         ),
@@ -315,11 +316,11 @@ describe('CustomersService', () => {
 
     it('throws 400 and changes nothing when the type changes', async () => {
       update.where.mockResolvedValue({ rowCount: 0 });
-      findFirst.mockResolvedValue({ id: 'c1' });
+      findFirst.mockResolvedValue({ id: 1 });
 
       await expect(
         service.updateCustomer(
-          'c1',
+          1,
           body({
             type: 'person',
             name: 'Mario Rossi',
@@ -338,7 +339,7 @@ describe('CustomersService', () => {
 
       await expect(
         service.updateCustomer(
-          'nope',
+          999,
           body({ type: 'company', name: 'X', email: 'info@acme.test' }),
           'u2',
         ),
@@ -350,13 +351,13 @@ describe('CustomersService', () => {
 
   describe('deleteCustomer', () => {
     it('sets deletedAt instead of deleting the row', async () => {
-      await service.deleteCustomer('c1', 'u3');
+      await service.deleteCustomer(1, 'u3');
 
       const values = update.set.mock.calls[0][0];
       expect(values.deletedAt).toBeInstanceOf(Date);
       expect(values.updatedById).toBe('u3');
       expect(update.where).toHaveBeenCalledWith(
-        and(eq(customer.id, 'c1'), notDeleted),
+        and(eq(customer.id, 1), notDeleted),
       );
       expect(db.delete).not.toHaveBeenCalled();
     });
@@ -364,7 +365,7 @@ describe('CustomersService', () => {
     it('throws 404 when the customer is missing or already deleted', async () => {
       update.where.mockResolvedValue({ rowCount: 0 });
 
-      await expect(service.deleteCustomer('c1', 'u3')).rejects.toBeInstanceOf(
+      await expect(service.deleteCustomer(1, 'u3')).rejects.toBeInstanceOf(
         NotFoundException,
       );
     });

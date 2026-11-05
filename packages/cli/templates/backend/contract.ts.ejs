@@ -1,6 +1,5 @@
 import { z } from 'zod';
-import { pageQuery, requiredText, SORT_DIRECTIONS } from './common.ts';
-import { msg } from './messages/index.ts';
+import { pageQuery, SORT_DIRECTIONS } from './common.ts';
 
 /* ---------- Requests ---------- */
 
@@ -8,9 +7,7 @@ import { msg } from './messages/index.ts';
  * Body of POST /<%= p.kebab %> and PUT /<%= p.kebab %>/:id. PUT replaces the
  * whole <%= s.lower %>: omitted optional fields are cleared.
  */
-export const <%= s.camel %>BodySchema = z.strictObject({
-  name: requiredText(255, msg('<%= p.camel %>.name.required')),
-});
+export const <%= s.camel %>BodySchema = z.strictObject({});
 
 /** What a client sends: blank optional fields may be "", null or missing. */
 export type <%= s.pascal %>BodyInput = z.input<typeof <%= s.camel %>BodySchema>;
@@ -18,21 +15,22 @@ export type <%= s.pascal %>BodyInput = z.input<typeof <%= s.camel %>BodySchema>;
 export type <%= s.pascal %>Body = z.output<typeof <%= s.camel %>BodySchema>;
 
 /** <%= s.title %> fields the list can be sorted by. */
-export const <%= s.constant %>_SORT_FIELDS = ['name', 'createdAt', 'updatedAt'] as const;
+export const <%= s.constant %>_SORT_FIELDS = ['createdAt', 'updatedAt'] as const;
 export type <%= s.pascal %>SortField = (typeof <%= s.constant %>_SORT_FIELDS)[number];
 
 /**
  * <%= s.title %> fields the list can be filtered by, each a query param of
- * its own. Filters combine with AND and match text the field contains.
+ * its own. Filters combine with AND and match text the field contains
+ * (the id matches exactly).
  */
-export const <%= s.constant %>_FILTER_FIELDS = ['name'] as const;
+export const <%= s.constant %>_FILTER_FIELDS = ['id'] as const;
 export type <%= s.pascal %>FilterField = (typeof <%= s.constant %>_FILTER_FIELDS)[number];
 
 /** Query string of GET /<%= p.kebab %>. Deleted <%= p.lower %> are never listed. */
 export const list<%= p.pascal %>QuerySchema = z.strictObject({
   ...pageQuery,
-  name: z.string().max(255).optional(),
-  /** Defaults to name. */
+  id: z.string().regex(/^\s*\d{0,9}\s*$/).optional(),
+  /** Defaults to createdAt. */
   sortBy: z.enum(<%= s.constant %>_SORT_FIELDS).optional(),
   /** Defaults to asc. */
   sortDirection: z.enum(SORT_DIRECTIONS).optional(),
@@ -43,8 +41,7 @@ export type List<%= p.pascal %>Query = z.output<typeof list<%= p.pascal %>QueryS
 
 /** <%= s.A %> in GET /<%= p.kebab %>. */
 export interface Listed<%= s.pascal %> {
-  id: string;
-  name: string;
+  id: number;
   createdAt: Date;
   updatedAt: Date;
 }

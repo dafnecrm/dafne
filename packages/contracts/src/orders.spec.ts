@@ -10,27 +10,22 @@ function failedFields(body: unknown) {
 
 describe('orderBodySchema', () => {
   it('trims values', () => {
-    expect(
-      orderBodySchema.parse({ name: '  Acme  ', customerId: 'Customer id' }),
-    ).toEqual({
-      name: 'Acme',
-      customerId: 'Customer id',
+    expect(orderBodySchema.parse({ customerId: '1' })).toEqual({
+      customerId: 1,
       notes: null,
     });
   });
 
-  it('rejects a blank name', () => {
-    expect(failedFields({ name: '   ', customerId: 'Customer id' })).toEqual([
-      'name',
-    ]);
+  it('takes the customer id as a number or as text, and nothing else', () => {
+    expect(orderBodySchema.parse({ customerId: 7 }).customerId).toBe(7);
+    for (const customerId of ['', 'abc', '1.5', '0', -1])
+      expect(failedFields({ customerId })).toEqual(['customerId']);
   });
-
   it('rejects unknown properties such as deletedAt', () => {
     expect(
       failedFields({
-        name: 'Acme',
         deletedAt: '2026-01-01',
-        customerId: 'Customer id',
+        customerId: '1',
       }),
     ).toEqual(['unrecognized_keys']);
   });

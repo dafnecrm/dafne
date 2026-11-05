@@ -29,14 +29,14 @@ async function errorMessage(error: unknown) {
  * Returns an error message when it fails.
  */
 export async function saveActivity(
-  id: string | null,
+  id: number | null,
   values: ActivityFormValues,
 ): Promise<ActionError> {
   const parsed = activitySchema.safeParse(values);
   if (!parsed.success)
     return { error: (await getTranslations())("common.errors.invalid") };
 
-  let savedId: string;
+  let savedId: number;
   try {
     const res = await backendFetch(
       id ? `/activities/${encodeURIComponent(id)}` : "/activities",
@@ -57,7 +57,7 @@ export async function saveActivity(
  * Deletes a activity (logically: the backend sets deletedAt). The
  * caller refreshes or leaves the page. Returns an error message when it fails.
  */
-export async function deleteActivity(id: string): Promise<ActionError | null> {
+export async function deleteActivity(id: number): Promise<ActionError | null> {
   try {
     await backendFetch(`/activities/${encodeURIComponent(id)}`, {
       method: "DELETE",
@@ -72,7 +72,7 @@ export async function deleteActivity(id: string): Promise<ActionError | null> {
  * Closes an activity. The
  * caller refreshes or leaves the page. Returns an error message when it fails.
  */
-export async function closeActivity(id: string): Promise<ActionError | null> {
+export async function closeActivity(id: number): Promise<ActionError | null> {
   try {
     await backendFetch(`/activities/${encodeURIComponent(id)}/close`, {
       method: "PATCH",
@@ -87,7 +87,7 @@ export async function closeActivity(id: string): Promise<ActionError | null> {
  * Reopens a closed activity. The
  * caller refreshes or leaves the page. Returns an error message when it fails.
  */
-export async function reopenActivity(id: string): Promise<ActionError | null> {
+export async function reopenActivity(id: number): Promise<ActionError | null> {
   try {
     await backendFetch(`/activities/${encodeURIComponent(id)}/reopen`, {
       method: "PATCH",

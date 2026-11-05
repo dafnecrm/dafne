@@ -200,7 +200,7 @@ export async function askNewFields(changes: Changes, resource: string): Promise<
       placeholder: 'dueDate (for a ref: the relation, e.g. customer)',
     });
     if (!name) return specs;
-    if (specs.some((spec) => spec.name === name) || name === 'name') {
+    if (specs.some((spec) => spec.name === name) || name === 'id') {
       p.log.warn(`"${name}" is already a field.`);
       continue;
     }
