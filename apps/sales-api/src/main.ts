@@ -2,7 +2,7 @@ import { migrateOnStart } from '@dafne/backend-migrator/start';
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { join } from 'node:path';
-import { CrmApiModule } from './crm-api.module.js';
+import { SalesApiModule } from './sales-api.module.js';
 
 async function bootstrap() {
   // MIGRATE_ON_START=true: every database's migrations first (copied into dist/ by the build).
@@ -13,7 +13,7 @@ async function bootstrap() {
   });
 
   // Sign-in is apps/auth's: this API checks the session (@dafne/backend-session).
-  const app = await NestFactory.create(CrmApiModule);
+  const app = await NestFactory.create(SalesApiModule);
 
   await app.listen(process.env.PORT ?? 3000);
 }

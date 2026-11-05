@@ -1,6 +1,6 @@
 # @dafne/frontend-api
 
-Calls the Nest API (`apps/crm-api`) from the frontend's server.
+Calls the Nest API (`apps/sales-api`) from the frontend's server.
 
 ## Entry points
 
@@ -39,5 +39,5 @@ pnpm nx test @dafne/frontend-api
 pnpm nx typecheck @dafne/frontend-api
 ```
 
-There is no build: `apps/crm-web` compiles the sources (`transpilePackages`
+There is no build: `apps/sales-web` compiles the sources (`transpilePackages`
 in its `next.config.ts`).

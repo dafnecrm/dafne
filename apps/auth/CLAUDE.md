@@ -1,7 +1,7 @@
 # dafne auth
 
 The shared sign-in service (see `README.md` and `../../CLAUDE.md`). NestJS,
-built like `../crm-api` (rspack, vitest with SWC, oxlint), with no feature
+built like `../sales-api` (rspack, vitest with SWC, oxlint), with no feature
 code of its own: it composes `@dafne/backend-auth`, `@dafne/backend-users`
 and `@dafne/backend-database-auth`.
 

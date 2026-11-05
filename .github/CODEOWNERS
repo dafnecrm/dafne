@@ -4,10 +4,10 @@
 
 *                    @lula
 
-/apps/crm-api/           @lula
+/apps/sales-api/           @lula
 /apps/auth/              @lula
 /packages/backend/   @lula
-/apps/crm-web/      @lula
+/apps/sales-web/      @lula
 /packages/frontend/  @lula
 # Shared by the backend and the frontend: both owners.
 /packages/contracts/ @lula

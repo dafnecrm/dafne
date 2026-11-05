@@ -3,9 +3,9 @@
  * Moves every table of a database into another one on the same server,
  * in one atomic RENAME TABLE: rows, indexes and foreign keys move with
  * them (MySQL updates the keys that point to them). For the one-time move
- * of the old `dafne` database to `dafne_crm`:
+ * of the old `dafne` database to `dafne_sales`:
  *
- *   pnpm --filter @dafne/backend-migrator move-database dafne dafne_crm
+ *   pnpm --filter @dafne/backend-migrator move-database dafne dafne_sales
  *
  * Its `_migrations` table moves too, so the history stays applied. Uses
  * MIGRATIONS_DATABASE_URL (environment or this package's .env). Fails if

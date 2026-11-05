@@ -37,8 +37,8 @@ import { SessionModule } from '@dafne/backend-session';
     ActivitiesModule,
     GeoModule,
     ProductsModule,
-    // The users of the CRM (app_access: crm), signed in on apps/auth.
-    SessionModule.forRoot({ app: 'crm' }),
+    // The users of the sales app (app_access: sales), signed in on apps/auth.
+    SessionModule.forRoot({ app: 'sales' }),
   ],
   controllers: [ApiController],
   providers: [
@@ -47,4 +47,4 @@ import { SessionModule } from '@dafne/backend-session';
     { provide: APP_FILTER, useClass: I18nExceptionFilter },
   ],
 })
-export class CrmApiModule {}
+export class SalesApiModule {}

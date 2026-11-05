@@ -2,7 +2,7 @@
 
 Nest lib of the products resource: `ProductsModule`, with its
 controller (REST API) and `ProductsService` (Drizzle queries).
-Registered in `apps/crm-api` (`CrmApiModule`).
+Registered in `apps/sales-api` (`SalesApiModule`).
 
 ## API
 

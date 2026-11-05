@@ -4,7 +4,7 @@ import createNextIntlPlugin from "next-intl/plugin";
 
 /**
  * The monorepo root: the workspace packages (@dafne/contracts,
- * @dafne/frontend-auth) live outside apps/crm-web/, so Turbopack must
+ * @dafne/frontend-auth) live outside apps/sales-web/, so Turbopack must
  * build from the root to read them.
  */
 const root = path.join(__dirname, "../..");

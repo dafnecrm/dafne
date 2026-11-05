@@ -5,8 +5,8 @@ The sign-in of every Dafne app: [Better Auth](https://www.better-auth.com)
 (`app_access`), on the **`dafne_auth`** database.
 
 ```
-browser ──► crm-web ──/api/auth/*──► apps/auth ──► dafne_auth
-                    └─ data ───────► crm-api ──► dafne_crm (FK → dafne_auth.user)
+browser ──► sales-web ──/api/auth/*──► apps/auth ──► dafne_auth
+                    └─ data ───────► sales-api ──► dafne_sales (FK → dafne_auth.user)
                                        └─ session? ─► apps/auth
 ```
 
@@ -16,7 +16,7 @@ browser ──► crm-web ──/api/auth/*──► apps/auth ──► dafne_a
   share the sign-in.
 - The apps' APIs don't run Better Auth: `@dafne/backend-session` asks this
   service for the session of each cookie, with the user's apps
-  (`user.apps`, e.g. `{ crm: "admin" }`).
+  (`user.apps`, e.g. `{ sales: "admin" }`).
 - A new user gets the `DEFAULT_APPS`. Global admins (`role: admin`) can use
   every app.
 

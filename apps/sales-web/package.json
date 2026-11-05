@@ -1,5 +1,5 @@
 {
-  "name": "@dafne/crm-web",
+  "name": "@dafne/sales-web",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -63,7 +63,7 @@
             "env": "AUTH_URL"
           },
           {
-            "runtime": "node -e \"try{process.stdout.write(require('fs').readFileSync('apps/crm-web/.env','utf8'))}catch{}\""
+            "runtime": "node -e \"try{process.stdout.write(require('fs').readFileSync('apps/sales-web/.env','utf8'))}catch{}\""
           }
         ]
       }

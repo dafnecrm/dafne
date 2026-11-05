@@ -1,7 +1,7 @@
-# dafne crm-api
+# dafne sales-api
 
 NestJS API, part of the Dafne monorepo (see `../../CLAUDE.md`). This folder
-is the app (`src/`: `main.ts`, `CrmApiModule`; `.env`). The
+is the app (`src/`: `main.ts`, `SalesApiModule`; `.env`). The
 feature code lives in Nest libs, one workspace package each in
 `../../packages/backend/<lib>`, imported as `@dafne/backend-<lib>` (e.g.
 `@dafne/backend-customers`). The API
@@ -79,7 +79,7 @@ keys of `messages/en.ts`; `it.ts` must have the same keys (typed by
   packages from its own `node_modules` at runtime: a new runtime
   dependency of a lib goes in the app's `package.json` too.
 - New libs and resources come from the `dafne` CLI, which also wires them
-  into the app. `@dafne/backend-database` holds the tables of dafne_crm
+  into the app. `@dafne/backend-database` holds the tables of dafne_sales
   (`src/tables`) and their migrations (`migrations/`): `pnpm dafne db
   generate` writes one, `pnpm dafne db migrate` applies them
   (`@dafne/backend-migrator`). `dafne dev` runs the migrator first
@@ -89,8 +89,8 @@ keys of `messages/en.ts`; `it.ts` must have the same keys (typed by
   `dist/migrations`).
 - Sign-in is `apps/auth`'s. This API has no Better Auth: the global
   `SessionGuard` (`@dafne/backend-session`, `SessionModule.forRoot({ app:
-  'crm' })`) asks `AUTH_URL` for the session of each request's cookie and
-  lets in the users with the `crm` app (or global admins). Controllers use
+  'sales' })`) asks `AUTH_URL` for the session of each request's cookie and
+  lets in the users with the `sales` app (or global admins). Controllers use
   `@Session()`, `@AllowAnonymous()`, `@Roles()` from
   `@dafne/backend-session`. The users' table is `dafne_auth.user`
   (`database/src/tables/auth.ts` re-exports it): the CRM's tables point to

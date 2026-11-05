@@ -1,16 +1,16 @@
 # @dafne/backend-migrator
 
-Applies the migrations of **every** Dafne database (`dafne_crm`,
+Applies the migrations of **every** Dafne database (`dafne_sales`,
 `dafne_auth`, …) in one order, and generates them.
 
 ## Why one migrator
 
-Each database belongs to a package (`"dafne": { "database": "dafne_crm" }`
+Each database belongs to a package (`"dafne": { "database": "dafne_sales" }`
 in its `package.json`, migrations in its `migrations/`), not to an app: a
 shared database (`dafne_core`) may be used by several apps. The migrator
 merges the migrations of all of them and applies them **by timestamp**,
 whatever their database, so a fresh server replays the history as it
-happened: e.g. `user` is created in `dafne_crm`, later moved to
+happened: e.g. `user` is created in `dafne_sales`, later moved to
 `dafne_auth` with `RENAME TABLE`.
 
 - Each migration runs in its database (`USE`), and is recorded in that
@@ -44,7 +44,7 @@ pnpm dafne db move <from> <to>         # one time: move every table (RENAME TABL
 
 ## Migrations on startup
 
-An app built from `dafne g app` (and `crm-api`, `auth`) can apply the
+An app built from `dafne g app` (and `sales-api`, `auth`) can apply the
 migrations itself when it starts, before Nest:
 
 ```ts
@@ -62,7 +62,7 @@ await migrateOnStart({
   database package into `dist/migrations/<database>/`
   (`migrationCopyPatterns` from `@dafne/backend-migrator/bundle`). Every
   database's, not just the app's: they run in one order across databases
-  (dafne_auth's first migration moves tables out of dafne_crm), so any
+  (dafne_auth's first migration moves tables out of dafne_sales), so any
   app can bring a fresh server up to date. The apps' `build` lists the
   migrations among its Nx inputs.
 - Apps or replicas that start together are safe: one takes the lock and

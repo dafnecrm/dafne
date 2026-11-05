@@ -26,11 +26,11 @@ export interface CreateAuthOptions {
   resendApiKey?: string;
   /**
    * The parent domain of the apps (e.g. cliente.it, or localhost): the
-   * session cookie is set for it, so crm.cliente.it and reporting.cliente.it
+   * session cookie is set for it, so sales.cliente.it and reporting.cliente.it
    * share the sign-in. Without it, the cookie is the host's only.
    */
   cookieDomain?: string;
-  /** Apps a new user can use from the start (app_access), e.g. ['crm']. */
+  /** Apps a new user can use from the start (app_access), e.g. ['sales']. */
   defaultApps?: string[];
 }
 

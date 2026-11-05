@@ -53,7 +53,7 @@ since both sides depend on it.
 ## Changing the CLI
 
 The generators copy real code: the backend templates are copies of the
-`customers` resource, the app template of `apps/crm-api`, the frontend lib
+`customers` resource, the app template of `apps/sales-api`, the frontend lib
 template of `packages/frontend/auth`. When those patterns change, update the
 templates in `packages/cli/templates`.
 

@@ -43,7 +43,7 @@ Common options:
 | `--dry-run`     | show what would change, write nothing                             |
 | `--force`       | overwrite files that already exist (otherwise creating one fails) |
 | `-y`, `--yes`   | never prompt                                                      |
-| `--app <name>`  | `lib`, `resource`: the backend app to wire into (default `crm-api`) |
+| `--app <name>`  | `lib`, `resource`: the backend app to wire into (default `sales-api`) |
 | `--port <port>` | `app`: default port (3001; `PORT` overrides it)                   |
 | `--field <spec>`| `resource`: a field of the new table, repeatable                  |
 
@@ -122,7 +122,7 @@ A `ref` adds a foreign key to the table in `to`:
 ### `g lib`
 
 ```sh
-dafne g lib reports                  # @dafne/backend-reports, wired into crm-api
+dafne g lib reports                  # @dafne/backend-reports, wired into sales-api
 dafne g lib jobs --app worker        # wired into apps/worker
 ```
 
@@ -135,7 +135,7 @@ tagged `scope:backend` and registered in the app.
 dafne g app worker --port 3002
 ```
 
-A NestJS app in `apps/<name>`, set up like a minimal `apps/crm-api`:
+A NestJS app in `apps/<name>`, set up like a minimal `apps/sales-api`:
 rspack build, vitest, oxlint, Prettier, a root module and a controller.
 Its `main.ts` migrates on startup with `MIGRATE_ON_START=true`.
 
@@ -153,7 +153,7 @@ dafne g frontend-lib charts          # @dafne/frontend-charts
 
 An empty lib in `packages/frontend/<name>`, set up like
 `packages/frontend/auth`, tagged `scope:frontend`, and wired into
-`apps/crm-web`: dependency, `transpilePackages` in `next.config.ts`,
+`apps/sales-web`: dependency, `transpilePackages` in `next.config.ts`,
 `nx.sync.ignoredDependencies`, root project reference.
 
 ### After generating
@@ -186,7 +186,7 @@ workspace doesn't use.
 
 ```sh
 dafne db migrate                         # apply every database's pending migrations
-dafne db generate                        # a migration of @dafne/backend-database (dafne_crm)
+dafne db generate                        # a migration of @dafne/backend-database (dafne_sales)
 dafne db generate <package> --name x     # of another database package
 dafne db generate --custom --name x      # an empty migration, for SQL by hand
 dafne db move <from> <to>                # one time: move every table of a database
@@ -199,12 +199,12 @@ packages. `migrate` needs `MIGRATIONS_DATABASE_URL`. See
 ## Running tasks
 
 ```sh
-dafne dev                            # @dafne/auth, @dafne/crm-api, @dafne/crm-web in watch mode
+dafne dev                            # @dafne/auth, @dafne/sales-api, @dafne/sales-web in watch mode
 dafne dev @dafne/worker              # given projects
 dafne test                           # every project
 dafne test @dafne/backend-customers
 dafne build | lint | typecheck [projects...]
-dafne run test:e2e @dafne/crm-api    # any target
+dafne run test:e2e @dafne/sales-api    # any target
 dafne affected                       # lint, typecheck, test, build of what changed
 dafne affected test                  # only some targets
 dafne projects                       # list the projects

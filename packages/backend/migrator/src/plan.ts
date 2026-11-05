@@ -29,7 +29,7 @@ export function readMigrations(pkg: DatabasePackage): Migration[] {
 /**
  * The migrations to apply, in one order across databases: by timestamp,
  * then name, then database. So a fresh server replays the history as it
- * happened (e.g. a table created in dafne_crm, later moved to dafne_core
+ * happened (e.g. a table created in dafne_sales, later moved to dafne_core
  * with RENAME TABLE).
  */
 export function pendingMigrations(

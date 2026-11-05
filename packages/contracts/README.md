@@ -1,7 +1,7 @@
 # @dafne/contracts
 
-The API contracts, shared by the backend (`apps/crm-api`, `packages/backend/*`)
-and the frontend (`apps/crm-web`): request schemas (Zod) and response
+The API contracts, shared by the backend (`apps/sales-api`, `packages/backend/*`)
+and the frontend (`apps/sales-web`): request schemas (Zod) and response
 types. So the two sides can't drift.
 
 ## Contents

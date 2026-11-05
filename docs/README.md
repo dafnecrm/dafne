@@ -1,6 +1,6 @@
 # Dafne monorepo documentation
 
-Dafne is a set of business apps (the CRM is the first) built in one
+Dafne is a set of business apps (the sales app is the first) built in one
 monorepo: pnpm workspaces for the packages, Nx for tasks and caching, NestJS
 for the backends, Next.js for the frontends, MySQL with Drizzle for the data.
 
@@ -29,10 +29,10 @@ Planned work that isn't implemented yet is in [ROADMAP.md](../ROADMAP.md).
 
 ```sh
 pnpm install
-cp apps/auth/.env.example apps/auth/.env           # and the same for crm-api, crm-web
+cp apps/auth/.env.example apps/auth/.env           # and the same for sales-api, sales-web
 cp packages/backend/migrator/.env.example packages/backend/migrator/.env
 pnpm dafne db migrate                              # creates and migrates every dafne_* database
-pnpm dafne dev                                     # auth (3001), crm-api (3000), crm-web (4000)
+pnpm dafne dev                                     # auth (3001), sales-api (3000), sales-web (4000)
 ```
 
 Details in [Getting started](getting-started.md).

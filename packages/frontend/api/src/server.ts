@@ -4,7 +4,7 @@ import { BackendError, errorMessage, type BackendErrorBody } from "./errors.ts";
 
 export { BackendError } from "./errors.ts";
 
-/** Base URL of the app's Nest API (e.g. apps/crm-api). */
+/** Base URL of the app's Nest API (e.g. apps/sales-api). */
 export const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:3000";
 
 /** Base URL of apps/auth: sign-in (Better Auth) and users, shared by the apps. */

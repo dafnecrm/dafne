@@ -22,7 +22,7 @@ from the `package.json` files.
 ```sh
 pnpm build | test | lint | typecheck   # nx run-many over every project
 pnpm affected                          # lint, typecheck, test, build of what changed
-pnpm nx <target> <project>             # e.g. pnpm nx test @dafne/crm-api
+pnpm nx <target> <project>             # e.g. pnpm nx test @dafne/sales-api
 pnpm graph                             # project graph
 ```
 
@@ -70,7 +70,7 @@ Some packages have **no build**: they ship TypeScript sources, compiled by
 whoever imports them.
 
 - **`@dafne/contracts`**: Next compiles it (`transpilePackages`), the
-  backend bundles it (`apps/crm-api/rspack.config.js`).
+  backend bundles it (`apps/sales-api/rspack.config.js`).
 - **Frontend libs** (`packages/frontend/*`): listed in the frontend's
   `transpilePackages` and in the `nx.sync.ignoredDependencies` of its
   `tsconfig.json`. `dafne g frontend-lib` adds both.

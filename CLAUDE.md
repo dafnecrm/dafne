@@ -7,9 +7,9 @@ keep it in line when these rules change. Each project has its own
 
 | Folder               | Package            | What                                              |
 | -------------------- | ------------------ | ------------------------------------------------- |
-| `apps/crm-api`           | `@dafne/crm-api`       | NestJS API of the CRM                             |
+| `apps/sales-api`           | `@dafne/sales-api`       | NestJS API of the sales app                            |
 | `packages/backend/*` | `@dafne/backend-*` | The backend's Nest libs (customers, auth…)        |
-| `apps/crm-web`      | `@dafne/crm-web`  | Next.js app                                       |
+| `apps/sales-web`      | `@dafne/sales-web`  | Next.js app                                       |
 | `packages/frontend/*` | `@dafne/frontend-*` | The frontend's libs (auth…), TypeScript sources compiled by Next |
 | `packages/contracts` | `@dafne/contracts` | API schemas (Zod) and response types, shared      |
 | `packages/auth-options` | `@dafne/auth-options` | Better Auth options (no Nest, no DB), shared |
@@ -23,8 +23,8 @@ keep it in line when these rules change. Each project has its own
 - `pnpm install`: installs every project (one `pnpm-lock.yaml`, here).
 - `pnpm build | test | lint | typecheck`: `nx run-many` over all projects.
 - `pnpm affected`: lint, typecheck, test and build only what changed.
-- `pnpm nx <target> <project>`, e.g. `pnpm nx test @dafne/crm-api`.
-- `pnpm dafne dev` starts `@dafne/auth`, `@dafne/crm-api` and `@dafne/crm-web`
+- `pnpm nx <target> <project>`, e.g. `pnpm nx test @dafne/sales-api`.
+- `pnpm dafne dev` starts `@dafne/auth`, `@dafne/sales-api` and `@dafne/sales-web`
   (migrating first, with `MIGRATIONS_DATABASE_URL`); `pnpm dafne db
   migrate | generate` handles the migrations.
 - `pnpm dafne <command>` runs the CLI from source (e.g. `pnpm dafne dev`,
@@ -51,13 +51,13 @@ keep it in line when these rules change. Each project has its own
   (`"zod": "catalog:"`). Workspace packages are `"workspace:*"`.
 - **`@dafne/contracts` ships TypeScript sources** (no build): Next compiles
   it through `transpilePackages`, the backend bundles it through
-  `apps/crm-api/rspack.config.js`. The frontend libs (`packages/frontend/*`)
+  `apps/sales-api/rspack.config.js`. The frontend libs (`packages/frontend/*`)
   ship sources too: they are in the frontend's `transpilePackages` and in
   the `nx.sync.ignoredDependencies` of its `tsconfig.json` (`dafne g
   frontend-lib` adds them).
 - **The app lists every runtime dependency of its libs** too: rspack
   bundles the `@dafne/*` sources, but loads npm packages from
-  `apps/crm-api/node_modules` at runtime.
+  `apps/sales-api/node_modules` at runtime.
 - **Project boundaries**: every project has one scope tag (`nx.tags`):
   `scope:frontend`, `scope:backend`, `scope:shared` (contracts,
   auth-options) or `scope:tooling` (the CLIs). The frontend depends only on
@@ -81,7 +81,7 @@ keep it in line when these rules change. Each project has its own
   data is written only by its feature lib (e.g. `@dafne/backend-customers`),
   core migrations live in its own package, never in an app.
 - **Migrations belong to the database packages** (`"dafne": { "database":
-  "dafne_crm" }` in their package.json, `migrations/` next to it), not to
+  "dafne_sales" }` in their package.json, `migrations/` next to it), not to
   the apps. `@dafne/backend-migrator` applies those of every database in
   one order, by timestamp (`pnpm dafne db migrate`), with
   `MIGRATIONS_DATABASE_URL`. An app migrates on startup only with

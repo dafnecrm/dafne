@@ -2,7 +2,7 @@
 
 Nest lib of the customers resource: `CustomersModule`, with its
 controller (REST API) and `CustomersService` (Drizzle queries).
-Registered in `apps/crm-api` (`CrmApiModule`).
+Registered in `apps/sales-api` (`SalesApiModule`).
 
 ## API
 

@@ -17,7 +17,7 @@ import { askNewFields, cancelled, interactive } from './field-prompts.ts';
 const KINDS = {
   resource: { generator: 'backend-resource', hint: 'contract + table + lib with service and controller', placeholder: 'invoice' },
   lib: { generator: 'backend-lib', hint: 'an empty Nest lib in packages/backend', placeholder: 'reports' },
-  'frontend-lib': { generator: 'frontend-lib', hint: 'an empty lib in packages/frontend, used by apps/crm-web', placeholder: 'charts' },
+  'frontend-lib': { generator: 'frontend-lib', hint: 'an empty lib in packages/frontend, used by apps/sales-web', placeholder: 'charts' },
   app: { generator: 'backend-app', hint: 'a NestJS app in apps/', placeholder: 'worker' },
   contract: { generator: 'contract', hint: 'Zod schemas and response types in packages/contracts', placeholder: 'invoice' },
 } as const;

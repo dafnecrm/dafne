@@ -10,7 +10,7 @@ import { cancelled } from './field-prompts.ts';
  */
 
 /** What `dafne dev` starts without projects. */
-const DEV_DEFAULT = ['@dafne/auth', '@dafne/crm-api', '@dafne/crm-web'];
+const DEV_DEFAULT = ['@dafne/auth', '@dafne/sales-api', '@dafne/sales-web'];
 
 interface TaskOptions {
   pick?: boolean;
@@ -43,7 +43,7 @@ async function runTarget(target: string, projects: string[], options: TaskOption
 function taskCommand(name: string, description: string, fallback: string[] = []) {
   return new Command(name)
     .description(description)
-    .argument('[projects...]', `projects (e.g. @dafne/crm-api); none: ${fallback.length ? fallback.join(', ') : 'every project'}`)
+    .argument('[projects...]', `projects (e.g. @dafne/sales-api); none: ${fallback.length ? fallback.join(', ') : 'every project'}`)
     .option('--pick', 'choose the projects from those with the target')
     .option('--skip-nx-cache', 'run even what is cached')
     .action((projects: string[], options: TaskOptions) => runTarget(name, projects, options, fallback));

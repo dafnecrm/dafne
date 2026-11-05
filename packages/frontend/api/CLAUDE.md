@@ -1,6 +1,6 @@
 # @dafne/frontend-api
 
-Calls the Nest API (`apps/crm-api`) from the frontend's server. Ships
+Calls the Nest API (`apps/sales-api`) from the frontend's server. Ships
 TypeScript sources, compiled by Next. Relative imports end in `.ts`.
 
 - `.`: `BackendError` (status + message) and `errorMessage`; no Next imports,

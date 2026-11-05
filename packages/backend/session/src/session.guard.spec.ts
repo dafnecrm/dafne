@@ -13,7 +13,7 @@ const session = (apps: Record<string, string>, role: string | null = null): User
 function setup(found: UserSession | null, metadata: Record<string, unknown> = {}) {
   const reflector = { getAllAndOverride: (key: string) => metadata[key] } as unknown as Reflector;
   const sessions = { get: vi.fn(async () => found) } as unknown as SessionClient;
-  const guard = new SessionGuard(reflector, sessions, { app: 'crm' });
+  const guard = new SessionGuard(reflector, sessions, { app: 'sales' });
   const request: Record<string, unknown> = { headers: { cookie: 'dafne.session_token=x' } };
   const context = {
     getHandler: () => null,
@@ -25,7 +25,7 @@ function setup(found: UserSession | null, metadata: Record<string, unknown> = {}
 
 describe('SessionGuard', () => {
   it('lets in a user of the app and sets the session', async () => {
-    const s = session({ crm: 'user' });
+    const s = session({ sales: 'user' });
     const { guard, context, request } = setup(s);
     await expect(guard.canActivate(context)).resolves.toBe(true);
     expect(request.session).toBe(s);
@@ -40,9 +40,9 @@ describe('SessionGuard', () => {
   it('lets global admins in, and checks @Roles against the app role', async () => {
     const admin = setup(session({}, 'admin'), { [ROLES]: ['admin'] });
     await expect(admin.guard.canActivate(admin.context)).resolves.toBe(true);
-    const member = setup(session({ crm: 'user' }), { [ROLES]: ['admin'] });
+    const member = setup(session({ sales: 'user' }), { [ROLES]: ['admin'] });
     await expect(member.guard.canActivate(member.context)).rejects.toBeInstanceOf(ForbiddenException);
-    const appAdmin = setup(session({ crm: 'admin' }), { [ROLES]: ['admin'] });
+    const appAdmin = setup(session({ sales: 'admin' }), { [ROLES]: ['admin'] });
     await expect(appAdmin.guard.canActivate(appAdmin.context)).resolves.toBe(true);
   });
 
@@ -54,7 +54,7 @@ describe('SessionGuard', () => {
   });
 
   it("doesn't ask apps/auth without a cookie", async () => {
-    const { guard, context, request, sessions } = setup(session({ crm: 'user' }), { [ALLOW_ANONYMOUS]: true });
+    const { guard, context, request, sessions } = setup(session({ sales: 'user' }), { [ALLOW_ANONYMOUS]: true });
     request.headers = {};
     await guard.canActivate(context);
     expect(sessions.get).not.toHaveBeenCalled();

@@ -5,7 +5,7 @@ import { drizzle } from 'drizzle-orm/mysql2';
 import { relations } from './schema.js';
 
 /**
- * The MySQL database (dafne_crm), through @nestjs/drizzle: inject it with
+ * The MySQL database (dafne_sales), through @nestjs/drizzle: inject it with
  * `@InjectDrizzle() private readonly db: Database`. The module closes the
  * pool on shutdown.
  *

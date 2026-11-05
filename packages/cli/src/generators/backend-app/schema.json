@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/schema",
   "$id": "DafneBackendApp",
   "title": "Backend app",
-  "description": "A NestJS app in apps/<name>, set up like apps/crm-api but empty.",
+  "description": "A NestJS app in apps/<name>, set up like apps/sales-api but empty.",
   "type": "object",
   "properties": {
     "name": {
