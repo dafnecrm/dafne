@@ -7,5 +7,5 @@ imports end in `.ts`.
   `TableParams`…), plain data used by server pages and client tables.
 - `./table`: the `DataTable` component, `DataTableFilters`,
   `createDataTableColumnHelper`.
-- Each resource's config (`apps/crm-web/lib/<resource>-table.ts`) and
+- Each resource's config (`apps/sales-web/lib/<resource>-table.ts`) and
   columns stay in the app. Labels are the app's message keys.

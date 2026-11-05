@@ -32,7 +32,7 @@ export function dbCommand() {
     });
 
   db.command('move')
-    .description('One time: move every table of a database into another (e.g. dafne dafne_crm)')
+    .description('One time: move every table of a database into another (e.g. dafne dafne_sales)')
     .argument('<from>')
     .argument('<to>')
     .action(async (from: string, to: string) => {

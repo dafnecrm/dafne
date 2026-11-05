@@ -23,7 +23,7 @@ erasable syntax (no enums, namespaces or constructor parameter properties;
     migrates on startup with `MIGRATE_ON_START=true` (`@dafne/backend-migrator`).
   - `contract`: a contract and its spec.
   - `frontend-lib`: an empty lib in `packages/frontend/<name>`
-    (`templates/frontend-lib`), wired into `apps/crm-web` (dependency,
+    (`templates/frontend-lib`), wired into `apps/sales-web` (dependency,
     `transpilePackages`, `nx.sync.ignoredDependencies`, root reference).
   `src/generators/run.ts` (`runGenerator`) wraps them: change set, Prettier,
   warnings, and the next steps printed after Nx writes the files.
@@ -46,17 +46,17 @@ erasable syntax (no enums, namespaces or constructor parameter properties;
   `resource.ts` (`syncOne`) runs them all; `body.ts` reads a body schema.
 - `src/wiring/`: edits to existing files (`backend.ts`: app module,
   package.json, project references, schema.ts, contracts index;
-  `frontend.ts`: next.config.ts and tsconfig of `apps/crm-web`;
+  `frontend.ts`: next.config.ts and tsconfig of `apps/sales-web`;
   `messages.ts`: message catalogs; `ast.ts`: helpers).
 - `templates/backend` (copies of the `customers` resource), `templates/app`
-  (a minimal `apps/crm-api`), `templates/frontend-lib` (set up like
+  (a minimal `apps/sales-api`), `templates/frontend-lib` (set up like
   `packages/frontend/auth`). Dotfiles are stored without the dot.
 
 ## Rules
 
 Templates, names, wiring, relations, messages and formatting:
 
-- **Templates copy `customers`** (and `apps/crm-api` for the app). When those
+- **Templates copy `customers`** (and `apps/sales-api` for the app). When those
   patterns change, update the templates. They are rendered by
   `core/templates.ts` (EJS, escaping off), not by devkit's `generateFiles`,
   which escapes `<%= %>`.
@@ -67,7 +67,7 @@ Templates, names, wiring, relations, messages and formatting:
   located with ts-morph, keeping the file's quotes, indents and commas.
 - **Formatting:** `Changes.format()` runs Prettier on created files, and on
   edited files only if they were Prettier-clean before (not devkit's
-  `formatFiles`: it would reformat `crm-api.module.ts`). A `.prettierrc`
+  `formatFiles`: it would reformat `sales-api.module.ts`). A `.prettierrc`
   created in the same run is used for the files next to it.
 - **A lib wired into an app** adds to the app its package, its
   dependencies (rspack loads npm packages from the app's `node_modules`),
@@ -77,7 +77,7 @@ Templates, names, wiring, relations, messages and formatting:
 - **Scope tags:** generated packages get their `nx.tags` (`scope:backend`,
   `scope:frontend`), see `../../tools/boundaries.mjs`.
 - Fixed paths are in `core/workspace.ts` (`apps/<app>`, `packages/backend`,
-  `packages/frontend`, `packages/contracts`). The default app is `crm-api`.
+  `packages/frontend`, `packages/contracts`). The default app is `sales-api`.
 
 ## Testing
 

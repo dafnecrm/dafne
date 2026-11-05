@@ -14,7 +14,7 @@ import type { UserSession } from './session.types.js';
 export const SESSION_OPTIONS = Symbol('SESSION_OPTIONS');
 
 export interface SessionOptions {
-  /** This app's name in app_access (e.g. crm): its users get in. */
+  /** This app's name in app_access (e.g. sales): its users get in. */
   app: string;
 }
 

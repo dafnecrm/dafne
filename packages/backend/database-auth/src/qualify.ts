@@ -5,7 +5,7 @@
  *   kit/better-auth.ts.
  * - src/<same name>.ts: the same tables in `mysqlSchema('dafne_auth')`, so
  *   every query names the database (`dafne_auth`.`user`). Apps that
- *   connect to their own database (dafne_crm) still reach the users.
+ *   connect to their own database (dafne_sales) still reach the users.
  * `pnpm --filter @dafne/backend-database-auth tables:qualify` writes the
  * second from the first; qualify.spec.ts fails when they differ.
  */

@@ -7,8 +7,8 @@ Every project declares **exactly one scope tag** in its `package.json`
 
 | Scope            | Projects                                     | May depend on              |
 | ---------------- | -------------------------------------------- | -------------------------- |
-| `scope:frontend` | `apps/crm-web`, `packages/frontend/*`        | frontend, shared           |
-| `scope:backend`  | `apps/auth`, `apps/crm-api`, `packages/backend/*` | backend, shared        |
+| `scope:frontend` | `apps/sales-web`, `packages/frontend/*`        | frontend, shared           |
+| `scope:backend`  | `apps/auth`, `apps/sales-api`, `packages/backend/*` | backend, shared        |
 | `scope:shared`   | `@dafne/contracts`, `@dafne/auth-options`    | shared only                |
 | `scope:tooling`  | `@dafne/cli`                                 | tooling only               |
 

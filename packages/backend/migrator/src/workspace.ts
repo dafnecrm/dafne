@@ -7,7 +7,7 @@ export interface DatabasePackage {
   name: string;
   /** Absolute folder of the package. */
   dir: string;
-  /** The MySQL database, e.g. dafne_crm (fixed name, see CLAUDE.md). */
+  /** The MySQL database, e.g. dafne_sales (fixed name, see CLAUDE.md). */
   database: string;
   /** Absolute folder of its migrations (drizzle-kit `out`). */
   migrations: string;
@@ -31,7 +31,7 @@ export function findWorkspaceRoot(from = process.cwd()): string {
 }
 
 /**
- * The packages that own a database: `"dafne": { "database": "dafne_crm" }`
+ * The packages that own a database: `"dafne": { "database": "dafne_sales" }`
  * in their package.json, migrations in their `migrations/` folder.
  */
 export function databasePackages(root: string): DatabasePackage[] {

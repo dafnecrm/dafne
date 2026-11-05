@@ -18,7 +18,7 @@ The user's fields and plugins are inferred from the backend's options
 ## Usage
 
 ```ts
-// apps/crm-web/lib/session.ts: created once
+// apps/sales-web/lib/session.ts: created once
 export const { getCurrentUser, requireUser } = createSessionHelpers({
   backendUrl: AUTH_URL, // apps/auth
   appUrl: APP_URL,
@@ -43,5 +43,5 @@ pnpm nx test @dafne/frontend-auth
 pnpm nx typecheck @dafne/frontend-auth
 ```
 
-There is no build: `apps/crm-web` compiles the sources (`transpilePackages`
+There is no build: `apps/sales-web` compiles the sources (`transpilePackages`
 in its `next.config.ts`).

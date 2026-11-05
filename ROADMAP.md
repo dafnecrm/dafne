@@ -7,7 +7,7 @@
 Today `dafne g app` and `dafne g lib` only ask for a name, and nothing moves
 a table from an app's database to `dafne_core` (which doesn't exist yet).
 When a second app needs a table of another app (e.g. `reporting` reading
-`customer` from `dafne_crm`), the CLI should handle it, both when the app is
+`customer` from `dafne_sales`), the CLI should handle it, both when the app is
 created and later, when a feature is added to it. One mechanism for both:
 
 1. **`dafne_core` package**: a database package like the apps' ones

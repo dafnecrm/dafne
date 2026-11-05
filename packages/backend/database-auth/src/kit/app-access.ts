@@ -2,7 +2,7 @@ import { index, mysqlTable, timestamp, unique, varchar } from 'drizzle-orm/mysql
 import { user } from './better-auth.ts';
 
 /**
- * Which apps a user can use, and with which role in each (e.g. crm: admin).
+ * Which apps a user can use, and with which role in each (e.g. sales: admin).
  * The session carries them (customSession, @dafne/backend-auth); each app's
  * guard (@dafne/backend-session) lets in only the users with its app.
  */
@@ -13,7 +13,7 @@ export const appAccess = mysqlTable(
     userId: varchar('user_id', { length: 36 })
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
-    /** The app's name, as its APP_NAME (e.g. crm). */
+    /** The app's name, as its APP_NAME (e.g. sales). */
     app: varchar('app', { length: 64 }).notNull(),
     role: varchar('role', { length: 64 }).notNull().default('user'),
     createdAt: timestamp('created_at', { fsp: 3 }).defaultNow().notNull(),

@@ -28,8 +28,8 @@ copy:
 | File                                 | Main variables                                                                                                                                                                     |
 | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `apps/auth/.env`                     | `PORT` (3001), `DATABASE_URL` (on `dafne_auth`), `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `TRUSTED_ORIGINS`, `COOKIE_DOMAIN`, `DEFAULT_APPS`, `ADMIN_EMAIL` / `ADMIN_PASSWORD`, `RESEND_API_KEY` |
-| `apps/crm-api/.env`                  | `PORT` (3000), `DATABASE_URL` (on `dafne_crm`), `AUTH_URL`, `REDIS_URL`                                                                                                             |
-| `apps/crm-web/.env`                  | `BACKEND_URL`, `AUTH_URL`, `APP_URL` (4000)                                                                                                                                        |
+| `apps/sales-api/.env`                  | `PORT` (3000), `DATABASE_URL` (on `dafne_sales`), `AUTH_URL`, `REDIS_URL`                                                                                                             |
+| `apps/sales-web/.env`                  | `BACKEND_URL`, `AUTH_URL`, `APP_URL` (4000)                                                                                                                                        |
 | `packages/backend/migrator/.env`     | `MIGRATIONS_DATABASE_URL`: the MySQL server, with a user that can create and alter the `dafne_*` databases (no database in the URL)                                               |
 
 The apps connect with their own, limited MySQL users (`DATABASE_URL`). Only
@@ -43,13 +43,13 @@ leave them off in development, where `dafne dev` migrates first.
 
 ```sh
 pnpm dafne db migrate     # creates the missing databases and applies every migration
-pnpm dafne dev            # starts @dafne/auth, @dafne/crm-api, @dafne/crm-web
+pnpm dafne dev            # starts @dafne/auth, @dafne/sales-api, @dafne/sales-web
 ```
 
 | App              | URL                     |
 | ---------------- | ----------------------- |
-| `@dafne/crm-web` | <http://localhost:4000> |
-| `@dafne/crm-api` | <http://localhost:3000> |
+| `@dafne/sales-web` | <http://localhost:4000> |
+| `@dafne/sales-api` | <http://localhost:3000> |
 | `@dafne/auth`    | <http://localhost:3001> |
 
 On startup `apps/auth` creates the admin user from `ADMIN_EMAIL` /
@@ -63,7 +63,7 @@ them with a warning when `MIGRATIONS_DATABASE_URL` isn't set.
 ```sh
 pnpm build | test | lint | typecheck    # every project
 pnpm affected                           # only what changed (as CI does)
-pnpm nx test @dafne/crm-api             # one target of one project
+pnpm nx test @dafne/sales-api             # one target of one project
 pnpm dafne test @dafne/backend-customers
 pnpm graph                              # the Nx project graph in the browser
 ```

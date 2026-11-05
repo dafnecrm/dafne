@@ -1,7 +1,7 @@
 {
   "name": "@dafne/backend-migrator",
   "version": "0.0.1",
-  "description": "Applies the migrations of every Dafne database (dafne_auth, dafne_crm, …) in one order, by timestamp; generates them with drizzle-kit",
+  "description": "Applies the migrations of every Dafne database (dafne_auth, dafne_sales, …) in one order, by timestamp; generates them with drizzle-kit",
   "private": true,
   "type": "module",
   "exports": {

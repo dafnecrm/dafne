@@ -18,4 +18,4 @@ import { CustomersModule } from '@dafne/backend-customers';
   controllers: [ApiController],
   providers: [ApiService],
 })
-export class CrmApiModule { }
+export class SalesApiModule { }

@@ -29,7 +29,7 @@ const FILES: Record<string, (app: string) => string> = {
 };
 
 /**
- * A NestJS app in apps/<name>, built like apps/crm-api (nest + rspack, vitest
+ * A NestJS app in apps/<name>, built like apps/sales-api (nest + rspack, vitest
  * with SWC, oxlint) but empty: a root module with a health controller.
  * Backend libs are added with `dafne g lib|resource ... --app <name>`.
  */

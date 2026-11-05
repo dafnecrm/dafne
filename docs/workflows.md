@@ -7,7 +7,7 @@ root.
 
 ## Add a backend resource
 
-E.g. invoices, in the CRM's API.
+E.g. invoices, in the sales API.
 
 ```sh
 pnpm dafne g resource invoice \
@@ -29,7 +29,7 @@ controller to the real use cases. Try it first with `--dry-run`.
 A lib with no table (e.g. a reporting service):
 
 ```sh
-pnpm dafne g lib reports              # wired into apps/crm-api
+pnpm dafne g lib reports              # wired into apps/sales-api
 pnpm dafne g lib reports --app worker # or into another app
 pnpm install && pnpm nx sync
 ```
@@ -72,10 +72,10 @@ the frontend owners.
 ```sh
 pnpm dafne g frontend-lib charts
 pnpm install && pnpm nx sync
-pnpm dafne typecheck @dafne/frontend-charts @dafne/crm-web
+pnpm dafne typecheck @dafne/frontend-charts @dafne/sales-web
 ```
 
-Import it from `apps/crm-web` as `@dafne/frontend-charts`. Remember the
+Import it from `apps/sales-web` as `@dafne/frontend-charts`. Remember the
 boundaries: a frontend lib may import only frontend and shared packages.
 
 ## Add a shadcn component

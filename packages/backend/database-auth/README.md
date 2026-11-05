@@ -33,9 +33,9 @@ pnpm dafne db generate @dafne/backend-database-auth   # from src/kit
 pnpm dafne db migrate
 ```
 
-The first one moves Better Auth's tables from `dafne_crm` (where the CRM
+The first one moves Better Auth's tables from `dafne_sales` (where the CRM
 created them) with `RENAME TABLE`, creates `app_access` and gives the
-existing users the `crm` app.
+existing users the `crm` app; a later one renames it `sales`.
 
 ## Tasks
 

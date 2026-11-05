@@ -1,12 +1,12 @@
--- Better Auth's tables move from dafne_crm, where the CRM created them, to
+-- Better Auth's tables move from dafne_sales, where the CRM created them, to
 -- dafne_auth. RENAME TABLE keeps rows, indexes and foreign keys, and MySQL
 -- points the CRM's keys to `user` (created_by_id…) at dafne_auth.user.
 -- The snapshot describes them as created here (drizzle-kit generated it).
 RENAME TABLE
-  `dafne_crm`.`user` TO `dafne_auth`.`user`,
-  `dafne_crm`.`session` TO `dafne_auth`.`session`,
-  `dafne_crm`.`account` TO `dafne_auth`.`account`,
-  `dafne_crm`.`verification` TO `dafne_auth`.`verification`;
+  `dafne_sales`.`user` TO `dafne_auth`.`user`,
+  `dafne_sales`.`session` TO `dafne_auth`.`session`,
+  `dafne_sales`.`account` TO `dafne_auth`.`account`,
+  `dafne_sales`.`verification` TO `dafne_auth`.`verification`;
 --> statement-breakpoint
 CREATE TABLE `app_access` (
 	`id` varchar(36) PRIMARY KEY,

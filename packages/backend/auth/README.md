@@ -34,7 +34,7 @@ Read from `apps/auth/.env` (see `.env.example`):
 | `RESEND_API_KEY`                | required, for the verification emails        |
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD` | the admin created on startup                 |
 | `COOKIE_DOMAIN`                 | parent domain of the apps (shared sign-in)   |
-| `DEFAULT_APPS`                  | apps a new user gets, e.g. `crm`             |
+| `DEFAULT_APPS`                  | apps a new user gets, e.g. `sales`             |
 
 ## Auth tables
 

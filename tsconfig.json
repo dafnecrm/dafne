@@ -36,7 +36,7 @@
       "path": "./packages/contracts"
     },
     {
-      "path": "./apps/crm-api"
+      "path": "./apps/sales-api"
     },
     {
       "path": "./packages/frontend/auth"

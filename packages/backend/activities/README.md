@@ -2,7 +2,7 @@
 
 Nest lib of the activities resource: `ActivitiesModule`, with its
 controller (REST API) and `ActivitiesService` (Drizzle queries).
-Registered in `apps/crm-api` (`CrmApiModule`).
+Registered in `apps/sales-api` (`SalesApiModule`).
 
 ## API
 

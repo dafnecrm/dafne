@@ -7,8 +7,8 @@ frontend (Next.js), an API (NestJS) and its own database. One service,
 `apps/auth`, handles sign-in for all of them.
 
 ```
-browser ──► crm-web ──/api/auth/*──► apps/auth ──► dafne_auth
-                    └─ data ───────► crm-api ──► dafne_crm (FK → dafne_auth.user)
+browser ──► sales-web ──/api/auth/*──► apps/auth ──► dafne_auth
+                    └─ data ───────► sales-api ──► dafne_sales (FK → dafne_auth.user)
                                        └─ session? ─► apps/auth
 ```
 
@@ -23,7 +23,7 @@ browser ──► crm-web ──/api/auth/*──► apps/auth ──► dafne_a
 - The frontends **proxy `/api/auth/*`** to it (`next.config.ts`), so the
   session cookie (`dafne.session_token`) belongs to the frontend's origin.
   With `COOKIE_DOMAIN` (e.g. `cliente.it`) it belongs to the parent domain,
-  and every app under it (`crm.cliente.it`, `reporting.cliente.it`) shares
+  and every app under it (`sales.cliente.it`, `reporting.cliente.it`) shares
   the sign-in.
 - On startup it creates the admin from `ADMIN_EMAIL` / `ADMIN_PASSWORD`.
 - Verification emails are sent with Resend, in the user's language.
@@ -31,9 +31,9 @@ browser ──► crm-web ──/api/auth/*──► apps/auth ──► dafne_a
 ## App access
 
 `app_access` says which user can use which app, and with which role:
-the session carries it as `user.apps` (e.g. `{ crm: "admin" }`).
+the session carries it as `user.apps` (e.g. `{ sales: "admin" }`).
 
-- A new user gets the apps in `DEFAULT_APPS` (e.g. `crm`).
+- A new user gets the apps in `DEFAULT_APPS` (e.g. `sales`).
 - Global admins (`role: admin`) can use every app.
 
 ## Sessions in the apps' APIs: `@dafne/backend-session`
@@ -42,7 +42,7 @@ An app's API checks sessions without Better Auth:
 
 ```ts
 // the app's root module
-SessionModule.forRoot({ app: 'crm' }),
+SessionModule.forRoot({ app: 'sales' }),
 ```
 
 This registers a global `SessionGuard`. For each request it:

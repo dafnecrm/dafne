@@ -18,22 +18,22 @@ const m = (database: string, name: string): Migration => ({
 describe('pendingMigrations', () => {
   it('interleaves the databases by timestamp', () => {
     const all = [
-      m('dafne_crm', '20260101000000_init'),
+      m('dafne_sales', '20260101000000_init'),
       m('dafne_auth', '20260201000000_move-users'),
-      m('dafne_crm', '20260301000000_notes'),
+      m('dafne_sales', '20260301000000_notes'),
       m('dafne_auth', '20260102000000_init'),
     ];
     expect(pendingMigrations(all, new Map()).map((x) => `${x.database}/${x.name}`)).toEqual([
-      'dafne_crm/20260101000000_init',
+      'dafne_sales/20260101000000_init',
       'dafne_auth/20260102000000_init',
       'dafne_auth/20260201000000_move-users',
-      'dafne_crm/20260301000000_notes',
+      'dafne_sales/20260301000000_notes',
     ]);
   });
 
   it('leaves out what each database already applied, by name', () => {
-    const all = [m('dafne_crm', '20260101000000_init'), m('dafne_auth', '20260101000000_init')];
-    const applied = new Map([['dafne_crm', new Set(['20260101000000_init'])]]);
+    const all = [m('dafne_sales', '20260101000000_init'), m('dafne_auth', '20260101000000_init')];
+    const applied = new Map([['dafne_sales', new Set(['20260101000000_init'])]]);
     expect(pendingMigrations(all, applied)).toEqual([all[1]]);
   });
 });

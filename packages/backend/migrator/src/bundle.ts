@@ -7,7 +7,7 @@ import { databasePackages, findWorkspaceRoot, type DatabasePackage } from './wor
  * starts (see start.ts): `dist/migrations/<database>/<folder>/migration.sql`.
  * Every database's, not just the app's own: they run in one order across
  * databases (e.g. dafne_auth's first migration moves tables out of
- * dafne_crm), so any app can bring a fresh server up to date.
+ * dafne_sales), so any app can bring a fresh server up to date.
  */
 
 /** Folder of the migrations in an app's build, next to main.js. */

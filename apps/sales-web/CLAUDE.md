@@ -28,7 +28,7 @@ references (Next compiles the packages' sources).
 - **Sign-in and users are `apps/auth`'s** (shared by every Dafne app):
   `next.config.ts` proxies `/api/auth/*` to `AUTH_URL`, `lib/session.ts`
   reads sessions there, and the users pages call it with `authFetch`. The
-  CRM's data comes from `apps/crm-api` (`backendFetch`, `BACKEND_URL`).
+  CRM's data comes from `apps/sales-api` (`backendFetch`, `BACKEND_URL`).
 - `app/globals.css` scans the libs for Tailwind classes
   (`@source "../../../packages/frontend"`).
 - They hold no texts: they translate the app's message keys with

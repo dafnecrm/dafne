@@ -1,11 +1,11 @@
 # @dafne/backend-session
 
-Sign-in for the apps' APIs (e.g. `apps/crm-api`), without Better Auth in
+Sign-in for the apps' APIs (e.g. `apps/sales-api`), without Better Auth in
 them. The session is `apps/auth`'s.
 
 ## How it works
 
-`SessionModule.forRoot({ app: 'crm' })` registers a global guard,
+`SessionModule.forRoot({ app: 'sales' })` registers a global guard,
 `SessionGuard`. For each request it:
 
 1. reads the cookie and asks `AUTH_URL/api/auth/get-session` (cached for
@@ -20,7 +20,7 @@ An unreachable or failing `apps/auth` is a 503, not "signed out".
 
 ```ts
 // the app's root module
-SessionModule.forRoot({ app: 'crm' }),
+SessionModule.forRoot({ app: 'sales' }),
 
 // a controller
 import { Session, type UserSession, AllowAnonymous, Roles } from '@dafne/backend-session';

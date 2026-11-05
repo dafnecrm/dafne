@@ -8,7 +8,7 @@ import { SESSION_OPTIONS, SessionGuard, type SessionOptions } from './session.gu
  * asks apps/auth (AUTH_URL, default http://localhost:3001) for the session
  * of the request's cookie, and lets in the users of this app.
  *
- *   SessionModule.forRoot({ app: 'crm' })
+ *   SessionModule.forRoot({ app: 'sales' })
  */
 @Module({})
 export class SessionModule {

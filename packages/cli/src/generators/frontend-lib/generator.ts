@@ -14,7 +14,7 @@ const FILES = ['package.json', 'tsconfig.json', 'vitest.config.ts', 'eslint.conf
 
 /**
  * An empty frontend lib, `@dafne/frontend-<name>` in packages/frontend/<name>
- * (TypeScript sources, compiled by Next), registered in apps/crm-web. The
+ * (TypeScript sources, compiled by Next), registered in apps/sales-web. The
  * name is used as it is (not pluralized).
  */
 export default async function frontendLibGenerator(tree: Tree, options: FrontendLibSchema) {
@@ -29,7 +29,7 @@ export default async function frontendLibGenerator(tree: Tree, options: Frontend
       next: [
         'pnpm install   # links the new package',
         'pnpm nx sync   # TypeScript project references',
-        `pnpm dafne typecheck ${frontendPackage(l.kebab)} @dafne/crm-web`,
+        `pnpm dafne typecheck ${frontendPackage(l.kebab)} @dafne/sales-web`,
       ],
     };
   });

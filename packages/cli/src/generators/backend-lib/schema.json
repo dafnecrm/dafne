@@ -14,7 +14,7 @@
     "app": {
       "type": "string",
       "description": "Backend app the lib is registered in (apps/<app>).",
-      "default": "crm-api"
+      "default": "sales-api"
     },
     "force": { "type": "boolean", "description": "Overwrite files that already exist.", "default": false }
   },

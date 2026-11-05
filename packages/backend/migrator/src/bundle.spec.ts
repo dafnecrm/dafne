@@ -9,7 +9,7 @@ describe('migrationCopyPatterns', () => {
     const root = mkdtempSync(join(tmpdir(), 'dafne-bundle-'));
     writeFileSync(join(root, 'pnpm-workspace.yaml'), '');
     for (const [folder, database] of [
-      ['database', 'dafne_crm'],
+      ['database', 'dafne_sales'],
       ['database-auth', 'dafne_auth'],
     ]) {
       mkdirSync(join(root, 'packages/backend', folder, 'migrations'), { recursive: true });
@@ -21,7 +21,7 @@ describe('migrationCopyPatterns', () => {
     mkdirSync(join(root, 'packages/backend/customers'));
     writeFileSync(join(root, 'packages/backend/customers/package.json'), '{"name":"@dafne/backend-customers"}');
 
-    expect(migrationCopyPatterns(join(root, 'apps/crm-api'))).toEqual([
+    expect(migrationCopyPatterns(join(root, 'apps/sales-api'))).toEqual([
       {
         from: '*/migration.sql',
         context: join(root, 'packages/backend/database-auth/migrations'),
@@ -30,7 +30,7 @@ describe('migrationCopyPatterns', () => {
       {
         from: '*/migration.sql',
         context: join(root, 'packages/backend/database/migrations'),
-        to: 'migrations/dafne_crm',
+        to: 'migrations/dafne_sales',
       },
     ]);
   });
@@ -39,11 +39,11 @@ describe('migrationCopyPatterns', () => {
 describe('bundledPackages', () => {
   it('reads one database per subfolder', () => {
     const dir = mkdtempSync(join(tmpdir(), 'dafne-bundle-'));
-    mkdirSync(join(dir, 'dafne_crm'));
+    mkdirSync(join(dir, 'dafne_sales'));
     mkdirSync(join(dir, 'dafne_auth'));
     expect(bundledPackages(dir).map((p) => [p.database, p.migrations])).toEqual([
       ['dafne_auth', join(dir, 'dafne_auth')],
-      ['dafne_crm', join(dir, 'dafne_crm')],
+      ['dafne_sales', join(dir, 'dafne_sales')],
     ]);
   });
 });

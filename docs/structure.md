@@ -6,8 +6,8 @@
 dafne/
 ├── apps/                 what runs or is deployed
 │   ├── auth/             sign-in, users, app access (shared by every app)
-│   ├── crm-api/          the CRM's NestJS API
-│   └── crm-web/          the CRM's Next.js frontend
+│   ├── sales-api/        the sales app's NestJS API
+│   └── sales-web/        the sales app's Next.js frontend
 ├── packages/             what is shared or published
 │   ├── backend/*         Nest libs of the backend (@dafne/backend-*)
 │   ├── frontend/*        libs of the frontend (@dafne/frontend-*)
@@ -35,14 +35,14 @@ Each project has one scope tag (see [Project boundaries](boundaries.md)).
 | Package          | Folder          | Scope   | Role                                                                                   |
 | ---------------- | --------------- | ------- | -------------------------------------------------------------------------------------- |
 | `@dafne/auth`    | `apps/auth`     | backend | Sign-in (Better Auth), users, app access, on `dafne_auth`. Shared by every app.         |
-| `@dafne/crm-api` | `apps/crm-api`  | backend | The CRM's NestJS API: composes the backend libs, on `dafne_crm`.                        |
-| `@dafne/crm-web` | `apps/crm-web`  | frontend| The CRM's Next.js app: talks to the APIs over HTTP.                                    |
+| `@dafne/sales-api` | `apps/sales-api` | backend  | The sales app's NestJS API: composes the backend libs, on `dafne_sales`.                |
+| `@dafne/sales-web` | `apps/sales-web` | frontend | The sales app's Next.js frontend: talks to the APIs over HTTP.                         |
 
 ### Backend libs (`packages/backend/*`)
 
 | Package                        | Role                                                                                                |
 | ------------------------------ | --------------------------------------------------------------------------------------------------- |
-| `@dafne/backend-database`      | `dafne_crm`: Drizzle tables, `DatabaseModule`, migrations                                           |
+| `@dafne/backend-database`      | `dafne_sales`: Drizzle tables, `DatabaseModule`, migrations                                           |
 | `@dafne/backend-database-auth` | `dafne_auth`: Better Auth tables and `app_access`, migrations                                       |
 | `@dafne/backend-migrator`      | Applies the migrations of every database in one order; generates them                              |
 | `@dafne/backend-auth`          | Better Auth in Nest (`AuthModule`), used only by `apps/auth`                                        |
@@ -51,7 +51,7 @@ Each project has one scope tag (see [Project boundaries](boundaries.md)).
 | `@dafne/backend-common`        | `ZodValidationPipe`, translated errors (`I18nExceptionFilter`), i18n helpers                        |
 | `@dafne/backend-notifications` | Notifications and emails (Resend)                                                                   |
 | `@dafne/backend-geo`           | Place search and countries                                                                          |
-| `@dafne/backend-customers`, `-products`, `-activities` | Feature libs of the CRM (module, controller, service)                       |
+| `@dafne/backend-customers`, `-products`, `-activities` | Feature libs of the sales app (module, controller, service)                       |
 
 ### Frontend libs (`packages/frontend/*`)
 
