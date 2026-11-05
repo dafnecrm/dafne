@@ -8,7 +8,7 @@ import {
   PageContentDescription,
   PageContentHeader,
   PageContentTitle,
-} from "@/components/page-content";
+} from "@dafne/frontend-ui/components/page-content";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { ProductForm } from "../../product-form";
 import { loadProduct } from "../load-product";

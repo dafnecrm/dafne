@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import CopyButton from "@/components/copy-button";
-import { Detail, DetailSection } from "@/components/detail";
+import { Detail, DetailSection } from "@dafne/frontend-ui/components/detail";
 import { LocalDate } from "@dafne/frontend-ui/components/local-date";
 import type { OrderDetail } from "@/lib/orders";
 import { TextEditorContent } from "@dafne/frontend-ui/components/text-editor";

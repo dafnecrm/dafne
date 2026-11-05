@@ -7,7 +7,7 @@ import {
   PageContentDescription,
   PageContentHeader,
   PageContentTitle,
-} from "@/components/page-content";
+} from "@dafne/frontend-ui/components/page-content";
 import { OrderForm } from "../order-form";
 
 export async function generateMetadata(): Promise<Metadata> {

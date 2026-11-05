@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { CalendarPlusIcon, MailIcon, ShieldIcon, UserIcon } from "lucide-react";
-import { Detail, DetailSection } from "@/components/detail";
+import { Detail, DetailSection } from "@dafne/frontend-ui/components/detail";
 import { LocalDate } from "@dafne/frontend-ui/components/local-date";
 import { Badge } from "@dafne/frontend-ui/components/badge";
 import type { User } from "@/lib/session";

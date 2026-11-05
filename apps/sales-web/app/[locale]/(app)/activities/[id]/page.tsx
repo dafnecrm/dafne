@@ -9,7 +9,7 @@ import {
   PageContentBody,
   PageContentHeader,
   PageContentTitle,
-} from "@/components/page-content";
+} from "@dafne/frontend-ui/components/page-content";
 import { BreadcrumbLabel } from "@/components/page-breadcrumb";
 import { Button } from "@dafne/frontend-ui/components/button";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
