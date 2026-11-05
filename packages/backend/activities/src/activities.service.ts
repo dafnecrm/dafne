@@ -2,7 +2,7 @@ import { schema, type Database } from '@dafne/backend-database';
 import { InjectDrizzle } from '@nestjs/drizzle';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { and, asc, desc, eq, isNull, like, ne, type SQL } from 'drizzle-orm';
+import { and, asc, desc, eq, isNull, ilike, ne, type SQL } from 'drizzle-orm';
 import {
   ACTIVITY_FILTER_FIELDS,
   type ActivityBody,
@@ -46,7 +46,7 @@ export class ActivitiesService {
     const { db } = this;
     const filters = ACTIVITY_FILTER_FIELDS.flatMap((field) => {
       const value = query[field]?.trim();
-      return value ? [like(activity[field], `%${escapeLike(value)}%`)] : [];
+      return value ? [ilike(activity[field], `%${escapeLike(value)}%`)] : [];
     });
     const where = and(notDeleted, ...filters) as SQL;
     const direction = sortDirection === 'asc' ? asc : desc;
@@ -98,8 +98,7 @@ export class ActivitiesService {
     userId: string,
   ): Promise<ActivityDetail> {
     const id = randomUUID();
-    // Set here, not by the column default: MySQL's now() and the driver can
-    // disagree on the time zone, while dates written from JS round-trip.
+    // One instant for both: createdAt and updatedAt start equal.
     const now = new Date();
     await this.db.insert(activity).values({
       id,
@@ -124,7 +123,7 @@ export class ActivitiesService {
     body: ActivityBody,
     userId: string,
   ): Promise<ActivityDetail> {
-    const [result] = await this.db
+    const result = await this.db
       .update(activity)
       .set({
         name: body.name,
@@ -132,11 +131,11 @@ export class ActivitiesService {
         dueDate: body.dueDate,
         notes: body.notes,
         updatedById: userId,
-        // Set explicitly so the row always changes and is counted below.
+        // The time of this change.
         updatedAt: new Date(),
       })
       .where(and(eq(activity.id, id), notDeleted, notClosed));
-    if (result.affectedRows === 0)
+    if (result.rowCount === 0)
       throw new NotFoundException(msg('activities.notFound'));
     return this.getActivity(id);
   }
@@ -147,22 +146,22 @@ export class ActivitiesService {
    */
   async deleteActivity(id: string, userId: string) {
     const now = new Date();
-    const [result] = await this.db
+    const result = await this.db
       .update(activity)
       .set({ deletedAt: now, updatedAt: now, updatedById: userId })
       .where(and(eq(activity.id, id), notDeleted));
-    if (result.affectedRows === 0)
+    if (result.rowCount === 0)
       throw new NotFoundException(msg('activities.notFound'));
   }
 
   /** Completes an activity */
   async closeActivity(id: string, userId: string) {
     const now = new Date();
-    const [result] = await this.db
+    const result = await this.db
       .update(activity)
       .set({ status: 'closed', completedAt: now, completedById: userId })
       .where(and(eq(activity.id, id), notDeleted, notClosed));
-    if (result.affectedRows === 0)
+    if (result.rowCount === 0)
       throw new NotFoundException(msg('activities.notOpen'));
   }
 
@@ -171,13 +170,13 @@ export class ActivitiesService {
    * 404 if the activity doesn't exist, is deleted or isn't closed.
    */
   async reopenActivity(id: string) {
-    const [result] = await this.db
+    const result = await this.db
       .update(activity)
       .set({ status: 'open', completedAt: null, completedById: null })
       .where(
         and(eq(activity.id, id), notDeleted, eq(activity.status, 'closed')),
       );
-    if (result.affectedRows === 0)
+    if (result.rowCount === 0)
       throw new NotFoundException(msg('activities.notClosed'));
   }
 }

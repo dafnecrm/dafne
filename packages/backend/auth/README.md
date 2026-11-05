@@ -2,7 +2,7 @@
 
 Authentication with [Better Auth](https://www.better-auth.com), mounted in
 Nest by `@thallesp/nestjs-better-auth` under `/api/auth/*`. It runs in
-**`apps/auth`** only, on `dafne_auth` (`@dafne/backend-database-auth`):
+**`apps/auth`** only, on the `auth` schema (`@dafne/backend-database-auth`):
 the apps' APIs check sessions through `@dafne/backend-session`. The
 frontends call it through their own origin (they proxy `/api/auth`), so
 the session cookies (`dafne.session_token`) belong to them, or to the
@@ -10,7 +10,7 @@ parent domain with `COOKIE_DOMAIN`.
 
 ## Contents
 
-- `AuthModule`: Better Auth on dafne_auth, with the admin plugin, email
+- `AuthModule`: Better Auth on the auth schema, with the admin plugin, email
   verification (sent with Resend, in the user's language), the apps of
   the user in the session (`customSession`: `user.apps`, from
   `app_access`) and the default apps for new users (`DEFAULT_APPS`).
@@ -39,8 +39,8 @@ Read from `apps/auth/.env` (see `.env.example`):
 ## Auth tables
 
 `pnpm --filter @dafne/backend-auth auth:schema:generate` regenerates
-Better Auth's tables in `@dafne/backend-database-auth` (`src/kit/better-auth.ts`,
-then `tables:qualify`). Then `pnpm dafne db generate @dafne/backend-database-auth`.
+Better Auth's tables in `@dafne/backend-database-auth` (`src/better-auth.ts`,
+then `tables:schema` moves them into the auth schema). Then `pnpm dafne db generate @dafne/backend-database-auth`.
 
 ## Tasks
 

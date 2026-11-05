@@ -1,7 +1,7 @@
-import { mysqlSchema } from 'drizzle-orm/mysql-core';
+import { pgSchema } from 'drizzle-orm/pg-core';
 
-/** The users' database: fixed name, the same on every server (CLAUDE.md). */
-export const AUTH_DATABASE = 'dafne_auth';
+/** The users' schema: fixed name, the same in every environment (CLAUDE.md). */
+export const AUTH_SCHEMA = 'auth';
 
-/** Tables in it are always named with the database (`dafne_auth`.`user`). */
-export const authDb = mysqlSchema(AUTH_DATABASE);
+/** Its tables are always named with the schema ("auth"."user"). */
+export const authDb = pgSchema(AUTH_SCHEMA);

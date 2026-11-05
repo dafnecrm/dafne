@@ -2,11 +2,11 @@
 
 The sign-in of every Dafne app: [Better Auth](https://www.better-auth.com)
 (`/api/auth/*`), the users (`/users`) and the apps each user can use
-(`app_access`), on the **`dafne_auth`** database.
+(`app_access`), on the **`auth`** schema of the Postgres database.
 
 ```
-browser ──► sales-web ──/api/auth/*──► apps/auth ──► dafne_auth
-                    └─ data ───────► sales-api ──► dafne_sales (FK → dafne_auth.user)
+browser ──► sales-web ──/api/auth/*──► apps/auth ──► auth schema
+                    └─ data ───────► sales-api ──► sales schema (FK → auth.user)
                                        └─ session? ─► apps/auth
 ```
 
@@ -24,7 +24,7 @@ browser ──► sales-web ──/api/auth/*──► apps/auth ──► dafne
 
 ```sh
 cp .env.example .env          # then fill it in
-pnpm dafne db migrate         # creates/migrates dafne_auth (and the others)
+pnpm dafne db migrate         # creates/migrates the auth schema (and the others)
 pnpm nx dev @dafne/auth       # http://localhost:3001; `pnpm dafne dev` starts it with the CRM
 ```
 
@@ -34,7 +34,7 @@ On startup it creates the admin from `ADMIN_EMAIL` / `ADMIN_PASSWORD`.
 ## Built from
 
 `@dafne/backend-auth` (Better Auth), `@dafne/backend-users` (users API),
-`@dafne/backend-database-auth` (dafne_auth), `@dafne/backend-common`
+`@dafne/backend-database-auth` (the auth schema), `@dafne/backend-common`
 (translated errors).
 
 ## Tasks

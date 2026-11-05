@@ -70,34 +70,32 @@ export interface TableInfo {
   warnings: string[];
 }
 
+/** drizzle-orm/pg-core builders. An enum is `text(name, { enum: [...] })`. */
 const KINDS: Record<string, ColumnKind> = {
   varchar: 'string',
   char: 'string',
-  binary: 'string',
-  varbinary: 'string',
+  uuid: 'string',
   time: 'string',
   text: 'text',
-  tinytext: 'text',
-  mediumtext: 'text',
-  longtext: 'text',
-  int: 'int',
-  tinyint: 'int',
+  integer: 'int',
   smallint: 'int',
-  mediumint: 'int',
   serial: 'int',
-  year: 'int',
+  smallserial: 'int',
+  bigserial: 'int',
   bigint: 'int',
-  float: 'float',
-  double: 'float',
   real: 'float',
+  doublePrecision: 'float',
   decimal: 'decimal',
+  numeric: 'decimal',
   boolean: 'boolean',
   timestamp: 'datetime',
-  datetime: 'datetime',
   date: 'date',
   json: 'json',
-  mysqlEnum: 'enum',
+  jsonb: 'json',
 };
+
+/** A table declaration's callee: `pgTable` or `<schema>.table`. */
+export const isTableCall = (callee: string) => /(?:Table|\.table)$/.test(callee);
 
 const SERVER_MANAGED = new Set([
   'defaultNow',
@@ -108,14 +106,14 @@ const SERVER_MANAGED = new Set([
   'autoincrement',
 ]);
 
-/** Reads the columns of the resource's table (`<singular> = mysqlTable(...)`). */
+/** Reads the columns of the resource's table (`<singular> = salesSchema.table(...)`). */
 export function readTable(path: string, source: string, { s }: ResourceNames): TableInfo {
   let info: TableInfo | undefined;
   editSource(path, source, (file) => {
     const declaration = file.getVariableDeclaration(s.camel);
     const call = declaration?.getInitializerIfKind(SyntaxKind.CallExpression);
-    if (!call || !/Table$/.test(call.getExpression().getText()))
-      throw new Error(`No "export const ${s.camel} = mysqlTable(...)" found in ${path}.`);
+    if (!call || !isTableCall(call.getExpression().getText()))
+      throw new Error(`No "export const ${s.camel} = salesSchema.table(...)" found in ${path}.`);
     const columnsArg = call.getArguments()[1];
     if (!columnsArg || !Node.isObjectLiteralExpression(columnsArg))
       throw new Error(`The columns of ${s.camel} in ${path} aren't an object literal.`);
@@ -204,7 +202,7 @@ function readConfig(column: Column, config: ObjectLiteralExpression, warnings: s
     else if (name === 'enum' && value && Node.isArrayLiteralExpression(value)) {
       column.kind = 'enum';
       column.enumValues = value.getElements().filter(Node.isStringLiteral).map((e) => e.getLiteralValue());
-    } else if (!['fsp', 'unsigned', 'precision', 'scale', 'onUpdate'].includes(name))
+    } else if (!['precision', 'scale', 'withTimezone'].includes(name))
       warnings.push(`${path}: "${column.key}" has an unknown option "${name}"${name === 'lenght' ? ' (did you mean "length"?)' : ''}.`);
   }
 }
@@ -279,13 +277,13 @@ export function foreignRelations(path: string, source: string, table: string): R
   return found;
 }
 
-/** The tables a file declares: `export const <name> = mysqlTable(...)`. */
+/** The tables a file declares: `export const <name> = salesSchema.table(...)`. */
 export function tablesIn(path: string, source: string): string[] {
   const names: string[] = [];
   editSource(path, source, (file) => {
     for (const declaration of file.getVariableDeclarations()) {
       const call = declaration.getInitializerIfKind(SyntaxKind.CallExpression);
-      if (call && /Table$/.test(call.getExpression().getText())) names.push(declaration.getName());
+      if (call && isTableCall(call.getExpression().getText())) names.push(declaration.getName());
     }
   });
   return names;

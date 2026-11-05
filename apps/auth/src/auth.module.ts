@@ -9,7 +9,7 @@ import { AuthController } from './auth.controller.js';
 
 /**
  * The sign-in of every Dafne app: Better Auth (/api/auth/*), the users
- * (/users) and the apps they can use (app_access), on dafne_auth. The apps'
+ * (/users) and the apps they can use (app_access), on the auth schema. The apps'
  * frontends proxy /api/auth here; their APIs check sessions through
  * @dafne/backend-session.
  */

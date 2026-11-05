@@ -32,8 +32,9 @@ const nameField = (label: string) => ({
 });
 
 /**
- * Avatars are stored as data URLs in `user.image` (MySQL TEXT, max 65,535
- * bytes). The frontend shrinks images to fit; this rejects anything else.
+ * Avatars are stored as data URLs in `user.image` (a text column), kept
+ * small since every session read carries them. The frontend shrinks images
+ * to fit; this rejects anything else.
  */
 const AVATAR_MAX_LENGTH = 60_000;
 const AVATAR_DATA_URL = /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/;

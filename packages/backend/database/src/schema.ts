@@ -1,6 +1,7 @@
 import { defineRelations } from 'drizzle-orm';
-// tables/auth.ts re-exports the users' table of dafne_auth (@dafne/backend-database-auth).
-import * as auth from './tables/auth.js';
+// auth.ts re-exports the users' table of the auth schema (@dafne/backend-database-auth),
+// outside tables/: drizzle-kit would put it in this package's migrations.
+import * as auth from './auth.js';
 import * as customers from './tables/customers.js';
 import * as activities from './tables/activities.js';
 import { mergeRelations } from './merge-relations.js';
@@ -27,4 +28,4 @@ export const relations = mergeRelations(
   orderRelations,
 );
 
-export type Database = import('drizzle-orm/mysql2').MySql2Database<typeof relations>;
+export type Database = import('drizzle-orm/node-postgres').NodePgDatabase<typeof relations>;

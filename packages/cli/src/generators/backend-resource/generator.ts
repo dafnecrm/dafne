@@ -49,7 +49,7 @@ export default async function backendResourceGenerator(tree: Tree, options: Back
         'pnpm install   # links the new package',
         'pnpm nx sync   # TypeScript project references',
         ...(fields.length ? [] : ['Add the real fields to the table, then:']),
-        `pnpm dafne db generate --name add-${names.s.kebab}   # the table migration (and its foreign keys)`,
+        `pnpm dafne db generate --name add-${names.s.kebab}   # the table migration`,
         `pnpm dafne test ${'@dafne/backend-' + names.p.kebab}`,
       ],
     };

@@ -1,13 +1,13 @@
 import { defineRelationsPart } from 'drizzle-orm';
 import {
   index,
-  mysqlTable,
   timestamp,
   varchar,
   text,
   primaryKey,
-} from 'drizzle-orm/mysql-core';
-import { user } from './auth.js';
+} from 'drizzle-orm/pg-core';
+import { salesSchema } from './sales.js';
+import { user } from '../auth.js';
 import { customer } from './customers.js';
 import { product } from './products.js';
 
@@ -15,7 +15,7 @@ import { product } from './products.js';
  * An order managed by the users. Deletion is logical: `deletedAt` is
  * set and the row is hidden from every query, but kept in the table.
  */
-export const order = mysqlTable(
+export const order = salesSchema.table(
   'order',
   {
     id: varchar('id', { length: 36 }).primaryKey(),
@@ -25,12 +25,14 @@ export const order = mysqlTable(
     customerId: varchar('customer_id', { length: 36 })
       .notNull()
       .references(() => customer.id, { onDelete: 'restrict' }),
-    createdAt: timestamp('created_at', { fsp: 3 }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { fsp: 3 })
+    createdAt: timestamp('created_at', { precision: 3, withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { precision: 3, withTimezone: true })
       .defaultNow()
       .$onUpdate(() => new Date())
       .notNull(),
-    deletedAt: timestamp('deleted_at', { fsp: 3 }),
+    deletedAt: timestamp('deleted_at', { precision: 3, withTimezone: true }),
     // Nullable so removing a user keeps the orders they touched.
     createdById: varchar('created_by_id', { length: 36 }).references(
       () => user.id,
@@ -49,7 +51,7 @@ export const order = mysqlTable(
 );
 
 /** Links orders and products (many-to-many). */
-export const orderProduct = mysqlTable(
+export const orderProduct = salesSchema.table(
   'order_product',
   {
     orderId: varchar('order_id', { length: 36 })

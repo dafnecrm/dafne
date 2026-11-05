@@ -1,1 +1,0 @@
-ALTER TABLE `task` ADD `status` enum('open','closed') DEFAULT 'open' NOT NULL;

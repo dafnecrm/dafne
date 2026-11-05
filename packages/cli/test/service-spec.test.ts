@@ -19,11 +19,11 @@ function fields(extra: string) {
   return readBody('a.ts', contract, names, table);
 }
 const REQUIRED = `
-    type: mysqlEnum(['email', 'phone']).notNull(),
-    priority: int('priority').notNull(),
+    type: text({ enum: ['email', 'phone'] }).notNull(),
+    priority: integer('priority').notNull(),
     done: boolean('done').notNull(),
-    budget: int('budget'),
-    status: mysqlEnum('status', ['open', 'done']).notNull().default('open'),`;
+    budget: integer('budget'),
+    status: text('status', { enum: ['open', 'done'] }).notNull().default('open'),`;
 
 describe('syncServiceSpec', () => {
   it('adds the required fields to every body({...}), with sample values', () => {

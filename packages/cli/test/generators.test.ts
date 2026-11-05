@@ -62,7 +62,7 @@ describe('backend-resource', () => {
     });
     const table = read('packages/backend/database/src/tables/invoices.ts');
     expect(table).toContain("number: varchar('number', { length: 20 }).notNull().unique()");
-    expect(table).toContain("mysqlEnum('status', ['draft', 'sent', 'paid']).default('draft')");
+    expect(table).toMatch(/text\('status', \{ enum: \['draft', 'sent', 'paid'\] \}\)\.default\(\s*'draft',?\s*\)/);
     expect(table).toContain('customerId:');
     const contract = read('packages/contracts/src/invoices.ts');
     expect(contract).toContain("number: requiredText(20, msg('invoices.number.required'))");

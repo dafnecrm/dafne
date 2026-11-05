@@ -34,17 +34,17 @@ Each project has one scope tag (see [Project boundaries](boundaries.md)).
 
 | Package          | Folder          | Scope   | Role                                                                                   |
 | ---------------- | --------------- | ------- | -------------------------------------------------------------------------------------- |
-| `@dafne/auth`    | `apps/auth`     | backend | Sign-in (Better Auth), users, app access, on `dafne_auth`. Shared by every app.         |
-| `@dafne/sales-api` | `apps/sales-api` | backend  | The sales app's NestJS API: composes the backend libs, on `dafne_sales`.                |
+| `@dafne/auth`    | `apps/auth`     | backend | Sign-in (Better Auth), users, app access, on the `auth` schema. Shared by every app.  |
+| `@dafne/sales-api` | `apps/sales-api` | backend  | The sales app's NestJS API: composes the backend libs, on the `sales` schema.          |
 | `@dafne/sales-web` | `apps/sales-web` | frontend | The sales app's Next.js frontend: talks to the APIs over HTTP.                         |
 
 ### Backend libs (`packages/backend/*`)
 
 | Package                        | Role                                                                                                |
 | ------------------------------ | --------------------------------------------------------------------------------------------------- |
-| `@dafne/backend-database`      | `dafne_sales`: Drizzle tables, `DatabaseModule`, migrations                                           |
-| `@dafne/backend-database-auth` | `dafne_auth`: Better Auth tables and `app_access`, migrations                                       |
-| `@dafne/backend-migrator`      | Applies the migrations of every database in one order; generates them                              |
+| `@dafne/backend-database`      | The `sales` schema: Drizzle tables, `DatabaseModule`, migrations                                      |
+| `@dafne/backend-database-auth` | The `auth` schema: Better Auth tables and `app_access`, migrations                                  |
+| `@dafne/backend-migrator`      | Applies the migrations of every schema in one order; generates them                                |
 | `@dafne/backend-auth`          | Better Auth in Nest (`AuthModule`), used only by `apps/auth`                                        |
 | `@dafne/backend-session`       | Session guard for the apps' APIs (`SessionModule.forRoot({ app })`, `@Session()`, `@Roles()`)        |
 | `@dafne/backend-users`         | Users API (runs in `apps/auth`)                                                                     |

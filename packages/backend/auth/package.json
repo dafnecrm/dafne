@@ -9,7 +9,7 @@
   "scripts": {
     "lint": "oxlint -c ../.oxlintrc.json --type-aware src",
     "test": "vitest run --passWithNoTests",
-    "auth:schema:generate": "pnpm dlx auth@latest generate --config src/auth.cli.ts --output ../database-auth/src/kit/better-auth.ts && pnpm --filter @dafne/backend-database-auth tables:qualify"
+    "auth:schema:generate": "pnpm dlx auth@latest generate --config src/auth.cli.ts --output ../database-auth/src/better-auth.ts --yes && pnpm --filter @dafne/backend-database-auth tables:schema"
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "catalog:",

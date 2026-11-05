@@ -1,1 +1,0 @@
-ALTER TABLE `customer_address` MODIFY COLUMN `type` enum('residence','domicile','head_office','shipping','billing');

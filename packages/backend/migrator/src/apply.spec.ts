@@ -1,18 +1,19 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import mysql from 'mysql2/promise';
+import pg from 'pg';
 import { migrate } from './apply.ts';
 import type { DatabasePackage } from './workspace.ts';
 
 /*
- * Against a real MySQL server: MIGRATOR_TEST_URL=mysql://root:…@127.0.0.1:3307
- * (a throwaway server: it creates and drops dafne_mtest_* databases).
+ * Against a real Postgres: MIGRATOR_TEST_URL=postgres://postgres:…@127.0.0.1:5433/mtest
+ * (a throwaway database: it creates and drops the mtest_* schemas and
+ * public._migrations).
  */
 const url = process.env.MIGRATOR_TEST_URL;
 
-describe.skipIf(!url)('migrate (MySQL)', () => {
-  const dbs = ['dafne_mtest_crm', 'dafne_mtest_auth'];
+describe.skipIf(!url)('migrate (Postgres)', () => {
+  const schemas = ['mtest_sales', 'mtest_core'];
   let root: string;
   let packages: DatabasePackage[];
 
@@ -21,48 +22,84 @@ describe.skipIf(!url)('migrate (MySQL)', () => {
     writeFileSync(join(pkg.migrations, name, 'migration.sql'), sql);
   };
   const query = async (sql: string) => {
-    const conn = await mysql.createConnection({ uri: url });
+    const client = new pg.Client({ connectionString: url });
+    await client.connect();
     try {
-      return (await conn.query<mysql.RowDataPacket[]>(sql))[0];
+      return (await client.query(sql)).rows;
     } finally {
-      await conn.end();
+      await client.end();
     }
+  };
+  const reset = async () => {
+    for (const schema of schemas)
+      await query(`DROP SCHEMA IF EXISTS ${schema} CASCADE`);
+    await query('DROP TABLE IF EXISTS public._migrations');
   };
 
   beforeEach(async () => {
-    for (const db of dbs) await query(`DROP DATABASE IF EXISTS ${db}`);
+    await reset();
     root = mkdtempSync(join(tmpdir(), 'dafne-migrator-'));
-    packages = dbs.map((database) => ({
-      name: database,
-      dir: join(root, database),
-      database,
-      migrations: join(root, database, 'migrations'),
+    packages = schemas.map((schema) => ({
+      name: schema,
+      dir: join(root, schema),
+      schema,
+      migrations: join(root, schema, 'migrations'),
     }));
-    const [crm, auth] = packages;
+    const [sales, core] = packages;
     migration(
-      crm,
+      sales,
       '20260101000000_init',
-      'CREATE TABLE `user` (`id` varchar(36) PRIMARY KEY);\n--> statement-breakpoint\nCREATE TABLE `note` (`id` varchar(36) PRIMARY KEY, `created_by_id` varchar(36), CONSTRAINT `note_fk` FOREIGN KEY (`created_by_id`) REFERENCES `user`(`id`) ON DELETE SET NULL);',
+      'CREATE SCHEMA "mtest_sales";\n--> statement-breakpoint\nCREATE TABLE "mtest_sales"."customer" ("id" varchar(36) PRIMARY KEY);\n--> statement-breakpoint\nCREATE TABLE "mtest_sales"."note" ("id" varchar(36) PRIMARY KEY, "customer_id" varchar(36) CONSTRAINT "note_fk" REFERENCES "mtest_sales"."customer"("id") ON DELETE SET NULL);',
     );
-    migration(crm, '20260201000000_move-users', '-- `user` moved to dafne_mtest_auth\n');
-    migration(auth, '20260201000001_move-users', 'RENAME TABLE `dafne_mtest_crm`.`user` TO `dafne_mtest_auth`.`user`;');
+    migration(
+      sales,
+      '20260201000000_move-customers',
+      '-- customer moved to mtest_core\n',
+    );
+    migration(
+      core,
+      '20260201000001_move-customers',
+      'CREATE SCHEMA "mtest_core";\n--> statement-breakpoint\nALTER TABLE "mtest_sales"."customer" SET SCHEMA "mtest_core";',
+    );
   });
   afterEach(async () => {
     rmSync(root, { recursive: true, force: true });
-    for (const db of dbs) await query(`DROP DATABASE IF EXISTS ${db}`);
+    await reset();
   });
 
-  it('replays the history across databases, once', async () => {
+  it('replays the history across schemas, once', async () => {
     const applied = await migrate({ url: url!, packages });
-    expect(applied.map((m) => `${m.database}/${m.name}`)).toEqual([
-      'dafne_mtest_crm/20260101000000_init',
-      'dafne_mtest_crm/20260201000000_move-users',
-      'dafne_mtest_auth/20260201000001_move-users',
+    expect(applied.map((m) => `${m.schema}/${m.name}`)).toEqual([
+      'mtest_sales/20260101000000_init',
+      'mtest_sales/20260201000000_move-customers',
+      'mtest_core/20260201000001_move-customers',
     ]);
     const [fk] = await query(
-      "SELECT REFERENCED_TABLE_SCHEMA AS db FROM information_schema.KEY_COLUMN_USAGE WHERE CONSTRAINT_NAME = 'note_fk'",
+      "SELECT confrelid::regclass::text AS target FROM pg_constraint WHERE conname = 'note_fk'",
     );
-    expect(fk.db).toBe('dafne_mtest_auth');
+    expect(fk.target).toBe('mtest_core.customer');
     expect(await migrate({ url: url!, packages })).toEqual([]);
+  });
+
+  it('rolls back a failing migration', async () => {
+    migration(
+      packages[0],
+      '20260301000000_broken',
+      'CREATE TABLE "mtest_sales"."x" ("id" int);\n--> statement-breakpoint\nSELECT nope;',
+    );
+    await expect(migrate({ url: url!, packages })).rejects.toThrow(
+      'mtest_sales/20260301000000_broken failed',
+    );
+    expect(await query("SELECT to_regclass('mtest_sales.x') AS t")).toEqual([
+      { t: null },
+    ]);
+    const names = await query(
+      'SELECT name FROM public._migrations ORDER BY id',
+    );
+    expect(names.map((r) => r.name)).toEqual([
+      '20260101000000_init',
+      '20260201000000_move-customers',
+      '20260201000001_move-customers',
+    ]);
   });
 });

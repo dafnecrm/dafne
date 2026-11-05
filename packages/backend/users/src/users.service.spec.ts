@@ -5,7 +5,7 @@ import { createUserBodySchema } from '@dafne/contracts';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { APIError } from 'better-auth/api';
 import { Test, TestingModule } from '@nestjs/testing';
-import { and, asc, desc, eq, like } from 'drizzle-orm';
+import { and, asc, desc, eq, ilike } from 'drizzle-orm';
 import { UsersService } from './users.service.js';
 
 describe('UsersService', () => {
@@ -70,7 +70,7 @@ describe('UsersService', () => {
   it('passes paging and filters email with contains', async () => {
     await service.getUsersList({ limit: 5, offset: 10, email: 'ada' });
 
-    const where = and(like(schema.user.email, '%ada%'));
+    const where = and(ilike(schema.user.email, '%ada%'));
     expect(query.where).toHaveBeenCalledWith(where);
     expect(db.$count).toHaveBeenCalledWith(schema.user, where);
     expect(query.limit).toHaveBeenCalledWith(5);
@@ -81,7 +81,7 @@ describe('UsersService', () => {
     await service.getUsersList({ name: '50%_a' });
 
     expect(query.where).toHaveBeenCalledWith(
-      and(like(schema.user.name, '%50\\%\\_a%')),
+      and(ilike(schema.user.name, '%50\\%\\_a%')),
     );
   });
 
@@ -103,8 +103,8 @@ describe('UsersService', () => {
 
     expect(query.where).toHaveBeenCalledWith(
       and(
-        like(schema.user.email, '%ada%'),
-        like(schema.user.name, '%Ada%'),
+        ilike(schema.user.email, '%ada%'),
+        ilike(schema.user.name, '%Ada%'),
         eq(schema.user.role, 'user'),
         eq(schema.user.banned, true),
       ),

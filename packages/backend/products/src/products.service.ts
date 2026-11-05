@@ -2,7 +2,7 @@ import { schema, type Database } from '@dafne/backend-database';
 import { InjectDrizzle } from '@nestjs/drizzle';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { and, asc, desc, eq, isNull, like, type SQL } from 'drizzle-orm';
+import { and, asc, desc, eq, isNull, ilike, type SQL } from 'drizzle-orm';
 import {
   PRODUCT_FILTER_FIELDS,
   type ProductBody,
@@ -43,7 +43,7 @@ export class ProductsService {
     const { db } = this;
     const filters = PRODUCT_FILTER_FIELDS.flatMap((field) => {
       const value = query[field]?.trim();
-      return value ? [like(product[field], `%${escapeLike(value)}%`)] : [];
+      return value ? [ilike(product[field], `%${escapeLike(value)}%`)] : [];
     });
     const where = and(notDeleted, ...filters) as SQL;
     const direction = sortDirection === 'asc' ? asc : desc;
@@ -88,8 +88,7 @@ export class ProductsService {
     userId: string,
   ): Promise<ProductDetail> {
     const id = randomUUID();
-    // Set here, not by the column default: MySQL's now() and the driver can
-    // disagree on the time zone, while dates written from JS round-trip.
+    // One instant for both: createdAt and updatedAt start equal.
     const now = new Date();
     await this.db.insert(product).values({
       id,
@@ -113,18 +112,18 @@ export class ProductsService {
     body: ProductBody,
     userId: string,
   ): Promise<ProductDetail> {
-    const [result] = await this.db
+    const result = await this.db
       .update(product)
       .set({
         name: body.name,
         description: body.description,
         price: body.price,
         updatedById: userId,
-        // Set explicitly so the row always changes and is counted below.
+        // The time of this change.
         updatedAt: new Date(),
       })
       .where(and(eq(product.id, id), notDeleted));
-    if (result.affectedRows === 0)
+    if (result.rowCount === 0)
       throw new NotFoundException(msg('products.notFound'));
     return this.getProduct(id);
   }
@@ -135,11 +134,11 @@ export class ProductsService {
    */
   async deleteProduct(id: string, userId: string) {
     const now = new Date();
-    const [result] = await this.db
+    const result = await this.db
       .update(product)
       .set({ deletedAt: now, updatedAt: now, updatedById: userId })
       .where(and(eq(product.id, id), notDeleted));
-    if (result.affectedRows === 0)
+    if (result.rowCount === 0)
       throw new NotFoundException(msg('products.notFound'));
   }
 }

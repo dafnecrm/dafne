@@ -2,7 +2,7 @@ import { schema } from '@dafne/backend-database';
 import { getDrizzleToken } from '@nestjs/drizzle';
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { and, asc, desc, eq, isNull, like } from 'drizzle-orm';
+import { and, asc, desc, eq, isNull, ilike } from 'drizzle-orm';
 import { productBodySchema, type ProductBodyInput } from '@dafne/contracts';
 import { ProductsService } from './products.service.js';
 
@@ -50,7 +50,7 @@ describe('ProductsService', () => {
     insert.values.mockResolvedValue(undefined);
     db.update.mockReturnValue(update);
     update.set.mockReturnValue(update);
-    update.where.mockResolvedValue([{ affectedRows: 1 }]);
+    update.where.mockResolvedValue({ rowCount: 1 });
     findFirst.mockResolvedValue(found);
 
     const module: TestingModule = await Test.createTestingModule({
@@ -85,7 +85,7 @@ describe('ProductsService', () => {
       await service.listProducts({ name: '50%_a' });
 
       expect(select.where).toHaveBeenCalledWith(
-        and(notDeleted, like(product.name, '%50\\%\\_a%')),
+        and(notDeleted, ilike(product.name, '%50\\%\\_a%')),
       );
     });
 
@@ -159,7 +159,7 @@ describe('ProductsService', () => {
     });
 
     it('throws 404 when the product is missing', async () => {
-      update.where.mockResolvedValue([{ affectedRows: 0 }]);
+      update.where.mockResolvedValue({ rowCount: 0 });
 
       await expect(
         service.updateProduct('nope', body({ name: 'X', price: '1.00' }), 'u2'),
@@ -181,7 +181,7 @@ describe('ProductsService', () => {
     });
 
     it('throws 404 when the product is missing or already deleted', async () => {
-      update.where.mockResolvedValue([{ affectedRows: 0 }]);
+      update.where.mockResolvedValue({ rowCount: 0 });
 
       await expect(service.deleteProduct('r1', 'u3')).rejects.toBeInstanceOf(
         NotFoundException,

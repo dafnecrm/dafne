@@ -1,22 +1,23 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 
-/** A workspace package that owns a database and its migrations. */
+/** A workspace package that owns a schema of the database and its migrations. */
 export interface DatabasePackage {
   /** Package name, e.g. @dafne/backend-database. */
   name: string;
   /** Absolute folder of the package. */
   dir: string;
-  /** The MySQL database, e.g. dafne_sales (fixed name, see CLAUDE.md). */
-  database: string;
+  /** The Postgres schema, e.g. sales (fixed name, see CLAUDE.md). */
+  schema: string;
   /** Absolute folder of its migrations (drizzle-kit `out`). */
   migrations: string;
 }
 
-/** Database names: fixed, `dafne_<name>`. */
-const DATABASE_NAME = /^dafne_[a-z][a-z0-9_]*$/;
+/** Schema names: fixed, lowercase, not Postgres' own. */
+const SCHEMA_NAME = /^[a-z][a-z0-9_]*$/;
+const RESERVED = new Set(['public', 'information_schema']);
 
-/** Folders whose packages may own a database. */
+/** Folders whose packages may own a schema. */
 const PACKAGE_FOLDERS = ['packages/backend'];
 
 /** The monorepo root: the folder with pnpm-workspace.yaml. */
@@ -24,15 +25,16 @@ export function findWorkspaceRoot(from = process.cwd()): string {
   let dir = resolve(from);
   while (!existsSync(join(dir, 'pnpm-workspace.yaml'))) {
     const parent = dirname(dir);
-    if (parent === dir) throw new Error(`No pnpm-workspace.yaml above ${from}.`);
+    if (parent === dir)
+      throw new Error(`No pnpm-workspace.yaml above ${from}.`);
     dir = parent;
   }
   return dir;
 }
 
 /**
- * The packages that own a database: `"dafne": { "database": "dafne_sales" }`
- * in their package.json, migrations in their `migrations/` folder.
+ * The packages that own a schema: `"dafne": { "schema": "sales" }` in
+ * their package.json, migrations in their `migrations/` folder.
  */
 export function databasePackages(root: string): DatabasePackage[] {
   const found: DatabasePackage[] = [];
@@ -46,20 +48,34 @@ export function databasePackages(root: string): DatabasePackage[] {
       if (!existsSync(file)) continue;
       const pkg = JSON.parse(readFileSync(file, 'utf8')) as {
         name: string;
-        dafne?: { database?: string };
+        dafne?: { schema?: string };
       };
-      const database = pkg.dafne?.database;
-      if (!database) continue;
-      if (!DATABASE_NAME.test(database))
-        throw new Error(`${pkg.name}: "${database}" isn't a valid database name (dafne_<name>).`);
-      found.push({ name: pkg.name, dir, database, migrations: join(dir, 'migrations') });
+      const schema = pkg.dafne?.schema;
+      if (!schema) continue;
+      if (
+        !SCHEMA_NAME.test(schema) ||
+        RESERVED.has(schema) ||
+        schema.startsWith('pg_')
+      )
+        throw new Error(
+          `${pkg.name}: "${schema}" isn't a valid schema name (lowercase, not public or pg_*).`,
+        );
+      found.push({
+        name: pkg.name,
+        dir,
+        schema,
+        migrations: join(dir, 'migrations'),
+      });
     }
   }
   const seen = new Map<string, string>();
-  for (const { name, database } of found) {
-    const other = seen.get(database);
-    if (other) throw new Error(`${database} is owned by both ${other} and ${name}.`);
-    seen.set(database, name);
+  for (const { name, schema } of found) {
+    const other = seen.get(schema);
+    if (other)
+      throw new Error(
+        `Schema ${schema} is owned by both ${other} and ${name}.`,
+      );
+    seen.set(schema, name);
   }
-  return found.sort((a, b) => a.database.localeCompare(b.database));
+  return found.sort((a, b) => a.schema.localeCompare(b.schema));
 }

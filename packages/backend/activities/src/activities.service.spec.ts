@@ -2,7 +2,7 @@ import { schema } from '@dafne/backend-database';
 import { getDrizzleToken } from '@nestjs/drizzle';
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { and, asc, desc, eq, isNull, like, ne } from 'drizzle-orm';
+import { and, asc, desc, eq, isNull, ilike, ne } from 'drizzle-orm';
 import { activityBodySchema, type ActivityBodyInput } from '@dafne/contracts';
 import { ActivitiesService } from './activities.service.js';
 
@@ -52,7 +52,7 @@ describe('ActivitiesService', () => {
     insert.values.mockResolvedValue(undefined);
     db.update.mockReturnValue(update);
     update.set.mockReturnValue(update);
-    update.where.mockResolvedValue([{ affectedRows: 1 }]);
+    update.where.mockResolvedValue({ rowCount: 1 });
     findFirst.mockResolvedValue(found);
 
     const module: TestingModule = await Test.createTestingModule({
@@ -87,7 +87,7 @@ describe('ActivitiesService', () => {
       await service.listActivities({ name: '50%_a' });
 
       expect(select.where).toHaveBeenCalledWith(
-        and(notDeleted, like(activity.name, '%50\\%\\_a%')),
+        and(notDeleted, ilike(activity.name, '%50\\%\\_a%')),
       );
     });
 
@@ -161,7 +161,7 @@ describe('ActivitiesService', () => {
     });
 
     it('throws 404 when the activity is missing', async () => {
-      update.where.mockResolvedValue([{ affectedRows: 0 }]);
+      update.where.mockResolvedValue({ rowCount: 0 });
 
       await expect(
         service.updateActivity(
@@ -187,7 +187,7 @@ describe('ActivitiesService', () => {
     });
 
     it('throws 404 when the activity is missing or already deleted', async () => {
-      update.where.mockResolvedValue([{ affectedRows: 0 }]);
+      update.where.mockResolvedValue({ rowCount: 0 });
 
       await expect(service.deleteActivity('r1', 'u3')).rejects.toBeInstanceOf(
         NotFoundException,

@@ -2,7 +2,7 @@ import { schema } from '@dafne/backend-database';
 import { getDrizzleToken } from '@nestjs/drizzle';
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { and, asc, desc, eq, isNull, like } from 'drizzle-orm';
+import { and, asc, desc, eq, isNull, ilike } from 'drizzle-orm';
 import { orderBodySchema, type OrderBodyInput } from '@dafne/contracts';
 import { OrdersService } from './orders.service.js';
 
@@ -50,7 +50,7 @@ describe('OrdersService', () => {
     insert.values.mockResolvedValue(undefined);
     db.update.mockReturnValue(update);
     update.set.mockReturnValue(update);
-    update.where.mockResolvedValue([{ affectedRows: 1 }]);
+    update.where.mockResolvedValue({ rowCount: 1 });
     findFirst.mockResolvedValue(found);
 
     const module: TestingModule = await Test.createTestingModule({
@@ -82,7 +82,7 @@ describe('OrdersService', () => {
       await service.listOrders({ name: '50%_a' });
 
       expect(select.where).toHaveBeenCalledWith(
-        and(notDeleted, like(order.name, '%50\\%\\_a%')),
+        and(notDeleted, ilike(order.name, '%50\\%\\_a%')),
       );
     });
 
@@ -159,7 +159,7 @@ describe('OrdersService', () => {
     });
 
     it('throws 404 when the order is missing', async () => {
-      update.where.mockResolvedValue([{ affectedRows: 0 }]);
+      update.where.mockResolvedValue({ rowCount: 0 });
 
       await expect(
         service.updateOrder(
@@ -185,7 +185,7 @@ describe('OrdersService', () => {
     });
 
     it('throws 404 when the order is missing or already deleted', async () => {
-      update.where.mockResolvedValue([{ affectedRows: 0 }]);
+      update.where.mockResolvedValue({ rowCount: 0 });
 
       await expect(service.deleteOrder('r1', 'u3')).rejects.toBeInstanceOf(
         NotFoundException,

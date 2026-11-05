@@ -244,14 +244,14 @@ workspace doesn't use.
 ## Databases
 
 ```sh
-dafne db migrate                         # apply every database's pending migrations
-dafne db generate                        # a migration of @dafne/backend-database (dafne_sales)
-dafne db generate <package> --name x     # of another database package
+dafne db create                          # the database and its owner (MIGRATIONS_DATABASE_URL), as ADMIN_DATABASE_URL
+dafne db migrate                         # apply every schema's pending migrations
+dafne db generate                        # a migration of @dafne/backend-database (the sales schema)
+dafne db generate <package> --name x     # of another schema package
 dafne db generate --custom --name x      # an empty migration, for SQL by hand
-dafne db move <from> <to>                # one time: move every table of a database
 ```
 
-They run the targets of `@dafne/backend-migrator` and of the database
+They run the targets of `@dafne/backend-migrator` and of the schema
 packages. `migrate` needs `MIGRATIONS_DATABASE_URL`. See
 [Databases and migrations](databases.md).
 

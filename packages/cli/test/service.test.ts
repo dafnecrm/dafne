@@ -18,9 +18,9 @@ const service = () => render('backend/service.ts', names);
 describe('syncService', () => {
   it('adds new columns to the list, the insert and the update, in table order', () => {
     const table = tableWith(`
-    type: mysqlEnum(['email', 'phone']).notNull(),
+    type: text({ enum: ['email', 'phone'] }).notNull(),
     /** @api readonly */
-    status: mysqlEnum('status', ['open', 'done']).notNull().default('open'),`);
+    status: text('status', { enum: ['open', 'done'] }).notNull().default('open'),`);
     const { content, report } = syncService('s.ts', service(), names, table);
     expect(content).toMatch(/name: activity\.name,\s*type: activity\.type,\s*status: activity\.status,\s*createdAt: activity\.createdAt/);
     expect(content).toMatch(/name: body\.name,\s*type: body\.type,\s*createdAt: now/);
@@ -44,8 +44,8 @@ describe('syncService', () => {
   it('removes dropped columns, but not hand-written values', () => {
     const table = tableWith(`    code: varchar('code', { length: 10 }),`);
     const once = syncService('s.ts', service(), names, table).content.replace(
-      'updatedById: userId,\n        // Set',
-      'updatedById: userId,\n        name2: body.name.toUpperCase(),\n        // Set',
+      'updatedById: userId,\n        // The time',
+      'updatedById: userId,\n        name2: body.name.toUpperCase(),\n        // The time',
     );
     const { content, report } = syncService('s.ts', once, names, tableWith(''), ['code']);
     expect(content).not.toContain('code: activity.code');
@@ -59,7 +59,7 @@ describe('syncService', () => {
   });
 
   it('is idempotent', () => {
-    const table = tableWith(`    type: mysqlEnum(['email', 'phone']).notNull(),`);
+    const table = tableWith(`    type: text({ enum: ['email', 'phone'] }).notNull(),`);
     const once = syncService('s.ts', service(), names, table).content;
     const twice = syncService('s.ts', once, names, table);
     expect(twice.content).toBe(once);

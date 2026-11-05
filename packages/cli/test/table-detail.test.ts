@@ -9,8 +9,8 @@ import { readTable } from '../src/sync/table.ts';
 const names = resourceNames('activity');
 const view = { ...names, icon: 'FileIcon' };
 const COLUMNS = `
-    type: mysqlEnum(['email', 'phone']).notNull(),
-    budget: int('budget'),
+    type: text({ enum: ['email', 'phone'] }).notNull(),
+    budget: integer('budget'),
     done: boolean('done').notNull(),
     dueDate: date('due_date'),
     /** @api detail */

@@ -72,10 +72,10 @@ The generator prints these steps.
 ## Databases
 
 ```sh
-dafne db generate                    # a migration of @dafne/backend-database (dafne_sales)
-dafne db generate <package> --name x # of another database package
-dafne db migrate                     # apply every database's migrations, in one order
-dafne db move dafne dafne_sales        # one time: move the old `dafne` database
+dafne db create                      # the database and its owner (MIGRATIONS_DATABASE_URL)
+dafne db generate                    # a migration of @dafne/backend-database (the sales schema)
+dafne db generate <package> --name x # of another schema package
+dafne db migrate                     # apply every schema's migrations, in one order
 ```
 
 They run the targets of `@dafne/backend-migrator` (see its README).

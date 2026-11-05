@@ -2,7 +2,7 @@ import { schema, type Database } from '@app/database';
 import { InjectDrizzle } from '@nestjs/drizzle';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { and, asc, desc, eq, isNull, like, type SQL } from 'drizzle-orm';
+import { and, asc, desc, eq, isNull, ilike, type SQL } from 'drizzle-orm';
 import {
   CUSTOMER_FILTER_FIELDS,
   type CustomerAddressBody,
@@ -47,7 +47,7 @@ export class CustomersService {
     const { db } = this;
     const filters = CUSTOMER_FILTER_FIELDS.flatMap((field) => {
       const value = query[field]?.trim();
-      return value ? [like(customer[field], `%${escapeLike(value)}%`)] : [];
+      return value ? [ilike(customer[field], `%${escapeLike(value)}%`)] : [];
     });
     const where = and(notDeleted, ...filters) as SQL;
     const direction = sortDirection === 'asc' ? asc : desc;
@@ -100,8 +100,7 @@ export class CustomersService {
     userId: string,
   ): Promise<CustomerDetail> {
     const id = randomUUID();
-    // Set here, not by the column default: MySQL's now() and the driver can
-    // disagree on the time zone, while dates written from JS round-trip.
+    // One instant for both: createdAt and updatedAt start equal.
     const now = new Date();
     await this.db.transaction(async (tx) => {
       await tx.insert(customer).values({
@@ -129,18 +128,18 @@ export class CustomersService {
     userId: string,
   ): Promise<CustomerDetail> {
     await this.db.transaction(async (tx) => {
-      const [result] = await tx
+      const result = await tx
         .update(customer)
         .set({
           name: body.name,
           email: body.email,
           phone: body.phone,
           updatedById: userId,
-          // Set explicitly so the row always changes and is counted below.
+          // The time of this change.
           updatedAt: new Date(),
         })
         .where(and(eq(customer.id, id), notDeleted));
-      if (result.affectedRows === 0)
+      if (result.rowCount === 0)
         throw new NotFoundException('Customer not found');
 
       await tx
@@ -157,11 +156,11 @@ export class CustomersService {
    */
   async deleteCustomer(id: string, userId: string) {
     const now = new Date();
-    const [result] = await this.db
+    const result = await this.db
       .update(customer)
       .set({ deletedAt: now, updatedAt: now, updatedById: userId })
       .where(and(eq(customer.id, id), notDeleted));
-    if (result.affectedRows === 0)
+    if (result.rowCount === 0)
       throw new NotFoundException('Customer not found');
   }
 }

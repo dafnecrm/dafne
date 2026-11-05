@@ -1,31 +1,28 @@
 import { defineRelationsPart } from 'drizzle-orm';
-import {
-  index,
-  mysqlEnum,
-  mysqlTable,
-  timestamp,
-  varchar,
-  text,
-} from 'drizzle-orm/mysql-core';
-import { user } from './auth.js';
+import { index, timestamp, varchar, text } from 'drizzle-orm/pg-core';
+import { salesSchema } from './sales.js';
+import { user } from '../auth.js';
 
 /**
  * A activity managed by the users. Deletion is logical: `deletedAt` is
  * set and the row is hidden from every query, but kept in the table.
  */
-export const activity = mysqlTable(
+export const activity = salesSchema.table(
   'activity',
   {
     id: varchar('id', { length: 36 }).primaryKey(),
     name: varchar('name', { length: 255 }).notNull(),
-    type: mysqlEnum(['call', 'email', 'meeting', 'task']).notNull(),
-    dueDate: timestamp('due_date', { fsp: 3 }),
+    type: text({ enum: ['call', 'email', 'meeting', 'task'] }).notNull(),
+    dueDate: timestamp('due_date', { precision: 3, withTimezone: true }),
     /** @api readonly */
-    status: mysqlEnum('status', ['open', 'closed'])
+    status: text('status', { enum: ['open', 'closed'] })
       .notNull()
       .default('open'),
     /** @api readonly */
-    completedAt: timestamp('completed_at', { fsp: 3 }),
+    completedAt: timestamp('completed_at', {
+      precision: 3,
+      withTimezone: true,
+    }),
     /** @api readonly */
     completedById: varchar('completed_by_id', { length: 36 }).references(
       () => user.id,
@@ -33,12 +30,14 @@ export const activity = mysqlTable(
     ),
     /** @api detail @form editor */
     notes: text('notes'),
-    createdAt: timestamp('created_at', { fsp: 3 }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { fsp: 3 })
+    createdAt: timestamp('created_at', { precision: 3, withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { precision: 3, withTimezone: true })
       .defaultNow()
       .$onUpdate(() => new Date())
       .notNull(),
-    deletedAt: timestamp('deleted_at', { fsp: 3 }),
+    deletedAt: timestamp('deleted_at', { precision: 3, withTimezone: true }),
     // Nullable so removing a user keeps the activities they touched.
     createdById: varchar('created_by_id', { length: 36 }).references(
       () => user.id,
