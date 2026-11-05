@@ -87,14 +87,14 @@ export class UsersService {
       return value ? [USER_FILTERS[field](value)] : [];
     });
     const where = conditions.length ? and(...conditions) : undefined;
-    const order = sortDirection === 'asc' ? asc : desc;
+    const direction = sortDirection === 'asc' ? asc : desc;
 
     const [users, total] = await Promise.all([
       db
         .select()
         .from(user)
         .where(where)
-        .orderBy(order(user[sortBy]), asc(user.id))
+        .orderBy(direction(user[sortBy]), asc(user.id))
         .limit(limit)
         .offset(offset),
       db.$count(user, where),

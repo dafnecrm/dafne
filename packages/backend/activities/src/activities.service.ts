@@ -49,7 +49,7 @@ export class ActivitiesService {
       return value ? [like(activity[field], `%${escapeLike(value)}%`)] : [];
     });
     const where = and(notDeleted, ...filters) as SQL;
-    const order = sortDirection === 'asc' ? asc : desc;
+    const direction = sortDirection === 'asc' ? asc : desc;
 
     const [activities, total] = await Promise.all([
       db
@@ -66,7 +66,7 @@ export class ActivitiesService {
         })
         .from(activity)
         .where(where)
-        .orderBy(order(activity[sortBy]), asc(activity.id))
+        .orderBy(direction(activity[sortBy]), asc(activity.id))
         .limit(limit)
         .offset(offset),
       db.$count(activity, where),

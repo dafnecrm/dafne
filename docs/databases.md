@@ -78,6 +78,18 @@ pnpm dafne db generate --custom --name x  # empty, for SQL written by hand
 wrong: it puts back `ON DELETE` / `ON UPDATE` dropped inside `CREATE TABLE`,
 and adds the database name to foreign keys pointing to other databases.
 
+drizzle-kit itself is patched (`patches/drizzle-kit@1.0.0-rc.5.patch`,
+`patchedDependencies` in `pnpm-workspace.yaml`). Before adding a foreign
+key, drizzle-kit looks for the primary key of the referenced table, and
+stops with "The referenced columns are not guaranteed to be unique
+together" when it doesn't find one. A table of another database (such as
+`dafne_auth`.`user`, in a `mysqlSchema`) is never among the tables it
+knows, so every new `createdById` / `updatedById` would fail. The patch
+skips the check for those tables. When upgrading drizzle-kit, check whether
+the patch is still needed: pnpm stops on a patch that no longer matches
+the installed version. To update the patch, run `pnpm patch drizzle-kit@<version>`
+and then `pnpm patch-commit <dir>`; to drop it, run `pnpm patch-remove`.
+
 In development, `dafne dev` runs `migrate:dev` before the APIs; it skips
 with a warning when `MIGRATIONS_DATABASE_URL` isn't set.
 

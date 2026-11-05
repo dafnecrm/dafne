@@ -1,0 +1,92 @@
+diff --git a/bin.cjs b/bin.cjs
+index e3e4d613c14f451deef3f30ce008407a985bbb7b..d6a3353562965a78f982061f83faad40ccda5515 100755
+--- a/bin.cjs
++++ b/bin.cjs
+@@ -92894,6 +92894,8 @@ var init_generate_mysql = __esmMin((() => {
+ 					isUnique: true,
+ 					table: tableTo
+ 				});
++				// dafne: a table of another database (mysqlSchema) is not in this ddl, skip it.
++				if (!ddl2.tables.one({ name: tableTo })) continue;
+ 				const pk = ddl2.pks.one({ table: tableTo });
+ 				const columnsToSet = new Set(columnsTo);
+ 				const isUniqueFound = indexes.some((index) => {
+@@ -155761,6 +155763,8 @@ var init_push_mysql = __esmMin((() => {
+ 					isUnique: true,
+ 					table: tableTo
+ 				});
++				// dafne: a table of another database (mysqlSchema) is not in this ddl, skip it.
++				if (!ddl2.tables.one({ name: tableTo })) continue;
+ 				const pk = ddl2.pks.one({ table: tableTo });
+ 				const columnsToSet = new Set(columnsTo);
+ 				const isUniqueFound = indexes.some((index) => {
+diff --git a/cli.js b/cli.js
+index 1c3fcf4e74bd2f00e0e167af326700935a20a8dc..412168f9adff43cbca9a920584dffbadb86d6266 100644
+--- a/cli.js
++++ b/cli.js
+@@ -91769,6 +91769,8 @@ var init_generate_mysql = __esmMin((() => {
+ 					isUnique: true,
+ 					table: tableTo
+ 				});
++				// dafne: a table of another database (mysqlSchema) is not in this ddl, skip it.
++				if (!ddl2.tables.one({ name: tableTo })) continue;
+ 				const pk = ddl2.pks.one({ table: tableTo });
+ 				const columnsToSet = new Set(columnsTo);
+ 				const isUniqueFound = indexes.some((index) => {
+@@ -154636,6 +154638,8 @@ var init_push_mysql = __esmMin((() => {
+ 					isUnique: true,
+ 					table: tableTo
+ 				});
++				// dafne: a table of another database (mysqlSchema) is not in this ddl, skip it.
++				if (!ddl2.tables.one({ name: tableTo })) continue;
+ 				const pk = ddl2.pks.one({ table: tableTo });
+ 				const columnsToSet = new Set(columnsTo);
+ 				const isUniqueFound = indexes.some((index) => {
+diff --git a/cli.mjs b/cli.mjs
+index 3f8c55d850c988933c4385bb7d198986130357be..fab3d280e67276e7c25338b733ade99a278aee0e 100644
+--- a/cli.mjs
++++ b/cli.mjs
+@@ -91752,6 +91752,8 @@ var init_generate_mysql = __esmMin((() => {
+ 					isUnique: true,
+ 					table: tableTo
+ 				});
++				// dafne: a table of another database (mysqlSchema) is not in this ddl, skip it.
++				if (!ddl2.tables.one({ name: tableTo })) continue;
+ 				const pk = ddl2.pks.one({ table: tableTo });
+ 				const columnsToSet = new Set(columnsTo);
+ 				const isUniqueFound = indexes.some((index) => {
+@@ -154619,6 +154621,8 @@ var init_push_mysql = __esmMin((() => {
+ 					isUnique: true,
+ 					table: tableTo
+ 				});
++				// dafne: a table of another database (mysqlSchema) is not in this ddl, skip it.
++				if (!ddl2.tables.one({ name: tableTo })) continue;
+ 				const pk = ddl2.pks.one({ table: tableTo });
+ 				const columnsToSet = new Set(columnsTo);
+ 				const isUniqueFound = indexes.some((index) => {
+diff --git a/payload-mysql.js b/payload-mysql.js
+index ccc4b6f3bf1737a4b7aae425fb92a02767ebe67d..932aa19378d8e4403cd7b2624400e3acf27b9db1 100644
+--- a/payload-mysql.js
++++ b/payload-mysql.js
+@@ -136547,6 +136547,8 @@ var init_push_mysql = __esmMin((() => {
+ 					isUnique: true,
+ 					table: tableTo
+ 				});
++				// dafne: a table of another database (mysqlSchema) is not in this ddl, skip it.
++				if (!ddl2.tables.one({ name: tableTo })) continue;
+ 				const pk = ddl2.pks.one({ table: tableTo });
+ 				const columnsToSet = new Set(columnsTo);
+ 				const isUniqueFound = indexes.some((index) => {
+diff --git a/payload-mysql.mjs b/payload-mysql.mjs
+index ff62b22c1e35749cb852c40cddbb615b6da2dae3..d865618a511d4d51f03851bcbcdfc855a1092007 100644
+--- a/payload-mysql.mjs
++++ b/payload-mysql.mjs
+@@ -136530,6 +136530,8 @@ var init_push_mysql = __esmMin((() => {
+ 					isUnique: true,
+ 					table: tableTo
+ 				});
++				// dafne: a table of another database (mysqlSchema) is not in this ddl, skip it.
++				if (!ddl2.tables.one({ name: tableTo })) continue;
+ 				const pk = ddl2.pks.one({ table: tableTo });
+ 				const columnsToSet = new Set(columnsTo);
+ 				const isUniqueFound = indexes.some((index) => {

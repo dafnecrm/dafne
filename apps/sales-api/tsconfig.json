@@ -34,6 +34,9 @@
     },
     {
       "path": "../../packages/backend/activities"
+    },
+    {
+      "path": "../../packages/backend/orders"
     }
   ]
 }
