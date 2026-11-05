@@ -1,6 +1,6 @@
 # Roadmap
 
-🚧 Planned work, not yet implemented.
+🚧 Planned work, not yet implemented 🚧
 
 ## CLI: sharing tables through `dafne_core`
 
