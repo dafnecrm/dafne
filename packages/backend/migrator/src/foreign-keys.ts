@@ -58,8 +58,8 @@ const actions = ({ onDelete, onUpdate }: SnapshotForeignKey) =>
 
 /**
  * Fixes the foreign keys drizzle-kit 1.0.0-rc.5 writes, from the snapshot:
- * - inside CREATE TABLE it drops ON DELETE / ON UPDATE (a known bug, see
- *   packages/cli-old/CLAUDE.md), so they're written back;
+ * - inside CREATE TABLE it drops ON DELETE / ON UPDATE (a known bug), so
+ *   they're written back;
  * - a key to a table of another database (e.g. a CRM table's
  *   `created_by_id` → dafne_auth's `user`) gets the database name.
  * Idempotent: a fixed migration stays as it is.

@@ -1,6 +1,8 @@
 # dafne
 
-Monorepo (pnpm workspaces + Nx) of the Dafne CRM. Each project has its own
+Monorepo (pnpm workspaces + Nx) of the Dafne CRM. The documentation of the
+monorepo (structure, platform, CLI) is in `docs/` (index: `docs/README.md`):
+keep it in line when these rules change. Each project has its own
 `CLAUDE.md` with its rules:
 
 | Folder               | Package            | What                                              |
@@ -13,7 +15,6 @@ Monorepo (pnpm workspaces + Nx) of the Dafne CRM. Each project has its own
 | `packages/auth-options` | `@dafne/auth-options` | Better Auth options (no Nest, no DB), shared |
 | `apps/auth`           | `@dafne/auth`      | Sign-in (Better Auth), users and app access, shared by every app |
 | `packages/cli`       | `@dafne/cli`       | `dafne`: Nx generators (backend, frontend libs) and task runner |
-| `packages/cli-old`   | `@dafne/cli-old`   | `dafne-old`: previous CLI (frontend, sync, field, migration) |
 
 `apps/` holds what runs or deploys, `packages/` what is shared or published.
 
@@ -27,8 +28,7 @@ Monorepo (pnpm workspaces + Nx) of the Dafne CRM. Each project has its own
   (migrating first, with `MIGRATIONS_DATABASE_URL`); `pnpm dafne db
   migrate | generate` handles the migrations.
 - `pnpm dafne <command>` runs the CLI from source (e.g. `pnpm dafne dev`,
-  `pnpm dafne g resource invoice`). `pnpm dafne-old <command>` runs the
-  previous one.
+  `pnpm dafne g resource invoice`).
 
 ## Rules
 
@@ -42,7 +42,6 @@ Monorepo (pnpm workspaces + Nx) of the Dafne CRM. Each project has its own
   own Nx generators (`nx g @dafne/cli:<generator>`), not `@nx/nest`'s (they
   write a `project.json`). They write the package and add it to the app and
   to the project references. Then run `pnpm install` and `pnpm nx sync`.
-  Frontend pages still come from `dafne-old`.
 - **Project references** (`references` in the tsconfigs) follow the
   `package.json` dependencies: `pnpm nx sync` updates them, and CI fails
   when they're out of date. Shared compiler options are in

@@ -65,7 +65,7 @@ class Tables {
       if (this.file(path).tables().includes(variable))
         return { path, variable, sql: names.s.snake, names, part: `${variable}Relations` };
     }
-    throw new Error(`No table "${variable}" in ${TABLES}: create the resource with "dafne-old g backend table ${names.p.kebab}".`);
+    throw new Error(`No table "${variable}" in ${TABLES}: create the resource with "dafne g resource ${names.p.kebab}".`);
   }
 
   /** Table files are always Prettier-formatted: the backend formats them (pnpm format). */
