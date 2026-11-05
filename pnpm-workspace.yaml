@@ -57,6 +57,6 @@ catalog:
 
 permissions:
   '@tanstack/react-table':
-    skills: false
+    skills: true
   drizzle-kit:
     skills: false
