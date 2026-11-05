@@ -73,7 +73,7 @@ export class CustomersService {
       return value ? [like(customer[field], `%${escapeLike(value)}%`)] : [];
     });
     const where = and(notDeleted, ...filters) as SQL;
-    const order = sortDirection === 'asc' ? asc : desc;
+    const direction = sortDirection === 'asc' ? asc : desc;
 
     const [customers, total] = await Promise.all([
       db
@@ -91,7 +91,7 @@ export class CustomersService {
         })
         .from(customer)
         .where(where)
-        .orderBy(order(customer[sortBy]), asc(customer.id))
+        .orderBy(direction(customer[sortBy]), asc(customer.id))
         .limit(limit)
         .offset(offset),
       db.$count(customer, where),

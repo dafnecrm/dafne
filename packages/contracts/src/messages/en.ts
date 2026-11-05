@@ -56,6 +56,11 @@ export const en = {
     q: { required: 'Enter what to search' },
     unavailable: 'Address search is unavailable. Try again later.',
   },
+  orders: {
+    notFound: 'Order not found',
+    name: { required: 'Enter the name' },
+    customerId: { required: 'Enter the customer id' },
+  },
 };
 
 /** The shape every language must have: same keys, any text. */

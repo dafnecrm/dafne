@@ -7,13 +7,15 @@
     "tagline": "Un crm purrfetto",
     "home": "Home",
     "dashboard": "Dashboard",
-    "crm": "CRM",
+    "sales": "Sales",
     "customers": "Clienti",
     "activities": "Attività",
     "products": "Prodotti",
     "admin": "Amministrazione",
     "users": "Utenti",
-    "account": "Account"
+    "account": "Account",
+    "orders": "Orders",
+    "crm": "CRM"
   },
   "breadcrumb": {
     "new": "Nuovo",
@@ -412,6 +414,34 @@
       "signInForNewLink": "Accedi con email e password e ti invieremo un nuovo link di verifica.",
       "signIn": "Accedi",
       "backToSignIn": "Torna all'accesso"
+    }
+  },
+  "orders": {
+    "title": "Orders",
+    "singular": "Order",
+    "new": "New order",
+    "all": "All orders",
+    "noun": "orders",
+    "create": "Create order",
+    "editMeta": "Edit order",
+    "newDescription": "Only the name is required.",
+    "editDescription": "Saving replaces the order's details.",
+    "empty": {
+      "title": "No orders found",
+      "filtered": "No order where {filter}.",
+      "none": "Add your first order to get started."
+    },
+    "deleteDescription": "The order will no longer be listed or editable.",
+    "notFound": "This order no longer exists.",
+    "sections": {
+      "details": "Details"
+    },
+    "fields": {
+      "name": "Name",
+      "createdAt": "Added",
+      "id": "Order ID",
+      "notes": "Notes",
+      "customerId": "Customer id"
     }
   }
 }

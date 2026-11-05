@@ -46,7 +46,7 @@ export class <%= p.pascal %>Service {
       return value ? [like(<%= s.camel %>[field], `%${escapeLike(value)}%`)] : [];
     });
     const where = and(notDeleted, ...filters) as SQL;
-    const order = sortDirection === 'asc' ? asc : desc;
+    const direction = sortDirection === 'asc' ? asc : desc;
 
     const [<%= p.camel %>, total] = await Promise.all([
       db
@@ -58,7 +58,7 @@ export class <%= p.pascal %>Service {
         })
         .from(<%= s.camel %>)
         .where(where)
-        .orderBy(order(<%= s.camel %>[sortBy]), asc(<%= s.camel %>.id))
+        .orderBy(direction(<%= s.camel %>[sortBy]), asc(<%= s.camel %>.id))
         .limit(limit)
         .offset(offset),
       db.$count(<%= s.camel %>, where),

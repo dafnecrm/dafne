@@ -5,7 +5,8 @@ import {
   UserIcon,
   UsersIcon, type LucideIcon,
   ListClockIcon,
-  GroceriesIcon
+  GroceriesIcon,
+  PackageIcon
 } from "lucide-react";
 
 /** A title: a key of the `nav` messages, translated where it's shown. */
@@ -37,12 +38,13 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [{ title: "dashboard", href: "/", icon: HouseIcon }],
   },
   {
-    title: "crm",
+    title: "sales",
     href: "/customers",
     items: [
       { title: "customers", href: "/customers", icon: ContactIcon },
       { title: "activities", href: "/activities", icon: ListClockIcon },
       { title: "products", href: "/products", icon: GroceriesIcon },
+      { title: "orders", href: "/orders", icon: PackageIcon }
     ],
   },
   {
