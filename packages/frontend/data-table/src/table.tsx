@@ -2,8 +2,14 @@
 
 import {
   createColumnHelper,
+  createPaginatedRowModel,
+  createSortedRowModel,
   rowPaginationFeature,
   rowSortingFeature,
+  sortFn_alphanumeric,
+  sortFn_basic,
+  sortFn_datetime,
+  sortFn_text,
   tableFeatures,
   useTable,
   type PaginationState,
@@ -94,6 +100,17 @@ import {
 export const dataTableFeatures = tableFeatures({
   rowPaginationFeature,
   rowSortingFeature,
+  // Client-side pagination and sorting, used only when `manualPagination`
+  // or `manualSorting` is false.
+  paginatedRowModel: createPaginatedRowModel(),
+  sortedRowModel: createSortedRowModel(),
+  // The ones `sortFn: "auto"` (the default) picks from.
+  sortFns: {
+    alphanumeric: sortFn_alphanumeric,
+    basic: sortFn_basic,
+    datetime: sortFn_datetime,
+    text: sortFn_text,
+  },
   // Type-only slot: per-column options read by DataTable.
   columnMeta: {} as {
     /** Classes for the header and the cells, e.g. "text-right". */
@@ -174,6 +191,19 @@ export interface DataTableProps<TData extends RowData> {
   empty?: ReactNode;
   /** Unit for the count, already translated, e.g. "users" ("1–20 of 42 users"). */
   noun?: string;
+  /**
+   * Paginate on the server (default): `data` is one page, and changing page
+   * or page size changes the URL and fetches again. When false, `data` holds
+   * every row and the table pages through it in the browser, without
+   * calling the server.
+   */
+  manualPagination?: boolean;
+  /**
+   * Sort on the server (default): a click changes the sort in the URL and
+   * the page is fetched again. When false, the table sorts the rows it has
+   * in the browser, without calling the server.
+   */
+  manualSorting?: boolean;
 }
 
 export function DataTable<TData extends RowData>({
@@ -186,6 +216,8 @@ export function DataTable<TData extends RowData>({
   rowActions,
   empty,
   noun,
+  manualPagination = true,
+  manualSorting = true,
 }: DataTableProps<TData>) {
   const router = useRouter();
   const [navigating, startTransition] = useTransition();
@@ -193,11 +225,19 @@ export function DataTable<TData extends RowData>({
   const describeFilters = useDescribeFilters();
 
   // The URL owns page and sort; the table only asks to change them.
-  const pagination = useMemo<PaginationState>(
+  // Client-side pagination and sorting live here instead, starting from
+  // the URL's (the order the server returned the rows in).
+  const urlPagination = useMemo<PaginationState>(
     () => ({ pageIndex: params.page - 1, pageSize: params.pageSize }),
     [params.page, params.pageSize],
   );
-  const sorting = useMemo<SortingState>(() => [params.sort], [params.sort]);
+  const [localPagination, setLocalPagination] = useState<PaginationState>(
+    () => ({ pageIndex: 0, pageSize: params.pageSize }),
+  );
+  const pagination = manualPagination ? urlPagination : localPagination;
+  const urlSorting = useMemo<SortingState>(() => [params.sort], [params.sort]);
+  const [localSorting, setLocalSorting] = useState<SortingState>(urlSorting);
+  const sorting = manualSorting ? urlSorting : localSorting;
   const navigate = (href: string) => startTransition(() => router.push(href));
 
   const allColumns = useMemo(
@@ -210,10 +250,12 @@ export function DataTable<TData extends RowData>({
     columns: allColumns,
     data,
     getRowId,
-    // The server already returned this page, sorted.
-    manualPagination: true,
-    manualSorting: true,
-    rowCount: total,
+    // The server already returned this page, sorted (unless manualPagination
+    // or manualSorting is false).
+    manualPagination,
+    manualSorting,
+    // Client-side, the count comes from the rows.
+    rowCount: manualPagination ? total : undefined,
     enableMultiSort: false,
     enableSortingRemoval: false, // a click toggles asc / desc
     state: { pagination, sorting },
@@ -221,11 +263,22 @@ export function DataTable<TData extends RowData>({
       const next =
         typeof updater === "function" ? updater(pagination) : updater;
       // A new page size starts again from page 1.
-      const page =
-        next.pageSize === pagination.pageSize ? next.pageIndex + 1 : 1;
+      const samePageSize = next.pageSize === pagination.pageSize;
+      if (!manualPagination) {
+        setLocalPagination(samePageSize ? next : { ...next, pageIndex: 0 });
+        return;
+      }
+      const page = samePageSize ? next.pageIndex + 1 : 1;
       navigate(tableHref(config, { ...params, pageSize: next.pageSize, page }));
     },
     onSortingChange: (updater) => {
+      if (!manualSorting) {
+        setLocalSorting(updater);
+        // A new order starts again from page 1.
+        if (manualPagination) navigate(tableHref(config, { ...params, page: 1 }));
+        else setLocalPagination((current) => ({ ...current, pageIndex: 0 }));
+        return;
+      }
       const [next] = typeof updater === "function" ? updater(sorting) : updater;
       // A new order starts again from page 1.
       navigate(
@@ -239,8 +292,10 @@ export function DataTable<TData extends RowData>({
   });
 
   const rows = table.getRowModel().rows;
-  const first = total ? pagination.pageIndex * pagination.pageSize + 1 : 0;
-  const last = Math.min(first + rows.length - 1, total);
+  // `total`, or every row client-side.
+  const count = table.getRowCount();
+  const first = count ? pagination.pageIndex * pagination.pageSize + 1 : 0;
+  const last = Math.min(first + rows.length - 1, count);
   const unit = noun ?? t("results");
 
   return (
@@ -338,8 +393,8 @@ export function DataTable<TData extends RowData>({
 
       <div className="flex items-center justify-between gap-2 text-sm text-muted-foreground">
         <span className="flex items-center gap-2">
-          {total
-            ? t("range", { first, last, total, unit })
+          {count
+            ? t("range", { first, last, total: count, unit })
             : t("none", { unit })}
           {navigating && <Spinner />}
         </span>

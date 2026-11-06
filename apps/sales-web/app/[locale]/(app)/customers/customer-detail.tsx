@@ -31,6 +31,7 @@ import {
   CUSTOMER_ADDRESS_TYPE_OPTIONS,
   CUSTOMER_TYPE_OPTIONS,
 } from "@/lib/customers-table";
+import { CustomerAddressTable } from "./customer-address-table";
 
 /** The details of a customer: type and tax data, contact, addresses, then who created and updated it. */
 export function CustomerDetails({ customer }: { customer: CustomerDetail }) {
@@ -101,48 +102,49 @@ export function CustomerDetails({ customer }: { customer: CustomerDetail }) {
         groupClassName="flex"
       >
         {customer.addresses.length ? (
-          <div className="rounded-lg border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("customers.addresses.fields.type")}</TableHead>
-                  <TableHead>
-                    {t("customers.addresses.fields.street")}
-                  </TableHead>
-                  <TableHead>
-                    {t("customers.addresses.fields.postalCode")}
-                  </TableHead>
-                  <TableHead>{t("customers.addresses.fields.city")}</TableHead>
-                  <TableHead>
-                    {t("customers.addresses.fields.region")}
-                  </TableHead>
-                  <TableHead>
-                    {t("customers.addresses.fields.country")}
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {customer.addresses.map((address) => (
-                  <TableRow key={address.id}>
-                    <TableCell>
-                      {optionLabel(CUSTOMER_ADDRESS_TYPE_OPTIONS, address.type)}
-                    </TableCell>
-                    <TableCell>{address.street}</TableCell>
-                    <TableCell>{address.postalCode ?? "—"}</TableCell>
-                    <TableCell>{address.city}</TableCell>
-                    <TableCell>{address.region ?? "—"}</TableCell>
-                    <TableCell>
-                      {countryName(
-                        address.countryCode,
-                        locale,
-                        address.country.name,
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+          <CustomerAddressTable addresses={customer.addresses} />
+          // <div className="rounded-lg border">
+          //   <Table>
+          //     <TableHeader>
+          //       <TableRow>
+          //         <TableHead>{t("customers.addresses.fields.type")}</TableHead>
+          //         <TableHead>
+          //           {t("customers.addresses.fields.street")}
+          //         </TableHead>
+          //         <TableHead>
+          //           {t("customers.addresses.fields.postalCode")}
+          //         </TableHead>
+          //         <TableHead>{t("customers.addresses.fields.city")}</TableHead>
+          //         <TableHead>
+          //           {t("customers.addresses.fields.region")}
+          //         </TableHead>
+          //         <TableHead>
+          //           {t("customers.addresses.fields.country")}
+          //         </TableHead>
+          //       </TableRow>
+          //     </TableHeader>
+          //     <TableBody>
+          //       {customer.addresses.map((address) => (
+          //         <TableRow key={address.id}>
+          //           <TableCell>
+          //             {optionLabel(CUSTOMER_ADDRESS_TYPE_OPTIONS, address.type)}
+          //           </TableCell>
+          //           <TableCell>{address.street}</TableCell>
+          //           <TableCell>{address.postalCode ?? "—"}</TableCell>
+          //           <TableCell>{address.city}</TableCell>
+          //           <TableCell>{address.region ?? "—"}</TableCell>
+          //           <TableCell>
+          //             {countryName(
+          //               address.countryCode,
+          //               locale,
+          //               address.country.name,
+          //             )}
+          //           </TableCell>
+          //         </TableRow>
+          //       ))}
+          //     </TableBody>
+          //   </Table>
+          // </div>
         ) : (
           <p className="text-sm text-muted-foreground">
             {t("customers.addresses.noneDetail")}{" "}

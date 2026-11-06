@@ -62,7 +62,7 @@ export function OrderForm({ order }: { order?: OrderDetail }) {
                 <form.AppField name="customerId">
                   {(field) => (
                     <field.TextField
-                      label={t("orders.fields.customerId")}
+                      label={t("orders.fields.customer")}
                       autoComplete="off"
                     />
                   )}
