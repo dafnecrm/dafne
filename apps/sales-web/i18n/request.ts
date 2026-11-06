@@ -1,4 +1,6 @@
 import { CONTRACT_MESSAGES } from "@dafne/contracts";
+import { CUSTOMERS_MESSAGES } from "@dafne/frontend-customers";
+import { GEO_MESSAGES } from "@dafne/frontend-geo";
 import { hasLocale } from "next-intl";
 import { getRequestConfig } from "next-intl/server";
 import { locale as rootLocale } from "next/root-params";
@@ -29,6 +31,10 @@ export default getRequestConfig(async ({ locale, requestLocale }) => {
       ...(await import(`../messages/${resolved}.json`)).default,
       // Validation and API error texts, shared with the backend.
       contracts: CONTRACT_MESSAGES[resolved],
+      // Customer texts, shipped by @dafne/frontend-customers.
+      customers: CUSTOMERS_MESSAGES[resolved],
+      // Address search and country texts, shipped by @dafne/frontend-geo.
+      geo: GEO_MESSAGES[resolved],
     },
   };
 });

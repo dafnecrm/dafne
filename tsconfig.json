@@ -70,6 +70,12 @@
     },
     {
       "path": "./packages/backend/orders"
+    },
+    {
+      "path": "./packages/frontend/customers"
+    },
+    {
+      "path": "./packages/frontend/geo"
     }
   ]
 }

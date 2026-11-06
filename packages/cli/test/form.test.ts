@@ -116,7 +116,7 @@ describe('syncFormComponent', () => {
     expect(content).toMatch(/import \{[^}]*TYPE_OPTIONS[^}]*\} from "\.\/schema"/);
     // Translated options are made at the top of the component, not in a render prop.
     expect(content).toContain('  const t = useTranslations();\n  const typeOptions = useOptionLabels(TYPE_OPTIONS);\n');
-    expect(content).toMatch(/import \{ useOptionLabels \} from "@\/i18n\/options"/);
+    expect(content).toMatch(/import \{ useOptionLabels \} from "@dafne\/frontend-ui\/hooks\/use-option-labels"/);
     expect(content.indexOf('name="name"')).toBeLessThan(content.indexOf('name="type"'));
     expect(report.added).toHaveLength(9);
   });

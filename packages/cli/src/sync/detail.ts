@@ -136,7 +136,7 @@ export function syncDetail(
         .find((st) => st.getDeclarations()[0]?.getInitializer()?.getText() === 'useOptionLabel()');
       if (report.removed!.length && hook && !/\boptionLabel\(/.test(file.getFullText())) hook.remove();
       if (report.removed!.length)
-        removeUnusedImports(file, (module) => module === 'lucide-react' || module.startsWith('@dafne/frontend-ui/') || module.startsWith('@/lib/') || module === '@/i18n/options');
+        removeUnusedImports(file, (module) => module === 'lucide-react' || module.startsWith('@dafne/frontend-ui/') || module.startsWith('@/lib/') || module === '@dafne/frontend-ui/hooks/use-option-labels');
     }
     for (const field of missing) {
       const { code, imports } = detailCode(names, record, field);
@@ -158,7 +158,7 @@ export function syncDetail(
       }
       for (const [module, name] of imports) ensureNamedImport(file, module, name);
       if (field.kind === 'enum' && ensureHookLine(file, 'const optionLabel = useOptionLabel();'))
-        ensureNamedImport(file, '@/i18n/options', 'useOptionLabel');
+        ensureNamedImport(file, '@dafne/frontend-ui/hooks/use-option-labels', 'useOptionLabel');
       report.added.push(`<Detail> ${field.key}`);
     }
   });

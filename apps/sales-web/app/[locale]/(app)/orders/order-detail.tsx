@@ -8,7 +8,7 @@ import {
   TextIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import CopyButton from "@/components/copy-button";
+import CopyButton from "@dafne/frontend-ui/components/copy-button";
 import { Detail, DetailSection } from "@dafne/frontend-ui/components/detail";
 import { LocalDate } from "@dafne/frontend-ui/components/local-date";
 import type { OrderDetail } from "@/lib/orders";

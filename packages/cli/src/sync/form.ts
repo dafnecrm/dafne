@@ -313,7 +313,7 @@ export function syncFormComponent(
       if (f.kind === 'enum') {
         ensureNamedImport(file, './schema', optionsName(f));
         if (ensureHookLine(file, `const ${optionsVar(f)} = useOptionLabels(${optionsName(f)});`))
-          ensureNamedImport(file, '@/i18n/options', 'useOptionLabels');
+          ensureNamedImport(file, '@dafne/frontend-ui/hooks/use-option-labels', 'useOptionLabels');
       }
       report.added.push(`<form.AppField name="${f.key}">`);
     }

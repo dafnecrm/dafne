@@ -13,7 +13,7 @@ By path, no index:
 | `@dafne/frontend-ui/components/<name>` | `button`, `dialog`, `sidebar`, `table`, `date-picker`, `text-editor`, `local-date`, `theme-toggle`… |
 | `@dafne/frontend-ui/lib/utils`         | `cn`                                                                                                |
 | `@dafne/frontend-ui/lib/dates`         | date formats, `formatDate`, `localeFor`                                                             |
-| `@dafne/frontend-ui/lib/theme`         | `useTheme`, `setTheme`, `THEME_SCRIPT`                                                              |
+| `@dafne/frontend-ui/lib/theme`         | `useTheme`, `setTheme`, `applySavedTheme`, `THEME_SCRIPT`                                                              |
 | `@dafne/frontend-ui/lib/message-key`   | `MessageKey`, the type of the app's message keys                                                    |
 | `@dafne/frontend-ui/hooks/use-mobile`  | `useIsMobile`                                                                                       |
 
@@ -25,8 +25,29 @@ pnpm --filter @dafne/frontend-ui shadcn:add <component>
 
 `components.json` is here; the components import each other by package
 name, as shadcn writes them (`tsconfig.json` maps it to `src/`). The CSS
-(theme, variables) stays in `apps/sales-web/app/globals.css`, which scans
-this package for Tailwind classes (`@source`).
+every app shares (theme, variables, base styles) is
+`src/styles/globals.css`; `shadcn:add` writes there.
+
+## Theme
+
+An app's `app/globals.css` imports Tailwind, then the shared CSS, then
+overrides the variables of its own look:
+
+```css
+@import "tailwindcss";
+@import "@dafne/frontend-ui/styles/globals.css";
+
+:root {
+  --primary: oklch(0.55 0.2 260);
+  --radius: 0.375rem;
+}
+.dark {
+  --primary: oklch(0.7 0.15 260);
+}
+```
+
+The shared CSS also scans `packages/frontend` for Tailwind classes
+(`@source`); the app's own files are found by Tailwind itself.
 
 ## Texts
 

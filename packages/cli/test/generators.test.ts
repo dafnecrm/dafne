@@ -399,7 +399,6 @@ describe('frontend-app', () => {
     expect(en.nav.tagline).toBe('Billing web');
     expect(en.customers).toBeUndefined();
     expect(read('apps/billing-web/lib/navigation.ts')).not.toContain('customers');
-    expect(read('apps/billing-web/lib/app-form/app-form.ts')).not.toContain('CountrySelectField');
   });
 
   it('takes the pages of a resource and the frontend libs', async () => {

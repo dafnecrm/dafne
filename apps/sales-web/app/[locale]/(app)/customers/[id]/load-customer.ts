@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { BackendError } from "@dafne/frontend-api";
-import { getCustomer } from "@/lib/customers";
+import { getCustomer } from "@dafne/frontend-customers/server";
 import { requireUser } from "@/lib/session";
 
 /** The customer for a page, or the 404 page if missing or deleted. */

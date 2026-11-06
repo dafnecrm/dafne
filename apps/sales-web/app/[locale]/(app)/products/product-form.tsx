@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Button } from "@dafne/frontend-ui/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@dafne/frontend-ui/components/card";
 import { FieldGroup } from "@dafne/frontend-ui/components/field";
-import { setServerError, useAppForm } from "@/lib/app-form/app-form";
+import { setServerError, useAppForm } from "@dafne/frontend-forms/client";
 import { useResetOnLeave } from "@dafne/frontend-forms/client";
 import type { ProductDetail } from "@/lib/products";
 import { saveProduct } from "./actions";

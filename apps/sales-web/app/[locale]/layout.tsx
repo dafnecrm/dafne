@@ -5,7 +5,7 @@ import { locale as rootLocale } from "next/root-params";
 import { Geist, Geist_Mono, Inter, Figtree } from "next/font/google";
 import "../globals.css";
 import { TooltipProvider } from "@dafne/frontend-ui/components/tooltip";
-import { THEME_SCRIPT } from "@dafne/frontend-ui/lib/theme";
+import { ThemeScript } from "@dafne/frontend-ui/components/theme-script";
 import { cn } from "@dafne/frontend-ui/lib/utils";
 import { routing } from "@/i18n/routing";
 
@@ -49,7 +49,7 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+        <ThemeScript />
       </head>
       <body className="min-h-full flex flex-col">
         <NextIntlClientProvider>

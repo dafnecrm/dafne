@@ -5,7 +5,7 @@ import { revalidateLogic } from "@tanstack/react-form-nextjs";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { FieldGroup } from "@dafne/frontend-ui/components/field";
-import { setServerError, useAppForm } from "@/lib/app-form/app-form";
+import { setServerError, useAppForm } from "@dafne/frontend-forms/client";
 import { useResetOnLeave } from "@dafne/frontend-forms/client";
 import { authClient, useAuthErrorMessage } from "@dafne/frontend-auth/client";
 import { signUpFormOpts, signUpSchema } from "../schemas";

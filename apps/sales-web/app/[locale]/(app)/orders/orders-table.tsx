@@ -1,6 +1,6 @@
 "use client";
 
-import { FileIcon } from "lucide-react";
+import { PackageIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo } from "react";
 import {
@@ -11,17 +11,19 @@ import {
 import { LocalDate } from "@dafne/frontend-ui/components/local-date";
 import {
   Empty,
+  EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
 } from "@dafne/frontend-ui/components/empty";
-import { useOptionLabel } from "@/i18n/options";
+import { useOptionLabel } from "@dafne/frontend-ui/hooks/use-option-labels";
 import type { TableParams } from "@dafne/frontend-data-table";
 import type { ListedOrder } from "@/lib/orders";
 import { ordersTable } from "@/lib/orders-table";
 import { OrderTableActions } from "./order-table-actions";
 import Link from "next/link";
+import { Button } from "@dafne/frontend-ui/components/button";
 
 /*
  * Columns of the orders table. Column ids double as the backend's
@@ -96,23 +98,30 @@ export function OrdersTable({
       total={total}
       noun={t("orders.noun")}
       empty={
-        <Empty>
+        <Empty className="border border-solid">
           <EmptyHeader>
             <EmptyMedia variant="icon">
-              <FileIcon />
+              <PackageIcon />
             </EmptyMedia>
             <EmptyTitle>{t("orders.empty.title")}</EmptyTitle>
             <EmptyDescription>
               {Object.keys(params.filters).length
                 ? t("orders.empty.filtered", {
-                    filter: describeFilters(
-                      params.filters,
-                      ordersTable.filters,
-                    ),
-                  })
+                  filter: describeFilters(
+                    params.filters,
+                    ordersTable.filters,
+                  ),
+                })
                 : t("orders.empty.none")}
             </EmptyDescription>
           </EmptyHeader>
+          <EmptyContent>
+            <Button variant="outline">
+              <Link href="/orders/new" className="flex items-center gap-2">
+                {t("orders.create")}
+              </Link>
+            </Button>
+          </EmptyContent>
         </Empty>
       }
     />

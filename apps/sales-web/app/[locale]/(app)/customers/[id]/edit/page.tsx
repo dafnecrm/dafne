@@ -10,7 +10,8 @@ import {
 } from "@dafne/frontend-ui/components/page-content";
 import { BreadcrumbLabel } from "@/components/page-breadcrumb";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
-import { CustomerForm } from "../../customer-form";
+import { CustomerForm } from "@dafne/frontend-customers/components/customer-form";
+import { customersTable } from "@/lib/customers-table";
 import { loadCustomer } from "../load-customer";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -49,7 +50,7 @@ async function EditCustomer({
         </PageContentDescription>
       </PageContentHeader>
       <PageContentBody>
-        <CustomerForm customer={customer} />
+        <CustomerForm customer={customer} path={customersTable.path} />
       </PageContentBody>
     </PageContent>
   );

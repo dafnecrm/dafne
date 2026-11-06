@@ -25,7 +25,7 @@ import {
   EmptyTitle,
 } from "@dafne/frontend-ui/components/empty";
 import type { TableParams } from "@dafne/frontend-data-table";
-import { useOptionLabel } from "@/i18n/options";
+import { useOptionLabel } from "@dafne/frontend-ui/hooks/use-option-labels";
 import { Badge } from "@dafne/frontend-ui/components/badge";
 
 /*

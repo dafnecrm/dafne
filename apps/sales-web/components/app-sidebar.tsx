@@ -73,7 +73,7 @@ export function AppSidebar({
                 <PawPrint className="size-4" />
               </div>
               <div className="flex flex-col gap-0.5 leading-none">
-                <span className="font-medium">Dafne</span>
+                <span className="font-medium">Dafne Sales</span>
                 <span className="text-xs text-muted-foreground">
                   {t("tagline")}
                 </span>

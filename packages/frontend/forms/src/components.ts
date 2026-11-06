@@ -2,16 +2,15 @@ import {
   CheckboxField,
   DatePickerField,
   DateTimePickerField,
-  FormErrors,
   NumberField,
   PasswordField,
   SelectField,
-  SubmitButton,
   TextareaField,
   TextEditorField,
   TextField,
   UncontrolledField,
-} from "./fields.tsx";
+} from "./fields/index.ts";
+import { FormErrors, SubmitButton } from "./form-components/index.ts";
 
 /** The generic fields, for `createFormHook({ fieldComponents })`. */
 export const FIELD_COMPONENTS = {
