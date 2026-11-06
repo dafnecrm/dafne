@@ -73,9 +73,16 @@ export interface OrderUser {
   name: string;
 }
 
+/** The order customer */
+export interface OrderCustomer {
+  id: number;
+  name: string;
+}
+
 /** Response of GET /orders/:id, POST /orders and PUT /orders/:id. */
 export interface OrderDetail extends ListedOrder {
   notes: string | null;
+  customer: OrderCustomer;
   createdBy: OrderUser | null;
   updatedBy: OrderUser | null;
   /** Always null: deleted orders aren't returned. */

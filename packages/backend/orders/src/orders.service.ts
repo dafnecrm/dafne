@@ -24,6 +24,9 @@ const notDeleted = isNull(order.deletedAt);
 /** Only the user's ID and name, for "created by" / "updated by". */
 const userSummary = { columns: { id: true, name: true } } as const;
 
+/** Only the customer's ID and name, for "customer". */
+const customerSummary = { columns: { id: true, name: true } } as const;
+
 @Injectable()
 export class OrdersService {
   logger = new Logger(OrdersService.name);
@@ -82,7 +85,7 @@ export class OrdersService {
     const found = await this.db.query.order.findFirst({
       where: { id, deletedAt: { isNull: true } },
       columns: { createdById: false, updatedById: false },
-      with: { createdBy: userSummary, updatedBy: userSummary },
+      with: { createdBy: userSummary, updatedBy: userSummary, customer: customerSummary },
     });
 
     if (!found) throw new NotFoundException(msg('orders.notFound'));

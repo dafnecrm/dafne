@@ -13,6 +13,7 @@ import { Detail, DetailSection } from "@dafne/frontend-ui/components/detail";
 import { LocalDate } from "@dafne/frontend-ui/components/local-date";
 import type { OrderDetail } from "@/lib/orders";
 import { TextEditorContent } from "@dafne/frontend-ui/components/text-editor";
+import Link from "next/link";
 
 /** The details of an order: its fields, then who created and updated it. */
 export function OrderDetails({ order }: { order: OrderDetail }) {
@@ -20,8 +21,10 @@ export function OrderDetails({ order }: { order: OrderDetail }) {
   return (
     <>
       <DetailSection title={t("orders.sections.details")}>
-        <Detail icon={LinkIcon} label={t("orders.fields.customerId")}>
-          <code className="font-mono text-xs">{order.customerId}</code>
+        <Detail icon={LinkIcon} label={t("orders.fields.customer")}>
+          <Link href={`/customers/${order.customer.id}`} className="hover:underline">
+            {order.customer.name}
+          </Link>
         </Detail>
         <Detail icon={TextIcon} label={t("orders.fields.notes")} wide>
           {order.notes ? (

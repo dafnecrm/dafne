@@ -440,7 +440,7 @@
       "createdAt": "Added",
       "id": "Order ID",
       "notes": "Notes",
-      "customerId": "Customer id"
+      "customer": "Cliente"
     }
   }
 }

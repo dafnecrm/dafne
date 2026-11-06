@@ -49,7 +49,7 @@ export interface TableOption {
 /** A table's config, with defaults filled in (see `defineDataTable`). */
 export interface DataTableConfig {
   /** Page path, used for filter, sort and paging URLs. */
-  path: string;
+  path?: string;
   /** Page sizes the picker offers. */
   pageSizes: readonly number[];
   /** Page size without `?limit=`. */
@@ -144,6 +144,12 @@ export function tableHref(
   config: DataTableConfig,
   { filters, page, pageSize, sort }: Omit<TableParams, "offset">,
 ) {
+  /**
+   * A table can be used with client pagination and sorting, 
+   * so it has no path to build a URL.
+  */
+  if (!config.path) return "#";
+
   const query = new URLSearchParams(cleanFilters(filters));
   const { defaultSort } = config;
   if (sort.id !== defaultSort.id || sort.desc !== defaultSort.desc) {
