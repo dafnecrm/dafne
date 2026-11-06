@@ -1,4 +1,4 @@
-import type { Messages } from "next-intl";
+import type { MessageKeys, Messages, NestedKeyOf } from "next-intl";
 import {
   ContactIcon,
   HouseIcon,
@@ -9,8 +9,11 @@ import {
   PackageIcon
 } from "lucide-react";
 
-/** A title: a key of the `nav` messages, translated where it's shown. */
-export type NavTitle = keyof Messages["nav"];
+/**
+ * A title: a key of the `nav` messages, translated where it's shown.
+ * Nested messages use dotted paths (`customers.list`).
+ */
+export type NavTitle = MessageKeys<Messages["nav"], NestedKeyOf<Messages["nav"]>>;
 
 export interface NavItem {
   title: NavTitle;
@@ -39,7 +42,7 @@ export const NAV_SECTIONS: NavSection[] = [
   },
   {
     title: "sales",
-    href: "/customers",
+    href: "#",
     items: [
       { title: "customers", href: "/customers", icon: ContactIcon },
       { title: "activities", href: "/activities", icon: ListClockIcon },
@@ -64,7 +67,7 @@ export const NAV_SECTIONS: NavSection[] = [
 /** The section and page for a path ("/account/x" matches "/account"). */
 export function findNavItem(pathname: string) {
   for (const section of NAV_SECTIONS) {
-    const item = section.items.find((item) =>
+    const item = section.items?.find((item) =>
       item.href === "/"
         ? pathname === "/"
         : pathname === item.href || pathname.startsWith(`${item.href}/`),
