@@ -219,7 +219,7 @@ function pruneEnumOptions(changes: Changes, names: ResourceNames, app: string, c
             report.removed!.push(hook.getDeclarations()[0].getName());
             hook.remove();
           }
-          removeUnusedImports(file, (m) => m === './schema' || m.startsWith('@/lib/') || m === '@/i18n/options');
+          removeUnusedImports(file, (m) => m === './schema' || m.startsWith('@/lib/') || m === '@dafne/frontend-ui/hooks/use-option-labels');
         }),
       { format: true },
     );

@@ -14,11 +14,11 @@ import {
 } from "@dafne/frontend-ui/components/page-content";
 import { Button } from "@dafne/frontend-ui/components/button";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
-import { listCustomers } from "@/lib/customers";
+import { listCustomers } from "@dafne/frontend-customers/server";
 import { customersTable } from "@/lib/customers-table";
 import { getTableParams } from "@dafne/frontend-data-table";
 import { requireUser } from "@/lib/session";
-import { CustomersTable } from "./customers-table";
+import { CustomersTable } from "@dafne/frontend-customers/components/customers-table";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("customers");
@@ -66,6 +66,7 @@ async function CustomersList({
 
   return (
     <CustomersTable
+      config={customersTable}
       customers={data.customers}
       total={data.total}
       params={params}

@@ -21,7 +21,7 @@ import type { TableParams } from "@dafne/frontend-data-table";
 import type { ListedProduct } from "@/lib/products";
 import { productsTable } from "@/lib/products-table";
 import { ProductTableActions } from "./product-table-actions";
-import { formatCurrency } from "@/lib/currencies";
+import { formatCurrency } from "@dafne/frontend-ui/lib/currencies";
 
 /*
  * Columns of the products table. Column ids double as the backend's

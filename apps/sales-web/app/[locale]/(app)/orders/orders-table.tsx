@@ -17,7 +17,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@dafne/frontend-ui/components/empty";
-import { useOptionLabel } from "@/i18n/options";
+import { useOptionLabel } from "@dafne/frontend-ui/hooks/use-option-labels";
 import type { TableParams } from "@dafne/frontend-data-table";
 import type { ListedOrder } from "@/lib/orders";
 import { ordersTable } from "@/lib/orders-table";

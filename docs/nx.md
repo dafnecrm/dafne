@@ -76,6 +76,18 @@ whoever imports them.
   `tsconfig.json`. `dafne g frontend-lib` adds both.
 - **Relative imports end in `.ts`** in these packages (Turbopack doesn't map
   `.js` to `.ts`).
+- **Their dependents typecheck against their declarations**
+  (`out-tsc/*.d.ts`, from `tsc --build --emitDeclarationOnly`). After
+  adding or moving a file in one of them, the incremental build can skip
+  the new file, and its dependents fail with `TS6305: Output file … has not
+  been built from source file` or `TS2307: Cannot find module`. Rebuild the
+  lib's declarations from its folder:
+
+  ```sh
+  pnpm exec tsc --build --emitDeclarationOnly --force
+  ```
+
+  CI starts clean, so this only happens locally.
 
 Backend apps are bundled with **rspack**: it bundles the `@dafne/*`
 sources, but loads npm packages from the app's own `node_modules` at

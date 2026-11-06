@@ -13,8 +13,9 @@ import {
 import { BreadcrumbLabel } from "@/components/page-breadcrumb";
 import { Button } from "@dafne/frontend-ui/components/button";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
-import { CustomerDetails } from "../customer-detail";
-import { CustomerDetailActions } from "../customer-detail-actions";
+import { CustomerDetails } from "@dafne/frontend-customers/components/customer-detail";
+import { CustomerDetailActions } from "@dafne/frontend-customers/components/customer-detail-actions";
+import { customersTable } from "@/lib/customers-table";
 import { loadCustomer } from "./load-customer";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -57,12 +58,15 @@ async function CustomerProfile({
             <ArrowLeftIcon data-icon="inline-start" />
             {t("all")}
           </Button>
-          <CustomerDetailActions customer={customer} />
+          <CustomerDetailActions
+            customer={customer}
+            path={customersTable.path}
+          />
         </PageContentAction>
       </PageContentHeader>
 
       <PageContentBody>
-        <CustomerDetails customer={customer} />
+        <CustomerDetails customer={customer} path={customersTable.path} />
       </PageContentBody>
     </PageContent>
   );

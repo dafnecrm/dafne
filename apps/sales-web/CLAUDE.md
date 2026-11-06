@@ -20,8 +20,8 @@ references (Next compiles the packages' sources).
   `pnpm --filter @dafne/frontend-ui shadcn:add <name>`.
 - `@dafne/frontend-forms`: `formSchema` (`.`, safe on the server); the
   fields, contexts, `useResetOnLeave`, `setServerError` in `./client`.
-  The app's `useAppForm` (`lib/app-form/app-form.ts`) composes them with
-  its own fields (`components/country-select-field.tsx`).
+  Forms use its `useAppForm`; one that needs more fields builds its own
+  hook with `createAppFormHook`.
 - `@dafne/frontend-data-table`: table config and URL state (`.`), the
   `DataTable` component (`./table`).
 - `@dafne/frontend-api`, `@dafne/frontend-auth`: see above.
@@ -29,8 +29,10 @@ references (Next compiles the packages' sources).
   `next.config.ts` proxies `/api/auth/*` to `AUTH_URL`, `lib/session.ts`
   reads sessions there, and the users pages call it with `authFetch`. The
   CRM's data comes from `apps/sales-api` (`backendFetch`, `BACKEND_URL`).
-- `app/globals.css` scans the libs for Tailwind classes
-  (`@source "../../../packages/frontend"`).
+- `app/globals.css` imports `tailwindcss`, then the shared theme and
+  styles (`@dafne/frontend-ui/styles/globals.css`, which also scans the
+  libs for Tailwind classes); the app's own look goes after them, as
+  overrides of the theme's variables (`:root`, `.dark`).
 - They hold no texts: they translate the app's message keys with
   `useTranslations()`, checked when the app compiles them.
 
@@ -68,12 +70,15 @@ language menu in `nav-user.tsx`), else `Accept-Language`, and rewrites
 - No text in components: use `useTranslations()` (client and sync server
   components) or `await getTranslations()` (async ones, server actions,
   `generateMetadata`). Texts are in `messages/en.json` and
-  `messages/it.json`; a new key goes in both.
+  `messages/it.json`; a new key goes in both. The `customers` and
+  `geo` texts come from `@dafne/frontend-customers` and
+  `@dafne/frontend-geo` (`src/messages/en.ts` and `it.ts`),
+  merged in `i18n/request.ts` and `i18n/global.d.ts`.
 - Messages are typed (`i18n/global.d.ts`): a missing key fails `tsc`, and
   `i18n/messages.check.ts` fails it when the two files differ.
 - Plain-data modules (`lib/navigation.ts`, `lib/*-table.ts`, option lists)
   hold message keys (`MessageKey`, `@dafne/frontend-ui/lib/message-key`), translated where they
-  are shown: `useOptionLabels` / `useOptionLabel` (`i18n/options.ts`).
+  are shown: `useOptionLabels` / `useOptionLabel` (`@dafne/frontend-ui/hooks/use-option-labels`).
 - Table columns are built in a `use<S>Columns()` hook with `useMemo`, so
   their headers can be translated.
 - Validation messages come from the contracts as keys

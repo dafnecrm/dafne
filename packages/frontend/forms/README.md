@@ -8,20 +8,16 @@ Building blocks of the frontend's forms, on
 | Import                         | What                                                                                                                                                                                                                                                     |
 | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `@dafne/frontend-forms`        | `formSchema`. Safe on the server (schemas, server actions).                                                                                                                                                                                              |
-| `@dafne/frontend-forms/client` | form contexts, the fields (`TextField`, `PasswordField`, `NumberField`, `SelectField`, `DatePickerField`, `TextEditorField`…), `SubmitButton`, `FormErrors`, `FIELD_COMPONENTS` / `FORM_COMPONENTS`, `useErrorText`, `useResetOnLeave`, `setServerError` |
+| `@dafne/frontend-forms/client` | form contexts, the fields (`TextField`, `PasswordField`, `NumberField`, `SelectField`, `DatePickerField`, `TextEditorField`…), `SubmitButton`, `FormErrors`, `FIELD_COMPONENTS` / `FORM_COMPONENTS`, `useAppForm`, `createAppFormHook`, `useErrorText`, `useResetOnLeave`, `setServerError` |
 
 ## Usage
 
-The app builds its form hook with its own fields as well
-(`apps/sales-web/lib/app-form/app-form.ts`):
+Forms use `useAppForm` (the generic fields; Zod's messages follow the
+user's language). A form that needs more fields builds its own hook
+(e.g. `packages/frontend/customers/src/components/form-hook.ts`):
 
 ```ts
-const { useAppForm } = createFormHook({
-  fieldContext,
-  formContext,
-  fieldComponents: { ...FIELD_COMPONENTS, CountrySelectField },
-  formComponents: FORM_COMPONENTS,
-});
+export const useAppForm = createAppFormHook({ CountrySelectField });
 ```
 
 Forms validate with the contract schema, typed for the form's values:

@@ -318,7 +318,7 @@ export function syncColumns(
       else appendToList(file, fresh, elements, code);
       for (const [module, name] of imports) ensureNamedImport(file, module, name);
       if (field.kind === 'enum' && ensureHookLine(file, 'const optionLabel = useOptionLabel();'))
-        ensureNamedImport(file, '@/i18n/options', 'useOptionLabel');
+        ensureNamedImport(file, '@dafne/frontend-ui/hooks/use-option-labels', 'useOptionLabel');
       report.added.push(`column ${field.key}`);
     }
   });

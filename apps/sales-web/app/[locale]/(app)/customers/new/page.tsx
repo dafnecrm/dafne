@@ -8,7 +8,8 @@ import {
   PageContentHeader,
   PageContentTitle,
 } from "@dafne/frontend-ui/components/page-content";
-import { CustomerForm } from "../customer-form";
+import { CustomerForm } from "@dafne/frontend-customers/components/customer-form";
+import { customersTable } from "@/lib/customers-table";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("customers");
@@ -24,7 +25,7 @@ export default function NewCustomerPage() {
         <PageContentDescription>{t("newDescription")}</PageContentDescription>
       </PageContentHeader>
       <PageContentBody>
-        <CustomerForm />
+        <CustomerForm path={customersTable.path} />
       </PageContentBody>
     </PageContent>
   );

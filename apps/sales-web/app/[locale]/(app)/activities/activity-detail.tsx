@@ -1,4 +1,4 @@
-import { useOptionLabel } from "@/i18n/options";
+import { useOptionLabel } from "@dafne/frontend-ui/hooks/use-option-labels";
 import { useTranslations } from "next-intl";
 import {
   CalendarPlusIcon,
@@ -11,7 +11,7 @@ import {
   LinkIcon,
   TextIcon,
 } from "lucide-react";
-import CopyButton from "@/components/copy-button";
+import CopyButton from "@dafne/frontend-ui/components/copy-button";
 import { Detail, DetailSection } from "@dafne/frontend-ui/components/detail";
 import { LocalDate } from "@dafne/frontend-ui/components/local-date";
 import { TextEditorContent } from "@dafne/frontend-ui/components/text-editor";

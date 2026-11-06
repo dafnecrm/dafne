@@ -18,6 +18,8 @@ const nextConfig: NextConfig = {
     "@dafne/frontend-ui",
     "@dafne/frontend-forms",
     "@dafne/frontend-data-table",
+    "@dafne/frontend-customers",
+    "@dafne/frontend-geo",
   ],
   cacheComponents: true,
   partialPrefetching: true,
