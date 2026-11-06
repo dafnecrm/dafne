@@ -55,10 +55,7 @@ export function OrderForm({ order }: { order?: OrderDetail }) {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                <form.AppField name="notes">
-                  {(field) => (<field.TextEditorField label={t("orders.fields.notes")} />)}
-                </form.AppField>
+              <FieldGroup className="flex flex-col gap-6">
                 <form.AppField name="customerId">
                   {(field) => (
                     <field.TextField
@@ -67,7 +64,11 @@ export function OrderForm({ order }: { order?: OrderDetail }) {
                     />
                   )}
                 </form.AppField>
-              </div>
+
+                <form.AppField name="notes">
+                  {(field) => (<field.TextEditorField label={t("orders.fields.notes")} />)}
+                </form.AppField>
+              </FieldGroup>
             </CardContent>
           </Card>
 

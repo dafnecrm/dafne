@@ -87,7 +87,7 @@ export function CustomerForm({ customer }: { customer?: CustomerDetail }) {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <FieldGroup className="grid grid-cols-2 gap-6">
+              <FieldGroup className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <form.AppField name="type">
                   {(field) => (
                     <field.SelectField

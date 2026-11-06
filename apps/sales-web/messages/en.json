@@ -4,7 +4,7 @@
     "description": "A purrfect journey"
   },
   "nav": {
-    "tagline": "A purrfect crm",
+    "tagline": "A purrfect journey",
     "home": "Home",
     "dashboard": "Dashboard",
     "sales": "Sales",
@@ -190,7 +190,7 @@
       "save": "Save address",
       "savedWith": "Saved together with the customer.",
       "searchHint": "Pick a place to fill in the fields below, then check them.",
-      "noneDetail": "No addresses.",
+      "noneDetail": "No address has been added yet.",
       "addOne": "Add one",
       "fields": {
         "type": "Type",

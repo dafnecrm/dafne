@@ -6,7 +6,11 @@ import { CUSTOMER_ADDRESS_TYPE_OPTIONS } from "@/lib/customers-table";
 import { CustomerAddress, CustomerDetail } from "@dafne/contracts";
 import { defineDataTable, TableParams } from "@dafne/frontend-data-table";
 import { createDataTableColumnHelper, DataTable } from "@dafne/frontend-data-table/table";
+import { Button } from "@dafne/frontend-ui/components/button";
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@dafne/frontend-ui/components/empty";
+import { MapPinIcon } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
+import Link from "next/link";
 import { useMemo } from "react";
 
 const col = createDataTableColumnHelper<CustomerAddress>();
@@ -48,7 +52,8 @@ function useCustomerAddressColumns() {
   );
 }
 
-export function CustomerAddressTable({ addresses }: { addresses: CustomerDetail["addresses"] }) {
+export function CustomerAddressTable({ customerId, addresses }: { customerId: number, addresses: CustomerDetail["addresses"] }) {
+  const t = useTranslations();
   const columns = useCustomerAddressColumns()
   const params: TableParams = {
     filters: {},
@@ -64,15 +69,35 @@ export function CustomerAddressTable({ addresses }: { addresses: CustomerDetail[
     pageSizes: [5]
   })
 
-  return (
-    <DataTable
-      columns={columns}
-      data={addresses}
-      total={addresses?.length ?? 0}
-      params={params}
-      config={tableConfig}
-      manualPagination={false}
-      manualSorting={false}
-    />
-  )
+  const editHref = `/customers/${encodeURIComponent(customerId)}/edit`;
+
+  return (<DataTable
+    columns={columns}
+    data={addresses}
+    total={addresses?.length ?? 0}
+    params={params}
+    config={tableConfig}
+    manualPagination={false}
+    manualSorting={false}
+    empty={<Empty>
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <MapPinIcon />
+        </EmptyMedia>
+        <EmptyTitle>
+          {t("customers.addresses.none")}{" "}
+        </EmptyTitle>
+        <EmptyDescription>
+          {t("customers.addresses.noneDetail")}{" "}
+        </EmptyDescription>
+      </EmptyHeader>
+      <EmptyContent>
+        <Button variant="outline" size="sm">
+          <Link href={editHref}>
+            {t("customers.addresses.addOne")}
+          </Link>
+        </Button>
+      </EmptyContent>
+    </Empty>}
+  />)
 }

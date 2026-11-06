@@ -4,7 +4,7 @@
     "description": "Un viaggio purrfetto"
   },
   "nav": {
-    "tagline": "Un crm purrfetto",
+    "tagline": "Un viaggio purrfetto",
     "home": "Home",
     "dashboard": "Dashboard",
     "sales": "Sales",
@@ -182,7 +182,7 @@
     },
     "addresses": {
       "ordered": "Nell'ordine in cui appaiono nella pagina del cliente.",
-      "none": "Ancora nessun indirizzo.",
+      "none": "Nessun indirizzo.",
       "add": "Aggiungi indirizzo",
       "edit": "Modifica indirizzo",
       "editN": "Modifica indirizzo {n}",
@@ -190,7 +190,7 @@
       "save": "Salva indirizzo",
       "savedWith": "Salvato insieme al cliente.",
       "searchHint": "Scegli un luogo per compilare i campi qui sotto, poi controllali.",
-      "noneDetail": "Nessun indirizzo.",
+      "noneDetail": "Nessun indirizzo è stato aggiunto ancora.",
       "addOne": "Aggiungine uno",
       "fields": {
         "type": "Tipo",

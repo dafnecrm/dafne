@@ -13,7 +13,7 @@ By path, no index:
 | `@dafne/frontend-ui/components/<name>` | `button`, `dialog`, `sidebar`, `table`, `date-picker`, `text-editor`, `local-date`, `theme-toggle`… |
 | `@dafne/frontend-ui/lib/utils`         | `cn`                                                                                                |
 | `@dafne/frontend-ui/lib/dates`         | date formats, `formatDate`, `localeFor`                                                             |
-| `@dafne/frontend-ui/lib/theme`         | `useTheme`, `setTheme`, `THEME_SCRIPT`                                                              |
+| `@dafne/frontend-ui/lib/theme`         | `useTheme`, `setTheme`, `applySavedTheme`, `THEME_SCRIPT`                                                              |
 | `@dafne/frontend-ui/lib/message-key`   | `MessageKey`, the type of the app's message keys                                                    |
 | `@dafne/frontend-ui/hooks/use-mobile`  | `useIsMobile`                                                                                       |
 

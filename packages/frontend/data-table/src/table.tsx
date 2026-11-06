@@ -300,7 +300,7 @@ export function DataTable<TData extends RowData>({
 
   return (
     <div className="flex flex-col gap-4">
-      {config.filters.length > 0 && (
+      {config.filters.length > 0 && rows.length > 0 && (
         <DataTableFilters
           // Reset the inputs when the URL's filters change (e.g. Back).
           key={JSON.stringify(params.filters)}
@@ -391,7 +391,7 @@ export function DataTable<TData extends RowData>({
         </div>
       )}
 
-      <div className="flex items-center justify-between gap-2 text-sm text-muted-foreground">
+      {rows.length > 0 && <div className="flex items-center justify-between gap-2 text-sm text-muted-foreground">
         <span className="flex items-center gap-2">
           {count
             ? t("range", { first, last, total: count, unit })
@@ -438,7 +438,7 @@ export function DataTable<TData extends RowData>({
             {t("next")}
           </Button>
         </div>
-      </div>
+      </div>}
     </div>
   );
 }

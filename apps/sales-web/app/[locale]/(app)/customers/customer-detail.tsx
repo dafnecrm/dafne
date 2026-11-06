@@ -1,6 +1,5 @@
 import { useLocale, useTranslations } from "next-intl";
 import { useOptionLabel } from "@/i18n/options";
-import { countryName } from "@/lib/country-name";
 import {
   CalendarPlusIcon,
   FingerprintIcon,
@@ -12,24 +11,14 @@ import {
   TagIcon,
   CalendarIcon,
   IdCardIcon,
-  Building2Icon,
+  Building2Icon
 } from "lucide-react";
-import Link from "next/link";
 import CopyButton from "@/components/copy-button";
 import { Detail, DetailSection } from "@dafne/frontend-ui/components/detail";
 import { LocalDate } from "@dafne/frontend-ui/components/local-date";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@dafne/frontend-ui/components/table";
 import type { CustomerDetail } from "@/lib/customers";
 import {
-  CUSTOMER_ADDRESS_TYPE_OPTIONS,
-  CUSTOMER_TYPE_OPTIONS,
+  CUSTOMER_TYPE_OPTIONS
 } from "@/lib/customers-table";
 import { CustomerAddressTable } from "./customer-address-table";
 
@@ -101,58 +90,7 @@ export function CustomerDetails({ customer }: { customer: CustomerDetail }) {
         })}
         groupClassName="flex"
       >
-        {customer.addresses.length ? (
-          <CustomerAddressTable addresses={customer.addresses} />
-          // <div className="rounded-lg border">
-          //   <Table>
-          //     <TableHeader>
-          //       <TableRow>
-          //         <TableHead>{t("customers.addresses.fields.type")}</TableHead>
-          //         <TableHead>
-          //           {t("customers.addresses.fields.street")}
-          //         </TableHead>
-          //         <TableHead>
-          //           {t("customers.addresses.fields.postalCode")}
-          //         </TableHead>
-          //         <TableHead>{t("customers.addresses.fields.city")}</TableHead>
-          //         <TableHead>
-          //           {t("customers.addresses.fields.region")}
-          //         </TableHead>
-          //         <TableHead>
-          //           {t("customers.addresses.fields.country")}
-          //         </TableHead>
-          //       </TableRow>
-          //     </TableHeader>
-          //     <TableBody>
-          //       {customer.addresses.map((address) => (
-          //         <TableRow key={address.id}>
-          //           <TableCell>
-          //             {optionLabel(CUSTOMER_ADDRESS_TYPE_OPTIONS, address.type)}
-          //           </TableCell>
-          //           <TableCell>{address.street}</TableCell>
-          //           <TableCell>{address.postalCode ?? "—"}</TableCell>
-          //           <TableCell>{address.city}</TableCell>
-          //           <TableCell>{address.region ?? "—"}</TableCell>
-          //           <TableCell>
-          //             {countryName(
-          //               address.countryCode,
-          //               locale,
-          //               address.country.name,
-          //             )}
-          //           </TableCell>
-          //         </TableRow>
-          //       ))}
-          //     </TableBody>
-          //   </Table>
-          // </div>
-        ) : (
-          <p className="text-sm text-muted-foreground">
-            {t("customers.addresses.noneDetail")}{" "}
-            <Link href={editHref} className="underline underline-offset-4">
-              {t("customers.addresses.addOne")}
-            </Link>
-          </p>
-        )}
+        <CustomerAddressTable customerId={customer.id} addresses={customer.addresses} />
       </DetailSection>
 
       <DetailSection title={t("common.record.title")} defaultOpen={false}>

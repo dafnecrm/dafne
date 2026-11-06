@@ -23,6 +23,11 @@ function readTheme(): Theme {
   }
 }
 
+/** Applies the theme saved in storage (or the OS one). */
+export function applySavedTheme() {
+  applyTheme(readTheme());
+}
+
 /** Sets the `dark` class (used by the `dark:` variant in globals.css). */
 function applyTheme(theme: Theme) {
   const dark =
