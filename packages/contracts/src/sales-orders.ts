@@ -4,10 +4,16 @@ import {
   requiredId,
   SORT_DIRECTIONS,
   optionalText,
+  requiredNumber,
 } from './common.ts';
 import { msg } from './messages/index.ts';
 
 /* ---------- Requests ---------- */
+
+export const salesOrderItemBodySchema = z.strictObject({
+  productId: requiredId(msg('salesOrders.items.productId.required')),
+  quantity: requiredNumber(msg('salesOrders.items.productId.required')),
+});
 
 /**
  * Body of POST /sales-orders and PUT /sales-orders/:id. PUT replaces the
@@ -16,6 +22,7 @@ import { msg } from './messages/index.ts';
 export const salesOrderBodySchema = z.strictObject({
   notes: optionalText(z.string().max(65535)),
   customerId: requiredId(msg('salesOrders.customerId.required')),
+  items: z.array(salesOrderItemBodySchema).default([])
 });
 
 /** What a client sends: blank optional fields may be "", null or missing. */
@@ -79,10 +86,17 @@ export interface SalesOrderCustomer {
   name: string;
 }
 
+/** The sales order item */
+export interface SalesOrderItem {
+  productId: number;
+  quantity: number;
+}
+
 /** Response of GET /sales-orders/:id, POST /sales-orders and PUT /sales-orders/:id. */
 export interface SalesOrderDetail extends ListedSalesOrder {
   notes: string | null;
   customer: SalesOrderCustomer;
+  items: SalesOrderItem[];
   createdBy: SalesOrderUser | null;
   updatedBy: SalesOrderUser | null;
   /** Always null: deleted sales orders aren't returned. */

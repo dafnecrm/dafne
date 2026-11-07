@@ -5,6 +5,10 @@ import type { ContractMessageKey } from './messages/index.ts';
 export const requiredText = (max: number, error: ContractMessageKey) =>
   z.string().trim().min(1, { error }).max(max);
 
+/** Required number. */
+export const requiredNumber = (error: ContractMessageKey) =>
+  z.coerce.number({ error });
+
 /**
  * Optional text: trimmed, and blank, null or missing all become null, so a
  * form can send "" for an empty field. `inner` validates the rest.
