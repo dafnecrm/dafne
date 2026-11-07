@@ -1,0 +1,1 @@
+ALTER TABLE "sales"."sales_order_product" ADD COLUMN "quantity" integer NOT NULL;
