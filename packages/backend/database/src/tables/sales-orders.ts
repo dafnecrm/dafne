@@ -51,11 +51,11 @@ export const salesOrder = salesSchema.table(
 );
 
 /**
- * Links sales orders and products (many-to-many). Its table and its
- * `order_id` column keep their names.
+ * Links sales orders and products (many-to-many). Its `order_id` column
+ * keeps its name.
  */
-export const orderProduct = salesSchema.table(
-  'order_product',
+export const salesOrderProduct = salesSchema.table(
+  'sales_order_product',
   {
     orderId: integer('order_id')
       .notNull()
@@ -66,12 +66,12 @@ export const orderProduct = salesSchema.table(
   },
   (table) => [
     primaryKey({ columns: [table.orderId, table.productId] }),
-    index('order_product_productId_idx').on(table.productId),
+    index('sales_order_product_productId_idx').on(table.productId),
   ],
 );
 
 export const salesOrderRelations = defineRelationsPart(
-  { user, salesOrder, customer, orderProduct, product },
+  { user, salesOrder, customer, salesOrderProduct, product },
   (r) => ({
     salesOrder: {
       createdBy: r.one.user({
@@ -91,8 +91,8 @@ export const salesOrderRelations = defineRelationsPart(
         alias: 'salesOrderCustomer',
       }),
       products: r.many.product({
-        from: r.salesOrder.id.through(r.orderProduct.orderId),
-        to: r.product.id.through(r.orderProduct.productId),
+        from: r.salesOrder.id.through(r.salesOrderProduct.orderId),
+        to: r.product.id.through(r.salesOrderProduct.productId),
       }),
     },
     customer: {
