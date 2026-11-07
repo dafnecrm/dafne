@@ -14,7 +14,7 @@
     "admin": "Admin",
     "users": "Users",
     "account": "Account",
-    "orders": "Orders",
+    "orders": "Sales orders",
     "crm": "CRM"
   },
   "breadcrumb": {
@@ -131,82 +131,6 @@
     "serverError": "Something went wrong",
     "hasErrors": "Form has errors!",
     "pickDate": "Pick a date"
-  },
-  "products": {
-    "title": "Products",
-    "singular": "Product",
-    "new": "New product",
-    "all": "All products",
-    "noun": "products",
-    "create": "Create product",
-    "editMeta": "Edit product",
-    "newDescription": "Only the name is required.",
-    "editDescription": "Saving replaces the product's details.",
-    "empty": {
-      "title": "No products found",
-      "filtered": "No product where {filter}.",
-      "none": "Add your first product to get started."
-    },
-    "deleteDescription": "The product will no longer be listed or editable.",
-    "notFound": "This product no longer exists.",
-    "sections": {
-      "details": "Details"
-    },
-    "fields": {
-      "name": "Name",
-      "price": "Price",
-      "description": "Description",
-      "createdAt": "Added",
-      "id": "Product ID"
-    }
-  },
-  "activities": {
-    "title": "Activities",
-    "singular": "Activity",
-    "new": "New activity",
-    "all": "All activities",
-    "noun": "activities",
-    "create": "Create activity",
-    "editMeta": "Edit activity",
-    "newDescription": "Only the name is required.",
-    "editDescription": "Saving replaces the activity's details.",
-    "empty": {
-      "title": "No activities found",
-      "filtered": "No activity where {filter}.",
-      "none": "Add your first activity to get started."
-    },
-    "deleteDescription": "The activity will no longer be listed or editable.",
-    "notFound": "This activity no longer exists.",
-    "reopen": "Reopen",
-    "reopenTitle": "Reopen {name}?",
-    "reopenDescription": "The activity will be open and editable again.",
-    "close": "Close",
-    "closeTitle": "Close {name}?",
-    "closeDescription": "The activity will no longer be editable.",
-    "sections": {
-      "details": "Details"
-    },
-    "fields": {
-      "name": "Name",
-      "type": "Type",
-      "status": "Status",
-      "dueDate": "Due date",
-      "notes": "Notes",
-      "completedAt": "Completed at",
-      "completedBy": "Completed by",
-      "createdAt": "Added",
-      "id": "Activity ID"
-    },
-    "type": {
-      "call": "Call",
-      "email": "Email",
-      "meeting": "Meeting",
-      "task": "Task"
-    },
-    "status": {
-      "open": "Open",
-      "closed": "Closed"
-    }
   },
   "users": {
     "title": "Users",
@@ -336,33 +260,6 @@
       "signInForNewLink": "Sign in with your email and password and we'll send you a new verification link.",
       "signIn": "Sign in",
       "backToSignIn": "Back to sign in"
-    }
-  },
-  "orders": {
-    "title": "Orders",
-    "singular": "Order",
-    "new": "New order",
-    "all": "All orders",
-    "noun": "orders",
-    "create": "Create order",
-    "editMeta": "Edit order",
-    "newDescription": "Only the name is required.",
-    "editDescription": "Saving replaces the order's details.",
-    "empty": {
-      "title": "No orders found",
-      "filtered": "No order where {filter}.",
-      "none": "Add your first order to get started."
-    },
-    "deleteDescription": "The order will no longer be listed or editable.",
-    "notFound": "This order no longer exists.",
-    "sections": {
-      "details": "Details"
-    },
-    "fields": {
-      "createdAt": "Added",
-      "id": "Order ID",
-      "notes": "Notes",
-      "customer": "Customer"
     }
   }
 }

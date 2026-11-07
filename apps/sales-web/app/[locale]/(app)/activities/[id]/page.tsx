@@ -13,9 +13,9 @@ import {
 import { BreadcrumbLabel } from "@/components/page-breadcrumb";
 import { Button } from "@dafne/frontend-ui/components/button";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
-import { ActivityDetails } from "../activity-detail";
-import { ActivityDetailActions } from "../activity-detail-actions";
 import { loadActivity } from "./load-activity";
+import { ActivityDetailActions } from "@dafne/frontend-activities/components/activity-detail-actions";
+import { ActivityDetails } from "@dafne/frontend-activities/components/activity-detail";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("activities");

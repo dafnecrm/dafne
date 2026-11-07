@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { BackendError } from "@dafne/frontend-api";
-import { getProduct } from "@/lib/products";
+import { getProduct } from "@dafne/frontend-products/server";
 import { requireUser } from "@/lib/session";
 
 /** The product for a page, or the 404 page if missing or deleted. */

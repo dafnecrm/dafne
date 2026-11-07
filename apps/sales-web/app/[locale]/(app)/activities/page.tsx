@@ -15,10 +15,10 @@ import {
 import { Button } from "@dafne/frontend-ui/components/button";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { getTableParams } from "@dafne/frontend-data-table";
-import { listActivities } from "@/lib/activities";
-import { activitiesTable } from "@/lib/activities-table";
 import { requireUser } from "@/lib/session";
-import { ActivitiesTable } from "./activities-table";
+import { ActivitiesTable } from "@dafne/frontend-activities/components/activities-table";
+import { activitiesTable } from "@/lib/activities-table";
+import { listActivities } from "@dafne/frontend-activities/server";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("activities");
@@ -66,6 +66,7 @@ async function ActivitiesList({
 
   return (
     <ActivitiesTable
+      config={activitiesTable}
       activities={data.activities}
       total={data.total}
       params={params}

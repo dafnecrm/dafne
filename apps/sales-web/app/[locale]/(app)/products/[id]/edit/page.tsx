@@ -10,7 +10,8 @@ import {
   PageContentTitle,
 } from "@dafne/frontend-ui/components/page-content";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
-import { ProductForm } from "../../product-form";
+import { ProductForm } from "@dafne/frontend-products/components/product-form";
+import { productsTable } from "@/lib/products-table";
 import { loadProduct } from "../load-product";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -37,7 +38,7 @@ async function EditProduct({
   return (
     <PageContent>
       <BreadcrumbLabel
-        href={`/products/${encodeURIComponent(product.id)}`}
+        href={`${productsTable.path}/${encodeURIComponent(product.id)}`}
         label={product.name}
       />
       <PageContentHeader>
@@ -49,7 +50,7 @@ async function EditProduct({
         </PageContentDescription>
       </PageContentHeader>
       <PageContentBody>
-        <ProductForm product={product} />
+        <ProductForm product={product} path={productsTable.path} />
       </PageContentBody>
     </PageContent>
   );

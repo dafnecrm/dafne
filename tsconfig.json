@@ -76,6 +76,15 @@
     },
     {
       "path": "./packages/frontend/geo"
+    },
+    {
+      "path": "./packages/frontend/activities"
+    },
+    {
+      "path": "./packages/frontend/products"
+    },
+    {
+      "path": "./packages/frontend/sales-orders"
     }
   ]
 }

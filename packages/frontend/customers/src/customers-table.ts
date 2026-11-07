@@ -49,16 +49,16 @@ export function defineCustomersTable({
     defaultSort: CUSTOMERS_DEFAULT_SORT,
     filters: [
       {
+        field: "id" satisfies CustomerFilterField,
+        label: "customers.fields.id" satisfies CustomersMessageKey,
+      },
+      {
         field: "name" satisfies CustomerFilterField,
         label: "customers.fields.name" satisfies CustomersMessageKey,
       },
       {
         field: "email" satisfies CustomerFilterField,
         label: "customers.fields.email" satisfies CustomersMessageKey,
-      },
-      {
-        field: "phone" satisfies CustomerFilterField,
-        label: "customers.fields.phone" satisfies CustomersMessageKey,
       },
       {
         field: "type" satisfies CustomerFilterField,
@@ -72,10 +72,6 @@ export function defineCustomersTable({
       {
         field: "vatNumber" satisfies CustomerFilterField,
         label: "customers.fields.vatNumber" satisfies CustomersMessageKey,
-      },
-      {
-        field: "id" satisfies CustomerFilterField,
-        label: "customers.fields.id" satisfies CustomersMessageKey,
       },
     ],
   });
