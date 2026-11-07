@@ -4,7 +4,8 @@ import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { BackendError, backendFetch } from "@dafne/frontend-api/server";
 import { productSchema, type ProductFormValues } from "./schema.ts";
-import type { ProductDetail } from "./types.ts";
+import type { ListedProduct, ProductDetail } from "./types.ts";
+import { getProduct, listProducts } from "./server.ts";
 
 /*
  * Product mutations shared by the apps. The backend checks the session (forwarded by
@@ -69,5 +70,47 @@ export async function deleteProduct(id: number): Promise<ActionError | null> {
     return null;
   } catch (error) {
     return { error: await errorMessage(error) };
+  }
+}
+
+/** A product as a picker shows it: enough to name it. */
+export type ProductOption = Pick<ListedProduct, "id" | "name">;
+
+/**
+ * The products whose name contains `name` (all when blank), sorted by
+ * name: the first `limit`, for a picker that searches as the user types
+ * (ProductSelect). Server actions, since backendFetch only runs on the
+ * server.
+ */
+export async function searchProducts({
+  name,
+  limit = 20,
+}: {
+  name: string;
+  limit?: number;
+}): Promise<ProductOption[]> {
+  const query = name.trim();
+  const list = await listProducts({
+    // The backend allows up to 100.
+    limit: Math.min(Math.max(limit, 1), 100),
+    offset: 0,
+    filters: query ? { name: query } : {},
+  });
+  return list.products.map(({ id, name }) => ({ id, name }));
+}
+
+/**
+ * The product with this `id`, for a picker that already has a value
+ * (e.g. editing an order); null when it doesn't exist or was deleted.
+ */
+export async function getProductOption(
+  id: string,
+): Promise<ProductOption | null> {
+  try {
+    const { name } = await getProduct(id);
+    return { id: Number(id), name };
+  } catch (error) {
+    if (error instanceof BackendError && error.status === 404) return null;
+    throw error;
   }
 }

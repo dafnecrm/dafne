@@ -11,9 +11,10 @@ import {
   CardTitle,
 } from "@dafne/frontend-ui/components/card";
 import { FieldGroup } from "@dafne/frontend-ui/components/field";
-import { setServerError, useAppForm } from "@dafne/frontend-forms/client";
+import { setServerError } from "@dafne/frontend-forms/client";
 import { useResetOnLeave } from "@dafne/frontend-forms/client";
 import { saveOrder } from "../actions.ts";
+import { useAppForm } from "./form-hook.ts";
 import { orderFormOpts, orderSchema } from "../schema.ts";
 import type { OrderDetail } from "../types.ts";
 
@@ -67,13 +68,12 @@ export function OrderForm({
               <FieldGroup className="flex flex-col gap-6">
                 <form.AppField name="customerId">
                   {(field) => (
-                    <field.TextField
+                    <field.CustomerSelectField
                       label={t("salesOrders.fields.customer")}
-                      autoComplete="off"
                     />
                   )}
                 </form.AppField>
-
+          
                 <form.AppField name="notes">
                   {(field) => (<field.TextEditorField label={t("salesOrders.fields.notes")} />)}
                 </form.AppField>

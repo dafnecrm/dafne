@@ -4,7 +4,8 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { BackendError, backendFetch } from "@dafne/frontend-api/server";
 import { customerSchema, type CustomerFormValues } from "./schema.ts";
-import type { CustomerDetail } from "./types.ts";
+import { getCustomer, listCustomers } from "./server.ts";
+import type { CustomerDetail, ListedCustomer } from "./types.ts";
 
 /*
  * Customer mutations shared by the apps. The backend checks the session
@@ -72,4 +73,46 @@ export async function saveCustomer(
   }
   // Outside the try: redirect works by throwing.
   redirect(`${path}/${encodeURIComponent(savedId)}`);
+}
+
+/** A customer as a picker shows it: enough to name it. */
+export type CustomerOption = Pick<ListedCustomer, "id" | "name">;
+
+/**
+ * The customers whose name contains `name` (all when blank), sorted by
+ * name: the first `limit`, for a picker that searches as the user types
+ * (CustomerSelect). Server actions, since backendFetch only runs on the
+ * server.
+ */
+export async function searchCustomers({
+  name,
+  limit = 20,
+}: {
+  name: string;
+  limit?: number;
+}): Promise<CustomerOption[]> {
+  const query = name.trim();
+  const list = await listCustomers({
+    // The backend allows up to 100.
+    limit: Math.min(Math.max(limit, 1), 100),
+    offset: 0,
+    filters: query ? { name: query } : {},
+  });
+  return list.customers.map(({ id, name }) => ({ id, name }));
+}
+
+/**
+ * The customer with this `id`, for a picker that already has a value
+ * (e.g. editing an order); null when it doesn't exist or was deleted.
+ */
+export async function getCustomerOption(
+  id: string,
+): Promise<CustomerOption | null> {
+  try {
+    const { name } = await getCustomer(id);
+    return { id: Number(id), name };
+  } catch (error) {
+    if (error instanceof BackendError && error.status === 404) return null;
+    throw error;
+  }
 }

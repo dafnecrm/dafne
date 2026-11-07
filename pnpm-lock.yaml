@@ -1747,12 +1747,18 @@ importers:
       '@dafne/frontend-api':
         specifier: workspace:*
         version: link:../api
+      '@dafne/frontend-customers':
+        specifier: workspace:*
+        version: link:../customers
       '@dafne/frontend-data-table':
         specifier: workspace:*
         version: link:../data-table
       '@dafne/frontend-forms':
         specifier: workspace:*
         version: link:../forms
+      '@dafne/frontend-products':
+        specifier: workspace:*
+        version: link:../products
       '@dafne/frontend-ui':
         specifier: workspace:*
         version: link:../ui
