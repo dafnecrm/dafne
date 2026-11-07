@@ -1,23 +1,23 @@
-import { orderBodySchema, listOrdersQuerySchema } from './orders.ts';
+import { salesOrderBodySchema, listSalesOrdersQuerySchema } from './sales-orders.ts';
 
 /** Paths of the fields that failed, e.g. ['name']. */
 function failedFields(body: unknown) {
-  const result = orderBodySchema.safeParse(body);
+  const result = salesOrderBodySchema.safeParse(body);
   return result.success
     ? []
     : result.error.issues.map((issue) => issue.path.join('.') || issue.code);
 }
 
-describe('orderBodySchema', () => {
+describe('salesOrderBodySchema', () => {
   it('trims values', () => {
-    expect(orderBodySchema.parse({ customerId: '1' })).toEqual({
+    expect(salesOrderBodySchema.parse({ customerId: '1' })).toEqual({
       customerId: 1,
       notes: null,
     });
   });
 
   it('takes the customer id as a number or as text, and nothing else', () => {
-    expect(orderBodySchema.parse({ customerId: 7 }).customerId).toBe(7);
+    expect(salesOrderBodySchema.parse({ customerId: 7 }).customerId).toBe(7);
     for (const customerId of ['', 'abc', '1.5', '0', -1])
       expect(failedFields({ customerId })).toEqual(['customerId']);
   });
@@ -31,16 +31,16 @@ describe('orderBodySchema', () => {
   });
 });
 
-describe('listOrdersQuerySchema', () => {
+describe('listSalesOrdersQuerySchema', () => {
   it('turns limit and offset into numbers', () => {
-    expect(listOrdersQuerySchema.parse({ limit: '10', offset: '20' })).toEqual({
+    expect(listSalesOrdersQuerySchema.parse({ limit: '10', offset: '20' })).toEqual({
       limit: 10,
       offset: 20,
     });
   });
 
   it('rejects an unknown sort field and a limit over 100', () => {
-    const result = listOrdersQuerySchema.safeParse({
+    const result = listSalesOrdersQuerySchema.safeParse({
       sortBy: 'password',
       limit: '500',
     });

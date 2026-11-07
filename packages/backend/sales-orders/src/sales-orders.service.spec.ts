@@ -3,17 +3,17 @@ import { getDrizzleToken } from '@nestjs/drizzle';
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { and, asc, desc, eq, isNull } from 'drizzle-orm';
-import { orderBodySchema, type OrderBodyInput } from '@dafne/contracts';
-import { OrdersService } from './orders.service.js';
+import { salesOrderBodySchema, type SalesOrderBodyInput } from '@dafne/contracts';
+import { SalesOrdersService } from './sales-orders.service.js';
 
 /** A body as the validation pipe hands it to the service. */
-const body = (input: OrderBodyInput) => orderBodySchema.parse(input);
+const body = (input: SalesOrderBodyInput) => salesOrderBodySchema.parse(input);
 
-const { order } = schema;
-const notDeleted = isNull(order.deletedAt);
+const { salesOrder } = schema;
+const notDeleted = isNull(salesOrder.deletedAt);
 
-describe('OrdersService', () => {
-  let service: OrdersService;
+describe('SalesOrdersService', () => {
+  let service: SalesOrdersService;
   const rows = [{ id: 1, name: 'Acme' }];
   // Chainable stand-in for db.select().from().where().orderBy().limit().offset()
   const select = {
@@ -33,7 +33,7 @@ describe('OrdersService', () => {
     insert: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
-    query: { order: { findFirst } },
+    query: { salesOrder: { findFirst } },
   };
   const found = { id: 1, name: 'Acme' };
 
@@ -55,40 +55,40 @@ describe('OrdersService', () => {
     findFirst.mockResolvedValue(found);
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [OrdersService, { provide: getDrizzleToken(), useValue: db }],
+      providers: [SalesOrdersService, { provide: getDrizzleToken(), useValue: db }],
     }).compile();
 
-    service = module.get(OrdersService);
+    service = module.get(SalesOrdersService);
   });
 
-  describe('listOrders', () => {
-    it('lists orders that are not deleted, by created at', async () => {
-      await expect(service.listOrders()).resolves.toEqual({
-        orders: rows,
+  describe('listSalesOrders', () => {
+    it('lists sales orders that are not deleted, by created at', async () => {
+      await expect(service.listSalesOrders()).resolves.toEqual({
+        salesOrders: rows,
         total: 42,
         limit: 20,
         offset: 0,
       });
       const where = and(notDeleted);
-      expect(select.from).toHaveBeenCalledWith(order);
+      expect(select.from).toHaveBeenCalledWith(salesOrder);
       expect(select.where).toHaveBeenCalledWith(where);
-      expect(db.$count).toHaveBeenCalledWith(order, where);
+      expect(db.$count).toHaveBeenCalledWith(salesOrder, where);
       expect(select.orderBy).toHaveBeenCalledWith(
-        asc(order.createdAt),
-        asc(order.id),
+        asc(salesOrder.createdAt),
+        asc(salesOrder.id),
       );
     });
 
     it('filters by id, matching it exactly', async () => {
-      await service.listOrders({ id: ' 12 ' });
+      await service.listSalesOrders({ id: ' 12 ' });
 
       expect(select.where).toHaveBeenCalledWith(
-        and(notDeleted, eq(order.id, 12)),
+        and(notDeleted, eq(salesOrder.id, 12)),
       );
     });
 
     it('pages and sorts', async () => {
-      await service.listOrders({
+      await service.listSalesOrders({
         limit: 5,
         offset: 10,
         sortBy: 'createdAt',
@@ -96,17 +96,17 @@ describe('OrdersService', () => {
       });
 
       expect(select.orderBy).toHaveBeenCalledWith(
-        desc(order.createdAt),
-        asc(order.id),
+        desc(salesOrder.createdAt),
+        asc(salesOrder.id),
       );
       expect(select.limit).toHaveBeenCalledWith(5);
       expect(select.offset).toHaveBeenCalledWith(10);
     });
   });
 
-  describe('getOrder', () => {
-    it('returns an order that is not deleted, with its users', async () => {
-      await expect(service.getOrder(1)).resolves.toBe(found);
+  describe('getSalesOrder', () => {
+    it('returns a sales order that is not deleted, with its users', async () => {
+      await expect(service.getSalesOrder(1)).resolves.toBe(found);
 
       const options = findFirst.mock.calls[0][0];
       expect(options.where).toEqual({ id: 1, deletedAt: { isNull: true } });
@@ -114,19 +114,19 @@ describe('OrdersService', () => {
       expect(options.with.updatedBy.columns).toEqual({ id: true, name: true });
     });
 
-    it('throws 404 when the order does not exist or is deleted', async () => {
+    it('throws 404 when the sales order does not exist or is deleted', async () => {
       findFirst.mockResolvedValue(undefined);
 
-      await expect(service.getOrder(999)).rejects.toBeInstanceOf(
+      await expect(service.getSalesOrder(999)).rejects.toBeInstanceOf(
         NotFoundException,
       );
     });
   });
 
-  describe('createOrder', () => {
-    it('inserts the order with its creator', async () => {
+  describe('createSalesOrder', () => {
+    it('inserts the sales order with its creator', async () => {
       await expect(
-        service.createOrder(body({ customerId: 1 }), 'u1'),
+        service.createSalesOrder(body({ customerId: 1 }), 'u1'),
       ).resolves.toBe(found);
 
       const [row] = insert.values.mock.calls[0];
@@ -138,44 +138,44 @@ describe('OrdersService', () => {
     });
   });
 
-  describe('updateOrder', () => {
-    it('updates the order', async () => {
-      await service.updateOrder(1, body({ customerId: 1 }), 'u2');
+  describe('updateSalesOrder', () => {
+    it('updates the sales order', async () => {
+      await service.updateSalesOrder(1, body({ customerId: 1 }), 'u2');
 
       expect(update.set.mock.calls[0][0]).toMatchObject({
         updatedById: 'u2',
       });
       expect(update.where).toHaveBeenCalledWith(
-        and(eq(order.id, 1), notDeleted),
+        and(eq(salesOrder.id, 1), notDeleted),
       );
     });
 
-    it('throws 404 when the order is missing', async () => {
+    it('throws 404 when the sales order is missing', async () => {
       update.where.mockResolvedValue({ rowCount: 0 });
 
       await expect(
-        service.updateOrder(999, body({ customerId: 1 }), 'u2'),
+        service.updateSalesOrder(999, body({ customerId: 1 }), 'u2'),
       ).rejects.toBeInstanceOf(NotFoundException);
     });
   });
 
-  describe('deleteOrder', () => {
+  describe('deleteSalesOrder', () => {
     it('sets deletedAt instead of deleting the row', async () => {
-      await service.deleteOrder(1, 'u3');
+      await service.deleteSalesOrder(1, 'u3');
 
       const values = update.set.mock.calls[0][0];
       expect(values.deletedAt).toBeInstanceOf(Date);
       expect(values.updatedById).toBe('u3');
       expect(update.where).toHaveBeenCalledWith(
-        and(eq(order.id, 1), notDeleted),
+        and(eq(salesOrder.id, 1), notDeleted),
       );
       expect(db.delete).not.toHaveBeenCalled();
     });
 
-    it('throws 404 when the order is missing or already deleted', async () => {
+    it('throws 404 when the sales order is missing or already deleted', async () => {
       update.where.mockResolvedValue({ rowCount: 0 });
 
-      await expect(service.deleteOrder(1, 'u3')).rejects.toBeInstanceOf(
+      await expect(service.deleteSalesOrder(1, 'u3')).rejects.toBeInstanceOf(
         NotFoundException,
       );
     });

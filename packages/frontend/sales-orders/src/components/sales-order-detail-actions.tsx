@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  EllipsisVerticalIcon,
-  EyeIcon,
-  PencilIcon,
-  Trash2Icon,
-} from "lucide-react";
+import { EllipsisVerticalIcon, PencilIcon, Trash2Icon } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -17,22 +12,22 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@dafne/frontend-ui/components/dropdown-menu";
-import { DeleteOrderDialog, type OrderRef } from "./order-dialogs.tsx";
+import { DeleteSalesOrderDialog, type SalesOrderRef } from "./sales-order-dialogs.tsx";
 
 /**
- * Actions of a row of the orders table, in a menu: view (`<path>/<id>`),
- * edit (`<path>/<id>/edit`), delete.
+ * Actions on the sales order's page, in a menu: edit (`<path>/<id>/edit`) and
+ * delete, then back to the list at `path`.
  */
-export function OrderTableActions({
-  order,
+export function SalesOrderDetailActions({
+  salesOrder,
   path,
 }: {
-  order: OrderRef;
+  salesOrder: SalesOrderRef;
   path: string;
 }) {
   const [deleting, setDeleting] = useState(false);
   const t = useTranslations();
-  const href = `${path}/${encodeURIComponent(order.id)}`;
+  const href = `${path}/${encodeURIComponent(salesOrder.id)}`;
 
   return (
     <>
@@ -40,21 +35,15 @@ export function OrderTableActions({
         <DropdownMenuTrigger
           render={
             <Button
-              variant="ghost"
+              variant="outline"
               size="icon-sm"
-              aria-label={t("common.actionsFor", {
-                name: `${t("salesOrders.singular")} ${order.id}`,
-              })}
+              aria-label={t("common.actionsFor", { name: `${t("salesOrders.singular")} ${salesOrder.id}` })}
             />
           }
         >
           <EllipsisVerticalIcon />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem render={<Link href={href} />}>
-            <EyeIcon />
-            {t("common.viewDetails")}
-          </DropdownMenuItem>
           <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
             <PencilIcon />
             {t("common.edit")}
@@ -71,9 +60,10 @@ export function OrderTableActions({
       </DropdownMenu>
       {/* Outside the menu, which closes when an item is clicked. */}
       {deleting && (
-        <DeleteOrderDialog
-          order={order}
+        <DeleteSalesOrderDialog
+          salesOrder={salesOrder}
           path={path}
+          then="list"
           onClose={() => setDeleting(false)}
         />
       )}

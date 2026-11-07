@@ -241,8 +241,8 @@ pnpm nx g @dafne/cli:frontend-resource invoice --icon=ReceiptIcon
 pnpm nx g @dafne/cli:frontend-list invoice --app=billing-web
 pnpm nx g @dafne/cli:frontend-app billing-web
 pnpm nx g @dafne/cli:frontend-lib charts
-pnpm nx g @dafne/cli:remove-backend-db-column orders --columns=name
-pnpm nx g @dafne/cli:frontend-resource-sync orders
+pnpm nx g @dafne/cli:remove-backend-db-column sales-orders --columns=name
+pnpm nx g @dafne/cli:frontend-resource-sync sales-orders
 pnpm nx list @dafne/cli
 ```
 
@@ -261,8 +261,8 @@ dafne sync frontend-resource [resource]               # bring the pages in line 
 
 ```sh
 dafne remove backend-db-column                     # asks for the table and the columns (several)
-dafne remove backend-db-column orders name
-dafne remove backend-db-column orders name notes --no-migration
+dafne remove backend-db-column sales-orders name
+dafne remove backend-db-column sales-orders name notes --no-migration
 ```
 
 Removes the columns from the table file, with their indexes; a foreign key
@@ -282,9 +282,9 @@ Last, it asks whether to generate the migration (default yes;
 
 ```sh
 dafne sync contract                      # asks for the resource
-dafne sync contract orders
+dafne sync contract sales-orders
 dafne sync contract --all --dry-run      # every table that has a contract
-dafne sync contract orders --no-service  # only the contract and its spec
+dafne sync contract sales-orders --no-service  # only the contract and its spec
 ```
 
 Brings `packages/contracts/src/<plural>.ts` in line with

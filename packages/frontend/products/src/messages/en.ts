@@ -10,6 +10,9 @@ export const en = {
   noun: "products",
   create: "Create product",
   editMeta: "Edit product",
+  productPlaceholder: "Choose a product…",
+  loadingProducts: "Searching products…",
+  noProducts: "No products found.",
   newDescription: "Only the name is required.",
   editDescription: "Saving replaces the product's details.",
   empty: {

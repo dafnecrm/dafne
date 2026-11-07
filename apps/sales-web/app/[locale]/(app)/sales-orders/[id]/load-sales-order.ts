@@ -1,13 +1,13 @@
 import { notFound } from "next/navigation";
 import { BackendError } from "@dafne/frontend-api";
-import { getOrder } from "@dafne/frontend-sales-orders/server";
+import { getSalesOrder } from "@dafne/frontend-sales-orders/server";
 import { requireUser } from "@/lib/session";
 
-/** The order for a page, or the 404 page if missing or deleted. */
-export async function loadOrder(id: string) {
+/** The sales order for a page, or the 404 page if missing or deleted. */
+export async function loadSalesOrder(id: string) {
   await requireUser();
   try {
-    return await getOrder(id);
+    return await getSalesOrder(id);
   } catch (error) {
     if (error instanceof BackendError && error.status === 404) notFound();
     throw error;

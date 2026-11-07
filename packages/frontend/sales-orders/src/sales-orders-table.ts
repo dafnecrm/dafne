@@ -1,4 +1,4 @@
-import type { OrderFilterField, OrderSortField } from "@dafne/contracts";
+import type { SalesOrderFilterField, SalesOrderSortField } from "@dafne/contracts";
 import {
   defineDataTable,
   type DataTableConfig,
@@ -31,11 +31,11 @@ export function defineSalesOrdersTable({
     path,
     // The backend allows up to 100.
     pageSizes: [10, 20, 50],
-    sortable: ["createdAt", "updatedAt"] satisfies OrderSortField[],
+    sortable: ["createdAt", "updatedAt"] satisfies SalesOrderSortField[],
     defaultSort: SALES_ORDERS_DEFAULT_SORT,
     filters: [
       {
-        field: "id" satisfies OrderFilterField,
+        field: "id" satisfies SalesOrderFilterField,
         label: "salesOrders.fields.id" satisfies SalesOrdersMessageKey,
       },
     ],

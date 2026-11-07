@@ -1,0 +1,99 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "b103bf8f-3bd3-4e26-9baf-c772bbf04897",
+  "prevIds": [
+    "0351f304-7a9d-4692-bff6-6c5a4169ac63"
+  ],
+  "footprints": [
+    {
+      "statementType": "rename_table",
+      "statementTarget": [
+        "table",
+        "sales",
+        "order"
+      ],
+      "writes": [
+        "s|tbl|sales.order",
+        "n|tbl|sales.order",
+        "n|rel|sales.order",
+        "n|type|sales.order",
+        "s|tbl|sales.sales_order",
+        "n|tbl|sales.sales_order",
+        "n|rel|sales.sales_order",
+        "n|type|sales.sales_order"
+      ],
+      "reads": [
+        "n|sch|sales"
+      ]
+    },
+    {
+      "statementType": "rename_index",
+      "statementTarget": [
+        "index",
+        "sales",
+        "sales_order",
+        "order_deletedAt_idx"
+      ],
+      "writes": [
+        "s|idx|sales.order_deletedAt_idx",
+        "n|idx|sales.order_deletedAt_idx",
+        "n|rel|sales.order_deletedAt_idx",
+        "s|idx|sales.sales_order_deletedAt_idx",
+        "n|idx|sales.sales_order_deletedAt_idx",
+        "n|rel|sales.sales_order_deletedAt_idx"
+      ],
+      "reads": [
+        "e|tbl|sales.sales_order",
+        "n|sch|sales",
+        "e|col|sales.sales_order.deleted_at"
+      ]
+    },
+    {
+      "statementType": "rename_index",
+      "statementTarget": [
+        "index",
+        "sales",
+        "sales_order",
+        "order_customerId_idx"
+      ],
+      "writes": [
+        "s|idx|sales.order_customerId_idx",
+        "n|idx|sales.order_customerId_idx",
+        "n|rel|sales.order_customerId_idx",
+        "s|idx|sales.sales_order_customerId_idx",
+        "n|idx|sales.sales_order_customerId_idx",
+        "n|rel|sales.sales_order_customerId_idx"
+      ],
+      "reads": [
+        "e|tbl|sales.sales_order",
+        "n|sch|sales",
+        "e|col|sales.sales_order.customer_id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "rename",
+      "key": "tables\u0000[\"sales\",\"order\"]",
+      "set": {
+        "name": "sales_order"
+      }
+    },
+    {
+      "op": "rename",
+      "key": "indexes\u0000[\"sales\",\"order_deletedAt_idx\"]",
+      "set": {
+        "name": "sales_order_deletedAt_idx"
+      }
+    },
+    {
+      "op": "rename",
+      "key": "indexes\u0000[\"sales\",\"order_customerId_idx\"]",
+      "set": {
+        "name": "sales_order_customerId_idx"
+      }
+    }
+  ]
+}

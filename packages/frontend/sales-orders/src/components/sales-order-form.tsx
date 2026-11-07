@@ -13,38 +13,38 @@ import {
 import { FieldGroup } from "@dafne/frontend-ui/components/field";
 import { setServerError } from "@dafne/frontend-forms/client";
 import { useResetOnLeave } from "@dafne/frontend-forms/client";
-import { saveOrder } from "../actions.ts";
+import { saveSalesOrder } from "../actions.ts";
 import { useAppForm } from "./form-hook.ts";
-import { orderFormOpts, orderSchema } from "../schema.ts";
-import type { OrderDetail } from "../types.ts";
+import { salesOrderFormOpts, salesOrderSchema } from "../schema.ts";
+import type { SalesOrderDetail } from "../types.ts";
 
 /**
- * Creates an order, or edits `order`. Saving opens the order's page
+ * Creates a sales order, or edits `salesOrder`. Saving opens the sales order's page
  * (`<path>/<id>`, `path` being the app's sales orders list).
  */
-export function OrderForm({
-  order,
+export function SalesOrderForm({
+  salesOrder,
   path,
 }: {
-  order?: OrderDetail;
+  salesOrder?: SalesOrderDetail;
   path: string;
 }) {
   const t = useTranslations();
   const form = useAppForm({
-    ...orderFormOpts(order),
+    ...salesOrderFormOpts(salesOrder),
     // Validate on submit, then on every change.
     validationLogic: revalidateLogic(),
-    validators: { onDynamic: orderSchema },
+    validators: { onDynamic: salesOrderSchema },
     onSubmit: async ({ value, formApi }) => {
       // Redirects on success, so only an error comes back.
-      const result = await saveOrder(order?.id ?? null, value, path);
+      const result = await saveSalesOrder(salesOrder?.id ?? null, value, path);
       if (result?.error) setServerError(formApi, result.error);
     },
   });
   // The page stays mounted (hidden) after leaving it: start fresh next time.
   useResetOnLeave(form);
-  const cancelHref = order
-    ? `${path}/${encodeURIComponent(order.id)}`
+  const cancelHref = salesOrder
+    ? `${path}/${encodeURIComponent(salesOrder.id)}`
     : path;
 
   return (
@@ -90,7 +90,7 @@ export function OrderForm({
               {t("common.cancel")}
             </Button>
             <form.SubmitButton
-              label={t(order ? "common.saveChanges" : "salesOrders.create")}
+              label={t(salesOrder ? "common.saveChanges" : "salesOrders.create")}
             />
           </div>
         </FieldGroup>

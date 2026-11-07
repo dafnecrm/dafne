@@ -14,27 +14,27 @@ import {
   AlertDialogTitle,
 } from "@dafne/frontend-ui/components/alert-dialog";
 import { Spinner } from "@dafne/frontend-ui/components/spinner";
-import { deleteOrder } from "../actions.ts";
+import { deleteSalesOrder } from "../actions.ts";
 
 /*
- * The confirmation dialogs of an order, shared by the table's row menu
- * (order-table-actions.tsx) and the detail page's
- * (order-detail-actions.tsx).
+ * The confirmation dialogs of a sales order, shared by the table's row menu
+ * (sales-order-table-actions.tsx) and the detail page's
+ * (sales-order-detail-actions.tsx).
  */
 
-export type OrderRef = { id: number; };
+export type SalesOrderRef = { id: number; };
 
 /**
  * Confirms the deletion and runs it, then goes back to the list at `path`
  * (`then="list"`) or refreshes the current page (default).
  */
-export function DeleteOrderDialog({
-  order,
+export function DeleteSalesOrderDialog({
+  salesOrder,
   path,
   then = "refresh",
   onClose,
 }: {
-  order: OrderRef;
+  salesOrder: SalesOrderRef;
   path: string;
   then?: "list" | "refresh";
   onClose: () => void;
@@ -46,7 +46,7 @@ export function DeleteOrderDialog({
 
   const confirm = () =>
     startTransition(async () => {
-      const result = await deleteOrder(order.id);
+      const result = await deleteSalesOrder(salesOrder.id);
       if (result) {
         setError(result.error);
         return;
@@ -61,7 +61,7 @@ export function DeleteOrderDialog({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>
-            {t("common.deleteTitle", { name: `${t("salesOrders.singular")} ${order.id}` })}
+            {t("common.deleteTitle", { name: `${t("salesOrders.singular")} ${salesOrder.id}` })}
           </AlertDialogTitle>
           <AlertDialogDescription>
             {t("salesOrders.deleteDescription")}

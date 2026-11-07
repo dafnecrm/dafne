@@ -15,17 +15,17 @@ import {
 import { Button } from "@dafne/frontend-ui/components/button";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { getTableParams } from "@dafne/frontend-data-table";
-import { listOrders } from "@dafne/frontend-sales-orders/server";
+import { listSalesOrders } from "@dafne/frontend-sales-orders/server";
 import { salesOrdersTable } from "@/lib/sales-orders-table";
 import { requireUser } from "@/lib/session";
-import { OrdersTable } from "@dafne/frontend-sales-orders/components/orders-table";
+import { SalesOrdersTable } from "@dafne/frontend-sales-orders/components/sales-orders-table";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations();
   return { title: t("salesOrders.title") };
 }
 
-export default function OrdersPage({
+export default function SalesOrdersPage({
   searchParams,
 }: PageProps<"/[locale]/sales-orders">) {
   const t = useTranslations();
@@ -44,7 +44,7 @@ export default function OrdersPage({
       <PageContentBody>
         {/* The session and the query are read per request. */}
         <Suspense fallback={<Skeleton className="h-72 w-full" />}>
-          <OrdersList searchParams={searchParams} />
+          <SalesOrdersList searchParams={searchParams} />
         </Suspense>
       </PageContentBody>
     </PageContent>
@@ -52,12 +52,12 @@ export default function OrdersPage({
 }
 
 /** Fetches one page; the client table renders it. */
-async function OrdersList({
+async function SalesOrdersList({
   searchParams,
 }: Pick<PageProps<"/[locale]/sales-orders">, "searchParams">) {
   await requireUser();
   const params = getTableParams(await searchParams, salesOrdersTable);
-  const data = await listOrders({
+  const data = await listSalesOrders({
     limit: params.pageSize,
     offset: params.offset,
     filters: params.filters,
@@ -65,9 +65,9 @@ async function OrdersList({
   });
 
   return (
-    <OrdersTable
+    <SalesOrdersTable
       config={salesOrdersTable}
-      orders={data.orders}
+      salesOrders={data.salesOrders}
       total={data.total}
       params={params}
     />

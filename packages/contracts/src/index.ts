@@ -14,4 +14,4 @@ export * from './activities.ts';
 export * from './geo.ts';
 export * from './countries.ts';
 export * from './products.ts';
-export * from './orders.ts';
+export * from './sales-orders.ts';

@@ -56,8 +56,8 @@ export const en = {
     q: { required: 'Enter what to search' },
     unavailable: 'Address search is unavailable. Try again later.',
   },
-  orders: {
-    notFound: 'Order not found',
+  salesOrders: {
+    notFound: 'Sales order not found',
     customerId: { required: 'Enter the customer id' },
   },
 };

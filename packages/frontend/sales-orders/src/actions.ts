@@ -3,8 +3,8 @@
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { BackendError, backendFetch } from "@dafne/frontend-api/server";
-import { orderSchema, type OrderFormValues } from "./schema.ts";
-import type { OrderDetail } from "./types.ts";
+import { salesOrderSchema, type SalesOrderFormValues } from "./schema.ts";
+import type { SalesOrderDetail } from "./types.ts";
 
 /*
  * Sales order mutations shared by the apps. The backend checks the session (forwarded by
@@ -25,31 +25,31 @@ async function errorMessage(error: unknown) {
 }
 
 /**
- * Creates an order (no `id`) or replaces one, then opens its page
+ * Creates a sales order (no `id`) or replaces one, then opens its page
  * (`<path>/<id>`, `path` being the app's sales orders list). Returns an
  * error message when it fails.
  */
-export async function saveOrder(
+export async function saveSalesOrder(
   id: number | null,
-  values: OrderFormValues,
+  values: SalesOrderFormValues,
   path: string,
 ): Promise<ActionError> {
   // Any POST can call this: only redirect within the app.
   if (!/^\/[\w/-]*$/.test(path)) throw new Error(`Invalid path: ${path}`);
-  const parsed = orderSchema.safeParse(values);
+  const parsed = salesOrderSchema.safeParse(values);
   if (!parsed.success)
     return { error: (await getTranslations())("common.errors.invalid") };
 
   let savedId: number;
   try {
     const res = await backendFetch(
-      id ? `/orders/${encodeURIComponent(id)}` : "/orders",
+      id ? `/sales-orders/${encodeURIComponent(id)}` : "/sales-orders",
       {
         method: id ? "PUT" : "POST",
         body: JSON.stringify(parsed.data),
       },
     );
-    savedId = ((await res.json()) as OrderDetail).id;
+    savedId = ((await res.json()) as SalesOrderDetail).id;
   } catch (error) {
     return { error: await errorMessage(error) };
   }
@@ -58,12 +58,12 @@ export async function saveOrder(
 }
 
 /**
- * Deletes an order (logically: the backend sets deletedAt). The
+ * Deletes a sales order (logically: the backend sets deletedAt). The
  * caller refreshes or leaves the page. Returns an error message when it fails.
  */
-export async function deleteOrder(id: number): Promise<ActionError | null> {
+export async function deleteSalesOrder(id: number): Promise<ActionError | null> {
   try {
-    await backendFetch(`/orders/${encodeURIComponent(id)}`, {
+    await backendFetch(`/sales-orders/${encodeURIComponent(id)}`, {
       method: "DELETE",
     });
     return null;

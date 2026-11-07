@@ -53,8 +53,8 @@ export const it: ContractMessages = {
     q: { required: 'Inserisci cosa cercare' },
     unavailable: 'La ricerca indirizzi non è disponibile. Riprova più tardi.',
   },
-  orders: {
-    notFound: 'Order not found',
-    customerId: { required: 'Enter the customer id' },
+  salesOrders: {
+    notFound: 'Ordine di vendita non trovato',
+    customerId: { required: 'Scegli il cliente' },
   },
 };

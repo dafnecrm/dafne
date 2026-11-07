@@ -13,42 +13,42 @@ import {
 } from "@dafne/frontend-ui/components/page-content";
 import { Button } from "@dafne/frontend-ui/components/button";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
-import { OrderDetails } from "@dafne/frontend-sales-orders/components/order-detail";
-import { OrderDetailActions } from "@dafne/frontend-sales-orders/components/order-detail-actions";
+import { SalesOrderDetails } from "@dafne/frontend-sales-orders/components/sales-order-detail";
+import { SalesOrderDetailActions } from "@dafne/frontend-sales-orders/components/sales-order-detail-actions";
 import { customersTable } from "@/lib/customers-table";
 import { salesOrdersTable } from "@/lib/sales-orders-table";
-import { loadOrder } from "./load-order";
+import { loadSalesOrder } from "./load-sales-order";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations();
   return { title: t("salesOrders.singular") };
 }
 
-export default function OrderPage({
+export default function SalesOrderPage({
   params,
 }: PageProps<"/[locale]/sales-orders/[id]">) {
   return (
     <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-      <OrderProfile params={params} />
+      <SalesOrderProfile params={params} />
     </Suspense>
   );
 }
 
-/** Loads the order: its name and actions, then its details. */
-async function OrderProfile({
+/** Loads the sales order: its name and actions, then its details. */
+async function SalesOrderProfile({
   params,
 }: Pick<PageProps<"/[locale]/sales-orders/[id]">, "params">) {
-  const order = await loadOrder((await params).id);
+  const salesOrder = await loadSalesOrder((await params).id);
   const t = await getTranslations();
 
   return (
     <PageContent>
       <BreadcrumbLabel
-        href={`${salesOrdersTable.path}/${encodeURIComponent(order.id)}`}
-        label={`${t("salesOrders.singular")} ${order.id}`}
+        href={`${salesOrdersTable.path}/${encodeURIComponent(salesOrder.id)}`}
+        label={`${t("salesOrders.singular")} ${salesOrder.id}`}
       />
       <PageContentHeader>
-        <PageContentTitle>{`${t("salesOrders.singular")} ${order.id}`}</PageContentTitle>
+        <PageContentTitle>{`${t("salesOrders.singular")} ${salesOrder.id}`}</PageContentTitle>
         <PageContentAction className="flex flex-wrap justify-end gap-2">
           <Button
             variant="outline"
@@ -59,11 +59,11 @@ async function OrderProfile({
             <ArrowLeftIcon data-icon="inline-start" />
             {t("salesOrders.all")}
           </Button>
-          <OrderDetailActions order={order} path={salesOrdersTable.path} />
+          <SalesOrderDetailActions salesOrder={salesOrder} path={salesOrdersTable.path} />
         </PageContentAction>
       </PageContentHeader>
       <PageContentBody>
-        <OrderDetails order={order} customersPath={customersTable.path} />
+        <SalesOrderDetails salesOrder={salesOrder} customersPath={customersTable.path} />
       </PageContentBody>
     </PageContent>
   );

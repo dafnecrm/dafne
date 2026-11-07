@@ -69,7 +69,7 @@
       "path": "./apps/auth"
     },
     {
-      "path": "./packages/backend/orders"
+      "path": "./packages/backend/sales-orders"
     },
     {
       "path": "./packages/frontend/customers"

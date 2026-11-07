@@ -8,7 +8,7 @@ import {
   PageContentHeader,
   PageContentTitle,
 } from "@dafne/frontend-ui/components/page-content";
-import { OrderForm } from "@dafne/frontend-sales-orders/components/order-form";
+import { SalesOrderForm } from "@dafne/frontend-sales-orders/components/sales-order-form";
 import { salesOrdersTable } from "@/lib/sales-orders-table";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -16,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("salesOrders.new") };
 }
 
-export default function NewOrderPage() {
+export default function NewSalesOrderPage() {
   const t = useTranslations();
   return (
     <PageContent>
@@ -27,7 +27,7 @@ export default function NewOrderPage() {
         </PageContentDescription>
       </PageContentHeader>
       <PageContentBody>
-        <OrderForm path={salesOrdersTable.path} />
+        <SalesOrderForm path={salesOrdersTable.path} />
       </PageContentBody>
     </PageContent>
   );

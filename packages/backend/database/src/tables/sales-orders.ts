@@ -14,11 +14,11 @@ import { customer } from './customers.js';
 import { product } from './products.js';
 
 /**
- * An order managed by the users. Deletion is logical: `deletedAt` is
+ * A sales order managed by the users. Deletion is logical: `deletedAt` is
  * set and the row is hidden from every query, but kept in the table.
  */
-export const order = salesSchema.table(
-  'order',
+export const salesOrder = salesSchema.table(
+  'sales_order',
   {
     id: serial('id').primaryKey(),
     /** @api detail @form editor */
@@ -34,7 +34,7 @@ export const order = salesSchema.table(
       .$onUpdate(() => new Date())
       .notNull(),
     deletedAt: timestamp('deleted_at', { precision: 3, withTimezone: true }),
-    // Nullable so removing a user keeps the orders they touched.
+    // Nullable so removing a user keeps the sales orders they touched.
     createdById: varchar('created_by_id', { length: 36 }).references(
       () => user.id,
       { onDelete: 'set null' },
@@ -45,18 +45,21 @@ export const order = salesSchema.table(
     ),
   },
   (table) => [
-    index('order_deletedAt_idx').on(table.deletedAt),
-    index('order_customerId_idx').on(table.customerId),
+    index('sales_order_deletedAt_idx').on(table.deletedAt),
+    index('sales_order_customerId_idx').on(table.customerId),
   ],
 );
 
-/** Links orders and products (many-to-many). */
+/**
+ * Links sales orders and products (many-to-many). Its table and its
+ * `order_id` column keep their names.
+ */
 export const orderProduct = salesSchema.table(
   'order_product',
   {
     orderId: integer('order_id')
       .notNull()
-      .references(() => order.id, { onDelete: 'cascade' }),
+      .references(() => salesOrder.id, { onDelete: 'cascade' }),
     productId: integer('product_id')
       .notNull()
       .references(() => product.id, { onDelete: 'cascade' }),
@@ -67,36 +70,36 @@ export const orderProduct = salesSchema.table(
   ],
 );
 
-export const orderRelations = defineRelationsPart(
-  { user, order, customer, orderProduct, product },
+export const salesOrderRelations = defineRelationsPart(
+  { user, salesOrder, customer, orderProduct, product },
   (r) => ({
-    order: {
+    salesOrder: {
       createdBy: r.one.user({
-        from: r.order.createdById,
+        from: r.salesOrder.createdById,
         to: r.user.id,
-        alias: 'orderCreatedBy',
+        alias: 'salesOrderCreatedBy',
       }),
       updatedBy: r.one.user({
-        from: r.order.updatedById,
+        from: r.salesOrder.updatedById,
         to: r.user.id,
-        alias: 'orderUpdatedBy',
+        alias: 'salesOrderUpdatedBy',
       }),
       customer: r.one.customer({
-        from: r.order.customerId,
+        from: r.salesOrder.customerId,
         to: r.customer.id,
         optional: false,
-        alias: 'orderCustomer',
+        alias: 'salesOrderCustomer',
       }),
       products: r.many.product({
-        from: r.order.id.through(r.orderProduct.orderId),
+        from: r.salesOrder.id.through(r.orderProduct.orderId),
         to: r.product.id.through(r.orderProduct.productId),
       }),
     },
     customer: {
-      orders: r.many.order({
+      salesOrders: r.many.salesOrder({
         from: r.customer.id,
-        to: r.order.customerId,
-        alias: 'orderCustomer',
+        to: r.salesOrder.customerId,
+        alias: 'salesOrderCustomer',
       }),
     },
   }),

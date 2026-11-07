@@ -9,6 +9,9 @@ export const it: ProductsMessages = {
   noun: "prodotti",
   create: "Crea prodotto",
   editMeta: "Modifica prodotto",
+  productPlaceholder: "Scegli un prodotto…",
+  loadingProducts: "Ricerca prodotti…",
+  noProducts: "Nessun prodotto trovato.",
   newDescription: "Solo il nome è obbligatorio.",
   editDescription: "Il salvataggio sostituisce i dati del prodotto.",
   empty: {

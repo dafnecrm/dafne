@@ -10,41 +10,41 @@ import {
   PageContentTitle,
 } from "@dafne/frontend-ui/components/page-content";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
-import { OrderForm } from "@dafne/frontend-sales-orders/components/order-form";
+import { SalesOrderForm } from "@dafne/frontend-sales-orders/components/sales-order-form";
 import { salesOrdersTable } from "@/lib/sales-orders-table";
-import { loadOrder } from "../load-order";
+import { loadSalesOrder } from "../load-sales-order";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations();
   return { title: t("salesOrders.editMeta") };
 }
 
-export default function EditOrderPage({
+export default function EditSalesOrderPage({
   params,
 }: PageProps<"/[locale]/sales-orders/[id]/edit">) {
   return (
     <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-      <EditOrder params={params} />
+      <EditSalesOrder params={params} />
     </Suspense>
   );
 }
 
-async function EditOrder({
+async function EditSalesOrder({
   params,
 }: Pick<PageProps<"/[locale]/sales-orders/[id]/edit">, "params">) {
-  const order = await loadOrder((await params).id);
+  const salesOrder = await loadSalesOrder((await params).id);
   const t = await getTranslations();
 
   return (
     <PageContent>
       <BreadcrumbLabel
-        href={`${salesOrdersTable.path}/${encodeURIComponent(order.id)}`}
-        label={`${t("salesOrders.singular")} ${order.id}`}
+        href={`${salesOrdersTable.path}/${encodeURIComponent(salesOrder.id)}`}
+        label={`${t("salesOrders.singular")} ${salesOrder.id}`}
       />
       <PageContentHeader>
         <PageContentTitle>
           {t("common.editTitle", {
-            name: `${t("salesOrders.singular")} ${order.id}`,
+            name: `${t("salesOrders.singular")} ${salesOrder.id}`,
           })}
         </PageContentTitle>
         <PageContentDescription>
@@ -52,7 +52,7 @@ async function EditOrder({
         </PageContentDescription>
       </PageContentHeader>
       <PageContentBody>
-        <OrderForm order={order} path={salesOrdersTable.path} />
+        <SalesOrderForm salesOrder={salesOrder} path={salesOrdersTable.path} />
       </PageContentBody>
     </PageContent>
   );

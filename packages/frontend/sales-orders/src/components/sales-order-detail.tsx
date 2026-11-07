@@ -11,19 +11,19 @@ import { useTranslations } from "next-intl";
 import CopyButton from "@dafne/frontend-ui/components/copy-button";
 import { Detail, DetailSection } from "@dafne/frontend-ui/components/detail";
 import { LocalDate } from "@dafne/frontend-ui/components/local-date";
-import type { OrderDetail } from "../types.ts";
+import type { SalesOrderDetail } from "../types.ts";
 import { TextEditorContent } from "@dafne/frontend-ui/components/text-editor";
 import Link from "next/link";
 
 /**
- * The details of an order: its fields, then who created and updated it.
+ * The details of a sales order: its fields, then who created and updated it.
  * The customer links to `<customersPath>/<id>`, the app's customer page.
  */
-export function OrderDetails({
-  order,
+export function SalesOrderDetails({
+  salesOrder,
   customersPath,
 }: {
-  order: OrderDetail;
+  salesOrder: SalesOrderDetail;
   customersPath: string;
 }) {
   const t = useTranslations();
@@ -31,13 +31,13 @@ export function OrderDetails({
     <>
       <DetailSection title={t("salesOrders.sections.details")}>
         <Detail icon={LinkIcon} label={t("salesOrders.fields.customer")}>
-          <Link href={`${customersPath}/${encodeURIComponent(order.customer.id)}`} className="hover:underline">
-            {order.customer.name}
+          <Link href={`${customersPath}/${encodeURIComponent(salesOrder.customer.id)}`} className="hover:underline">
+            {salesOrder.customer.name}
           </Link>
         </Detail>
         <Detail icon={TextIcon} label={t("salesOrders.fields.notes")} wide>
-          {order.notes ? (
-            <TextEditorContent html={order.notes} className="font-normal" />
+          {salesOrder.notes ? (
+            <TextEditorContent html={salesOrder.notes} className="font-normal" />
           ) : (
             "—"
           )}
@@ -46,21 +46,21 @@ export function OrderDetails({
       <DetailSection title={t("common.record.title")}>
         <Detail icon={FingerprintIcon} label={t("salesOrders.fields.id")}>
           <div className="flex items-center gap-2">
-            <code className="truncate font-mono text-xs">{order.id}</code>
-            <CopyButton variant="ghost" value={String(order.id)} />
+            <code className="truncate font-mono text-xs">{salesOrder.id}</code>
+            <CopyButton variant="ghost" value={String(salesOrder.id)} />
           </div>
         </Detail>
         <Detail icon={CalendarPlusIcon} label={t("common.record.created")}>
-          <LocalDate value={order.createdAt} format="dateTime" />
+          <LocalDate value={salesOrder.createdAt} format="dateTime" />
         </Detail>
         <Detail icon={UserPlusIcon} label={t("common.record.createdBy")}>
-          {order.createdBy?.name ?? "—"}
+          {salesOrder.createdBy?.name ?? "—"}
         </Detail>
         <Detail icon={HistoryIcon} label={t("common.record.updated")}>
-          <LocalDate value={order.updatedAt} format="dateTime" />
+          <LocalDate value={salesOrder.updatedAt} format="dateTime" />
         </Detail>
         <Detail icon={UserPenIcon} label={t("common.record.updatedBy")}>
-          {order.updatedBy?.name ?? "—"}
+          {salesOrder.updatedBy?.name ?? "—"}
         </Detail>
       </DetailSection>
     </>

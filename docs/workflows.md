@@ -44,12 +44,12 @@ frontend app.
 
 ## Remove columns from a resource
 
-E.g. `notes` from orders:
+E.g. `notes` from sales orders:
 
 ```sh
-pnpm dafne remove backend-db-column orders notes   # or with no arguments: asks for the table and the columns
-pnpm dafne test @dafne/backend-orders @dafne/contracts
-pnpm dafne sync frontend-resource orders           # the pages
+pnpm dafne remove backend-db-column sales-orders notes   # or with no arguments: asks for the table and the columns
+pnpm dafne test @dafne/backend-sales-orders @dafne/contracts
+pnpm dafne sync frontend-resource sales-orders           # the pages
 pnpm dafne typecheck @dafne/sales-web
 pnpm dafne db migrate
 ```

@@ -19,23 +19,23 @@ import {
 } from "@dafne/frontend-ui/components/empty";
 import type { TableParams } from "@dafne/frontend-data-table";
 import type { SalesOrdersTableConfig } from "../sales-orders-table.ts";
-import type { ListedOrder } from "../types.ts";
-import { OrderTableActions } from "./order-table-actions.tsx";
+import type { ListedSalesOrder } from "../types.ts";
+import { SalesOrderTableActions } from "./sales-order-table-actions.tsx";
 import Link from "next/link";
 import { Button } from "@dafne/frontend-ui/components/button";
 
 /*
- * Columns of the orders table. Column ids double as the backend's
+ * Columns of the sales orders table. Column ids double as the backend's
  * sort fields, so they must match `sortable` in ../sales-orders-table.ts.
  */
 
-const col = createDataTableColumnHelper<ListedOrder>();
+const col = createDataTableColumnHelper<ListedSalesOrder>();
 
 /**
  * Translated per language; memoized, so the table sees the same columns on
  * every render. Ids link to `<path>/<id>`, the detail page.
  */
-function useOrderColumns(path: string) {
+function useSalesOrderColumns(path: string) {
   const t = useTranslations();
   return useMemo(
     () =>
@@ -66,40 +66,40 @@ function useOrderColumns(path: string) {
   );
 }
 
-const getRowId = (order: ListedOrder) => String(order.id);
+const getRowId = (salesOrder: ListedSalesOrder) => String(salesOrder.id);
 
 /**
- * Orders list; the server page passes the app's config and one page of
- * orders.
+ * Sales orders list; the server page passes the app's config and one page of
+ * sales orders.
  */
-export function OrdersTable({
+export function SalesOrdersTable({
   config,
-  orders,
+  salesOrders,
   total,
   params,
 }: {
   config: SalesOrdersTableConfig;
-  orders: ListedOrder[];
+  salesOrders: ListedSalesOrder[];
   total: number;
   params: TableParams;
 }) {
   const t = useTranslations();
   const describeFilters = useDescribeFilters();
-  const columns = useOrderColumns(config.path);
+  const columns = useSalesOrderColumns(config.path);
   // Stable per path, so the table sees the same function on every render.
-  const orderActions = useCallback(
-    (order: ListedOrder) => (
-      <OrderTableActions order={order} path={config.path} />
+  const salesOrderActions = useCallback(
+    (salesOrder: ListedSalesOrder) => (
+      <SalesOrderTableActions salesOrder={salesOrder} path={config.path} />
     ),
     [config.path],
   );
   return (
     <DataTable
       columns={columns}
-      data={orders}
+      data={salesOrders}
       getRowId={getRowId}
       config={config}
-      rowActions={orderActions}
+      rowActions={salesOrderActions}
       params={params}
       total={total}
       noun={t("salesOrders.noun")}
