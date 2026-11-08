@@ -1,0 +1,1 @@
+ALTER TABLE "sales"."sales_order_item" ADD COLUMN "position" integer;

@@ -16,6 +16,7 @@ import {
   type ListCustomersQuery,
   msg,
 } from '@dafne/contracts';
+import { PostgresErrorCode } from '@dafne/backend-common';
 
 export const DEFAULT_PAGE_SIZE = 20;
 
@@ -26,10 +27,6 @@ const escapeLike = (value: string) => value.replace(/[\\%_]/g, '\\$&');
 
 /** Customers that haven't been deleted. */
 const notDeleted = isNull(customer.deletedAt);
-
-/** Postgres error codes (SQLSTATE). */
-const UNIQUE_VIOLATION = '23505';
-const FOREIGN_KEY_VIOLATION = '23503';
 
 /**
  * Turns the Postgres errors a body can cause (drizzle wraps them as the
@@ -43,9 +40,9 @@ function rethrowConstraint(error: unknown): never {
       ? (cause as { code?: unknown; constraint?: unknown })
       : {};
   const name = typeof constraint === 'string' ? constraint : '';
-  if (code === UNIQUE_VIOLATION && name === 'customer_email_unique_idx')
+  if (code === PostgresErrorCode.UNIQUE_VIOLATION && name === 'customer_email_unique_idx')
     throw new ConflictException(msg('customers.email.taken'));
-  if (code === FOREIGN_KEY_VIOLATION && name.includes('country_code'))
+  if (code === PostgresErrorCode.FOREIGN_KEY_VIOLATION && name.includes('country_code'))
     throw new BadRequestException([
       `addresses: ${msg('customers.addresses.country')}`,
     ]);

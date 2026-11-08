@@ -1,6 +1,6 @@
 import { schema, type Database } from '@dafne/backend-database';
 import { InjectDrizzle } from '@nestjs/drizzle';
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { and, asc, desc, eq, isNull, ilike, type SQL } from 'drizzle-orm';
 import {
   SALES_ORDER_FILTER_FIELDS,
@@ -9,7 +9,11 @@ import {
   type SalesOrdersList,
   type ListSalesOrdersQuery,
   msg,
+  SalesOrderItemBody,
 } from '@dafne/contracts';
+import { PostgresErrorCode } from '@dafne/backend-common';
+
+type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0];
 
 export const DEFAULT_PAGE_SIZE = 20;
 
@@ -27,11 +31,40 @@ const userSummary = { columns: { id: true, name: true } } as const;
 /** Only the customer's ID and name, for "customer". */
 const customerSummary = { columns: { id: true, name: true } } as const;
 
+const salesOrderItemsSummary = { columns: { productId: true, quantity: true, position: true } } as const;
+
+/**
+ * Turns the Postgres errors a body can cause (drizzle wraps them as the
+ * cause) into client errors: a taken email (409), an address country that
+ * isn't in the countries table (400). Rethrows anything else.
+ */
+function rethrowConstraint(error: unknown): never {
+  const cause = error instanceof Error && error.cause ? error.cause : error;
+  const { code, constraint } =
+    cause instanceof Error
+      ? (cause as { code?: unknown; constraint?: unknown })
+      : {};
+  const name = typeof constraint === 'string' ? constraint : '';
+  if (code === PostgresErrorCode.FOREIGN_KEY_VIOLATION) {
+    if (name.includes('customer_id')) {
+      throw new BadRequestException([
+        `addresses: ${msg('salesOrders.customerId.notFound')}`,
+      ]);
+    } else if (name.includes('product_id')) {
+      throw new BadRequestException([
+        `items: ${msg('salesOrders.items.productId.notFound')}`,
+      ]);
+    }
+  }
+  throw error;
+}
+
+
 @Injectable()
 export class SalesOrdersService {
   logger = new Logger(SalesOrdersService.name);
 
-  constructor(@InjectDrizzle() private readonly db: Database) {}
+  constructor(@InjectDrizzle() private readonly db: Database) { }
 
   /**
    * Lists sales orders that aren't deleted, paged and sorted, filtered by
@@ -85,7 +118,12 @@ export class SalesOrdersService {
     const found = await this.db.query.salesOrder.findFirst({
       where: { id, deletedAt: { isNull: true } },
       columns: { createdById: false, updatedById: false },
-      with: { createdBy: userSummary, updatedBy: userSummary, customer: customerSummary },
+      with: { 
+        createdBy: userSummary, 
+        updatedBy: userSummary, 
+        customer: customerSummary, 
+        items: salesOrderItemsSummary 
+      },
     });
 
     if (!found) throw new NotFoundException(msg('salesOrders.notFound'));
@@ -96,17 +134,26 @@ export class SalesOrdersService {
   async createSalesOrder(body: SalesOrderBody, userId: string): Promise<SalesOrderDetail> {
     // One instant for both: createdAt and updatedAt start equal.
     const now = new Date();
-    const [{ id }] = await this.db
-      .insert(salesOrder)
-      .values({
-        notes: body.notes,
-        customerId: body.customerId,
-        createdAt: now,
-        updatedAt: now,
-        createdById: userId,
-        updatedById: userId,
-      })
-      .returning({ id: salesOrder.id });
+
+    const id = await this.db.transaction(async (tx) => {
+      const [{ id }] = await this.db
+        .insert(salesOrder)
+        .values({
+          notes: body.notes,
+          customerId: body.customerId,
+          createdAt: now,
+          updatedAt: now,
+          createdById: userId,
+          updatedById: userId,
+        })
+        .returning({ id: salesOrder.id });
+
+      // rebase items
+      await this.insertSalesOrderItems(tx, id, body.items);
+
+      return id;
+    }).catch(rethrowConstraint);
+
     return this.getSalesOrder(id);
   }
 
@@ -146,5 +193,17 @@ export class SalesOrdersService {
       .where(and(eq(salesOrder.id, id), notDeleted));
     if (result.rowCount === 0)
       throw new NotFoundException(msg('salesOrders.notFound'));
+  }
+
+  async insertSalesOrderItems(tx: Transaction, salesOrderId: number, items: SalesOrderItemBody[]) {
+    if (!items.length) return;
+    await tx.insert(schema.salesOrderItem).values(
+      items.map((item, position) => ({
+        orderId: salesOrderId,
+        productId: item.productId,
+        quantity: item.quantity,
+        position: position,
+      })),
+    );
   }
 }

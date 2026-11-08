@@ -58,9 +58,15 @@ export const en = {
   },
   salesOrders: {
     notFound: 'Sales order not found',
-    customerId: { required: 'Enter the customer id' },
+    customerId: { 
+      required: 'Enter the customer id',
+      notFound: 'Choose a customer from the list'
+    },
     items: {
-      productId: { required: 'Enter the product id' },
+      productId: { 
+        required: 'Enter the product id',
+        notFound: 'Choose a product from the list'
+      },
       quantity: { required: 'Enter the quantity' },
     }
   },

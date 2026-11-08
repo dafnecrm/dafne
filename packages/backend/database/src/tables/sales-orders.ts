@@ -64,6 +64,7 @@ export const salesOrderItem = salesSchema.table(
       .notNull()
       .references(() => product.id, { onDelete: 'cascade' }),
     quantity: integer('quantity').notNull(),
+    position: integer('position')
   },
   (table) => [
     primaryKey({ columns: [table.orderId, table.productId] }),
@@ -72,7 +73,7 @@ export const salesOrderItem = salesSchema.table(
 );
 
 export const salesOrderRelations = defineRelationsPart(
-  { user, salesOrder, customer, salesOrderItem, product },
+  { user, salesOrder, customer, salesOrderItem },
   (r) => ({
     salesOrder: {
       createdBy: r.one.user({
@@ -91,9 +92,9 @@ export const salesOrderRelations = defineRelationsPart(
         optional: false,
         alias: 'salesOrderCustomer',
       }),
-      products: r.many.product({
-        from: r.salesOrder.id.through(r.salesOrderItem.orderId),
-        to: r.product.id.through(r.salesOrderItem.productId),
+      items: r.many.salesOrderItem({
+        from: r.salesOrder.id,
+        to: r.salesOrderItem.orderId,
       }),
     },
     customer: {

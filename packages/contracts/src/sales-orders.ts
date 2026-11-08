@@ -15,6 +15,9 @@ export const salesOrderItemBodySchema = z.strictObject({
   quantity: requiredNumber(msg('salesOrders.items.productId.required')),
 });
 
+export type SalesOrderItemBodyInput = z.input<typeof salesOrderItemBodySchema>;
+export type SalesOrderItemBody = z.output<typeof salesOrderItemBodySchema>;
+
 /**
  * Body of POST /sales-orders and PUT /sales-orders/:id. PUT replaces the
  * whole sales order: omitted optional fields are cleared.
@@ -90,6 +93,7 @@ export interface SalesOrderCustomer {
 export interface SalesOrderItem {
   productId: number;
   quantity: number;
+  position?: number | null;
 }
 
 /** Response of GET /sales-orders/:id, POST /sales-orders and PUT /sales-orders/:id. */
