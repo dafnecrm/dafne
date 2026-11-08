@@ -45,7 +45,15 @@ function useSalesOrderItemColumns() {
  * A customer's addresses. With none, links to the edit page
  * (`<path>/<id>/edit`, `path` being the app's customers list).
  */
-export function SalesOrderItemTable({ salesOrderId, items, path }: { salesOrderId: number, items: SalesOrderItem[], path: string }) {
+export function SalesOrderItemTable({
+  salesOrderId,
+  items,
+  path
+}: {
+  salesOrderId: number,
+  items: SalesOrderItem[],
+  path: string
+}) {
   const t = useTranslations();
   const columns = useSalesOrderItemColumns()
   const params: TableParams = {

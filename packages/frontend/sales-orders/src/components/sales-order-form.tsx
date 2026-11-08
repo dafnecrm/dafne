@@ -17,6 +17,8 @@ import { saveSalesOrder } from "../actions.ts";
 import { useAppForm } from "./form-hook.ts";
 import { salesOrderFormOpts, salesOrderSchema } from "../schema.ts";
 import type { SalesOrderDetail } from "../types.ts";
+import { DetailSection } from "@dafne/frontend-ui/components/detail";
+import { SalesOrderItemTable } from "./sales-order-items-table.tsx";
 
 /**
  * Creates a sales order, or edits `salesOrder`. Saving opens the sales order's page
@@ -73,13 +75,20 @@ export function SalesOrderForm({
                     />
                   )}
                 </form.AppField>
-          
+
                 <form.AppField name="notes">
                   {(field) => (<field.TextEditorField label={t("salesOrders.fields.notes")} />)}
                 </form.AppField>
               </FieldGroup>
             </CardContent>
           </Card>
+
+          {salesOrder && <DetailSection title={t("salesOrders.sections.items")} groupClassName="flex">
+            <SalesOrderItemTable 
+              salesOrderId={salesOrder.id} 
+              items={salesOrder.items} path="/sales-orders" 
+            />
+          </DetailSection>}
 
           <div className="flex justify-end gap-2">
             <Button
