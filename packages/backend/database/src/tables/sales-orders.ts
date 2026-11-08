@@ -67,7 +67,7 @@ export const salesOrderItem = salesSchema.table(
     position: integer('position')
   },
   (table) => [
-    primaryKey({ columns: [table.orderId, table.productId] }),
+    primaryKey({ columns: [table.orderId, table.position] }),
     index('sales_order_item_productId_idx').on(table.productId),
   ],
 );

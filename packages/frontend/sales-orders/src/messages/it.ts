@@ -20,11 +20,23 @@ export const it: SalesOrdersMessages = {
   notFound: "Questo ordine non esiste più.",
   sections: {
     details: "Dettaglio",
+    items: 'Items'
   },
   fields: {
     createdAt: "Aggiunto",
     id: "ID Ordine",
     notes: "Note",
     customer: "Cliente",
+    items: 'Items'
   },
+  items: {
+    none: 'Nessun item creato.',
+    noneDetail: 'Nessun item è stato ancora creato.',
+    addOne: 'Aggiungi un nuovo item.',
+    fields: {
+      position: "Posizione",
+      productId: 'Prodotto',
+      quantity: 'Quantità',
+    },
+  }
 };

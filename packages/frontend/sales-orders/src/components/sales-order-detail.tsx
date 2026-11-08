@@ -14,6 +14,7 @@ import { LocalDate } from "@dafne/frontend-ui/components/local-date";
 import type { SalesOrderDetail } from "../types.ts";
 import { TextEditorContent } from "@dafne/frontend-ui/components/text-editor";
 import Link from "next/link";
+import { SalesOrderItemTable } from "./sales-order-items-table.tsx";
 
 /**
  * The details of a sales order: its fields, then who created and updated it.
@@ -42,6 +43,9 @@ export function SalesOrderDetails({
             "—"
           )}
         </Detail>
+      </DetailSection>
+      <DetailSection title={t("salesOrders.sections.items")} groupClassName="flex">
+          <SalesOrderItemTable salesOrderId={salesOrder.id} items={salesOrder.items} path="/sales-orders" />
       </DetailSection>
       <DetailSection title={t("common.record.title")}>
         <Detail icon={FingerprintIcon} label={t("salesOrders.fields.id")}>

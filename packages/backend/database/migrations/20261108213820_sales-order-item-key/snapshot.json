@@ -1,0 +1,80 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "9d342031-5cd6-44d6-bdd9-19e818fbe0a7",
+  "prevIds": [
+    "63154152-c659-40da-a29b-310894baa980"
+  ],
+  "footprints": [
+    {
+      "statementType": "rename_constraint",
+      "statementTarget": [
+        "table",
+        "sales",
+        "sales_order_item"
+      ],
+      "writes": [
+        "s|pk|sales.sales_order_item",
+        "n|pk|sales.sales_order_item",
+        "n|con|sales.sales_order_item.order_product_pkey",
+        "n|rel|sales.order_product_pkey",
+        "n|con|sales.sales_order_item.sales_order_item_pkey",
+        "n|rel|sales.sales_order_item_pkey"
+      ],
+      "reads": [
+        "n|tbl|sales.sales_order_item",
+        "n|sch|sales",
+        "e|col|sales.sales_order_item.order_id",
+        "e|col|sales.sales_order_item.position"
+      ]
+    },
+    {
+      "statementType": "alter_pk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "sales_order_item"
+      ],
+      "writes": [
+        "s|pk|sales.sales_order_item"
+      ],
+      "reads": [
+        "n|tbl|sales.sales_order_item",
+        "n|sch|sales",
+        "n|col|sales.sales_order_item.order_id",
+        "n|col|sales.sales_order_item.position"
+      ],
+      "sharedWrites": [
+        "e|uniqueness|sales.sales_order_item.order_id.product_id"
+      ],
+      "sqlHash": "f5507fc9ab79a730"
+    }
+  ],
+  "deltas": [
+    {
+      "op": "rename",
+      "key": "pks\u0000[\"sales\",\"sales_order_item\",\"order_product_pkey\"]",
+      "set": {
+        "name": "sales_order_item_pkey"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"sales\",\"sales_order_item\",\"position\"]",
+      "set": {
+        "notNull": true
+      }
+    },
+    {
+      "op": "alter",
+      "key": "pks\u0000[\"sales\",\"sales_order_item\",\"sales_order_item_pkey\"]",
+      "set": {
+        "columns": [
+          "order_id",
+          "position"
+        ]
+      }
+    }
+  ]
+}

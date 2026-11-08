@@ -22,13 +22,25 @@ export const en = {
   notFound: "This order no longer exists.",
   sections: {
     details: "Details",
+    items: 'Items'
   },
   fields: {
     createdAt: "Added",
     id: "Order ID",
     notes: "Notes",
     customer: "Customer",
+    items: 'Items'
   },
+  items: {
+    none: 'No item yet.',
+    noneDetail: 'No item has been added.',
+    addOne: 'Add a new item',
+    fields: {
+      position: "Position",
+      productId: 'Product ID',
+      quantity: 'Quantity'
+    },
+  }
 };
 
 /** The shape every language must have: same keys, any text. */
