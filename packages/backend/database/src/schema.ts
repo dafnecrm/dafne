@@ -14,7 +14,7 @@ const { customerRelations, ...customerTables } = customers;
 const { activityRelations, ...activityTables } = activities;
 const { countryRelations, ...countryTables } = countries;
 const { productRelations, ...productTables } = products;
-const { salesOrderRelations, ...salesOrderTables } = salesOrders;
+const { salesOrderRelations, salesOrderItemRelations, ...salesOrderTables } = salesOrders;
 
 export const schema = { ...authTables, ...customerTables, ...activityTables, ...countryTables, ...productTables, ...salesOrderTables };
 
@@ -26,6 +26,7 @@ export const relations = mergeRelations(
   countryRelations,
   productRelations,
   salesOrderRelations,
+  salesOrderItemRelations,
 );
 
 export type Database = import('drizzle-orm/node-postgres').NodePgDatabase<typeof relations>;

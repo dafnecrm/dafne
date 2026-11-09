@@ -8,10 +8,33 @@ import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTi
 import { MapPinIcon } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import Link from "next/link";
-import { useMemo } from "react";
-import { SalesOrderItem } from "@dafne/contracts";
+import { ReactNode, useMemo } from "react";
+import { SalesOrderDetailItem } from "@dafne/contracts";
+import { SalesOrderItemsTableConfig } from "../sales-orders-items-table";
+import { ListedSalesOrder } from "../types";
 
-const col = createDataTableColumnHelper<SalesOrderItem>();
+export interface SalesOrderItemsTableProps {
+  /** The app's table, from defineCustomersTable. */
+  config: SalesOrderItemsTableConfig;
+  /** One page of customers, from the server page. */
+  items: ListedSalesOrder[];
+  total: number;
+  params: TableParams;
+  rowActions?: (salesOrderItem: SalesOrderDetailItem) => ReactNode;
+}
+
+/**
+ * A row: an item of the saved order (`SalesOrderDetailItem`) or of the
+ * form (no product while blank, its name when known).
+ */
+export interface SalesOrderItemRow {
+  position: number | null;
+  productId: number | null;
+  quantity: number | null;
+  product?: { name: string };
+}
+
+const col = createDataTableColumnHelper<SalesOrderItemRow>();
 
 function useSalesOrderItemColumns() {
   const t = useTranslations("salesOrders.items.fields")
@@ -27,7 +50,7 @@ function useSalesOrderItemColumns() {
           ),
         }),
         col.accessor(
-          (item) => item.productId,
+          (item) => item.product?.name ?? item.productId,
           { id: "products", header: t("productId") },
         ),
         col.accessor("quantity", {
@@ -48,11 +71,13 @@ function useSalesOrderItemColumns() {
 export function SalesOrderItemTable({
   salesOrderId,
   items,
-  path
+  path,
+  rowActions
 }: {
   salesOrderId: number,
-  items: SalesOrderItem[],
-  path: string
+  items: SalesOrderItemRow[],
+  path: string,
+  rowActions?: (row: SalesOrderItemRow, index: number) => ReactNode;
 }) {
   const t = useTranslations();
   const columns = useSalesOrderItemColumns()
@@ -80,6 +105,7 @@ export function SalesOrderItemTable({
     config={tableConfig}
     manualPagination={false}
     manualSorting={false}
+    rowActions={rowActions}
     empty={<Empty>
       <EmptyHeader>
         <EmptyMedia variant="icon">

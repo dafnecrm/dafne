@@ -30,6 +30,12 @@ export const it: SalesOrdersMessages = {
     items: 'Items'
   },
   items: {
+    add: "Aggiungi riga",
+    edit: "Modifica riga",
+    savedWith: "La riga viene salvata con l'ordine di vendita.",
+    loading: "Caricamento della riga…",
+    notFound: "La riga non esiste più.",
+    loadError: "Impossibile caricare la riga. Riprova.",
     none: 'Nessun item creato.',
     noneDetail: 'Nessun item è stato ancora creato.',
     addOne: 'Aggiungi un nuovo item.',
@@ -37,6 +43,8 @@ export const it: SalesOrdersMessages = {
       position: "Posizione",
       productId: 'Prodotto',
       quantity: 'Quantità',
+      add: 'Aggiungi',
+      save: 'Salva',
     },
   }
 };

@@ -55,6 +55,20 @@ export const it: ContractMessages = {
   },
   salesOrders: {
     notFound: 'Ordine di vendita non trovato',
-    customerId: { required: 'Scegli il cliente' },
+    customerId: {
+      required: 'Inserisci il cliente',
+      notFound: 'Scegli un cliente dall\'elenco',
+    },
+    items: {
+      notFound: 'Riga dell\'ordine di vendita non trovata',
+      position: {
+        required: 'Enter the position',
+      },
+      productId: {
+        required: 'Enter the product id',
+        notFound: 'Choose a product from the list'
+      },
+      quantity: { required: 'Enter the quantity' },
+    }
   },
 };

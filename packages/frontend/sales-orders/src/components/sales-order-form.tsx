@@ -19,6 +19,10 @@ import { salesOrderFormOpts, salesOrderSchema } from "../schema.ts";
 import type { SalesOrderDetail } from "../types.ts";
 import { DetailSection } from "@dafne/frontend-ui/components/detail";
 import { SalesOrderItemTable } from "./sales-order-items-table.tsx";
+import { PencilIcon, Trash2Icon } from "lucide-react";
+import { useMemo, useState } from "react";
+import { SalesOrderItemSheet } from "./sales-order-item-sheet.tsx";
+import type { ProductOption } from "@dafne/frontend-products/actions";
 
 /**
  * Creates a sales order, or edits `salesOrder`. Saving opens the sales order's page
@@ -49,6 +53,28 @@ export function SalesOrderForm({
     ? `${path}/${encodeURIComponent(salesOrder.id)}`
     : path;
 
+  // The form's items hold only the product's ID: its name comes from the
+  // saved items, or from the sheet's combobox for a product picked there.
+  const savedProducts = useMemo(
+    () =>
+      new Map(
+        salesOrder?.items.map((item) => [item.productId, item.product]),
+      ),
+    [salesOrder],
+  );
+  const [pickedProducts, setPickedProducts] = useState(
+    () => new Map<number, ProductOption>(),
+  );
+  const productOf = (productId: number | null) =>
+    productId == null
+      ? undefined
+      : (pickedProducts.get(productId) ?? savedProducts.get(productId));
+
+  const [salesOrderItemSheet, setSalesOrderItemSheet] = useState<{
+    open: boolean;
+    index: number | null;
+  }>({ open: false, index: null });
+
   return (
     <form
       noValidate
@@ -77,18 +103,82 @@ export function SalesOrderForm({
                 </form.AppField>
 
                 <form.AppField name="notes">
-                  {(field) => (<field.TextEditorField label={t("salesOrders.fields.notes")} />)}
+                  {(field) => (
+                    <field.TextEditorField
+                      label={t("salesOrders.fields.notes")}
+                    />
+                  )}
                 </form.AppField>
               </FieldGroup>
             </CardContent>
           </Card>
 
-          {salesOrder && <DetailSection title={t("salesOrders.sections.items")} groupClassName="flex">
-            <SalesOrderItemTable 
-              salesOrderId={salesOrder.id} 
-              items={salesOrder.items} path="/sales-orders" 
-            />
-          </DetailSection>}
+          {salesOrder && (
+            // Not mode="array": that re-renders only when its array version
+            // changes, and reset() (on leaving the page) zeroes it, so new
+            // values could be missed. The table follows every value instead.
+            <form.AppField name="items">
+              {(items) => (
+                <>
+                  <DetailSection
+                    title={t("salesOrders.sections.items")}
+                    groupClassName="flex"
+                  >
+                    <SalesOrderItemTable
+                      salesOrderId={salesOrder.id}
+                      items={items.state.value.map((item) => ({
+                        ...item,
+                        product: productOf(item.productId),
+                      }))}
+                      path="/sales-orders"
+                      rowActions={(item, i) => (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={() =>
+                              setSalesOrderItemSheet({
+                                open: true,
+                                index: i,
+                              })
+                            }
+                          >
+                            <PencilIcon />
+                          </Button>
+                          <Button variant="ghost" size="icon-sm">
+                            <Trash2Icon />
+                          </Button>
+                        </>
+                      )}
+                    />
+                  </DetailSection>
+                  <SalesOrderItemSheet
+                    open={salesOrderItemSheet.open}
+                    item={
+                      salesOrderItemSheet.index === null
+                        ? null
+                        : items.state.value[salesOrderItemSheet.index]
+                    }
+                    onOpenChange={(open) =>
+                      setSalesOrderItemSheet((item) => ({ ...item, open }))
+                    }
+                    onSave={(item, product) => {
+                      if (product) {
+                        setPickedProducts((picked) =>
+                          new Map(picked).set(product.id, product),
+                        );
+                      }
+                      if (salesOrderItemSheet.index === null) {
+                        items.pushValue(item);
+                      } else {
+                        items.replaceValue(salesOrderItemSheet.index, item);
+                      }
+                    }}
+                  />
+                </>
+              )}
+            </form.AppField>
+          )}
 
           <div className="flex justify-end gap-2">
             <Button
@@ -99,7 +189,9 @@ export function SalesOrderForm({
               {t("common.cancel")}
             </Button>
             <form.SubmitButton
-              label={t(salesOrder ? "common.saveChanges" : "salesOrders.create")}
+              label={t(
+                salesOrder ? "common.saveChanges" : "salesOrders.create",
+              )}
             />
           </div>
         </FieldGroup>

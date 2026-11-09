@@ -4,10 +4,11 @@ import { useFieldContext, useErrorText, type BaseFieldProps } from '@dafne/front
 import { Field, FieldError, FieldLabel } from '@dafne/frontend-ui/components/field'
 import { ProductSelect } from './product-select.tsx'
 import { cn } from '@dafne/frontend-ui/lib/utils'
+import type { ProductOption } from '../actions.ts'
 
 /**
- * A customer, picked by typing part of their name (see CustomerSelect).
- * The value is the customer's ID as text ("12"), "" when none is chosen.
+ * A product, picked by typing part of its name (see ProductSelect).
+ * The value is the product's ID (a number), null when none is chosen.
  */
 export function ProductSelectField({
   label,
@@ -16,11 +17,13 @@ export function ProductSelectField({
   className,
   controlClassName,
   orientation,
+  onProductChange,
 }: BaseFieldProps & {
   placeholder?: string
   disabled?: boolean
+  onProductChange?: (product: ProductOption | null) => void
 }) {
-  const field = useFieldContext<string>()
+  const field = useFieldContext<number | null>()
   const errorText = useErrorText()
 
   return (
@@ -35,6 +38,7 @@ export function ProductSelectField({
         name={field.name}
         value={field.state.value}
         onValueChange={field.handleChange}
+        onProductChange={onProductChange}
         onBlur={field.handleBlur}
         placeholder={placeholder}
         disabled={disabled}

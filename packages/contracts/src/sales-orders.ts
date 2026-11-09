@@ -11,6 +11,7 @@ import { msg } from './messages/index.ts';
 /* ---------- Requests ---------- */
 
 export const salesOrderItemBodySchema = z.strictObject({
+  position: requiredId(msg('salesOrders.items.position.required')),
   productId: requiredId(msg('salesOrders.items.productId.required')),
   quantity: requiredNumber(msg('salesOrders.items.productId.required')),
 });
@@ -34,8 +35,11 @@ export type SalesOrderBodyInput = z.input<typeof salesOrderBodySchema>;
 export type SalesOrderBody = z.output<typeof salesOrderBodySchema>;
 
 /** Sales order fields the list can be sorted by. */
-export const SALES_ORDER_SORT_FIELDS = ['createdAt', 'updatedAt'] as const;
+export const SALES_ORDER_SORT_FIELDS = ['id', 'createdAt', 'updatedAt'] as const;
 export type SalesOrderSortField = (typeof SALES_ORDER_SORT_FIELDS)[number];
+
+export const SALES_ORDER_ITEM_SORT_FIELDS = ['position', 'createdAt', 'updatedAt'] as const;
+export type SalesOrderItemSortField = (typeof SALES_ORDER_ITEM_SORT_FIELDS)[number];
 
 /**
  * Sales order fields the list can be filtered by, each a query param of
@@ -69,6 +73,7 @@ export interface ListedSalesOrder {
   updatedAt: Date;
 }
 
+
 /** Response of GET /sales-orders. */
 export interface SalesOrdersList {
   salesOrders: ListedSalesOrder[];
@@ -89,20 +94,30 @@ export interface SalesOrderCustomer {
   name: string;
 }
 
-/** The sales order item */
-export interface SalesOrderItem {
-  productId: number;
-  quantity: number;
-  position?: number | null;
-}
-
 /** Response of GET /sales-orders/:id, POST /sales-orders and PUT /sales-orders/:id. */
+
+export interface SalesOrderDetailItem {
+  position: number | null;
+  productId: number;
+  product: {
+    id: number,
+    name: string
+  };
+  quantity: number;
+}
 export interface SalesOrderDetail extends ListedSalesOrder {
   notes: string | null;
   customer: SalesOrderCustomer;
-  items: SalesOrderItem[];
+  items: SalesOrderDetailItem[];
   createdBy: SalesOrderUser | null;
   updatedBy: SalesOrderUser | null;
   /** Always null: deleted sales orders aren't returned. */
   deletedAt: Date | null;
+}
+
+/** The sales order items */
+export interface SalesOrderItem {
+  productId: number;
+  quantity: number;
+  position: number | null;
 }

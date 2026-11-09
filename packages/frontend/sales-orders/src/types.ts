@@ -9,3 +9,4 @@ export type ListedSalesOrder = Json<contracts.ListedSalesOrder>;
 export type SalesOrdersList = Json<contracts.SalesOrdersList>;
 export type SalesOrderUser = Json<contracts.SalesOrderUser>;
 export type SalesOrderDetail = Json<contracts.SalesOrderDetail>;
+export type SalesOrderDetailItem = Json<contracts.SalesOrderDetailItem>;

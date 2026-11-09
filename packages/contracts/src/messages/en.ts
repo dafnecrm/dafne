@@ -63,6 +63,10 @@ export const en = {
       notFound: 'Choose a customer from the list'
     },
     items: {
+      notFound: 'Sales order item not found',
+      position: { 
+        required: 'Enter the position',
+      },
       productId: { 
         required: 'Enter the product id',
         notFound: 'Choose a product from the list'

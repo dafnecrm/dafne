@@ -27,13 +27,17 @@ describe('SalesOrdersService', () => {
   const insert = { values: vi.fn(), returning: vi.fn() };
   const update = { set: vi.fn(), where: vi.fn() };
   const findFirst = vi.fn();
+  const findFirstItem = vi.fn();
   const db = {
     select: vi.fn(),
     $count: vi.fn(),
     insert: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
-    query: { salesOrder: { findFirst } },
+    query: {
+      salesOrder: { findFirst },
+      salesOrderItem: { findFirst: findFirstItem },
+    },
   };
   const found = { id: 1, name: 'Acme' };
 
@@ -118,6 +122,34 @@ describe('SalesOrdersService', () => {
       findFirst.mockResolvedValue(undefined);
 
       await expect(service.getSalesOrder(999)).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+    });
+  });
+
+  describe('getSalesOrderItem', () => {
+    const product = { id: 7, name: 'Widget' };
+    const item = { position: 2, productId: 7, quantity: 3, product: [product] };
+
+    it('returns the item of a sales order that is not deleted, with its product', async () => {
+      findFirstItem.mockResolvedValue(item);
+
+      await expect(service.getSalesOrderItem(1, 2)).resolves.toEqual({
+        ...item,
+        product,
+      });
+      const options = findFirstItem.mock.calls[0][0];
+      expect(options.where).toEqual({
+        orderId: 1,
+        position: 2,
+        salesOrder: { deletedAt: { isNull: true } },
+      });
+    });
+
+    it('throws 404 when the item or its sales order does not exist', async () => {
+      findFirstItem.mockResolvedValue(undefined);
+
+      await expect(service.getSalesOrderItem(1, 99)).rejects.toBeInstanceOf(
         NotFoundException,
       );
     });

@@ -6,6 +6,7 @@ import {
   SALES_ORDER_FILTER_FIELDS,
   type SalesOrderBody,
   type SalesOrderDetail,
+  type SalesOrderDetailItem,
   type SalesOrdersList,
   type ListSalesOrdersQuery,
   msg,
@@ -17,7 +18,7 @@ type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0];
 
 export const DEFAULT_PAGE_SIZE = 20;
 
-const { salesOrder } = schema;
+const { salesOrder, salesOrderItem } = schema;
 
 /** Escapes LIKE wildcards so the value is matched literally. */
 const escapeLike = (value: string) => value.replace(/[\\%_]/g, '\\$&');
@@ -31,7 +32,14 @@ const userSummary = { columns: { id: true, name: true } } as const;
 /** Only the customer's ID and name, for "customer". */
 const customerSummary = { columns: { id: true, name: true } } as const;
 
-const salesOrderItemsSummary = { columns: { productId: true, quantity: true, position: true } } as const;
+const salesOrderItemSummary = {
+  columns: { quantity: true, position: true },
+  with: {
+    product: {
+      columns: { id: true, name: true },
+    },
+  },
+} as const;
 
 /**
  * Turns the Postgres errors a body can cause (drizzle wraps them as the
@@ -40,53 +48,36 @@ const salesOrderItemsSummary = { columns: { productId: true, quantity: true, pos
  */
 function rethrowConstraint(error: unknown): never {
   const cause = error instanceof Error && error.cause ? error.cause : error;
-  const { code, constraint } =
-    cause instanceof Error
-      ? (cause as { code?: unknown; constraint?: unknown })
-      : {};
+  const { code, constraint } = cause instanceof Error ? (cause as { code?: unknown; constraint?: unknown }) : {};
   const name = typeof constraint === 'string' ? constraint : '';
   if (code === PostgresErrorCode.FOREIGN_KEY_VIOLATION) {
     if (name.includes('customer_id')) {
-      throw new BadRequestException([
-        `addresses: ${msg('salesOrders.customerId.notFound')}`,
-      ]);
+      throw new BadRequestException([`addresses: ${msg('salesOrders.customerId.notFound')}`]);
     } else if (name.includes('product_id')) {
-      throw new BadRequestException([
-        `items: ${msg('salesOrders.items.productId.notFound')}`,
-      ]);
+      throw new BadRequestException([`items: ${msg('salesOrders.items.productId.notFound')}`]);
     }
   }
   throw error;
 }
 
-
 @Injectable()
 export class SalesOrdersService {
   logger = new Logger(SalesOrdersService.name);
 
-  constructor(@InjectDrizzle() private readonly db: Database) { }
+  constructor(@InjectDrizzle() private readonly db: Database) {}
 
   /**
    * Lists sales orders that aren't deleted, paged and sorted, filtered by
    * every field given (AND, each matching text the field contains).
    */
   async listSalesOrders(query: ListSalesOrdersQuery = {}): Promise<SalesOrdersList> {
-    const {
-      limit = DEFAULT_PAGE_SIZE,
-      offset = 0,
-      sortBy = 'createdAt',
-      sortDirection = 'asc',
-    } = query;
+    const { limit = DEFAULT_PAGE_SIZE, offset = 0, sortBy = 'createdAt', sortDirection = 'asc' } = query;
     const { db } = this;
     const filters = SALES_ORDER_FILTER_FIELDS.flatMap((field) => {
       const value = query[field]?.trim();
       if (!value) return [];
       // The id matches exactly (an integer column), the other fields contain the text.
-      return [
-        field === 'id'
-          ? eq(salesOrder.id, Number(value))
-          : ilike(salesOrder[field], `%${escapeLike(value)}%`),
-      ];
+      return [field === 'id' ? eq(salesOrder.id, Number(value)) : ilike(salesOrder[field], `%${escapeLike(value)}%`)];
     });
     const where = and(notDeleted, ...filters) as SQL;
     const direction = sortDirection === 'asc' ? asc : desc;
@@ -118,16 +109,42 @@ export class SalesOrdersService {
     const found = await this.db.query.salesOrder.findFirst({
       where: { id, deletedAt: { isNull: true } },
       columns: { createdById: false, updatedById: false },
-      with: { 
-        createdBy: userSummary, 
-        updatedBy: userSummary, 
-        customer: customerSummary, 
-        items: salesOrderItemsSummary 
+      with: {
+        createdBy: userSummary,
+        updatedBy: userSummary,
+        customer: customerSummary,
+        items: {
+          columns: { quantity: true, position: true, productId: true },
+          with: {
+            product: {
+              columns: { id: true, name: true },
+            },
+          },
+        } as const,
       },
     });
 
     if (!found) throw new NotFoundException(msg('salesOrders.notFound'));
-    return found;
+
+    return {
+      ...found,
+      items: found.items?.map((item) => ({ ...item, product: item.product[0] })) ?? [],
+    };
+  }
+
+  /**
+   * The item at `position` of a sales order that isn't deleted, with all
+   * its columns and its product. Throws 404 otherwise.
+   */
+  async getSalesOrderItem(orderId: number, position: number): Promise<SalesOrderDetailItem> {
+    const found = await this.db.query.salesOrderItem.findFirst({
+      where: { orderId, position, salesOrder: { deletedAt: { isNull: true } } },
+      columns: { orderId: false },
+      with: { product: { columns: { id: true, name: true } } },
+    });
+    const product = found?.product[0];
+    if (!found || !product) throw new NotFoundException(msg('salesOrders.items.notFound'));
+    return { ...found, product };
   }
 
   /** Creates a sales order; `userId` is the creator. */
@@ -135,24 +152,26 @@ export class SalesOrdersService {
     // One instant for both: createdAt and updatedAt start equal.
     const now = new Date();
 
-    const id = await this.db.transaction(async (tx) => {
-      const [{ id }] = await this.db
-        .insert(salesOrder)
-        .values({
-          notes: body.notes,
-          customerId: body.customerId,
-          createdAt: now,
-          updatedAt: now,
-          createdById: userId,
-          updatedById: userId,
-        })
-        .returning({ id: salesOrder.id });
+    const id = await this.db
+      .transaction(async (tx) => {
+        const [{ id }] = await this.db
+          .insert(salesOrder)
+          .values({
+            notes: body.notes,
+            customerId: body.customerId,
+            createdAt: now,
+            updatedAt: now,
+            createdById: userId,
+            updatedById: userId,
+          })
+          .returning({ id: salesOrder.id });
 
-      // rebase items
-      await this.insertSalesOrderItems(tx, id, body.items);
+        // rebase items
+        await this.insertSalesOrderItems(tx, id, body.items);
 
-      return id;
-    }).catch(rethrowConstraint);
+        return id;
+      })
+      .catch(rethrowConstraint);
 
     return this.getSalesOrder(id);
   }
@@ -161,23 +180,25 @@ export class SalesOrdersService {
    * Replaces a sales order's fields; `userId` is the editor. Throws 404
    * if the sales order doesn't exist or is deleted.
    */
-  async updateSalesOrder(
-    id: number,
-    body: SalesOrderBody,
-    userId: string,
-  ): Promise<SalesOrderDetail> {
-    const result = await this.db
-      .update(salesOrder)
-      .set({
-        notes: body.notes,
-        customerId: body.customerId,
-        updatedById: userId,
-        // The time of this change.
-        updatedAt: new Date(),
-      })
-      .where(and(eq(salesOrder.id, id), notDeleted));
-    if (result.rowCount === 0)
-      throw new NotFoundException(msg('salesOrders.notFound'));
+  async updateSalesOrder(id: number, body: SalesOrderBody, userId: string): Promise<SalesOrderDetail> {
+    await this.db.transaction(async (tx) => {
+      const result = await tx
+        .update(salesOrder)
+        .set({
+          notes: body.notes,
+          customerId: body.customerId,
+          updatedById: userId,
+          // The time of this change.
+          updatedAt: new Date(),
+        })
+        .where(and(eq(salesOrder.id, id), notDeleted));
+
+      if (result.rowCount === 0) throw new NotFoundException(msg('salesOrders.notFound'));
+
+      await tx.delete(salesOrderItem).where(eq(salesOrderItem.orderId, id));
+      await this.insertSalesOrderItems(tx, id, body.items);
+    });
+
     return this.getSalesOrder(id);
   }
 
@@ -191,18 +212,17 @@ export class SalesOrdersService {
       .update(salesOrder)
       .set({ deletedAt: now, updatedAt: now, updatedById: userId })
       .where(and(eq(salesOrder.id, id), notDeleted));
-    if (result.rowCount === 0)
-      throw new NotFoundException(msg('salesOrders.notFound'));
+    if (result.rowCount === 0) throw new NotFoundException(msg('salesOrders.notFound'));
   }
 
   async insertSalesOrderItems(tx: Transaction, salesOrderId: number, items: SalesOrderItemBody[]) {
     if (!items.length) return;
     await tx.insert(schema.salesOrderItem).values(
-      items.map((item, position) => ({
+      items.map((item) => ({
         orderId: salesOrderId,
         productId: item.productId,
         quantity: item.quantity,
-        position: position,
+        position: item.position,
       })),
     );
   }

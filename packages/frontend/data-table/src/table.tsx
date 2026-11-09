@@ -156,7 +156,7 @@ function ActionsHeader() {
 
 /** The column `rowActions` adds: not sortable, as narrow as its content. */
 function actionsColumn<TData extends RowData>(
-  render: (row: TData) => ReactNode,
+  render: (row: TData, index: number) => ReactNode,
 ): DataTableColumnDef<TData> {
   return createDataTableColumnHelper<TData>().display({
     id: "actions",
@@ -164,7 +164,9 @@ function actionsColumn<TData extends RowData>(
     enableSorting: false,
     meta: { className: "w-0 text-right" },
     cell: ({ row }) => (
-      <div className="flex justify-end gap-1">{render(row.original)}</div>
+      <div className="flex justify-end gap-1">
+        {render(row.original, row.index)}
+      </div>
     ),
   });
 }
@@ -185,8 +187,9 @@ export interface DataTableProps<TData extends RowData> {
   /**
    * Content of a last, right-aligned "Actions" column for each row, e.g. a
    * button or a dropdown menu. No column when unset. Keep stable.
+   * `index` is the row's position in `data` (the current page).
    */
-  rowActions?: (row: TData) => ReactNode;
+  rowActions?: (row: TData, index: number) => ReactNode;
   /** Shown instead of the table when there are no rows. */
   empty?: ReactNode;
   /** Unit for the count, already translated, e.g. "users" ("1–20 of 42 users"). */

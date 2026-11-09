@@ -19,14 +19,15 @@ const SEARCH_DELAY_MS = 250;
 const SEARCH_LIMIT = 20;
 
 /**
- * Picks a customer by typing part of their name: the backend searches
- * (GET /customers?name=…, through a server action) as the user types. The
- * value is the customer's ID as text (form values are strings), "" when
- * none is chosen.
+ * Picks a product by typing part of its name: the backend searches
+ * (GET /products?name=…, through a server action) as the user types. The
+ * value is the product's ID, null when none is chosen. `onProductChange` gets the whole product the user picks
+ * (e.g. to show its name elsewhere).
  */
 export function ProductSelect({
   value,
   onValueChange,
+  onProductChange,
   id,
   name,
   placeholder,
@@ -35,8 +36,9 @@ export function ProductSelect({
   onBlur,
   "aria-invalid": ariaInvalid,
 }: {
-  value: string;
-  onValueChange: (id: string) => void;
+  value: number | null;
+  onValueChange: (id: number | null) => void;
+  onProductChange?: (product: ProductOption | null) => void;
   id?: string;
   name?: string;
   placeholder?: string;
@@ -70,9 +72,9 @@ export function ProductSelect({
 
   // A value set from outside (e.g. editing an order): load its name.
   useEffect(() => {
-    if (!value || String(chosen?.id) === value) return;
+    if (value == null || chosen?.id === value) return;
     let current = true;
-    getProductOption(value).then(
+    getProductOption(String(value)).then(
       (product) => current && setChosen(product),
       () => {},
     );
@@ -81,7 +83,7 @@ export function ProductSelect({
     };
   }, [value, chosen]);
 
-  const selected = value && String(chosen?.id) === value ? chosen : null;
+  const selected = value != null && chosen?.id === value ? chosen : null;
 
   return (
     <Combobox
@@ -91,7 +93,8 @@ export function ProductSelect({
       value={selected}
       onValueChange={(product: ProductOption | null) => {
         setChosen(product);
-        onValueChange(product ? String(product.id) : "");
+        onValueChange(product?.id ?? null);
+        onProductChange?.(product);
       }}
       onInputValueChange={(text) => {
         setQuery(text);
@@ -110,6 +113,7 @@ export function ProductSelect({
         className={className}
         disabled={disabled}
         aria-invalid={ariaInvalid}
+        showClear
         onBlur={onBlur}
       />
       <ComboboxContent>

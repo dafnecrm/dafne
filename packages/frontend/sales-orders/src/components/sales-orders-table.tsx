@@ -76,7 +76,7 @@ export function SalesOrdersTable({
   config,
   salesOrders,
   total,
-  params,
+  params
 }: {
   config: SalesOrdersTableConfig;
   salesOrders: ListedSalesOrder[];

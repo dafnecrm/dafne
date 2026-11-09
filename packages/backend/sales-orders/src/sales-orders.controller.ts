@@ -18,6 +18,7 @@ import {
   listSalesOrdersQuerySchema,
   type SalesOrderBody,
   type SalesOrderDetail,
+  type SalesOrderDetailItem,
   type SalesOrdersList,
   type ListSalesOrdersQuery,
 } from '@dafne/contracts';
@@ -39,6 +40,14 @@ export class SalesOrdersController {
   @Get(':id')
   getSalesOrder(@Param('id', IdPipe) id: number): Promise<SalesOrderDetail> {
     return this.salesOrdersService.getSalesOrder(id);
+  }
+
+  @Get(':id/items/:position')
+  getSalesOrderItem(
+    @Param('id', IdPipe) id: number,
+    @Param('position', IdPipe) position: number,
+  ): Promise<SalesOrderDetailItem> {
+    return this.salesOrdersService.getSalesOrderItem(id, position);
   }
 
   @Post()

@@ -114,6 +114,7 @@ export function CustomerSelect({
         className={className}
         disabled={disabled}
         aria-invalid={ariaInvalid}
+        showClear
         onBlur={onBlur}
       />
       <ComboboxContent>

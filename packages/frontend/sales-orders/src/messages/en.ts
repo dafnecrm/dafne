@@ -32,13 +32,21 @@ export const en = {
     items: 'Items'
   },
   items: {
+    add: "Add item",
+    edit: "Edit item",
+    savedWith: "The item is saved with the sales order.",
+    loading: "Loading the item…",
+    notFound: "The item no longer exists.",
+    loadError: "Couldn't load the item. Try again.",
     none: 'No item yet.',
     noneDetail: 'No item has been added.',
     addOne: 'Add a new item',
     fields: {
       position: "Position",
-      productId: 'Product ID',
-      quantity: 'Quantity'
+      productId: 'Product',
+      quantity: 'Quantity',
+      add: "Aggiungi",
+      save: "Salva"
     },
   }
 };

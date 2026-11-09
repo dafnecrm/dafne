@@ -1,10 +1,13 @@
 "use server";
 
 import { getTranslations } from "next-intl/server";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { BackendError, backendFetch } from "@dafne/frontend-api/server";
 import { salesOrderSchema, type SalesOrderFormValues } from "./schema.ts";
-import type { SalesOrderDetail } from "./types.ts";
+import { getSalesOrderItem } from "./server.ts";
+import type { SalesOrderDetail, SalesOrderDetailItem } from "./types.ts";
+import { SalesOrderItem } from "@dafne/contracts";
 
 /*
  * Sales order mutations shared by the apps. The backend checks the session (forwarded by
@@ -53,8 +56,12 @@ export async function saveSalesOrder(
   } catch (error) {
     return { error: await errorMessage(error) };
   }
+  const href = `${path}/${encodeURIComponent(savedId)}`;
+  // The browser keeps visited pages (the edit page among them) in its
+  // cache: drop them, or editing again would show the order as it was.
+  revalidatePath(href, "layout");
   // Outside the try: redirect works by throwing.
-  redirect(`${path}/${encodeURIComponent(savedId)}`);
+  redirect(href);
 }
 
 /**
@@ -69,5 +76,22 @@ export async function deleteSalesOrder(id: number): Promise<ActionError | null> 
     return null;
   } catch (error) {
     return { error: await errorMessage(error) };
+  }
+}
+
+/**
+ * The item at `position` of a sales order, for the item sheet (a client
+ * component: backendFetch only runs on the server). Null when it doesn't
+ * exist or its order was deleted.
+ */
+export async function fetchSalesOrderItem(
+  salesOrderId: number,
+  position: number,
+): Promise<SalesOrderItem | null> {
+  try {
+    return await getSalesOrderItem(salesOrderId, position);
+  } catch (error) {
+    if (error instanceof BackendError && error.status === 404) return null;
+    throw error;
   }
 }

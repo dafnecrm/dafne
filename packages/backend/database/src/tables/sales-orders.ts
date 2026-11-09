@@ -106,3 +106,19 @@ export const salesOrderRelations = defineRelationsPart(
     },
   }),
 );
+
+export const salesOrderItemRelations = defineRelationsPart(
+  { salesOrder, salesOrderItem, product },
+  (r) => ({
+    salesOrderItem: {
+      salesOrder: r.one.salesOrder({
+        from: r.salesOrderItem.orderId,
+        to: r.salesOrder.id
+      }),
+      product: r.many.product({
+        from: r.salesOrderItem.productId,
+        to: r.product.id
+      })
+    },
+  }),
+);
