@@ -29,6 +29,8 @@ function sample(field: FormField): string {
     case 'number':
     case 'id':
       return '1';
+    case 'uuid':
+      return "'00000000-0000-4000-8000-000000000001'";
     case 'decimal':
       return "'1.00'";
     case 'date':

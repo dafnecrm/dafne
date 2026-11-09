@@ -67,7 +67,12 @@ are written by its CLI, then moved into the auth schema
 
 ### Column types
 
-- Ids are `serial('id').primaryKey()` (an `integer` with a sequence).
+- Ids are `serial('id').primaryKey()` (an `integer` with a sequence),
+  unless the resource was generated with `--id-type uuid`
+  (`uuid('id').primaryKey().defaultRandom()`, a key to it is `uuid`, the
+  route uses `UuidPipe`, a key in a body `requiredUuid` / `optionalUuid`) or `--id-type varchar` (random by `$defaultFn`, a
+  key to it is a `varchar` of the same length, the route uses
+  `new TextIdPipe(<length>)`).
   The database picks them (`insert(…).values(…).returning({ id })`), and a
   key to another table is `integer('<name>_id')`. The exceptions: the
   tables of the `auth` schema (Better Auth's text ids, and `app_access`),

@@ -83,6 +83,49 @@ describe('backend-resource', () => {
     expect(read('packages/contracts/src/invoices.spec.ts')).toMatch(/number: 'Number',\s*status: null,\s*customerId: null/);
   });
 
+  it('makes a uuid id, picked by the database, that a key to the resource follows', async () => {
+    await generate(backendResourceGenerator, { name: 'payment', idType: 'uuid' });
+    const table = read('packages/backend/database/src/tables/payments.ts');
+    expect(table).toContain("id: uuid('id').primaryKey().defaultRandom()");
+    expect(table).toMatch(/import \{[^}]*\buuid\b[^}]*\} from 'drizzle-orm\/pg-core'/);
+    const contract = read('packages/contracts/src/payments.ts');
+    expect(contract).toContain('id: string;');
+    expect(contract).toContain('[0-9a-fA-F]{8}-');
+    const service = read('packages/backend/payments/src/payments.service.ts');
+    expect(service).toContain('getPayment(id: string)');
+    expect(service).toContain('eq(payment.id, value)');
+    expect(read('packages/backend/payments/src/payments.controller.ts')).toContain("@Param('id', UuidPipe) id: string");
+    expect(read('packages/backend/payments/src/payments.service.spec.ts')).toContain("'00000000-0000-4000-8000-000000000001'");
+
+    await generate(backendResourceGenerator, { name: 'refund', fields: ['payment:ref:to=payments:required'] });
+    expect(read('packages/backend/database/src/tables/refunds.ts')).toContain("paymentId: uuid('payment_id')");
+    const refunds = read('packages/contracts/src/refunds.ts');
+    expect(refunds).toContain("paymentId: requiredUuid(msg('refunds.paymentId.required'))");
+    expect(refunds).toMatch(/import \{[^}]*requiredUuid[^}]*\} from '\.\/common\.ts'/);
+    expect(read('packages/backend/refunds/src/refunds.service.spec.ts')).toContain("paymentId: '00000000-0000-4000-8000-000000000001'");
+  });
+
+  it('makes a varchar id of the length given, random by default', async () => {
+    await generate(backendResourceGenerator, { name: 'voucher', idType: 'varchar', idLength: 12 });
+    const table = read('packages/backend/database/src/tables/vouchers.ts');
+    expect(table).toContain("import { randomUUID } from 'node:crypto';");
+    expect(table).toMatch(/id: varchar\('id', \{ length: 12 \}\)\s*\.primaryKey\(\)\s*\.\$defaultFn\(\(\) => randomUUID\(\)\.replaceAll\('-', ''\)\.slice\(0, 12\)\)/);
+    expect(read('packages/contracts/src/vouchers.ts')).toContain('id: z.string().max(12).optional()');
+    expect(read('packages/backend/vouchers/src/vouchers.controller.ts')).toContain("@Param('id', new TextIdPipe(12)) id: string");
+  });
+
+  it('keeps a varchar id the sync reads in the filters', async () => {
+    await generate(backendResourceGenerator, { name: 'voucher', idType: 'varchar', idLength: 40, fields: ['code:string:required'] });
+    const contract = read('packages/contracts/src/vouchers.ts');
+    expect(contract).toContain('id: z.string().max(40).optional()');
+    expect(contract).toContain("VOUCHER_FILTER_FIELDS = ['id', 'code']");
+  });
+
+  it('rejects an unknown id type, and a length without a varchar id', async () => {
+    await expect(generate(backendResourceGenerator, { name: 'invoice', idType: 'bigint' })).rejects.toThrow(/isn't one of/);
+    await expect(generate(backendResourceGenerator, { name: 'invoice', idType: 'uuid', idLength: 10 })).rejects.toThrow(/only for a varchar id/);
+  });
+
   it('refuses a resource that exists', async () => {
     await generate(backendResourceGenerator, { name: 'invoice' });
     await expect(generate(backendResourceGenerator, { name: 'invoices' })).rejects.toThrow(/already exists/);

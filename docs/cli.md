@@ -93,8 +93,11 @@ And wires them: the lib into the app (`package.json`, app module, project
 references), the table into `schema.ts`, the contract into the contracts'
 index, the message keys into the catalogs.
 
-Each resource starts with only a `serial` `id` (an `integer` the database
-picks), soft delete (`deletedAt`) and created/updated by: no sample field.
+Each resource starts with only an `id`: `serial` (an `integer` the
+database picks) unless `--id-type uuid` (a random uuid the database picks)
+or `--id-type varchar` (`--id-length`, default 36: random, picked by
+Drizzle's `$defaultFn`); interactively the CLI asks for both. Besides the id: soft delete
+(`deletedAt`) and created/updated by, no sample field.
 Its pages name a record by its id: the title, the breadcrumb, the edit
 page and the dialogs show `${t("invoices.singular")} ${invoice.id}`
 ("Invoice 12"), and the list's first column is the id, linking to the

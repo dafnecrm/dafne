@@ -1,19 +1,19 @@
 import { resourceNames } from '../src/core/names.ts';
-import { render } from '../src/core/templates.ts';
 import { syncService } from '../src/sync/service.ts';
 import { readTable } from '../src/sync/table.ts';
+import { renderBackend } from '../src/pieces/backend.ts';
 
 const names = resourceNames('activity');
 const tableWith = (extra: string) =>
   readTable(
     'activities.ts',
-    render('backend/table.ts', names).replace(
+    renderBackend('table.ts', names).replace(
       "id: serial('id').primaryKey(),",
       `id: serial('id').primaryKey(),\n    name: varchar('name', { length: 255 }).notNull(),\n${extra}`,
     ),
     names,
   );
-const service = () => render('backend/service.ts', names);
+const service = () => renderBackend('service.ts', names);
 
 describe('syncService', () => {
   it('adds new columns to the list, the insert and the update, in table order', () => {

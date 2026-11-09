@@ -71,4 +71,5 @@ export const it: ContractMessages = {
       quantity: { required: 'Enter the quantity' },
     }
   },
+  salesOrderTypes: { notFound: 'Sales order type not found' },
 };

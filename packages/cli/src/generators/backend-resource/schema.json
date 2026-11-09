@@ -16,6 +16,16 @@
       "items": { "type": "string" },
       "description": "Fields of the new table, as name:type[:option…] (e.g. status:enum:values=draft|sent:required). `dafne g backend-resource` asks for them."
     },
+    "idType": {
+      "type": "string",
+      "enum": ["serial", "uuid", "varchar"],
+      "description": "Type of the id: serial (picked by the database), uuid (random, picked by the database) or varchar (random, picked by Drizzle).",
+      "default": "serial"
+    },
+    "idLength": {
+      "type": "number",
+      "description": "Length of a varchar id (default 36): from 36 it holds a uuid, below a shorter random hex id."
+    },
     "app": {
       "type": "string",
       "description": "Backend app the lib is registered in (apps/<app>).",

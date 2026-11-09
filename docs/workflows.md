@@ -21,7 +21,7 @@ pnpm dafne db migrate
 pnpm dafne test @dafne/backend-invoices
 ```
 
-The table has only a `serial` `id` besides the given fields: the pages
+The table has only an `id` (`serial`, or `--id-type uuid|varchar`) besides the given fields: the pages
 name a record "Invoice 12" (title, breadcrumb, dialogs) and the list links
 to it from the id column, until you pick a field for them. Then adjust the service and controller to the real use cases.
 Try it first with `--dry-run`.

@@ -1,4 +1,5 @@
 import type { Changes } from '../core/changes.ts';
+import type { IdSpec } from '../core/id.ts';
 import type { ResourceNames } from '../core/names.ts';
 
 export interface Ctx {
@@ -6,6 +7,8 @@ export interface Ctx {
   names: ResourceNames;
   /** The app the resource goes into (apps/<app>): a backend app for backend pieces, a frontend one for frontend pieces. */
   app: string;
+  /** The primary key of a new backend resource; serial when unset. */
+  id?: IdSpec;
 }
 
 /** A piece of a resource: the files it creates and what it registers. */

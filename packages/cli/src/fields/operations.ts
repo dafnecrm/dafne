@@ -111,6 +111,7 @@ function foreignKeyColumn(tables: Tables, target: Table, sqlName: string): { cod
   const id = tables.file(target.path).columnCode(target.variable, 'id');
   const length = id?.match(/length:\s*(\d+)/)?.[1];
   if (!id || id.startsWith('varchar')) return { code: `varchar('${sqlName}', { length: ${length ?? 36} })`, builder: 'varchar' };
+  if (id.startsWith('uuid')) return { code: `uuid('${sqlName}')`, builder: 'uuid' };
   if (id.startsWith('integer') || id.startsWith('serial')) return { code: `integer('${sqlName}')`, builder: 'integer' };
   if (id.startsWith('bigserial') || id.startsWith('bigint'))
     return { code: `bigint('${sqlName}', { mode: 'number' })`, builder: 'bigint' };

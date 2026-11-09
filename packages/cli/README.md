@@ -44,8 +44,18 @@ Flags: `required`, `unique`, `index`, `editor`. Values: `length`, `values`,
 `inverse` (`-` for none); lists use `|`.
 
 The fields go into the table, then the contract, the service and their
-specs are synced with them. A resource starts with only a `serial` `id`
-(no sample field); its pages name a record "Invoice 12" and list it by id.
+specs are synced with them. A resource starts with only an `id` (no
+sample field); its pages name a record "Invoice 12" and list it by id.
+The id is `serial` unless `--id-type` says otherwise (asked when
+interactive): `uuid` (random, picked by the database) or `varchar`, of
+`--id-length` characters (default 36, asked), random by default
+(`$defaultFn`). The contract, service, controller (`IdPipe`, `UuidPipe`,
+`TextIdPipe`), specs and a key to the resource follow it:
+
+```sh
+dafne g backend-resource payment --id-type uuid
+dafne g backend-resource voucher --id-type varchar --id-length 12
+```
 
 `g frontend-resource` (and each part) writes the pages in
 `apps/<app>/app/[locale]/(app)/<plural>/`, synced with the contract's

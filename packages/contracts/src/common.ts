@@ -86,3 +86,17 @@ export const optionalId = (error: ContractMessageKey) =>
     // Without it the key is required in z.input (preprocess takes unknown).
     .optional()
     .transform((value) => value ?? null);
+
+/**
+ * Required reference to a record with a uuid id: trimmed, and blank or
+ * anything that isn't a uuid fails with `error`.
+ */
+export const requiredUuid = (error: ContractMessageKey) =>
+  z.string({ error }).trim().pipe(z.guid({ error }));
+
+/**
+ * Optional reference to a record with a uuid id: blank, null or missing
+ * all become null; anything else must be a uuid.
+ */
+export const optionalUuid = (error: ContractMessageKey) =>
+  optionalText(z.guid({ error }));

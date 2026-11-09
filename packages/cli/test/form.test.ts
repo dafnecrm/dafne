@@ -4,6 +4,7 @@ import { syncContract } from '../src/sync/contract.ts';
 import { readBody } from '../src/sync/body.ts';
 import { syncFormComponent, syncFormSchema } from '../src/sync/form.ts';
 import { readTable } from '../src/sync/table.ts';
+import { renderBackend } from '../src/pieces/backend.ts';
 
 const names = resourceNames('activity');
 const COLUMNS = `
@@ -20,12 +21,12 @@ const COLUMNS = `
 
 /** Contract synced from a table with more columns than the generated one. */
 function setup() {
-  const table = render('backend/table.ts', names).replace(
+  const table = renderBackend('table.ts', names).replace(
     "id: serial('id').primaryKey(),",
     `id: serial('id').primaryKey(),\n    name: varchar('name', { length: 255 }).notNull(),${COLUMNS}`,
   );
   const info = readTable('activities.ts', table, names);
-  const contract = syncContract('activities.ts', render('backend/contract.ts', names), names, info).content;
+  const contract = syncContract('activities.ts', renderBackend('contract.ts', names), names, info).content;
   const fields = readBody('activities.ts', contract, names, info);
   const responseKeys = new Set(info.columns.map((c) => c.key));
   return { fields, responseKeys };

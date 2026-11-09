@@ -29,7 +29,7 @@ export type <%= s.pascal %>FilterField = (typeof <%= s.constant %>_FILTER_FIELDS
 /** Query string of GET /<%= p.kebab %>. Deleted <%= p.lower %> are never listed. */
 export const list<%= p.pascal %>QuerySchema = z.strictObject({
   ...pageQuery,
-  id: z.string().regex(/^\s*\d{0,9}\s*$/).optional(),
+  id: <%= id.filterZod %>,
   /** Defaults to createdAt. */
   sortBy: z.enum(<%= s.constant %>_SORT_FIELDS).optional(),
   /** Defaults to asc. */
@@ -41,7 +41,7 @@ export type List<%= p.pascal %>Query = z.output<typeof list<%= p.pascal %>QueryS
 
 /** <%= s.A %> in GET /<%= p.kebab %>. */
 export interface Listed<%= s.pascal %> {
-  id: number;
+  id: <%= id.ts %>;
   createdAt: Date;
   updatedAt: Date;
 }

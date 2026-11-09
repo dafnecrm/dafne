@@ -103,6 +103,7 @@ const SERVER_MANAGED = new Set([
   '$onUpdateFn',
   '$defaultFn',
   '$default',
+  'defaultRandom',
   'autoincrement',
 ]);
 

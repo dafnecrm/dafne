@@ -105,17 +105,23 @@ Templates, names, wiring, relations, messages and formatting:
   patterns change, update the templates. They are rendered by
   `core/templates.ts` (EJS, escaping off), not by devkit's `generateFiles`,
   which escapes `<%= %>`.
-- **A resource starts with no field**: only a `serial` `id`, the dates and the audit
-  columns. Its body is `z.strictObject({})`, its only filter the `id`
-  (always a filter, unless `@api nofilter`: a query param of digits that
-  the service matches with `eq`, the other filters with `ilike`), the pages name a record
+- **A resource starts with no field**: only an `id`, the dates and the audit
+  columns. The id is `serial` unless `idType` is `uuid` or `varchar`
+  (`idLength`, default 36): `core/id.ts` holds what the backend templates
+  write for each (`id` in their data, `renderBackend`), the frontend
+  templates type it as `<S>Detail["id"]`. Its body is `z.strictObject({})`, its only filter the `id`
+  (always a filter, unless `@api nofilter`: a query param of digits, a
+  uuid or text up to the id's length, that the service matches with `eq`, the other filters with `ilike`), the pages name a record
   `${t("<plural>.singular")} ${<record>.id}` (title, breadcrumb, dialogs,
   aria-labels), the list sync adds the id as the first column, linking
   to the detail page, when the contract lists it (`@api` tags may not),
   and the form has an empty fields grid, where the sync
   puts the first `<form.AppField>`. The tests that need a field add a
   `name` themselves. A key to a serial id is `integer`, `requiredId` /
-  `optionalId` in the contract, the `id` kind (text input) in the form.
+  `optionalId` in the contract, the `id` kind (text input) in the form; a
+  key to a uuid id is `uuid`, `requiredUuid` / `optionalUuid` in the
+  contract (the `uuid` kind, a text input, in the form); to a varchar id a
+  `varchar` of its length, `requiredText` / `optionalText`.
 - **Generators only touch the `Tree`**, through `Changes`. Nx writes it if
   the generator succeeds, and never with `--dry-run`. `create` fails on an
   existing file unless `--force`.

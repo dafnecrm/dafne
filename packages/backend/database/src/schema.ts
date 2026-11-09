@@ -8,6 +8,7 @@ import { mergeRelations } from './merge-relations.js';
 import * as countries from './tables/countries.js';
 import * as products from './tables/products.js';
 import * as salesOrders from './tables/sales-orders.js';
+import * as salesOrderTypes from './tables/sales-order-types.js';
 
 const authTables = { ...auth };
 const { customerRelations, ...customerTables } = customers;
@@ -15,8 +16,9 @@ const { activityRelations, ...activityTables } = activities;
 const { countryRelations, ...countryTables } = countries;
 const { productRelations, ...productTables } = products;
 const { salesOrderRelations, salesOrderItemRelations, ...salesOrderTables } = salesOrders;
+const { salesOrderTypeRelations, ...salesOrderTypeTables } = salesOrderTypes;
 
-export const schema = { ...authTables, ...customerTables, ...activityTables, ...countryTables, ...productTables, ...salesOrderTables };
+export const schema = { ...authTables, ...customerTables, ...activityTables, ...countryTables, ...productTables, ...salesOrderTables, ...salesOrderTypeTables };
 
 // Tables plus the relations defined next to them.
 export const relations = mergeRelations(
@@ -27,6 +29,7 @@ export const relations = mergeRelations(
   productRelations,
   salesOrderRelations,
   salesOrderItemRelations,
+  salesOrderTypeRelations,
 );
 
 export type Database = import('drizzle-orm/node-postgres').NodePgDatabase<typeof relations>;

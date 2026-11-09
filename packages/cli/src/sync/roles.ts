@@ -1,4 +1,5 @@
 import pluralize from 'pluralize';
+import { idTemplate } from '../core/id.ts';
 import { casings, words, type ResourceNames } from '../core/names.ts';
 import type { Column } from './table.ts';
 
@@ -35,7 +36,7 @@ export function rolesOf(column: Column): Roles {
   const detailOnly = tags.has('detail');
   const generated = column.primaryKey || column.serverManaged;
   // The id is always a filter (an exact match, see filterZod), unless tagged nofilter.
-  const idFilter = column.primaryKey && kind === 'int';
+  const idFilter = column.primaryKey && (kind === 'int' || kind === 'string');
   const roles: Roles = {
     body: !generated && !tags.has('readonly'),
     listed: !writeonly && !detailOnly,
@@ -73,6 +74,13 @@ export function bodyZod(names: ResourceNames, column: Column): string {
   const required = column.notNull && !column.hasDefault;
   const optionalDefault = column.notNull && column.hasDefault;
   const required_ = msgKey(names, column, 'required');
+
+  // A uuid (e.g. a key to a record with a uuid id): Postgres rejects anything else.
+  if (column.builder === 'uuid') {
+    if (required) return `requiredUuid(${required_})`;
+    if (optionalDefault) return `requiredUuid(${required_}).optional()`;
+    return `optionalUuid(${required_})`;
+  }
 
   if (column.kind === 'string' || column.kind === 'text') {
     const max = column.length ?? (column.kind === 'text' ? 65535 : 255);
@@ -126,8 +134,11 @@ function baseZod(names: ResourceNames, column: Column, required: string): string
 
 /** Zod for the list's query string (each filter is a param of its own). */
 export function filterZod(names: ResourceNames, column: Column): string {
-  // The id: digits (an int4), which the service matches exactly.
-  if (column.primaryKey) return 'z.string().regex(/^\\s*\\d{0,9}\\s*$/).optional()';
+  // The id, which the service matches exactly: digits (an int4), a uuid or text.
+  if (column.primaryKey)
+    return idTemplate(
+      column.builder === 'uuid' ? { type: 'uuid' } : column.kind === 'string' ? { type: 'varchar', length: column.length ?? 255 } : { type: 'serial' },
+    ).filterZod;
   if (column.kind === 'enum') return `z.enum(${enumNames(names, column).constant}).optional()`;
   if (column.kind === 'boolean') return `z.enum(['true', 'false']).optional()`;
   return `z.string().max(${column.length ?? 255}).optional()`;

@@ -1,5 +1,6 @@
 import { resourceNames } from '../src/core/names.ts';
 import { render } from '../src/core/templates.ts';
+import { renderBackend } from '../src/pieces/backend.ts';
 import { syncContract } from '../src/sync/contract.ts';
 import { syncDetail } from '../src/sync/detail.ts';
 import { syncColumns, syncEnumOptions, syncTableConfig } from '../src/sync/table-page.ts';
@@ -20,12 +21,12 @@ const COLUMNS = `
     customerId: varchar('customer_id', { length: 36 }).references(() => customer.id),`;
 
 function info(idTags = '') {
-  const table = render('backend/table.ts', names).replace(
+  const table = renderBackend('table.ts', names).replace(
     "id: serial('id').primaryKey(),",
     `${idTags}id: serial('id').primaryKey(),\n    name: varchar('name', { length: 255 }).notNull(),${COLUMNS}`,
   );
   const tableInfo = readTable('activities.ts', table, names);
-  const contract = syncContract('activities.ts', render('backend/contract.ts', names), names, tableInfo).content;
+  const contract = syncContract('activities.ts', renderBackend('contract.ts', names), names, tableInfo).content;
   return readResponse('activities.ts', contract, names, tableInfo);
 }
 

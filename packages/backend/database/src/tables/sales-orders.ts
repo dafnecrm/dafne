@@ -12,6 +12,7 @@ import { salesSchema } from './sales.js';
 import { user } from '../auth.js';
 import { customer } from './customers.js';
 import { product } from './products.js';
+import { salesOrderType } from './sales-order-types.ts';
 
 /**
  * A sales order managed by the users. Deletion is logical: `deletedAt` is
@@ -26,6 +27,9 @@ export const salesOrder = salesSchema.table(
     customerId: integer('customer_id')
       .notNull()
       .references(() => customer.id, { onDelete: 'restrict' }),
+    type: varchar({ length: 5 })
+      .notNull()
+      .references(() => salesOrderType.id, { onDelete: 'restrict' }),
     createdAt: timestamp('created_at', { precision: 3, withTimezone: true })
       .defaultNow()
       .notNull(),

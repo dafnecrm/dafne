@@ -2,6 +2,7 @@ import * as p from '@clack/prompts';
 import { Command } from 'commander';
 import { FsTree } from 'nx/src/generators/tree.js';
 import { Changes } from '../core/changes.ts';
+import { DEFAULT_ID_LENGTH, ID_TYPES, idSpec, type IdSpec, type IdType } from '../core/id.ts';
 import { resourceNames } from '../core/names.ts';
 import { findWorkspaceRoot, runNx } from '../core/nx.ts';
 import { DEFAULT_APP, DEFAULT_FRONTEND_APP } from '../core/workspace.ts';
@@ -43,6 +44,8 @@ const SECTION_KINDS: Kind[] = ['frontend-resource', 'frontend-nav'];
 interface GenerateOptions {
   app?: string;
   field?: string[];
+  idType?: string;
+  idLength?: string;
   port?: string;
   backendUrl?: string;
   icon?: string;
@@ -91,6 +94,43 @@ async function resourceFields(root: string, name: string, options: GenerateOptio
   return (await askNewFields(changes, name)).map(formatFieldSpec);
 }
 
+const ID_HINTS: Record<IdType, string> = {
+  serial: 'an integer the database picks (default)',
+  uuid: 'a random uuid the database picks',
+  varchar: 'text of a given length, random by default',
+};
+
+/** The id of a new resource: from --id-type/--id-length, or asked (unless -y). */
+async function resourceId(root: string, name: string, options: GenerateOptions): Promise<IdSpec> {
+  const length = (value: string | undefined) => {
+    if (value === undefined) return undefined;
+    if (!/^[1-9]\d*$/.test(value)) throw new Error('--id-length must be a positive whole number.');
+    return Number(value);
+  };
+  const ask = interactive(options) && !new Changes(new FsTree(root, false)).exists(tableFile(resourceNames(name)));
+  let type = options.idType;
+  if (!type && ask)
+    type = cancelled<IdType>(
+      await p.select<IdType>({
+        message: 'Type of the id',
+        initialValue: 'serial',
+        options: ID_TYPES.map((value) => ({ value, label: value, hint: ID_HINTS[value] })),
+      }),
+    );
+  let idLength = length(options.idLength);
+  if (type === 'varchar' && idLength === undefined && ask)
+    idLength = Number(
+      cancelled<string>(
+        await p.text({
+          message: 'Length of the id',
+          initialValue: String(DEFAULT_ID_LENGTH),
+          validate: (input) => (/^[1-9]\d*$/.test(input?.trim() ?? '') && Number(input) <= 255 ? undefined : 'A whole number from 1 to 255'),
+        }),
+      ).trim(),
+    );
+  return idSpec(type, idLength);
+}
+
 export function generateCommand() {
   return new Command('generate')
     .alias('g')
@@ -105,6 +145,8 @@ export function generateCommand() {
       ...previous,
       value,
     ])
+    .option('--id-type <type>', `backend-resource: type of the id, ${ID_TYPES.join(' | ')} (default serial)`)
+    .option('--id-length <n>', `backend-resource: length of a varchar id (default ${DEFAULT_ID_LENGTH})`)
     .option('--port <port>', 'backend-app, frontend-app: default port')
     .option('--backend-url <url>', "frontend-app: the app's API (BACKEND_URL)")
     .option('--icon <name>', 'frontend-resource, frontend-list, frontend-nav: lucide-react icon (e.g. ReceiptIcon)')
@@ -119,6 +161,8 @@ export function generateCommand() {
 Examples:
   dafne g backend-resource invoice --field number:string:length=20:required:unique \\
     --field status:enum:values=draft|sent|paid:default=draft --field customer:ref:to=customers
+  dafne g backend-resource payment --id-type uuid
+  dafne g backend-resource voucher --id-type varchar --id-length 12
   dafne g frontend-resource invoice --icon ReceiptIcon
   dafne g frontend-detail invoice          # one part (and the parts it needs)
   dafne g backend-lib reports
@@ -138,6 +182,8 @@ Same as: nx g @dafne/cli:<kind> <name> ...`,
         if (set !== undefined && !kinds.includes(kind)) throw new Error(`${option} is only for ${kinds.join(', ')}.`);
       };
       only('--field', ['backend-resource'], options.field);
+      only('--id-type', ['backend-resource'], options.idType);
+      only('--id-length', ['backend-resource'], options.idLength);
       only('--app', [...BACKEND_APP_KINDS, ...FRONTEND_APP_KINDS], options.app);
       only('--port', ['backend-app', 'frontend-app'], options.port);
       only('--backend-url', ['frontend-app'], options.backendUrl);
@@ -146,7 +192,12 @@ Same as: nx g @dafne/cli:<kind> <name> ...`,
       only('--admin', SECTION_KINDS, options.admin);
 
       const args = ['g', `@dafne/cli:${kind}`, name, '--no-interactive'];
-      if (kind === 'backend-resource') for (const spec of await resourceFields(root, name, options)) args.push(`--fields=${spec}`);
+      if (kind === 'backend-resource') {
+        const id = await resourceId(root, name, options);
+        if (id.type !== 'serial') args.push(`--idType=${id.type}`);
+        if (id.length !== undefined) args.push(`--idLength=${id.length}`);
+        for (const spec of await resourceFields(root, name, options)) args.push(`--fields=${spec}`);
+      }
       if (options.app) args.push(`--app=${options.app}`);
       if (options.port) args.push(`--port=${options.port}`);
       if (options.backendUrl) args.push(`--backendUrl=${options.backendUrl}`);

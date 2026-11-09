@@ -1,10 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { resourceNames } from '../src/core/names.ts';
-import { render } from '../src/core/templates.ts';
 import { syncContract } from '../src/sync/contract.ts';
 import { rolesOf } from '../src/sync/roles.ts';
 import { readTable } from '../src/sync/table.ts';
+import { renderBackend } from '../src/pieces/backend.ts';
 
 const FIXTURE = join(import.meta.dirname, 'fixtures', 'project', 'packages', 'backend');
 const fixture = (path: string) => readFileSync(join(FIXTURE, path), 'utf8');
@@ -12,14 +12,14 @@ const fixture = (path: string) => readFileSync(join(FIXTURE, path), 'utf8');
 const activity = resourceNames('activity');
 /** The generated table, with the columns added after it was generated. */
 const activityTable = (extra: string) =>
-  render('backend/table.ts', activity).replace(
+  renderBackend('table.ts', activity).replace(
     "id: serial('id').primaryKey(),",
     `id: serial('id').primaryKey(),\n    name: varchar('name', { length: 255 }).notNull(),\n${extra}`,
   );
 
 /** The contract of a resource generated with a `name` field (the template has none). */
 const generated = () =>
-  syncContract('contracts/activities.ts', render('backend/contract.ts', activity), activity, readTable('tables/activities.ts', activityTable(''), activity))
+  syncContract('contracts/activities.ts', renderBackend('contract.ts', activity), activity, readTable('tables/activities.ts', activityTable(''), activity))
     .content;
 
 function sync(table: string, contract = generated()) {

@@ -1,3 +1,4 @@
+import { idTemplate, type IdSpec } from '../core/id.ts';
 import type { ResourceNames } from '../core/names.ts';
 import { render } from '../core/templates.ts';
 import { backendLib, CONTRACTS_SRC } from '../core/workspace.ts';
@@ -8,8 +9,12 @@ export const libSrc = ({ p }: ResourceNames) => `${backendLib(p.kebab)}/src`;
 export const contractFile = ({ p }: ResourceNames) => `${CONTRACTS_SRC}/${p.kebab}.ts`;
 export const tableFile = ({ p }: ResourceNames) => `${backendLib('database')}/src/tables/${p.kebab}.ts`;
 
+/** Renders templates/backend/<template>.ejs for a resource (serial id unless `id` says otherwise). */
+export const renderBackend = (template: string, names: ResourceNames, id?: IdSpec) =>
+  render(`backend/${template}`, { ...names, id: idTemplate(id) });
+
 const create = (ctx: Ctx, path: string, template: string) =>
-  ctx.changes.create(path, render(`backend/${template}`, ctx.names));
+  ctx.changes.create(path, renderBackend(template, ctx.names, ctx.id));
 
 export const backendPieces: Record<string, Piece> = {
   contract: {

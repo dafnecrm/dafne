@@ -1,33 +1,33 @@
 import { resourceNames } from '../src/core/names.ts';
-import { render } from '../src/core/templates.ts';
 import { syncContract } from '../src/sync/contract.ts';
 import { readBody } from '../src/sync/body.ts';
 import { syncContractSpec, syncServiceSpec } from '../src/sync/service-spec.ts';
 import { readTable } from '../src/sync/table.ts';
+import { renderBackend } from '../src/pieces/backend.ts';
 
 const names = resourceNames('activity');
 function fields(extra: string) {
   const table = readTable(
     'a.ts',
-    render('backend/table.ts', names).replace(
+    renderBackend('table.ts', names).replace(
       "id: serial('id').primaryKey(),",
       `id: serial('id').primaryKey(),\n    name: varchar('name', { length: 255 }).notNull(),\n${extra}`,
     ),
     names,
   );
-  const contract = syncContract('a.ts', render('backend/contract.ts', names), names, table).content;
+  const contract = syncContract('a.ts', renderBackend('contract.ts', names), names, table).content;
   return readBody('a.ts', contract, names, table);
 }
 /** The service spec of a resource generated with a `name` field (the template has none). */
 function serviceSpec() {
   const samples = ["'Acme'", "'Acme Inc'", "'X'"];
   let n = 0;
-  return render('backend/service.spec.ts', names).replace(/body\(\{\}\)/g, () => `body({ name: ${samples[n++]} })`);
+  return renderBackend('service.spec.ts', names).replace(/body\(\{\}\)/g, () => `body({ name: ${samples[n++]} })`);
 }
 
 /** Its contract spec: a parse sample and a blank-name test. */
 const contractSpec = () =>
-  render('backend/contract.spec.ts', names)
+  renderBackend('contract.spec.ts', names)
     .replace("failedFields({ deletedAt: '2026-01-01' })", "failedFields({ name: 'Acme', deletedAt: '2026-01-01' })")
     .replace('activityBodySchema.parse({})).toEqual({});', "activityBodySchema.parse({ name: '  Acme  ' })).toEqual({ name: 'Acme' });")
     .replace(
