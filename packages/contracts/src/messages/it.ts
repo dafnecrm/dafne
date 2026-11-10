@@ -49,6 +49,13 @@ export const it: ContractMessages = {
     lastname: { required: 'Inserisci il cognome' },
     email: { taken: 'Esiste già un utente con questa email' },
   },
+  database: {
+    duplicate: 'Esiste già un record con questi dati',
+    missingReference: 'Un record a cui questo fa riferimento non esiste',
+    stillReferenced: 'Altri record usano ancora questo',
+    required: 'Manca un valore obbligatorio',
+    invalid: 'Un valore non è valido',
+  },
   fsm: {
     transitionNotAllowed: 'Lo stato non può passare a questo valore',
     transitionForbidden: 'Lo stato non può essere cambiato ora',
@@ -77,7 +84,10 @@ export const it: ContractMessages = {
       enterAtLeastOneItem: 'Inserisci almeno un articolo',
     },
     type: { required: 'Inserisci il tipo' },
-    typeId: { required: 'Enter the type id' },
+    typeId: {
+      required: 'Enter the type id',
+      notFound: 'Scegli un tipo dall\'elenco',
+    },
     status: { required: 'Scegli lo stato' }
   },
   salesOrderTypes: { 

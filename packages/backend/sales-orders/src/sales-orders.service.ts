@@ -49,13 +49,18 @@ const customerSummary = { columns: { id: true, name: true } } as const;
 
 /**
  * Turns the Postgres errors a body can cause into client errors (400): a
- * customer or an item's product that doesn't exist.
+ * customer, a type or an item's product that doesn't exist.
  */
 const rethrowConstraint = rethrowPostgresError([
   {
     code: PostgresErrorCode.FOREIGN_KEY_VIOLATION,
+    constraint: 'sales_order_type_sales_order_type_id_fkey',
+    error: () => new BadRequestException([`typeId: ${msg('salesOrders.typeId.notFound')}`]),
+  },
+  {
+    code: PostgresErrorCode.FOREIGN_KEY_VIOLATION,
     constraint: /customer_id/,
-    error: () => new BadRequestException([`addresses: ${msg('salesOrders.customerId.notFound')}`]),
+    error: () => new BadRequestException([`customerId: ${msg('salesOrders.customerId.notFound')}`]),
   },
   {
     code: PostgresErrorCode.FOREIGN_KEY_VIOLATION,
@@ -231,7 +236,7 @@ export class SalesOrdersService {
       if (body.status) {
         await this.stateMachine.transition(id, body.status, { tx, user });
       }
-    });
+    }).catch(rethrowConstraint);
 
     return this.getSalesOrder(id);
   }

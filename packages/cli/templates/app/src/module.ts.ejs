@@ -1,10 +1,20 @@
 import { Module } from '@nestjs/common';
+import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
+import {
+  I18nExceptionFilter,
+  PostgresErrorInterceptor,
+} from '@dafne/backend-common';
 import { <%= a.pascal %>Controller } from './<%= a.kebab %>.controller.js';
 
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true, envFilePath: ['.env'] })],
   controllers: [<%= a.pascal %>Controller],
-  providers: [],
+  providers: [
+    // Errors in the request's language (Accept-Language).
+    { provide: APP_FILTER, useClass: I18nExceptionFilter },
+    // Constraint errors no service handled: a 409 or 400, not a 500.
+    { provide: APP_INTERCEPTOR, useClass: PostgresErrorInterceptor },
+  ],
 })
 export class <%= a.pascal %>Module {}

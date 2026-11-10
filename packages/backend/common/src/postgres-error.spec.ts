@@ -16,9 +16,10 @@ describe('postgresError', () => {
     expect(postgresError(wrapped('23505', 'x_pkey'))).toEqual({
       code: '23505',
       constraint: 'x_pkey',
+      detail: '',
     });
     expect(postgresError(Object.assign(new Error(), { code: '23503' }))).toEqual(
-      { code: '23503', constraint: '' },
+      { code: '23503', constraint: '', detail: '' },
     );
   });
 
