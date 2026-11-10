@@ -15,17 +15,19 @@ const notDeleted = isNull(salesOrder.deletedAt);
 describe('SalesOrdersService', () => {
   let service: SalesOrdersService;
   const rows = [{ id: 1, name: 'Acme' }];
-  // Chainable stand-in for db.select().from().where().orderBy().limit().offset()
+  // Chainable stand-in for db.select().from().innerJoin().where().orderBy().limit().offset()
   const select = {
     from: vi.fn(),
+    innerJoin: vi.fn(),
     where: vi.fn(),
     orderBy: vi.fn(),
     limit: vi.fn(),
     offset: vi.fn(),
   };
-  // Stand-ins for insert().values().returning() and update().set().where()
+  // Stand-ins for insert().values().returning(), update().set().where() and delete().where()
   const insert = { values: vi.fn(), returning: vi.fn() };
   const update = { set: vi.fn(), where: vi.fn() };
+  const remove = { where: vi.fn() };
   const findFirst = vi.fn();
   const findFirstItem = vi.fn();
   const db = {
@@ -34,6 +36,8 @@ describe('SalesOrdersService', () => {
     insert: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
+    // Runs the callback with the db itself as the transaction.
+    transaction: vi.fn(),
     query: {
       salesOrder: { findFirst },
       salesOrderItem: { findFirst: findFirstItem },
@@ -45,6 +49,7 @@ describe('SalesOrdersService', () => {
     vi.resetAllMocks();
     db.select.mockReturnValue(select);
     select.from.mockReturnValue(select);
+    select.innerJoin.mockReturnValue(select);
     select.where.mockReturnValue(select);
     select.orderBy.mockReturnValue(select);
     select.limit.mockReturnValue(select);
@@ -56,6 +61,9 @@ describe('SalesOrdersService', () => {
     db.update.mockReturnValue(update);
     update.set.mockReturnValue(update);
     update.where.mockResolvedValue({ rowCount: 1 });
+    db.delete.mockReturnValue(remove);
+    remove.where.mockResolvedValue({ rowCount: 0 });
+    db.transaction.mockImplementation((callback: (tx: typeof db) => unknown) => callback(db));
     findFirst.mockResolvedValue(found);
 
     const module: TestingModule = await Test.createTestingModule({
@@ -129,15 +137,12 @@ describe('SalesOrdersService', () => {
 
   describe('getSalesOrderItem', () => {
     const product = { id: 7, name: 'Widget' };
-    const item = { position: 2, productId: 7, quantity: 3, product: [product] };
+    const item = { position: 2, productId: 7, quantity: 3, product };
 
     it('returns the item of a sales order that is not deleted, with its product', async () => {
       findFirstItem.mockResolvedValue(item);
 
-      await expect(service.getSalesOrderItem(1, 2)).resolves.toEqual({
-        ...item,
-        product,
-      });
+      await expect(service.getSalesOrderItem(1, 2)).resolves.toEqual(item);
       const options = findFirstItem.mock.calls[0][0];
       expect(options.where).toEqual({
         orderId: 1,
