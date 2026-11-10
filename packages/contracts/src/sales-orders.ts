@@ -1,19 +1,21 @@
 import { z } from 'zod';
 import {
-  pageQuery,
-  requiredId,
   SORT_DIRECTIONS,
   optionalText,
+  pageQuery,
+  requiredId,
+  requiredInt,
   requiredNumber,
+  requiredText,
 } from './common.ts';
 import { msg } from './messages/index.ts';
 
 /* ---------- Requests ---------- */
 
 export const salesOrderItemBodySchema = z.strictObject({
-  position: requiredId(msg('salesOrders.items.position.required')),
   productId: requiredId(msg('salesOrders.items.productId.required')),
-  quantity: requiredNumber(msg('salesOrders.items.productId.required')),
+  quantity: requiredNumber(msg('salesOrders.items.quantity.required')),
+  position: requiredInt(msg('salesOrders.items.position.required')),
 });
 
 export type SalesOrderItemBodyInput = z.input<typeof salesOrderItemBodySchema>;
@@ -26,7 +28,14 @@ export type SalesOrderItemBody = z.output<typeof salesOrderItemBodySchema>;
 export const salesOrderBodySchema = z.strictObject({
   notes: optionalText(z.string().max(65535)),
   customerId: requiredId(msg('salesOrders.customerId.required')),
-  items: z.array(salesOrderItemBodySchema).default([])
+  type: requiredText(5, msg('salesOrders.type.required')),
+  // Positions are the items' key (with the order): two equal ones can't be saved.
+  items: z
+    .array(salesOrderItemBodySchema)
+    .default([])
+    .refine((items) => new Set(items.map((item) => item.position)).size === items.length, {
+      error: msg('salesOrders.items.position.duplicate'),
+    }),
 });
 
 /** What a client sends: blank optional fields may be "", null or missing. */
@@ -46,7 +55,7 @@ export type SalesOrderItemSortField = (typeof SALES_ORDER_ITEM_SORT_FIELDS)[numb
  * its own. Filters combine with AND and match text the field contains
  * (the id matches exactly).
  */
-export const SALES_ORDER_FILTER_FIELDS = ['id'] as const;
+export const SALES_ORDER_FILTER_FIELDS = ['id', 'customerId', 'type'] as const;
 export type SalesOrderFilterField = (typeof SALES_ORDER_FILTER_FIELDS)[number];
 
 /** Query string of GET /sales-orders. Deleted sales orders are never listed. */
@@ -56,6 +65,8 @@ export const listSalesOrdersQuerySchema = z.strictObject({
     .string()
     .regex(/^\s*\d{0,9}\s*$/)
     .optional(),
+  customerId: z.string().regex(/^\s*\d{0,9}\s*$/).optional(),
+  type: z.string().max(5).optional(),
   /** Defaults to createdAt. */
   sortBy: z.enum(SALES_ORDER_SORT_FIELDS).optional(),
   /** Defaults to asc. */
@@ -69,6 +80,7 @@ export type ListSalesOrdersQuery = z.output<typeof listSalesOrdersQuerySchema>;
 export interface ListedSalesOrder {
   id: number;
   customerId: number;
+  type: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -97,7 +109,7 @@ export interface SalesOrderCustomer {
 /** Response of GET /sales-orders/:id, POST /sales-orders and PUT /sales-orders/:id. */
 
 export interface SalesOrderDetailItem {
-  position: number | null;
+  position: number;
   productId: number;
   product: {
     id: number,
@@ -119,5 +131,5 @@ export interface SalesOrderDetail extends ListedSalesOrder {
 export interface SalesOrderItem {
   productId: number;
   quantity: number;
-  position: number | null;
+  position: number;
 }

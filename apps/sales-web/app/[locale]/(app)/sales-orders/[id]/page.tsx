@@ -59,11 +59,18 @@ async function SalesOrderProfile({
             <ArrowLeftIcon data-icon="inline-start" />
             {t("salesOrders.all")}
           </Button>
-          <SalesOrderDetailActions salesOrder={salesOrder} path={salesOrdersTable.path} />
+          <SalesOrderDetailActions
+            salesOrder={salesOrder}
+            path={salesOrdersTable.path}
+          />
         </PageContentAction>
       </PageContentHeader>
       <PageContentBody>
-        <SalesOrderDetails salesOrder={salesOrder} customersPath={customersTable.path} />
+        <SalesOrderDetails
+          salesOrder={salesOrder}
+          path={salesOrdersTable.path}
+          customersPath={customersTable.path}
+        />
       </PageContentBody>
     </PageContent>
   );

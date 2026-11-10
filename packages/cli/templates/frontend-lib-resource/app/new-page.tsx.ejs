@@ -1,0 +1,32 @@
+import type { Metadata } from "next";
+import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
+import {
+  PageContent,
+  PageContentBody,
+  PageContentDescription,
+  PageContentHeader,
+  PageContentTitle,
+} from "@dafne/frontend-ui/components/page-content";
+import { <%= s.pascal %>Form } from "<%= pkg %>/components/<%= s.kebab %>-form";
+import { <%= p.camel %>Table } from "@/lib/<%= p.kebab %>-table";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations();
+  return { title: t("<%= p.camel %>.new") };
+}
+
+export default function New<%= s.pascal %>Page() {
+  const t = useTranslations();
+  return (
+    <PageContent>
+      <PageContentHeader>
+        <PageContentTitle>{t("<%= p.camel %>.new")}</PageContentTitle>
+        <PageContentDescription>{t("<%= p.camel %>.newDescription")}</PageContentDescription>
+      </PageContentHeader>
+      <PageContentBody>
+        <<%= s.pascal %>Form path={<%= p.camel %>Table.path} />
+      </PageContentBody>
+    </PageContent>
+  );
+}

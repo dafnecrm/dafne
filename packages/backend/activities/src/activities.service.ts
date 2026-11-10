@@ -1,9 +1,20 @@
 import { schema, type Database } from '@dafne/backend-database';
 import { InjectDrizzle } from '@nestjs/drizzle';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, desc, eq, isNull, ilike, ne, type SQL } from 'drizzle-orm';
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  isNull,
+  ilike,
+  ne,
+  type Column,
+  type SQL,
+} from 'drizzle-orm';
 import {
   ACTIVITY_FILTER_FIELDS,
+  type ActivityFilterField,
   type ActivityBody,
   type ActivityDetail,
   type ActivitiesList,
@@ -17,6 +28,17 @@ const { activity } = schema;
 
 /** Escapes LIKE wildcards so the value is matched literally. */
 const escapeLike = (value: string) => value.replace(/[\\%_]/g, '\\$&');
+
+/**
+ * Filters matched exactly (the id and the keys to other records), with how
+ * their query param becomes the column's value; the others contain the text.
+ */
+const EXACT_FILTERS: Partial<
+  Record<ActivityFilterField, (value: string) => number | string>
+> = {
+  id: Number,
+  completedById: String,
+};
 
 /** Activities that haven't been deleted. */
 const notDeleted = isNull(activity.deletedAt);
@@ -46,10 +68,11 @@ export class ActivitiesService {
     const filters = ACTIVITY_FILTER_FIELDS.flatMap((field) => {
       const value = query[field]?.trim();
       if (!value) return [];
-      // The id matches exactly (an integer column), the other fields contain the text.
+      const exact = EXACT_FILTERS[field];
+      // As a plain Column: eq can't type a union of columns against number | string.
       return [
-        field === 'id'
-          ? eq(activity.id, Number(value))
+        exact
+          ? eq(activity[field] as Column, exact(value))
           : ilike(activity[field], `%${escapeLike(value)}%`),
       ];
     });

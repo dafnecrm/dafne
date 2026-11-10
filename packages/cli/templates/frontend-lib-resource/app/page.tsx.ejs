@@ -1,0 +1,80 @@
+import { PlusIcon } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
+import { Suspense } from "react";
+import {
+  PageContent,
+  PageContentAction,
+  PageContentBody,
+  PageContentDescription,
+  PageContentHeader,
+  PageContentTitle,
+} from "@dafne/frontend-ui/components/page-content";
+import { Button } from "@dafne/frontend-ui/components/button";
+import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
+import { getTableParams } from "@dafne/frontend-data-table";
+import { <%= p.pascal %>Table } from "<%= pkg %>/components/<%= p.kebab %>-table";
+import { list<%= p.pascal %> } from "<%= pkg %>/server";
+import { <%= p.camel %>Table } from "@/lib/<%= p.kebab %>-table";
+import { requireUser } from "@/lib/session";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations();
+  return { title: t("<%= p.camel %>.title") };
+}
+
+export default function <%= p.pascal %>Page({
+  searchParams,
+}: PageProps<"/[locale]/<%= p.kebab %>">) {
+  const t = useTranslations();
+  return (
+    <PageContent>
+      <PageContentHeader>
+        <PageContentTitle>{t("<%= p.camel %>.title")}</PageContentTitle>
+        <PageContentDescription>
+          {t("common.listHint")}
+        </PageContentDescription>
+        <PageContentAction>
+          <Button
+            nativeButton={false}
+            render={<Link href={`${<%= p.camel %>Table.path}/new`} />}
+          >
+            <PlusIcon data-icon="inline-start" />
+            {t("<%= p.camel %>.new")}
+          </Button>
+        </PageContentAction>
+      </PageContentHeader>
+      <PageContentBody>
+        {/* The session and the query are read per request. */}
+        <Suspense fallback={<Skeleton className="h-72 w-full" />}>
+          <<%= p.pascal %>List searchParams={searchParams} />
+        </Suspense>
+      </PageContentBody>
+    </PageContent>
+  );
+}
+
+/** Fetches one page; the client table renders it. */
+async function <%= p.pascal %>List({
+  searchParams,
+}: Pick<PageProps<"/[locale]/<%= p.kebab %>">, "searchParams">) {
+  await requireUser();
+  const params = getTableParams(await searchParams, <%= p.camel %>Table);
+  const data = await list<%= p.pascal %>({
+    limit: params.pageSize,
+    offset: params.offset,
+    filters: params.filters,
+    sort: params.sort,
+  });
+
+  return (
+    <<%= p.pascal %>Table
+      config={<%= p.camel %>Table}
+      <%= p.camel %>={data.<%= p.camel %>}
+      total={data.total}
+      params={params}
+    />
+  );
+}

@@ -57,6 +57,7 @@ Common options:
 | `--force`             | overwrite files that already exist (otherwise creating one fails) |
 | `-y`, `--yes`         | never prompt                                                      |
 | `--app <name>`        | the app to generate into: `backend-lib`, `backend-resource` (default `sales-api`); `frontend-resource`, its parts and `frontend-lib` (default `sales-web`) |
+| `--lib <name>`        | `frontend-resource` and its parts but `nav`: the frontend lib for the code (`packages/frontend/<name>`, created if missing); asked when left out, the app with `-y` |
 | `--port <port>`       | `backend-app` (3001; `PORT` overrides it), `frontend-app` (4001)  |
 | `--field <spec>`      | `backend-resource`: a field of the new table, repeatable          |
 | `--icon <name>`       | `frontend-resource`, `frontend-list`, `frontend-nav`: a lucide-react icon (default `FileIcon`) |
@@ -174,7 +175,8 @@ dafne g contract report              # packages/contracts/src/reports.ts + spec
 ```sh
 dafne g frontend-resource invoice --icon ReceiptIcon   # every part
 dafne g frontend-resource invoice --app billing-web    # in another frontend app
-dafne g frontend-detail invoice                        # one part
+dafne g frontend-resource invoice --lib invoices       # in packages/frontend/invoices
+dafne g frontend-detail invoice                        # one part, where the resource is
 ```
 
 The pages of a resource in `apps/<app>` (default `sales-web`), following
@@ -195,6 +197,26 @@ with the contract (`packages/contracts/src/<plural>.ts`): they get its
 fields, enum options included, so generate the backend first
 (`g backend-resource`). The message keys go into the app's catalogs
 (`messages/en.json`, `it.json`); Italian texts start in English.
+
+**App or lib.** Without `--lib` the command asks where the code goes: the
+app (as above), an existing frontend lib or a new one (default name: the
+plural); `-y` without `--lib` means the app. A resource that already has
+a place (`lib/<plural>.ts` in the app, or `define<Plural>Table` in a lib)
+is generated there without asking. A lib follows `packages/frontend/sales-orders`:
+
+| Where                                    | Files                                                                                 |
+| ---------------------------------------- | ------------------------------------------------------------------------------------- |
+| `packages/frontend/<lib>/src`            | `types.ts`, `server.ts` (fetchers), `<plural>-table.ts` (`define<Plural>Table({ path })`), `actions.ts`, `schema.ts`, `index.ts` |
+| `…/src/components`                       | `<singular>-dialogs`, `<plural>-table`, `<singular>-table-actions`, `<singular>-detail` and its actions, `<singular>-form` |
+| `…/src/messages`                         | `en.ts`, `it.ts`, `index.ts`: the resource's texts, `<PLURAL>_MESSAGES`, `<Plural>MessageKey` |
+| `apps/<app>`                             | the route pages, `[id]/load-<singular>.ts`, `lib/<plural>-table.ts` (the app's table), the sidebar link |
+
+When the lib is named otherwise than the resource, its files go in
+`src/<plural>` and its exports under `./<plural>`. A new lib is created as
+by `g frontend-lib`; the package's exports and dependencies, its entry
+point and the texts' place in the app (`i18n/request.ts`,
+`i18n/global.d.ts`) are added if missing. Then `pnpm install` (new lib),
+`pnpm nx sync`.
 
 ### `g frontend-app`
 
@@ -299,8 +321,11 @@ columns are kept (and listed). Then the service's queries (list select,
 detail columns, insert, update) and the sample bodies of the specs.
 `/** @api <tag> */` above a column decides where it goes: `internal`,
 `readonly`, `writeonly`, `detail`, `filter`, `nofilter`, `sort`, `nosort`.
-The `id` is always a filter, matched exactly (`?id=12`), unless tagged
-`nofilter`; the other filters match text the field contains. With `--all`, a contract the sync can't read (e.g. `countries`, with no
+The `id` is always a filter and a sort field, and every key to another
+record (`customerId`) a filter: these match exactly (`?id=12`,
+`?customerId=3`; `EXACT_FILTERS` in the service, which the sync keeps in
+line and adds to an older service), unless tagged `nofilter` / `nosort`;
+the other filters match text the field contains. With `--all`, a contract the sync can't read (e.g. `countries`, with no
 body) is skipped. Then `dafne sync frontend-resource <resource>`.
 
 ### `sync frontend-resource`
@@ -309,9 +334,11 @@ body) is skipped. Then `dafne sync frontend-resource <resource>`.
 dafne sync frontend-resource orders
 dafne sync frontend-resource invoices --app billing-web --dry-run
 dafne sync frontend-resource orders --keep   # only add, keep what the contract dropped
+dafne sync frontend-resource sales-orders    # a resource in a lib: found by itself (or --lib)
 ```
 
-Brings the pages of a resource in `apps/<app>` (default `sales-web`) in line
+Brings the pages of a resource in `apps/<app>` (default `sales-web`), or in
+a frontend lib (its components, table config, schema and texts), in line
 with its contract: the form with the body, the list and the detail with the
 responses. Fields the contract gained are added; those it dropped are
 removed (inputs, defaults, columns, sort and filter fields, `<Detail>`s, enum

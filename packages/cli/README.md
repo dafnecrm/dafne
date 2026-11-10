@@ -16,6 +16,7 @@ dafne g backend-lib jobs --app worker    # wire the lib into another app (defaul
 dafne g backend-app worker --port 3002   # NestJS app in apps/worker
 dafne g contract report                  # packages/contracts/src/reports.ts
 dafne g frontend-resource invoice        # list, detail, form, actions, data and sidebar link
+dafne g frontend-resource invoice --lib invoices   # the same, in packages/frontend/invoices
 dafne g frontend-list invoice            # one part: list | detail | form | actions | data | nav
 dafne g frontend-app billing-web         # Next.js app in apps/billing-web
 dafne g frontend-lib charts              # @dafne/frontend-charts, used by apps/sales-web
@@ -23,7 +24,8 @@ dafne g frontend-lib charts              # @dafne/frontend-charts, used by apps/
 
 The kind is the generator's name. Options: `--dry-run`, `--force`
 (overwrite), `-y`; `--app` picks the app to generate into (a backend app
-for `backend-*`, a frontend one for `frontend-*`); `--icon`, `--section`,
+for `backend-*`, a frontend one for `frontend-*`); `--lib` puts a frontend
+resource in a frontend lib (asked when left out); `--icon`, `--section`,
 `--admin` set the sidebar link of a frontend resource.
 
 `g backend-resource` asks for the fields of the new table (an empty name ends the
@@ -60,7 +62,14 @@ dafne g backend-resource voucher --id-type varchar --id-length 12
 `g frontend-resource` (and each part) writes the pages in
 `apps/<app>/app/[locale]/(app)/<plural>/`, synced with the contract's
 fields, and adds their message keys to the app's catalogs. A part also
-generates the parts it needs.
+generates the parts it needs. It asks whether the code goes into the app
+or into a frontend lib (`--lib <name>`; `-y` without it: the app). In a
+lib, as `packages/frontend/sales-orders`: data, actions, components and
+the resource's texts go into `packages/frontend/<lib>/src` (or
+`src/<plural>` when the lib has another name), created and wired into the
+app (`i18n/request.ts`, `i18n/global.d.ts`) if missing; the route pages,
+`lib/<plural>-table.ts` and the sidebar link stay in the app. A resource
+that already has a place is generated there.
 
 Each command runs a generator of this package, which can also be run with
 Nx directly:
@@ -94,11 +103,13 @@ spec) and `--dry-run`. It edits, it doesn't regenerate: hand-written
 validation and members that aren't columns stay. `/** @api <tag> */`
 above a column in the table decides where it goes (`internal`,
 `readonly`, `writeonly`, `detail`, `filter`, `nofilter`, `sort`, `nosort`).
-The `id` is always a filter (exact match), unless tagged `nofilter`.
+The `id` is always a filter and a sort field, a key to another record
+(`customerId`) always a filter: both match exactly, unless tagged
+`nofilter` / `nosort`.
 
 `remove backend-db-column` takes `--no-migration` and `--dry-run`;
-`sync frontend-resource` takes `--app`, `--keep` (only add) and
-`--dry-run`. A dropped field the pages still read (the page title, a
+`sync frontend-resource` takes `--app`, `--lib` (found by itself when
+left out), `--keep` (only add) and `--dry-run`. A dropped field the pages still read (the page title, a
 dialog…) becomes the record's label, "Order 12" (with `--keep` it's only
 listed). The id is the list's first column unless its `@api` tags keep it
 out of the list.

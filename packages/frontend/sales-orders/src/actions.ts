@@ -6,8 +6,8 @@ import { redirect } from "next/navigation";
 import { BackendError, backendFetch } from "@dafne/frontend-api/server";
 import { salesOrderSchema, type SalesOrderFormValues } from "./schema.ts";
 import { getSalesOrderItem } from "./server.ts";
-import type { SalesOrderDetail, SalesOrderDetailItem } from "./types.ts";
-import { SalesOrderItem } from "@dafne/contracts";
+import type { SalesOrderDetail } from "./types.ts";
+import type { SalesOrderItem } from "@dafne/contracts";
 
 /*
  * Sales order mutations shared by the apps. The backend checks the session (forwarded by
@@ -68,7 +68,9 @@ export async function saveSalesOrder(
  * Deletes a sales order (logically: the backend sets deletedAt). The
  * caller refreshes or leaves the page. Returns an error message when it fails.
  */
-export async function deleteSalesOrder(id: number): Promise<ActionError | null> {
+export async function deleteSalesOrder(
+  id: number,
+): Promise<ActionError | null> {
   try {
     await backendFetch(`/sales-orders/${encodeURIComponent(id)}`, {
       method: "DELETE",

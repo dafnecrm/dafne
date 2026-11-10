@@ -55,8 +55,8 @@ export interface IdTemplate {
   pipeImport: string;
   /** Zod of the `id` filter in the list's query string. */
   filterZod: string;
-  /** The filter value the service compares with the id. */
-  filterValue: string;
+  /** How the service turns the `id` query param into the id (EXACT_FILTERS). */
+  filterParse: 'Number' | 'String';
   /** A comment on who picks the id of a new record. */
   createComment: string;
   /** Sample ids for the specs, as code: an existing one and a missing one. */
@@ -78,7 +78,7 @@ export function idTemplate(id: IdSpec = SERIAL_ID): IdTemplate {
         pipe: 'IdPipe',
         pipeImport: 'IdPipe',
         filterZod: 'z.string().regex(/^\\s*\\d{0,9}\\s*$/).optional()',
-        filterValue: 'Number(value)',
+        filterParse: 'Number',
         createComment: 'The id is serial: the database picks it.',
         sample: '1',
         missing: '999',
@@ -93,7 +93,7 @@ export function idTemplate(id: IdSpec = SERIAL_ID): IdTemplate {
         pipe: 'UuidPipe',
         pipeImport: 'UuidPipe',
         filterZod: `z.string().regex(/^\\s*(${UUID_REGEX})?\\s*$/).optional()`,
-        filterValue: 'value',
+        filterParse: 'String',
         createComment: 'The id is a random uuid: the database picks it.',
         sample: "'00000000-0000-4000-8000-000000000001'",
         missing: "'00000000-0000-4000-8000-000000000999'",
@@ -110,7 +110,7 @@ export function idTemplate(id: IdSpec = SERIAL_ID): IdTemplate {
         pipe: `new TextIdPipe(${length})`,
         pipeImport: 'TextIdPipe',
         filterZod: `z.string().max(${length}).optional()`,
-        filterValue: 'value',
+        filterParse: 'String',
         createComment: 'The id is random: Drizzle picks it ($defaultFn).',
         sample: "'id-1'",
         missing: "'id-999'",

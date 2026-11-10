@@ -11,7 +11,7 @@ export const en = {
   noun: "orders",
   create: "Create order",
   editMeta: "Edit order",
-  newDescription: "Only the name is required.",
+  newDescription: "The order's customer, type and items.",
   editDescription: "Saving replaces the order's details.",
   empty: {
     title: "No orders found",
@@ -22,14 +22,15 @@ export const en = {
   notFound: "This order no longer exists.",
   sections: {
     details: "Details",
-    items: 'Items'
+    items: "Items",
   },
   fields: {
     createdAt: "Added",
     id: "Order ID",
     notes: "Notes",
     customer: "Customer",
-    items: 'Items'
+    type: "Type",
+    items: "Items",
   },
   items: {
     add: "Add item",
@@ -38,17 +39,18 @@ export const en = {
     loading: "Loading the item…",
     notFound: "The item no longer exists.",
     loadError: "Couldn't load the item. Try again.",
-    none: 'No item yet.',
-    noneDetail: 'No item has been added.',
-    addOne: 'Add a new item',
+    none: "No item yet.",
+    noneDetail: "No item has been added.",
+    addOne: "Add a new item",
+    positionTaken: "Another item already has this position",
     fields: {
       position: "Position",
-      productId: 'Product',
-      quantity: 'Quantity',
-      add: "Aggiungi",
-      save: "Salva"
+      productId: "Product",
+      quantity: "Quantity",
+      add: "Add",
+      save: "Save",
     },
-  }
+  },
 };
 
 /** The shape every language must have: same keys, any text. */

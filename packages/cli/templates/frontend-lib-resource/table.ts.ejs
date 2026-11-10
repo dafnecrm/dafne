@@ -1,0 +1,39 @@
+import type { <%= s.pascal %>SortField } from "@dafne/contracts";
+import {
+  defineDataTable,
+  type DataTableConfig,
+} from "@dafne/frontend-data-table";
+
+/** Sort of the list without `?sort=`. */
+export const <%= p.constant %>_DEFAULT_SORT = { id: "createdAt", desc: false };
+
+/** A <%= p.lower %> table's config: its path is always set (detail links use it). */
+export type <%= p.pascal %>TableConfig = DataTableConfig & { path: string };
+
+export interface <%= p.pascal %>TableOptions {
+  /** Path of the app's <%= p.lower %> list page, e.g. "/<%= p.kebab %>". */
+  path: string;
+}
+
+/**
+ * The <%= p.lower %> table: plain data with no server-only imports, so the
+ * server page (reads the URL) and the client table (builds links) share
+ * it. Each app calls it once at module scope with its own list path. Sort
+ * and filter fields are checked against the backend's contract (type-only
+ * import: keeps Zod out of the list page's bundle); every filter matches
+ * text the field contains, and they combine with AND.
+ */
+export function define<%= p.pascal %>Table({
+  path,
+}: <%= p.pascal %>TableOptions): <%= p.pascal %>TableConfig {
+  const config = defineDataTable({
+    path,
+    // The backend allows up to 100.
+    pageSizes: [10, 20, 50],
+    sortable: ["id", "createdAt", "updatedAt"] satisfies <%= s.pascal %>SortField[],
+    defaultSort: <%= p.constant %>_DEFAULT_SORT,
+    // { field: "…" satisfies <%= s.pascal %>FilterField, label: "…" satisfies <%= p.pascal %>MessageKey }, added with the fields.
+    filters: [],
+  });
+  return { ...config, path };
+}

@@ -1,0 +1,67 @@
+import { ArrowLeftIcon } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+import { Suspense } from "react";
+import { BreadcrumbLabel } from "@/components/page-breadcrumb";
+import {
+  PageContent,
+  PageContentAction,
+  PageContentBody,
+  PageContentHeader,
+  PageContentTitle,
+} from "@dafne/frontend-ui/components/page-content";
+import { Button } from "@dafne/frontend-ui/components/button";
+import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
+import { <%= s.pascal %>Details } from "<%= pkg %>/components/<%= s.kebab %>-detail";
+import { <%= s.pascal %>DetailActions } from "<%= pkg %>/components/<%= s.kebab %>-detail-actions";
+import { <%= p.camel %>Table } from "@/lib/<%= p.kebab %>-table";
+import { load<%= s.pascal %> } from "./load-<%= s.kebab %>";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations();
+  return { title: t("<%= p.camel %>.singular") };
+}
+
+export default function <%= s.pascal %>Page({ params }: PageProps<"/[locale]/<%= p.kebab %>/[id]">) {
+  return (
+    <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+      <<%= s.pascal %>Profile params={params} />
+    </Suspense>
+  );
+}
+
+/** Loads the <%= s.lower %>: its id and actions, then its details. */
+async function <%= s.pascal %>Profile({
+  params,
+}: Pick<PageProps<"/[locale]/<%= p.kebab %>/[id]">, "params">) {
+  const <%= s.camel %> = await load<%= s.pascal %>((await params).id);
+  const t = await getTranslations();
+
+  return (
+    <PageContent>
+      <BreadcrumbLabel
+        href={`${<%= p.camel %>Table.path}/${encodeURIComponent(<%= s.camel %>.id)}`}
+        label={`${t("<%= p.camel %>.singular")} ${<%= s.camel %>.id}`}
+      />
+      <PageContentHeader>
+        <PageContentTitle>{`${t("<%= p.camel %>.singular")} ${<%= s.camel %>.id}`}</PageContentTitle>
+        <PageContentAction className="flex flex-wrap justify-end gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            nativeButton={false}
+            render={<Link href={<%= p.camel %>Table.path} />}
+          >
+            <ArrowLeftIcon data-icon="inline-start" />
+            {t("<%= p.camel %>.all")}
+          </Button>
+          <<%= s.pascal %>DetailActions <%= s.camel %>={<%= s.camel %>} path={<%= p.camel %>Table.path} />
+        </PageContentAction>
+      </PageContentHeader>
+      <PageContentBody>
+        <<%= s.pascal %>Details <%= s.camel %>={<%= s.camel %>} />
+      </PageContentBody>
+    </PageContent>
+  );
+}

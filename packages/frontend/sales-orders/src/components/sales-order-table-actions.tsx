@@ -17,7 +17,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@dafne/frontend-ui/components/dropdown-menu";
-import { DeleteSalesOrderDialog, type SalesOrderRef } from "./sales-order-dialogs.tsx";
+import {
+  DeleteSalesOrderDialog,
+  type SalesOrderRef,
+} from "./sales-order-dialogs.tsx";
 
 /**
  * Actions of a row of the sales orders table, in a menu: view (`<path>/<id>`),

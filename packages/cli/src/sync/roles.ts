@@ -35,14 +35,16 @@ export function rolesOf(column: Column): Roles {
   const writeonly = tags.has('writeonly');
   const detailOnly = tags.has('detail');
   const generated = column.primaryKey || column.serverManaged;
-  // The id is always a filter (an exact match, see filterZod), unless tagged nofilter.
-  const idFilter = column.primaryKey && (kind === 'int' || kind === 'string');
+  // The id is always a filter (an exact match, see filterZod) and a sort
+  // field, unless tagged nofilter / nosort; a key to another record is a
+  // filter (exact) too.
+  const idFilter = exactFilter(column);
   const roles: Roles = {
     body: !generated && !tags.has('readonly'),
     listed: !writeonly && !detailOnly,
     detail: !writeonly && detailOnly,
     filter: (idFilter || (FILTERABLE.has(kind) && !generated && !column.references)) && !writeonly && !detailOnly,
-    sort: SORTABLE.has(kind) && !column.primaryKey && !column.references && !writeonly && !detailOnly,
+    sort: SORTABLE.has(kind) && (column.primaryKey || !column.references) && !writeonly && !detailOnly,
   };
   if (tags.has('filter')) roles.filter = idFilter || FILTERABLE.has(kind);
   if (tags.has('nofilter')) roles.filter = false;
@@ -50,6 +52,13 @@ export function rolesOf(column: Column): Roles {
   if (tags.has('nosort')) roles.sort = false;
   return roles;
 }
+
+/** The id and the keys to other records: filters the service matches exactly (EXACT_FILTERS). */
+export const exactFilter = (column: Column) =>
+  (column.primaryKey || column.references) && (column.kind === 'int' || column.kind === 'string');
+
+/** How the service turns the query param of an exact filter into the column's value. */
+export const exactFilterParse = (column: Column) => (column.kind === 'int' ? 'Number' : 'String');
 
 /** ACTIVITY_TYPES and ActivityType, for an enum column `type`. */
 export function enumNames({ s }: ResourceNames, column: Column) {
@@ -134,8 +143,8 @@ function baseZod(names: ResourceNames, column: Column, required: string): string
 
 /** Zod for the list's query string (each filter is a param of its own). */
 export function filterZod(names: ResourceNames, column: Column): string {
-  // The id, which the service matches exactly: digits (an int4), a uuid or text.
-  if (column.primaryKey)
+  // The id or a key, which the service matches exactly: digits (an int4), a uuid or text.
+  if (exactFilter(column))
     return idTemplate(
       column.builder === 'uuid' ? { type: 'uuid' } : column.kind === 'string' ? { type: 'varchar', length: column.length ?? 255 } : { type: 'serial' },
     ).filterZod;

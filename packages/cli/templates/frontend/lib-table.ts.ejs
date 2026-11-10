@@ -13,7 +13,7 @@ export const <%= p.camel %>Table = defineDataTable({
   path: "/<%= p.kebab %>",
   // The backend allows up to 100.
   pageSizes: [10, 20, 50],
-  sortable: ["createdAt", "updatedAt"] satisfies <%= s.pascal %>SortField[],
+  sortable: ["id", "createdAt", "updatedAt"] satisfies <%= s.pascal %>SortField[],
   defaultSort: { id: "createdAt", desc: false },
   // { field: "…" satisfies <%= s.pascal %>FilterField, label: "…" }, added with the fields.
   filters: [],

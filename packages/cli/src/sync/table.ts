@@ -25,6 +25,7 @@ export const API_TAGS = [
   'nofilter',
   'sort',
   'nosort',
+  'input', // a child's position or key to its parent, sent in the body (the service sets it otherwise)
 ] as const;
 export type ApiTag = (typeof API_TAGS)[number];
 
@@ -54,6 +55,8 @@ export interface Column {
   /** The text passed to `.default(...)`, e.g. 1 or 'open'. */
   defaultValue?: string;
   references: boolean;
+  /** The table variable a `.references(() => <table>.id)` points to. */
+  referencesTable?: string;
   tags: Set<ApiTag>;
   /** From `@form editor|plain`; unset means plain. */
   formInput?: FormInput;
@@ -140,6 +143,7 @@ export function readTable(path: string, source: string, { s }: ResourceNames): T
 function readColumn(key: string, init: Node, warnings: string[], path: string): Column {
   const methods: string[] = [];
   let defaultValue: string | undefined;
+  let referencesTable: string | undefined;
   let builder = '';
   let args: Node[] = [];
   let node: Node = init;
@@ -149,6 +153,8 @@ function readColumn(key: string, init: Node, warnings: string[], path: string): 
     if (Node.isPropertyAccessExpression(callee)) {
       methods.push(callee.getName());
       if (callee.getName() === 'default') defaultValue = node.getArguments()[0]?.getText();
+      if (callee.getName() === 'references')
+        referencesTable = /^\(\)\s*=>\s*(\w+)\.\w+$/.exec(node.getArguments()[0]?.getText() ?? '')?.[1];
       node = callee.getExpression();
     } else {
       builder = callee.getText();
@@ -168,6 +174,7 @@ function readColumn(key: string, init: Node, warnings: string[], path: string): 
     hasDefault: methods.includes('default'),
     defaultValue,
     references: methods.includes('references'),
+    referencesTable,
     tags: new Set(),
   };
   if (column.kind === 'unknown')

@@ -6,9 +6,10 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { and, asc, desc, eq, isNull, ilike, type SQL } from 'drizzle-orm';
+import { and, asc, desc, eq, isNull, ilike, type Column, type SQL } from 'drizzle-orm';
 import {
   CUSTOMER_FILTER_FIELDS,
+  type CustomerFilterField,
   type CustomerAddressBody,
   type CustomerBody,
   type CustomerDetail,
@@ -24,6 +25,14 @@ const { customer, customerAddress } = schema;
 
 /** Escapes LIKE wildcards so the value is matched literally. */
 const escapeLike = (value: string) => value.replace(/[\\%_]/g, '\\$&');
+
+/**
+ * Filters matched exactly (the id and the keys to other records), with how
+ * their query param becomes the column's value; the others contain the text.
+ */
+const EXACT_FILTERS: Partial<Record<CustomerFilterField, (value: string) => number | string>> = {
+  id: Number,
+};
 
 /** Customers that haven't been deleted. */
 const notDeleted = isNull(customer.deletedAt);
@@ -73,12 +82,9 @@ export class CustomersService {
     const filters = CUSTOMER_FILTER_FIELDS.flatMap((field) => {
       const value = query[field]?.trim();
       if (!value) return [];
-      // The id matches exactly (an integer column), the other fields contain the text.
-      return [
-        field === 'id'
-          ? eq(customer.id, Number(value))
-          : ilike(customer[field], `%${escapeLike(value)}%`),
-      ];
+      const exact = EXACT_FILTERS[field];
+      // As a plain Column: eq can't type a union of columns against number | string.
+      return [exact ? eq(customer[field] as Column, exact(value)) : ilike(customer[field], `%${escapeLike(value)}%`)];
     });
     const where = and(notDeleted, ...filters) as SQL;
     const direction = sortDirection === 'asc' ? asc : desc;

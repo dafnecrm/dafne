@@ -1,7 +1,7 @@
 import { Node, type ObjectLiteralExpression, type SourceFile, SyntaxKind } from 'ts-morph';
 import type { ResourceNames } from '../core/names.ts';
-import { appendToList, editSource, insertListElement, removeListElement } from '../wiring/ast.ts';
-import { rolesOf } from './roles.ts';
+import { appendToList, editSource, ensureNamedImport, insertListElement, removeListElement } from '../wiring/ast.ts';
+import { exactFilter, exactFilterParse, rolesOf } from './roles.ts';
 import type { TableInfo } from './table.ts';
 
 /*
@@ -11,7 +11,10 @@ import type { TableInfo } from './table.ts';
  * - get<S>: `findFirst({ columns: {...} })` leaves out (`key: false`) the
  *   columns that aren't in the response;
  * - create<S> / update<S>: `values({...})` / `set({...})` save the body's
- *   fields (`key: body.key`).
+ *   fields (`key: body.key`);
+ * - EXACT_FILTERS: the filters matched exactly (the id and the keys to
+ *   other records), with how their query param is parsed. A service from
+ *   before EXACT_FILTERS (`field === 'id' ? eq(...) : ilike(...)`) gets it.
  * Anything else (ids, dates, users, hand-written logic) stays as it is.
  */
 
@@ -85,7 +88,18 @@ export function syncService(
     const found = file.getClass(`${p.pascal}Service`)?.getMethod(method);
     return found && find(found);
   };
+  const exact = columns.filter(({ column, roles }) => roles.filter && exactFilter(column)).map(({ column }) => column);
+  source = addExactFilters(path, source, names, record, report, exact.some((c) => !c.primaryKey));
+
   const sections: Section[] = [
+    {
+      method: 'EXACT_FILTERS',
+      locate: (file) => file.getVariableDeclaration('EXACT_FILTERS')?.getInitializerIfKind(SyntaxKind.ObjectLiteralExpression),
+      optional: true,
+      owns: (key, value) => isColumn.has(key) && (value === 'Number' || value === 'String'),
+      wanted: exact.map((column) => ({ key: column.key, text: `${column.key}: ${exactFilterParse(column)}` })),
+      label: 'exact filters',
+    },
     {
       method: `list${p.pascal}`,
       locate: inMethod(`list${p.pascal}`, callArgument('select')),
@@ -196,6 +210,46 @@ export function syncChildService(
 }
 
 /** Reads something from the file without changing it. */
+/** The old filter, `field === 'id' ? eq(<t>.id, Number(value)) : ilike(<t>[field], ...)`, and its comment. */
+const OLD_FILTER =
+  /(\n[ \t]*\/\/ The id matches exactly[^\n]*)?\n([ \t]*)return \[\s*field === 'id'\s*\?\s*eq\(\s*(\w+)\.id,\s*(Number\(value\)|value)\s*\)\s*:\s*ilike\(\s*\3\[field\],\s*`%\$\{escapeLike\(value\)\}%`,?\s*\),?\s*\];/;
+
+/**
+ * Gives a service from before EXACT_FILTERS the map, and the list's filter
+ * the lookup in it. Without the old filter (a hand-written one), a key to
+ * match exactly (`needed`) is a warning.
+ */
+function addExactFilters(path: string, source: string, { s, p }: ResourceNames, record: string, report: ServiceReport, needed: boolean): string {
+  if (/\bEXACT_FILTERS\b/.test(source)) return source;
+  const old = OLD_FILTER.exec(source);
+  if (!old) {
+    if (needed) report.warnings.push(`${path}: list${p.pascal} has no EXACT_FILTERS: match the keys to other records with eq by hand.`);
+    return source;
+  }
+  const [, , indent, table, idValue] = old;
+  source =
+    source.slice(0, old.index) +
+    `\n${indent}const exact = EXACT_FILTERS[field];\n${indent}// As a plain Column: eq can't type a union of columns against number | string.\n${indent}return [exact ? eq(${table}[field] as Column, exact(value)) : ilike(${table}[field], \`%\${escapeLike(value)}%\`)];` +
+    source.slice(old.index + old[0].length);
+  const declaration = `/**
+ * Filters matched exactly (the id and the keys to other records), with how
+ * their query param becomes the column's value; the others contain the text.
+ */
+const EXACT_FILTERS: Partial<Record<${s.pascal}FilterField, (value: string) => number | string>> = {
+  id: ${idValue === 'value' ? 'String' : 'Number'},
+};
+
+`;
+  source = editSource(path, source, (file) => {
+    ensureNamedImport(file, '@dafne/contracts', `${s.pascal}FilterField`, { typeOnly: true });
+    ensureNamedImport(file, 'drizzle-orm', 'Column', { typeOnly: true });
+    const anchor = file.getVariableStatement('notDeleted') ?? file.getClass(`${p.pascal}Service`);
+    file.insertText(anchor ? anchor.getStart(true) : file.getEnd(), declaration);
+  });
+  report.added.push(`list${p.pascal}: EXACT_FILTERS (${record})`);
+  return source;
+}
+
 function editSourceValue<T>(path: string, source: string, read: (file: SourceFile) => T): T {
   let value!: T;
   editSource(path, source, (file) => {

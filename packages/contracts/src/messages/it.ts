@@ -63,13 +63,15 @@ export const it: ContractMessages = {
       notFound: 'Riga dell\'ordine di vendita non trovata',
       position: {
         required: 'Enter the position',
+        duplicate: 'Due righe hanno la stessa posizione',
       },
       productId: {
         required: 'Enter the product id',
         notFound: 'Choose a product from the list'
       },
       quantity: { required: 'Enter the quantity' },
-    }
+    },
+    type: { required: 'Enter the type' }
   },
   salesOrderTypes: { notFound: 'Sales order type not found' },
 };

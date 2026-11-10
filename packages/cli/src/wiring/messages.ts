@@ -166,6 +166,58 @@ function ensurePath(file: SourceFile, root: () => ObjectLiteralExpression, path:
   }
 }
 
+/**
+ * A frontend lib's texts: the keys under `ns.` (e.g. salesOrders.title) are
+ * in <dir>/<locale>.ts, `export const en = { title: … }`, without the
+ * namespace; the apps merge them under it.
+ */
+export interface LibCatalog {
+  ns: string;
+  dir: string;
+}
+
+/**
+ * The catalogs of the frontend libs: src/messages/en.ts, or
+ * src/<resource>/messages/en.ts, with its namespace read from the key type
+ * (`export type XMessageKey = \`<ns>.${…}\``).
+ */
+export function libCatalogs(changes: Changes): LibCatalog[] {
+  const found: LibCatalog[] = [];
+  const add = (dir: string) => {
+    const ns = /MessageKey\s*=\s*`(\w+)\./.exec(changes.read(`${dir}/en.ts`) ?? '')?.[1];
+    if (ns) found.push({ ns, dir });
+  };
+  for (const lib of changes.list(FRONTEND_LIBS)) {
+    const src = `${FRONTEND_LIBS}/${lib}/src`;
+    add(`${src}/messages`);
+    for (const sub of changes.list(src)) if (sub !== 'messages' && !changes.exists(`${src}/${sub}`)) add(`${src}/${sub}/messages`);
+  }
+  return found;
+}
+
+/** The lib catalog a key belongs to, if any. */
+const catalogOf = (catalogs: LibCatalog[], key: string) => catalogs.find((c) => key.startsWith(`${c.ns}.`));
+
+/** Adds the missing keys (full keys, `<ns>.…`) to a lib's en.ts and it.ts. Returns how many. */
+export function ensureLibMessages(changes: Changes, catalog: LibCatalog, messages: MessageMap): number {
+  let added = 0;
+  for (const locale of LOCALES) {
+    const path = `${catalog.dir}/${locale}.ts`;
+    if (!changes.exists(path)) continue;
+    changes.update(path, (source) => {
+      for (const [key, text] of messages) {
+        const before = source;
+        source = editSource(path, source, (file) =>
+          ensurePath(file, () => variableObject(file, locale), key.split('.').slice(1), text),
+        );
+        if (source !== before && locale === 'it') added++;
+      }
+      return source;
+    });
+  }
+  return added;
+}
+
 /** Adds the missing keys to the contracts' en.ts and it.ts. Returns how many. */
 export function ensureContractMessages(changes: Changes, messages: MessageMap): number {
   let added = 0;
@@ -200,7 +252,7 @@ export function syncMessages(
   const contracts: MessageMap = new Map(seed.contracts);
   for (const { path } of changes.summary()) {
     const source = changes.read(path) ?? '';
-    if (path.startsWith(`${frontendApp(app)}/`) && /\.tsx?$/.test(path)) {
+    if (isFrontendSource(path, app)) {
       for (const key of frontendKeys(source)) {
         const text = frontendText(key);
         if (text && !frontend.has(key)) frontend.set(key, text);
@@ -212,15 +264,30 @@ export function syncMessages(
       }
     }
   }
-  const untranslated =
-    ensureFrontendMessages(changes, frontend, app) + ensureContractMessages(changes, contracts);
+  // Keys of a lib's namespace go to its catalogs, the others to the app's.
+  const catalogs = libCatalogs(changes);
+  const byCatalog = new Map<LibCatalog, MessageMap>();
+  for (const [key, text] of frontend) {
+    const catalog = catalogOf(catalogs, key);
+    if (!catalog) continue;
+    frontend.delete(key);
+    if (!byCatalog.has(catalog)) byCatalog.set(catalog, new Map());
+    byCatalog.get(catalog)!.set(key, text);
+  }
+  let untranslated = ensureFrontendMessages(changes, frontend, app) + ensureContractMessages(changes, contracts);
+  for (const [catalog, messages] of byCatalog) untranslated += ensureLibMessages(changes, catalog, messages);
   if (!untranslated) return undefined;
+  const files = [FRONTEND_MESSAGES('it', app), CONTRACT_MESSAGES('it'), ...[...byCatalog.keys()].map((c) => `${c.dir}/it.ts`)];
   const note =
     `${untranslated} new message${untranslated === 1 ? '' : 's'} in the Italian catalogs ` +
-    `(${FRONTEND_MESSAGES('it', app)}, ${CONTRACT_MESSAGES('it')}) ${untranslated === 1 ? 'is' : 'are'} still in English: translate ${untranslated === 1 ? 'it' : 'them'}.`;
+    `(${files.join(', ')}) ${untranslated === 1 ? 'is' : 'are'} still in English: translate ${untranslated === 1 ? 'it' : 'them'}.`;
   changes.warn(note);
   return note;
 }
+
+/** A source of the app or of a frontend lib (not a catalog): where frontend keys are used. */
+const isFrontendSource = (path: string, app: string) =>
+  (path.startsWith(`${frontendApp(app)}/`) || path.startsWith(`${FRONTEND_LIBS}/`)) && /\.tsx?$/.test(path) && !path.includes('/messages/');
 
 /** Folders never scanned for message keys. */
 const SKIP_DIRS = new Set(['node_modules', '.next', 'dist', 'out-tsc', 'messages']);
@@ -310,18 +377,34 @@ export function pruneContractMessages(changes: Changes): string[] {
 }
 
 /**
- * Removes from the app's catalogs the keys that its changed files stopped
- * using (t("…"), `label: "…"`) and that no other file of the app or of the
- * frontend libs uses. Returns the keys removed.
+ * Removes from the app's catalogs, and from the libs' (keys of their
+ * namespace), the keys that the changed files of the app and of the libs
+ * stopped using (t("…"), `label: "…"`) and that no other file of the app or
+ * of the frontend libs uses. Returns the keys removed.
  */
 export function pruneFrontendMessages(changes: Changes, app = DEFAULT_FRONTEND_APP): string[] {
-  const inScope = (path: string) => path.startsWith(`${frontendApp(app)}/`) && /\.tsx?$/.test(path);
+  const inScope = (path: string) => isFrontendSource(path, app);
   const scan = [...filesUnder(changes, frontendApp(app), /\.tsx?$/), ...filesUnder(changes, FRONTEND_LIBS, /\.tsx?$/)];
   const keys = droppedKeys(changes, inScope, frontendKeys, scan);
   if (!keys.length) return [];
+  const catalogs = libCatalogs(changes);
+  const appKeys = keys.filter((key) => !catalogOf(catalogs, key));
   for (const locale of LOCALES) {
     const path = FRONTEND_MESSAGES(locale, app);
-    if (changes.exists(path)) changes.update(path, (source) => keys.reduce(removeJsonKey, source));
+    if (appKeys.length && changes.exists(path)) changes.update(path, (source) => appKeys.reduce(removeJsonKey, source));
+  }
+  for (const catalog of catalogs) {
+    const own = keys.filter((key) => catalogOf(catalogs, key) === catalog).map((key) => key.slice(catalog.ns.length + 1));
+    if (!own.length) continue;
+    for (const locale of LOCALES) {
+      const path = `${catalog.dir}/${locale}.ts`;
+      if (!changes.exists(path)) continue;
+      changes.update(path, (source) =>
+        editSource(path, source, (file) => {
+          for (const key of own) removeTsKey(file, variableObject(file, locale), key);
+        }),
+      );
+    }
   }
   return keys;
 }

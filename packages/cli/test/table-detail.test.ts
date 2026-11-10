@@ -42,7 +42,7 @@ describe('readResponse', () => {
     expect(byKey.description).toMatchObject({ kind: 'text', richText: true });
     expect(byKey.customerId).toMatchObject({ kind: 'id', label: 'Customer' });
     expect(sortFields).toContain('type');
-    expect(filterFields).toEqual(['id', 'name', 'type', 'done']);
+    expect(filterFields).toEqual(['id', 'name', 'type', 'done', 'customerId']);
   });
 });
 
@@ -50,7 +50,7 @@ describe('syncTableConfig', () => {
   it('adds sort fields in contract order, filters and enum labels', () => {
     const { content } = syncTableConfig('t.ts', render('frontend/lib-table.ts', view), names, info());
     expect(content).toContain('export const ACTIVITY_TYPE_OPTIONS = [');
-    expect(content).toMatch(/sortable: \["name", "type", "budget", "done", "dueDate", "createdAt", "updatedAt"\]/);
+    expect(content).toMatch(/sortable: \["id", "name", "type", "budget", "done", "dueDate", "createdAt", "updatedAt"\]/);
     expect(content).toMatch(/field: "type" satisfies ActivityFilterField,\s*label: "activities.fields.type",\s*options: ACTIVITY_TYPE_OPTIONS/);
     expect(content).toContain('{ value: "false", label: "common.no" }');
     expect(content).toContain('{ value: "phone", label: "activities.type.phone" }');

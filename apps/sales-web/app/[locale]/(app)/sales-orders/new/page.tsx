@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { useTranslations } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import {
   PageContent,
@@ -9,6 +8,7 @@ import {
   PageContentTitle,
 } from "@dafne/frontend-ui/components/page-content";
 import { SalesOrderForm } from "@dafne/frontend-sales-orders/components/sales-order-form";
+import { listSalesOrderTypeIds } from "@dafne/frontend-sales-orders/server";
 import { salesOrdersTable } from "@/lib/sales-orders-table";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -16,8 +16,9 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("salesOrders.new") };
 }
 
-export default function NewSalesOrderPage() {
-  const t = useTranslations();
+export default async function NewSalesOrderPage() {
+  const t = await getTranslations();
+  const types = await listSalesOrderTypeIds();
   return (
     <PageContent>
       <PageContentHeader>
@@ -27,7 +28,7 @@ export default function NewSalesOrderPage() {
         </PageContentDescription>
       </PageContentHeader>
       <PageContentBody>
-        <SalesOrderForm path={salesOrdersTable.path} />
+        <SalesOrderForm path={salesOrdersTable.path} types={types} />
       </PageContentBody>
     </PageContent>
   );

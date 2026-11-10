@@ -30,8 +30,11 @@ erasable syntax (no enums, namespaces or constructor parameter properties;
     `frontend-actions`, `frontend-list`, `frontend-detail`, `frontend-form`,
     `frontend-nav`: thin wrappers of `generateFrontendPieces`
     (`src/generators/frontend-pieces.ts`) over the frontend pieces, in
-    `apps/<app>` (`--app`, default `sales-web`). The list, detail and form
-    are synced with the contract; message keys go into the app's catalogs.
+    `apps/<app>` (`--app`, default `sales-web`) or in a frontend lib
+    (`--lib`; `resolveTarget`: the lib given, else where the resource
+    already is, else the app). The list, detail and form are synced with
+    the contract; message keys go into the app's catalogs, or the lib's
+    for the resource's own namespace.
   - `frontend-app`: a Next app in `apps/<name>` (`templates/frontend-app`,
     every file rendered, binaries copied as they are).
   - `remove-backend-db-column`: `removeField` for each column, then
@@ -68,7 +71,13 @@ erasable syntax (no enums, namespaces or constructor parameter properties;
 - `src/pieces/`: the pieces of a resource, `backendPieces` and
   `frontendPieces` (`data`, `actions`, `list`, `detail`, `form`, `nav`);
   `generatePieces` adds the missing dependencies (by marker file). `Ctx.app`
-  is the backend app for backend pieces, the frontend app for frontend ones.
+  is the backend app for backend pieces, the frontend app for frontend ones;
+  `FrontendCtx.target` says whether the frontend code goes into the app or a lib.
+- `src/core/frontend-target.ts`: `FrontendTarget` (app, or lib with its
+  `dir` and `pkg`), `findFrontendTarget`, the paths of a resource's files
+  in either layout (`dataFiles`, `formFiles`… `routeDir` always in the
+  app) and `pageRefs`, how the synced code refers to them (imports, links,
+  message-key type).
 - `src/fields/`: column types and builders (`spec.ts`), `--field` specs
   (`parse.ts`: `parseFieldSpec`, and `formatFieldSpec` back), table file
   edits (`table-file.ts`, `operations.ts`: `addField`).
@@ -80,18 +89,25 @@ erasable syntax (no enums, namespaces or constructor parameter properties;
   `table-page.ts` and `detail.ts` add the missing fields to the form, the
   list and the detail, and with `prune` remove what the contract dropped;
   `frontend.ts` runs them on a resource's files (`syncForm`, `syncList`,
-  `syncDetailPage`, all three in `syncResourcePages`) and holds their
-  paths. `dropped.ts` fixes what removed columns leave in the backend
+  `syncDetailPage`, all three in `syncResourcePages`) on an app or lib
+  target. `dropped.ts` fixes what removed columns leave in the backend
   (default sort, enums, specs).
 - `src/wiring/`: edits to existing files (`backend.ts`: app module,
   package.json, project references, schema.ts, contracts index;
   `frontend.ts`: next.config.ts and tsconfig of a frontend app, sidebar
-  links (`wireNav`, `lib/navigation.ts`);
-  `messages.ts`: message catalogs, `syncMessages` adds keys and
+  links (`wireNav`, `lib/navigation.ts`), a lib for a resource
+  (`createFrontendLib`, `wireResourceLib`: exports, dependencies, index,
+  catalogs, `wireLibMessages` in `i18n/request.ts` and `global.d.ts`);
+  `messages.ts`: message catalogs (the app's JSON, the contracts', the
+  libs' `messages/<locale>.ts` found by `libCatalogs` from their
+  `<X>MessageKey` type), `syncMessages` adds keys and
   `prune*Messages` removes those the changed files stopped using;
   `ast.ts`: helpers).
 - `templates/backend` and `templates/frontend` (copies of the `customers`
   resource), `templates/app` (a minimal `apps/sales-api`),
+  `templates/frontend-lib-resource` (a resource in a lib: copies of
+  `packages/frontend/sales-orders` without its order-specific code, `app/`
+  for its route pages),
   `templates/frontend-app` (`apps/sales-web` without its resources and
   users pages), `templates/frontend-lib` (set up like
   `packages/frontend/auth`). Dotfiles are stored without the dot.
@@ -100,8 +116,8 @@ erasable syntax (no enums, namespaces or constructor parameter properties;
 
 Templates, names, wiring, relations, messages and formatting:
 
-- **Templates copy `customers`** (and `apps/sales-api`, `apps/sales-web`
-  for the apps). When those
+- **Templates copy `customers`** (and `packages/frontend/sales-orders` for
+  a resource in a lib, `apps/sales-api`, `apps/sales-web` for the apps). When those
   patterns change, update the templates. They are rendered by
   `core/templates.ts` (EJS, escaping off), not by devkit's `generateFiles`,
   which escapes `<%= %>`.
@@ -109,9 +125,13 @@ Templates, names, wiring, relations, messages and formatting:
   columns. The id is `serial` unless `idType` is `uuid` or `varchar`
   (`idLength`, default 36): `core/id.ts` holds what the backend templates
   write for each (`id` in their data, `renderBackend`), the frontend
-  templates type it as `<S>Detail["id"]`. Its body is `z.strictObject({})`, its only filter the `id`
-  (always a filter, unless `@api nofilter`: a query param of digits, a
-  uuid or text up to the id's length, that the service matches with `eq`, the other filters with `ilike`), the pages name a record
+  templates type it as `<S>Detail["id"]`. Its body is `z.strictObject({})`, its only filter and first sort
+  field the `id` (always both, whatever its type, unless `@api nofilter` /
+  `@api nosort`; as a filter a query param of digits, a
+  uuid or text up to the id's length). A key to another record is a filter
+  too: the id and the keys are in the service's `EXACT_FILTERS` (matched
+  with `eq`; `syncService` keeps it in line, and adds it to a service from
+  before it), the other filters use `ilike`), the pages name a record
   `${t("<plural>.singular")} ${<record>.id}` (title, breadcrumb, dialogs,
   aria-labels), the list sync adds the id as the first column, linking
   to the detail page, when the contract lists it (`@api` tags may not),
@@ -159,7 +179,7 @@ Templates, names, wiring, relations, messages and formatting:
   1. Copy the monorepo into a scratch folder (without `node_modules`,
      `.next`, `.git`, `dist`, `.env`, `.nx`, `out-tsc`), `pnpm install --offline`.
   2. There: `pnpm dafne g backend-resource invoice --field … -y`,
-     `g frontend-resource invoice`, `g backend-lib`, `g backend-app`,
+     `g frontend-resource invoice`, `g frontend-resource <other> --lib <lib>`, `g backend-lib`, `g backend-app`,
      `g contract`, `g frontend-app`, `g frontend-lib`, and after changing
      a removal or a sync `remove backend-db-column <resource> <column> -y`
      and `sync frontend-resource <resource> -y` on a generated

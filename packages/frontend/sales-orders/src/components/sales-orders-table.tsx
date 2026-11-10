@@ -76,7 +76,7 @@ export function SalesOrdersTable({
   config,
   salesOrders,
   total,
-  params
+  params,
 }: {
   config: SalesOrdersTableConfig;
   salesOrders: ListedSalesOrder[];
@@ -113,14 +113,17 @@ export function SalesOrdersTable({
             <EmptyDescription>
               {Object.keys(params.filters).length
                 ? t("salesOrders.empty.filtered", {
-                  filter: describeFilters(params.filters, config.filters),
-                })
+                    filter: describeFilters(params.filters, config.filters),
+                  })
                 : t("salesOrders.empty.none")}
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
             <Button variant="outline">
-              <Link href={`${config.path}/new`} className="flex items-center gap-2">
+              <Link
+                href={`${config.path}/new`}
+                className="flex items-center gap-2"
+              >
                 {t("salesOrders.create")}
               </Link>
             </Button>

@@ -12,6 +12,10 @@
       "x-prompt": "Resource name (e.g. orders)"
     },
     "app": { "type": "string", "description": "Frontend app of the pages (apps/<app>).", "default": "sales-web" },
+    "lib": {
+      "type": "string",
+      "description": "Frontend lib (packages/frontend/<lib>) the resource is in; found by itself when left out."
+    },
     "keep": {
       "type": "boolean",
       "description": "Only add the missing fields: keep (and report) what the contract dropped.",

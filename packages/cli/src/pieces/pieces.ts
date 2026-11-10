@@ -17,7 +17,7 @@ export interface Piece<C extends Ctx = Ctx> {
   /** Pieces this one needs; generated too when their `marker` is missing. */
   deps: string[];
   /** A file whose existence means the piece is already there (none: always generated as a dependency). */
-  marker: (names: ResourceNames, app: string) => string | undefined;
+  marker: (names: ResourceNames, ctx: C) => string | undefined;
   generate: (ctx: C) => void;
 }
 
@@ -36,7 +36,7 @@ export function generatePieces<C extends Ctx>(pieces: Record<string, Piece<C>>, 
     const piece = pieces[key];
     if (!piece) throw new Error(`Unknown piece "${key}".`);
     if (!explicit) {
-      const marker = piece.marker(ctx.names, ctx.app);
+      const marker = piece.marker(ctx.names, ctx);
       if (marker && ctx.changes.exists(marker)) return;
       addedDeps.push(key);
     }

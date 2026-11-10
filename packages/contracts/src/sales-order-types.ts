@@ -15,7 +15,7 @@ export type SalesOrderTypeBodyInput = z.input<typeof salesOrderTypeBodySchema>;
 export type SalesOrderTypeBody = z.output<typeof salesOrderTypeBodySchema>;
 
 /** Sales order type fields the list can be sorted by. */
-export const SALES_ORDER_TYPE_SORT_FIELDS = ['createdAt', 'updatedAt'] as const;
+export const SALES_ORDER_TYPE_SORT_FIELDS = ['id', 'createdAt', 'updatedAt'] as const;
 export type SalesOrderTypeSortField =
   (typeof SALES_ORDER_TYPE_SORT_FIELDS)[number];
 
@@ -33,9 +33,9 @@ export const listSalesOrderTypesQuerySchema = z.strictObject({
   ...pageQuery,
   id: z.string().max(5).optional(),
   /** Defaults to createdAt. */
-  sortBy: z.enum(SALES_ORDER_TYPE_SORT_FIELDS).optional(),
+    sortBy: z.enum(SALES_ORDER_TYPE_SORT_FIELDS).optional(),
   /** Defaults to asc. */
-  sortDirection: z.enum(SORT_DIRECTIONS).optional(),
+    sortDirection: z.enum(SORT_DIRECTIONS).optional(),
 });
 export type ListSalesOrderTypesQuery = z.output<
   typeof listSalesOrderTypesQuerySchema
@@ -69,5 +69,5 @@ export interface SalesOrderTypeDetail extends ListedSalesOrderType {
   createdBy: SalesOrderTypeUser | null;
   updatedBy: SalesOrderTypeUser | null;
   /** Always null: deleted sales order types aren't returned. */
-  deletedAt: Date | null;
+    deletedAt: Date | null;
 }

@@ -1,9 +1,19 @@
 import { schema, type Database } from '@dafne/backend-database';
 import { InjectDrizzle } from '@nestjs/drizzle';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, desc, eq, isNull, ilike, type SQL } from 'drizzle-orm';
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  isNull,
+  ilike,
+  type Column,
+  type SQL,
+} from 'drizzle-orm';
 import {
   SALES_ORDER_TYPE_FILTER_FIELDS,
+  type SalesOrderTypeFilterField,
   type SalesOrderTypeBody,
   type SalesOrderTypeDetail,
   type SalesOrderTypesList,
@@ -17,6 +27,16 @@ const { salesOrderType } = schema;
 
 /** Escapes LIKE wildcards so the value is matched literally. */
 const escapeLike = (value: string) => value.replace(/[\\%_]/g, '\\$&');
+
+/**
+ * Filters matched exactly (the id and the keys to other records), with how
+ * their query param becomes the column's value; the others contain the text.
+ */
+const EXACT_FILTERS: Partial<
+  Record<SalesOrderTypeFilterField, (value: string) => number | string>
+> = {
+  id: String,
+};
 
 /** Sales order types that haven't been deleted. */
 const notDeleted = isNull(salesOrderType.deletedAt);
@@ -45,10 +65,11 @@ export class SalesOrderTypesService {
     const filters = SALES_ORDER_TYPE_FILTER_FIELDS.flatMap((field) => {
       const value = query[field]?.trim();
       if (!value) return [];
-      // The id matches exactly, the other fields contain the text.
+      const exact = EXACT_FILTERS[field];
+      // As a plain Column: eq can't type a union of columns against number | string.
       return [
-        field === 'id'
-          ? eq(salesOrderType.id, value)
+        exact
+          ? eq(salesOrderType[field] as Column, exact(value))
           : ilike(salesOrderType[field], `%${escapeLike(value)}%`),
       ];
     });

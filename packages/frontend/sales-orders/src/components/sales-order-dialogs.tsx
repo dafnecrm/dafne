@@ -22,7 +22,7 @@ import { deleteSalesOrder } from "../actions.ts";
  * (sales-order-detail-actions.tsx).
  */
 
-export type SalesOrderRef = { id: number; };
+export type SalesOrderRef = { id: number };
 
 /**
  * Confirms the deletion and runs it, then goes back to the list at `path`
@@ -61,7 +61,9 @@ export function DeleteSalesOrderDialog({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>
-            {t("common.deleteTitle", { name: `${t("salesOrders.singular")} ${salesOrder.id}` })}
+            {t("common.deleteTitle", {
+              name: `${t("salesOrders.singular")} ${salesOrder.id}`,
+            })}
           </AlertDialogTitle>
           <AlertDialogDescription>
             {t("salesOrders.deleteDescription")}

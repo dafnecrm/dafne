@@ -1,5 +1,11 @@
 import { formOptions } from "@tanstack/react-form-nextjs";
-import { salesOrderBodySchema, SalesOrderItem, SalesOrderItemBody, salesOrderItemBodySchema, type SalesOrderBody } from "@dafne/contracts";
+import {
+  salesOrderBodySchema,
+  salesOrderItemBodySchema,
+  type SalesOrderBody,
+  type SalesOrderItem,
+  type SalesOrderItemBody,
+} from "@dafne/contracts";
 import { formSchema } from "@dafne/frontend-forms";
 import type { SalesOrderDetail } from "./types.ts";
 
@@ -28,7 +34,8 @@ export type SalesOrderFormValues = Record<
  * The form validates with the backend's own schema (same rules and
  * messages), which turns "" in optional fields into null.
  */
-export const salesOrderSchema = formSchema<SalesOrderFormValues>()(salesOrderBodySchema);
+export const salesOrderSchema =
+  formSchema<SalesOrderFormValues>()(salesOrderBodySchema);
 
 /** Form values for a new sales order, or for editing `salesOrder`. */
 export function salesOrderFormOpts(salesOrder?: SalesOrderDetail) {
@@ -36,19 +43,25 @@ export function salesOrderFormOpts(salesOrder?: SalesOrderDetail) {
     defaultValues: {
       notes: salesOrder?.notes ?? "",
       customerId: salesOrder ? String(salesOrder.customerId) : "",
-      items: salesOrder?.items.map((item) => ({
-        position: item.position,
-        productId: item.productId,
-        quantity: item.quantity,
-      })) ?? [],
+      type: salesOrder?.type ?? "",
+      items:
+        salesOrder?.items.map((item) => ({
+          position: item.position,
+          productId: item.productId,
+          quantity: item.quantity,
+        })) ?? [],
     } satisfies SalesOrderFormValues as SalesOrderFormValues,
   });
 }
 
-export const salesOrderItemSchema = formSchema<SalesOrderItemFormValues>()(salesOrderItemBodySchema);
+export const salesOrderItemSchema = formSchema<SalesOrderItemFormValues>()(
+  salesOrderItemBodySchema,
+);
 
 /** Form values for a new item (all blank), or for editing `item`. */
-export const salesOrderItem = (item?: SalesOrderItem): SalesOrderItemFormValues => ({
+export const salesOrderItem = (
+  item?: SalesOrderItem,
+): SalesOrderItemFormValues => ({
   position: item?.position ?? null,
   productId: item?.productId ?? null,
   quantity: item?.quantity ?? null,

@@ -1,0 +1,111 @@
+"use client";
+
+import { <%= icon %> } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useCallback, useMemo } from "react";
+import {
+  createDataTableColumnHelper,
+  DataTable,
+  useDescribeFilters,
+} from "@dafne/frontend-data-table/table";
+import { LocalDate } from "@dafne/frontend-ui/components/local-date";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@dafne/frontend-ui/components/empty";
+import { useOptionLabel } from "@dafne/frontend-ui/hooks/use-option-labels";
+import type { TableParams } from "@dafne/frontend-data-table";
+import type { <%= p.pascal %>TableConfig } from "../<%= p.kebab %>-table.ts";
+import type { Listed<%= s.pascal %> } from "../types.ts";
+import { <%= s.pascal %>TableActions } from "./<%= s.kebab %>-table-actions.tsx";
+
+/*
+ * Columns of the <%= p.lower %> table. Column ids double as the backend's
+ * sort fields, so they must match `sortable` in ../<%= p.kebab %>-table.ts.
+ */
+
+const col = createDataTableColumnHelper<Listed<%= s.pascal %>>();
+
+/**
+ * Translated per language; memoized, so the table sees the same columns on
+ * every render. Ids link to `<path>/<id>`, the detail page.
+ */
+function use<%= s.pascal %>Columns(path: string) {
+  const t = useTranslations();
+  // Labels of enum values, for their columns.
+  const optionLabel = useOptionLabel();
+  return useMemo(
+    () =>
+      col.columns([
+  col.accessor("createdAt", {
+    header: t("<%= p.camel %>.fields.createdAt"),
+    meta: { className: "text-right" },
+    cell: (info) => (
+      <LocalDate value={info.getValue()} className="text-muted-foreground" />
+    ),
+  }),
+      ]),
+    [t, optionLabel, path],
+  );
+}
+
+const getRowId = (<%= s.camel %>: Listed<%= s.pascal %>) => String(<%= s.camel %>.id);
+
+/**
+ * <%= p.title %> list; the server page passes the app's config and one page
+ * of <%= p.lower %>.
+ */
+export function <%= p.pascal %>Table({
+  config,
+  <%= p.camel %>,
+  total,
+  params,
+}: {
+  config: <%= p.pascal %>TableConfig;
+  <%= p.camel %>: Listed<%= s.pascal %>[];
+  total: number;
+  params: TableParams;
+}) {
+  const t = useTranslations();
+  const describeFilters = useDescribeFilters();
+  const columns = use<%= s.pascal %>Columns(config.path);
+  // Stable per path, so the table sees the same function on every render.
+  const <%= s.camel %>Actions = useCallback(
+    (<%= s.camel %>: Listed<%= s.pascal %>) => (
+      <<%= s.pascal %>TableActions <%= s.camel %>={<%= s.camel %>} path={config.path} />
+    ),
+    [config.path],
+  );
+  return (
+    <DataTable
+      columns={columns}
+      data={<%= p.camel %>}
+      getRowId={getRowId}
+      config={config}
+      rowActions={<%= s.camel %>Actions}
+      params={params}
+      total={total}
+      noun={t("<%= p.camel %>.noun")}
+      empty={
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <<%= icon %> />
+            </EmptyMedia>
+            <EmptyTitle>{t("<%= p.camel %>.empty.title")}</EmptyTitle>
+            <EmptyDescription>
+              {Object.keys(params.filters).length
+                ? t("<%= p.camel %>.empty.filtered", {
+                    filter: describeFilters(params.filters, config.filters),
+                  })
+                : t("<%= p.camel %>.empty.none")}
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      }
+    />
+  );
+}

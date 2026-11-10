@@ -36,11 +36,14 @@ type OnSave = (
 export function SalesOrderItemSheet({
   open,
   item,
+  takenPositions = [],
   onOpenChange,
   onSave,
 }: {
   open: boolean;
   item?: SalesOrderItemFormValues | null;
+  /** The positions of the order's other items: this one can't reuse them. */
+  takenPositions?: (number | null)[];
   onOpenChange: (open: boolean) => void;
   onSave: OnSave;
 }) {
@@ -55,6 +58,7 @@ export function SalesOrderItemSheet({
         {/* The content unmounts when the sheet closes, so each opening starts from `item`. */}
         <ItemForm
           item={item ?? undefined}
+          takenPositions={takenPositions}
           onSave={(value, product) => {
             onSave(value, product);
             onOpenChange(false);
@@ -68,9 +72,11 @@ export function SalesOrderItemSheet({
 /** The item's fields: blank for a new item, `item`'s for an edit. */
 function ItemForm({
   item,
+  takenPositions,
   onSave,
 }: {
   item?: SalesOrderItemFormValues;
+  takenPositions: (number | null)[];
   onSave: OnSave;
 }) {
   const t = useTranslations();
@@ -96,8 +102,20 @@ function ItemForm({
     >
       <form.AppForm>
         <FieldGroup className="px-4">
-          <form.AppField name="position">
-            {(field) => <field.NumberField label={t("salesOrders.items.fields.position")} /> }
+          <form.AppField
+            name="position"
+            validators={{
+              onChange: ({ value }) =>
+                value != null && takenPositions.includes(value)
+                  ? "salesOrders.items.positionTaken"
+                  : undefined,
+            }}
+          >
+            {(field) => (
+              <field.NumberField
+                label={t("salesOrders.items.fields.position")}
+              />
+            )}
           </form.AppField>
           <form.AppField name="productId">
             {(field) => (
@@ -108,13 +126,19 @@ function ItemForm({
             )}
           </form.AppField>
           <form.AppField name="quantity">
-            {(field) => <field.NumberField label={t("salesOrders.items.fields.quantity")} /> }
+            {(field) => (
+              <field.NumberField
+                label={t("salesOrders.items.fields.quantity")}
+              />
+            )}
           </form.AppField>
         </FieldGroup>
         <SheetFooter>
           <form.SubmitButton
             label={t(
-              item ? "salesOrders.items.fields.save" : "salesOrders.items.fields.add",
+              item
+                ? "salesOrders.items.fields.save"
+                : "salesOrders.items.fields.add",
             )}
           />
           <SheetClose render={<Button type="button" variant="outline" />}>

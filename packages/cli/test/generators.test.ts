@@ -9,8 +9,10 @@ import backendResourceGenerator from '../src/generators/backend-resource/generat
 import contractGenerator from '../src/generators/contract/generator.ts';
 import contractSyncGenerator from '../src/generators/contract-sync/generator.ts';
 import frontendAppGenerator from '../src/generators/frontend-app/generator.ts';
+import frontendDataGenerator from '../src/generators/frontend-data/generator.ts';
 import frontendDetailGenerator from '../src/generators/frontend-detail/generator.ts';
 import frontendLibGenerator from '../src/generators/frontend-lib/generator.ts';
+import frontendListGenerator from '../src/generators/frontend-list/generator.ts';
 import frontendNavGenerator from '../src/generators/frontend-nav/generator.ts';
 import frontendResourceGenerator from '../src/generators/frontend-resource/generator.ts';
 import frontendResourceSyncGenerator from '../src/generators/frontend-resource-sync/generator.ts';
@@ -93,7 +95,7 @@ describe('backend-resource', () => {
     expect(contract).toContain('[0-9a-fA-F]{8}-');
     const service = read('packages/backend/payments/src/payments.service.ts');
     expect(service).toContain('getPayment(id: string)');
-    expect(service).toContain('eq(payment.id, value)');
+    expect(service).toContain('id: String,');
     expect(read('packages/backend/payments/src/payments.controller.ts')).toContain("@Param('id', UuidPipe) id: string");
     expect(read('packages/backend/payments/src/payments.service.spec.ts')).toContain("'00000000-0000-4000-8000-000000000001'");
 
@@ -271,6 +273,142 @@ describe('frontend-resource', () => {
     await frontendResourceGenerator(tree, { name: 'invoice' });
     expect(warn.mock.calls.flat().join('\n')).toContain("packages/contracts/src/invoices.ts doesn't exist");
     warn.mockRestore();
+  });
+});
+
+const LIB = 'packages/frontend/invoices';
+
+describe('frontend-resource in a lib', () => {
+  const FIELDS = ['number:string:length=20:required', 'status:enum:values=draft|sent|paid:default=draft'];
+
+  it('puts the data, actions, components and texts in a new lib, the pages in the app', async () => {
+    await generate(backendResourceGenerator, { name: 'invoice', fields: FIELDS });
+    const changes = await generate(frontendResourceGenerator, { name: 'invoice', lib: 'invoices', icon: 'ReceiptIcon' });
+    expect(changes).toEqual(
+      expect.arrayContaining([
+        `CREATE ${LIB}/package.json`,
+        `CREATE ${LIB}/src/index.ts`,
+        `CREATE ${LIB}/src/types.ts`,
+        `CREATE ${LIB}/src/server.ts`,
+        `CREATE ${LIB}/src/invoices-table.ts`,
+        `CREATE ${LIB}/src/actions.ts`,
+        `CREATE ${LIB}/src/schema.ts`,
+        `CREATE ${LIB}/src/messages/en.ts`,
+        `CREATE ${LIB}/src/messages/it.ts`,
+        `CREATE ${LIB}/src/messages/index.ts`,
+        `CREATE ${LIB}/src/components/invoice-dialogs.tsx`,
+        `CREATE ${LIB}/src/components/invoices-table.tsx`,
+        `CREATE ${LIB}/src/components/invoice-table-actions.tsx`,
+        `CREATE ${LIB}/src/components/invoice-detail.tsx`,
+        `CREATE ${LIB}/src/components/invoice-detail-actions.tsx`,
+        `CREATE ${LIB}/src/components/invoice-form.tsx`,
+        'CREATE apps/sales-web/lib/invoices-table.ts',
+        `CREATE ${PAGES}/page.tsx`,
+        `CREATE ${PAGES}/[id]/page.tsx`,
+        `CREATE ${PAGES}/[id]/load-invoice.ts`,
+        `CREATE ${PAGES}/new/page.tsx`,
+        `CREATE ${PAGES}/[id]/edit/page.tsx`,
+        'UPDATE apps/sales-web/i18n/request.ts',
+        'UPDATE apps/sales-web/i18n/global.d.ts',
+        'UPDATE apps/sales-web/lib/navigation.ts',
+      ]),
+    );
+    expect(changes).not.toContain('CREATE apps/sales-web/lib/invoices.ts');
+    expect(changes).not.toContain(`CREATE ${PAGES}/actions.ts`);
+
+    // The package: exports, dependencies, wired into the app.
+    const pkg = JSON.parse(read(`${LIB}/package.json`));
+    expect(pkg.exports).toMatchObject({
+      '.': './src/index.ts',
+      './actions': './src/actions.ts',
+      './server': './src/server.ts',
+      './components/*': './src/components/*.tsx',
+    });
+    expect(pkg.dependencies).toMatchObject({ '@dafne/contracts': 'workspace:*', '@dafne/frontend-forms': 'workspace:*' });
+    expect(pkg.peerDependencies['next-intl']).toBe('catalog:');
+    expect(read('apps/sales-web/next.config.ts')).toContain('"@dafne/frontend-invoices"');
+    expect(read(`${LIB}/src/index.ts`)).toContain('export * from "./invoices-table.ts";');
+    expect(read(`${LIB}/src/index.ts`)).not.toContain('export {};');
+
+    // The app: its table on /invoices, the pages import the lib.
+    expect(read('apps/sales-web/lib/invoices-table.ts')).toContain('defineInvoicesTable({ path: "/invoices" })');
+    expect(read(`${PAGES}/page.tsx`)).toContain('from "@dafne/frontend-invoices/components/invoices-table"');
+    expect(read(`${PAGES}/[id]/load-invoice.ts`)).toContain('from "@dafne/frontend-invoices/server"');
+
+    // The texts: the resource's in the lib, merged by the app.
+    const en = read(`${LIB}/src/messages/en.ts`);
+    expect(en).toContain('title: "Invoices"');
+    expect(en).toMatch(/fields: \{[^}]*number: "Number"/);
+    expect(en).toMatch(/status: \{[^}]*paid: "Paid"/);
+    expect(read(`${LIB}/src/messages/it.ts`)).toContain('title: "Invoices"');
+    expect(JSON.parse(read('apps/sales-web/messages/en.json')).invoices).toBeUndefined();
+    expect(JSON.parse(read('apps/sales-web/messages/en.json')).nav.invoices).toBe('Invoices');
+    const request = read('apps/sales-web/i18n/request.ts');
+    expect(request).toContain('import { INVOICES_MESSAGES } from "@dafne/frontend-invoices";');
+    expect(request).toContain('invoices: INVOICES_MESSAGES[resolved]');
+    const types = read('apps/sales-web/i18n/global.d.ts');
+    expect(types).toContain('import type { InvoicesMessages } from "@dafne/frontend-invoices";');
+    expect(types).toContain('invoices: InvoicesMessages;');
+
+    // Synced with the contract, in the lib's way.
+    const table = read(`${LIB}/src/invoices-table.ts`);
+    expect(table).toContain('INVOICE_STATUS_OPTIONS');
+    expect(table).toContain('label: InvoicesMessageKey');
+    expect(table).toContain('label: "invoices.fields.number" satisfies InvoicesMessageKey');
+    expect(table).toContain('from "./messages/index.ts"');
+    const columns = read(`${LIB}/src/components/invoices-table.tsx`);
+    expect(columns).toContain('col.accessor("status"');
+    expect(columns).toContain('href={`${path}/${encodeURIComponent(row.original.id)}`}');
+    expect(columns).toContain('from "../invoices-table.ts"');
+    // A value from the module the table's config type comes from: not a type-only import.
+    expect(columns).not.toMatch(/import type \{[^}]*INVOICE_STATUS_OPTIONS/);
+    expect(read(`${LIB}/src/components/invoice-form.tsx`)).toContain('name="number"');
+    expect(read(`${LIB}/src/schema.ts`)).toContain('label: InvoicesMessageKey');
+  });
+
+  it('puts a resource in a subfolder of a lib named otherwise', async () => {
+    await generate(backendResourceGenerator, { name: 'payment' });
+    await generate(frontendResourceGenerator, { name: 'payment', lib: 'billing' });
+    const pkg = JSON.parse(read('packages/frontend/billing/package.json'));
+    expect(pkg.exports).toMatchObject({
+      './payments': './src/payments/index.ts',
+      './payments/server': './src/payments/server.ts',
+      './payments/components/*': './src/payments/components/*.tsx',
+    });
+    expect(read('packages/frontend/billing/src/payments/payments-table.ts')).toContain('function definePaymentsTable');
+    expect(read('apps/sales-web/app/[locale]/(app)/payments/page.tsx')).toContain('from "@dafne/frontend-billing/payments/server"');
+    expect(read('apps/sales-web/i18n/request.ts')).toContain('import { PAYMENTS_MESSAGES } from "@dafne/frontend-billing/payments";');
+  });
+
+  it('generates the parts where the resource already is', async () => {
+    await generate(backendResourceGenerator, { name: 'invoice' });
+    await generate(frontendDataGenerator, { name: 'invoice', lib: 'invoices' });
+    const changes = await generate(frontendListGenerator, { name: 'invoice' });
+    expect(changes).toContain(`CREATE ${LIB}/src/components/invoices-table.tsx`);
+    expect(changes).toContain(`CREATE ${PAGES}/page.tsx`);
+    expect(changes).not.toContain('CREATE apps/sales-web/lib/invoices.ts');
+  });
+
+  it('refuses a lib for a resource whose pages are in the app', async () => {
+    await generate(frontendDataGenerator, { name: 'invoice' });
+    await expect(generate(frontendListGenerator, { name: 'invoice', lib: 'invoices' })).rejects.toThrow('apps/sales-web already');
+  });
+
+  it('syncs a lib resource with its contract, its texts included', async () => {
+    await generate(backendResourceGenerator, { name: 'invoice', fields: ['name:string:required', ...FIELDS] });
+    await generate(frontendResourceGenerator, { name: 'invoice', lib: 'invoices' });
+    vi.spyOn(logger, 'info').mockImplementation(() => {});
+    await generate(removeBackendDbColumnGenerator, { name: 'invoices', columns: ['number', 'status'] });
+    await generate(frontendResourceSyncGenerator, { name: 'invoices' });
+    vi.restoreAllMocks();
+    const columns = read(`${LIB}/src/components/invoices-table.tsx`);
+    expect(columns).not.toMatch(/accessor\("(number|status)"/);
+    expect(columns).toContain('col.accessor("name"');
+    expect(read(`${LIB}/src/invoices-table.ts`)).not.toContain('INVOICE_STATUS_OPTIONS');
+    expect(read(`${LIB}/src/components/invoice-form.tsx`)).not.toContain('name="status"');
+    const en = read(`${LIB}/src/messages/en.ts`);
+    expect(en).not.toMatch(/number: "Number"|paid: "Paid"/);
+    expect(en).toContain('name: "Name"');
   });
 });
 

@@ -10,6 +10,14 @@ export const requiredNumber = (error: ContractMessageKey) =>
   z.coerce.number({ error });
 
 /**
+ * Required whole number, e.g. an item's position: null or missing (a
+ * blank number input) fail with `error`, like anything that isn't a whole
+ * number.
+ */
+export const requiredInt = (error: ContractMessageKey) =>
+  z.preprocess((value) => value ?? undefined, z.number({ error }).int({ error }));
+
+/**
  * Optional text: trimmed, and blank, null or missing all become null, so a
  * form can send "" for an empty field. `inner` validates the rest.
  */

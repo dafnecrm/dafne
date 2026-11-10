@@ -15,13 +15,13 @@ export type <%= s.pascal %>BodyInput = z.input<typeof <%= s.camel %>BodySchema>;
 export type <%= s.pascal %>Body = z.output<typeof <%= s.camel %>BodySchema>;
 
 /** <%= s.title %> fields the list can be sorted by. */
-export const <%= s.constant %>_SORT_FIELDS = ['createdAt', 'updatedAt'] as const;
+export const <%= s.constant %>_SORT_FIELDS = ['id', 'createdAt', 'updatedAt'] as const;
 export type <%= s.pascal %>SortField = (typeof <%= s.constant %>_SORT_FIELDS)[number];
 
 /**
  * <%= s.title %> fields the list can be filtered by, each a query param of
  * its own. Filters combine with AND and match text the field contains
- * (the id matches exactly).
+ * (the id and the keys to other records match exactly).
  */
 export const <%= s.constant %>_FILTER_FIELDS = ['id'] as const;
 export type <%= s.pascal %>FilterField = (typeof <%= s.constant %>_FILTER_FIELDS)[number];

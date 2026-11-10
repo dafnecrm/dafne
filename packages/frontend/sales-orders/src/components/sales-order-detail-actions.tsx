@@ -12,7 +12,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@dafne/frontend-ui/components/dropdown-menu";
-import { DeleteSalesOrderDialog, type SalesOrderRef } from "./sales-order-dialogs.tsx";
+import {
+  DeleteSalesOrderDialog,
+  type SalesOrderRef,
+} from "./sales-order-dialogs.tsx";
 
 /**
  * Actions on the sales order's page, in a menu: edit (`<path>/<id>/edit`) and
@@ -37,7 +40,9 @@ export function SalesOrderDetailActions({
             <Button
               variant="outline"
               size="icon-sm"
-              aria-label={t("common.actionsFor", { name: `${t("salesOrders.singular")} ${salesOrder.id}` })}
+              aria-label={t("common.actionsFor", {
+                name: `${t("salesOrders.singular")} ${salesOrder.id}`,
+              })}
             />
           }
         >

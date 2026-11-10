@@ -9,7 +9,7 @@ export const it: SalesOrdersMessages = {
   noun: "ordini",
   create: "Crea ordine",
   editMeta: "Modifica ordine",
-  newDescription: "Solo il nome è richiesto.",
+  newDescription: "Il cliente, il tipo e le righe dell'ordine.",
   editDescription: "Il salvataggio sostituisce i dettagli dell'ordine.",
   empty: {
     title: "Nessun ordine trovato",
@@ -20,14 +20,15 @@ export const it: SalesOrdersMessages = {
   notFound: "Questo ordine non esiste più.",
   sections: {
     details: "Dettaglio",
-    items: 'Items'
+    items: "Items",
   },
   fields: {
     createdAt: "Aggiunto",
     id: "ID Ordine",
     notes: "Note",
     customer: "Cliente",
-    items: 'Items'
+    type: "Tipo",
+    items: "Items",
   },
   items: {
     add: "Aggiungi riga",
@@ -36,15 +37,16 @@ export const it: SalesOrdersMessages = {
     loading: "Caricamento della riga…",
     notFound: "La riga non esiste più.",
     loadError: "Impossibile caricare la riga. Riprova.",
-    none: 'Nessun item creato.',
-    noneDetail: 'Nessun item è stato ancora creato.',
-    addOne: 'Aggiungi un nuovo item.',
+    none: "Nessun item creato.",
+    noneDetail: "Nessun item è stato ancora creato.",
+    addOne: "Aggiungi un nuovo item.",
+    positionTaken: "Un'altra riga ha già questa posizione",
     fields: {
       position: "Posizione",
-      productId: 'Prodotto',
-      quantity: 'Quantità',
-      add: 'Aggiungi',
-      save: 'Salva',
+      productId: "Prodotto",
+      quantity: "Quantità",
+      add: "Aggiungi",
+      save: "Salva",
     },
-  }
+  },
 };

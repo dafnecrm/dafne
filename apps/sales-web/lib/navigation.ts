@@ -3,17 +3,21 @@ import {
   ContactIcon,
   HouseIcon,
   UserIcon,
-  UsersIcon, type LucideIcon,
+  UsersIcon,
+  type LucideIcon,
   ListClockIcon,
   GroceriesIcon,
-  PackageIcon
+  PackageIcon,
 } from "lucide-react";
 
 /**
  * A title: a key of the `nav` messages, translated where it's shown.
  * Nested messages use dotted paths (`customers.list`).
  */
-export type NavTitle = MessageKeys<Messages["nav"], NestedKeyOf<Messages["nav"]>>;
+export type NavTitle = MessageKeys<
+  Messages["nav"],
+  NestedKeyOf<Messages["nav"]>
+>;
 
 export interface NavItem {
   title: NavTitle;
@@ -47,7 +51,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { title: "customers", href: "/customers", icon: ContactIcon },
       { title: "activities", href: "/activities", icon: ListClockIcon },
       { title: "products", href: "/products", icon: GroceriesIcon },
-      { title: "orders", href: "/sales-orders", icon: PackageIcon }
+      { title: "orders", href: "/sales-orders", icon: PackageIcon },
     ],
   },
   {

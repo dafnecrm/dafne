@@ -35,7 +35,10 @@ export default function SalesOrdersPage({
         <PageContentTitle>{t("salesOrders.title")}</PageContentTitle>
         <PageContentDescription>{t("common.listHint")}</PageContentDescription>
         <PageContentAction>
-          <Button nativeButton={false} render={<Link href={`${salesOrdersTable.path}/new`} />}>
+          <Button
+            nativeButton={false}
+            render={<Link href={`${salesOrdersTable.path}/new`} />}
+          >
             <PlusIcon data-icon="inline-start" />
             {t("salesOrders.new")}
           </Button>

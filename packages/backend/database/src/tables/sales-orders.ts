@@ -68,7 +68,8 @@ export const salesOrderItem = salesSchema.table(
       .notNull()
       .references(() => product.id, { onDelete: 'cascade' }),
     quantity: integer('quantity').notNull(),
-    position: integer('position')
+    /** Chosen by the user, not the list's order. @api input */
+    position: integer('position').notNull(),
   },
   (table) => [
     primaryKey({ columns: [table.orderId, table.position] }),

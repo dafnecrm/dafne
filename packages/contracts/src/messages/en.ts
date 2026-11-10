@@ -58,21 +58,23 @@ export const en = {
   },
   salesOrders: {
     notFound: 'Sales order not found',
-    customerId: { 
+    customerId: {
       required: 'Enter the customer id',
       notFound: 'Choose a customer from the list'
     },
     items: {
       notFound: 'Sales order item not found',
-      position: { 
+      position: {
         required: 'Enter the position',
+        duplicate: 'Two items have the same position',
       },
-      productId: { 
+      productId: {
         required: 'Enter the product id',
         notFound: 'Choose a product from the list'
       },
       quantity: { required: 'Enter the quantity' },
-    }
+    },
+    type: { required: 'Enter the type' }
   },
   salesOrderTypes: { notFound: 'Sales order type not found' },
 };

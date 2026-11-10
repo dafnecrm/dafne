@@ -1,6 +1,7 @@
 import { backendFetch } from "@dafne/frontend-api/server";
 import type { TableFilters, TableSort } from "@dafne/frontend-data-table";
 import { SALES_ORDERS_DEFAULT_SORT } from "./sales-orders-table.ts";
+import type { SalesOrderTypesList } from "@dafne/contracts";
 import type {
   SalesOrderDetail,
   SalesOrderDetailItem,
@@ -42,6 +43,15 @@ export async function listSalesOrders({
   query.set("sortDirection", sort.desc ? "desc" : "asc");
   const res = await backendFetch(`/sales-orders?${query}`);
   return res.json();
+}
+
+/** The sales order types' ids (GET /sales-order-types), for the form's type select. */
+export async function listSalesOrderTypeIds(): Promise<string[]> {
+  const res = await backendFetch(
+    "/sales-order-types?limit=100&sortBy=id&sortDirection=asc",
+  );
+  const { salesOrderTypes } = (await res.json()) as SalesOrderTypesList;
+  return salesOrderTypes.map((type) => type.id);
 }
 
 /**

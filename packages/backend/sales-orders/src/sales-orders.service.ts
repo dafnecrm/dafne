@@ -1,9 +1,10 @@
 import { schema, type Database } from '@dafne/backend-database';
 import { InjectDrizzle } from '@nestjs/drizzle';
 import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { and, asc, desc, eq, isNull, ilike, type SQL } from 'drizzle-orm';
+import { and, asc, desc, eq, isNull, ilike, type Column, type SQL } from 'drizzle-orm';
 import {
   SALES_ORDER_FILTER_FIELDS,
+  type SalesOrderFilterField,
   type SalesOrderBody,
   type SalesOrderDetail,
   type SalesOrderDetailItem,
@@ -22,6 +23,16 @@ const { salesOrder, salesOrderItem } = schema;
 
 /** Escapes LIKE wildcards so the value is matched literally. */
 const escapeLike = (value: string) => value.replace(/[\\%_]/g, '\\$&');
+
+/**
+ * Filters matched exactly (the id and the keys to other records), with how
+ * their query param becomes the column's value; the others contain the text.
+ */
+const EXACT_FILTERS: Partial<Record<SalesOrderFilterField, (value: string) => number | string>> = {
+  id: Number,
+  customerId: Number,
+  type: String,
+};
 
 /** Sales orders that haven't been deleted. */
 const notDeleted = isNull(salesOrder.deletedAt);
@@ -76,8 +87,9 @@ export class SalesOrdersService {
     const filters = SALES_ORDER_FILTER_FIELDS.flatMap((field) => {
       const value = query[field]?.trim();
       if (!value) return [];
-      // The id matches exactly (an integer column), the other fields contain the text.
-      return [field === 'id' ? eq(salesOrder.id, Number(value)) : ilike(salesOrder[field], `%${escapeLike(value)}%`)];
+      const exact = EXACT_FILTERS[field];
+      // As a plain Column: eq can't type a union of columns against number | string.
+      return [exact ? eq(salesOrder[field] as Column, exact(value)) : ilike(salesOrder[field], `%${escapeLike(value)}%`)];
     });
     const where = and(notDeleted, ...filters) as SQL;
     const direction = sortDirection === 'asc' ? asc : desc;
@@ -87,6 +99,7 @@ export class SalesOrdersService {
         .select({
           id: salesOrder.id,
           customerId: salesOrder.customerId,
+          type: salesOrder.type,
           createdAt: salesOrder.createdAt,
           updatedAt: salesOrder.updatedAt,
         })
@@ -152,6 +165,7 @@ export class SalesOrdersService {
     // One instant for both: createdAt and updatedAt start equal.
     const now = new Date();
 
+    this.logger.log("CREATING", JSON.stringify(body))
     const id = await this.db
       .transaction(async (tx) => {
         const [{ id }] = await this.db
@@ -159,6 +173,7 @@ export class SalesOrdersService {
           .values({
             notes: body.notes,
             customerId: body.customerId,
+            type: body.type,
             createdAt: now,
             updatedAt: now,
             createdById: userId,
@@ -166,13 +181,11 @@ export class SalesOrdersService {
           })
           .returning({ id: salesOrder.id });
 
-        // rebase items
-        await this.insertSalesOrderItems(tx, id, body.items);
-
         return id;
       })
       .catch(rethrowConstraint);
 
+    this.logger.log("ID", id)
     return this.getSalesOrder(id);
   }
 
@@ -187,6 +200,7 @@ export class SalesOrdersService {
         .set({
           notes: body.notes,
           customerId: body.customerId,
+          type: body.type,
           updatedById: userId,
           // The time of this change.
           updatedAt: new Date(),

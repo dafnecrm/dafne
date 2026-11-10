@@ -31,9 +31,12 @@ import type { ProductOption } from "@dafne/frontend-products/actions";
 export function SalesOrderForm({
   salesOrder,
   path,
+  types,
 }: {
   salesOrder?: SalesOrderDetail;
   path: string;
+  /** The sales order types' ids, the options of the type select. */
+  types: string[];
 }) {
   const t = useTranslations();
   const form = useAppForm({
@@ -57,9 +60,7 @@ export function SalesOrderForm({
   // saved items, or from the sheet's combobox for a product picked there.
   const savedProducts = useMemo(
     () =>
-      new Map(
-        salesOrder?.items.map((item) => [item.productId, item.product]),
-      ),
+      new Map(salesOrder?.items.map((item) => [item.productId, item.product])),
     [salesOrder],
   );
   const [pickedProducts, setPickedProducts] = useState(
@@ -98,6 +99,18 @@ export function SalesOrderForm({
                   {(field) => (
                     <field.CustomerSelectField
                       label={t("salesOrders.fields.customer")}
+                    />
+                  )}
+                </form.AppField>
+
+                <form.AppField name="type">
+                  {(field) => (
+                    <field.SelectField
+                      label={t("salesOrders.fields.type")}
+                      options={types.map((type) => ({
+                        value: type,
+                        label: type,
+                      }))}
                     />
                   )}
                 </form.AppField>
@@ -154,6 +167,9 @@ export function SalesOrderForm({
                   </DetailSection>
                   <SalesOrderItemSheet
                     open={salesOrderItemSheet.open}
+                    takenPositions={items.state.value
+                      .filter((_, i) => i !== salesOrderItemSheet.index)
+                      .map((item) => item.position)}
                     item={
                       salesOrderItemSheet.index === null
                         ? null

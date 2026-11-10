@@ -22,9 +22,12 @@ import { SalesOrderItemTable } from "./sales-order-items-table.tsx";
  */
 export function SalesOrderDetails({
   salesOrder,
+  path,
   customersPath,
 }: {
   salesOrder: SalesOrderDetail;
+  /** The app's sales orders list, e.g. "/sales-orders". */
+  path: string;
   customersPath: string;
 }) {
   const t = useTranslations();
@@ -32,20 +35,33 @@ export function SalesOrderDetails({
     <>
       <DetailSection title={t("salesOrders.sections.details")}>
         <Detail icon={LinkIcon} label={t("salesOrders.fields.customer")}>
-          <Link href={`${customersPath}/${encodeURIComponent(salesOrder.customer.id)}`} className="hover:underline">
+          <Link
+            href={`${customersPath}/${encodeURIComponent(salesOrder.customer.id)}`}
+            className="hover:underline"
+          >
             {salesOrder.customer.name}
           </Link>
         </Detail>
         <Detail icon={TextIcon} label={t("salesOrders.fields.notes")} wide>
           {salesOrder.notes ? (
-            <TextEditorContent html={salesOrder.notes} className="font-normal" />
+            <TextEditorContent
+              html={salesOrder.notes}
+              className="font-normal"
+            />
           ) : (
             "—"
           )}
         </Detail>
       </DetailSection>
-      <DetailSection title={t("salesOrders.sections.items")} groupClassName="flex">
-          <SalesOrderItemTable salesOrderId={salesOrder.id} items={salesOrder.items} path="/sales-orders" />
+      <DetailSection
+        title={t("salesOrders.sections.items")}
+        groupClassName="flex"
+      >
+        <SalesOrderItemTable
+          salesOrderId={salesOrder.id}
+          items={salesOrder.items}
+          path={path}
+        />
       </DetailSection>
       <DetailSection title={t("common.record.title")}>
         <Detail icon={FingerprintIcon} label={t("salesOrders.fields.id")}>

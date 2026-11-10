@@ -1,4 +1,7 @@
-import type { SalesOrderFilterField, SalesOrderSortField } from "@dafne/contracts";
+import type {
+  SalesOrderFilterField,
+  SalesOrderSortField,
+} from "@dafne/contracts";
 import {
   defineDataTable,
   type DataTableConfig,
