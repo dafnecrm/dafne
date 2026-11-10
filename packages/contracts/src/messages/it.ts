@@ -49,6 +49,10 @@ export const it: ContractMessages = {
     lastname: { required: 'Inserisci il cognome' },
     email: { taken: 'Esiste già un utente con questa email' },
   },
+  fsm: {
+    transitionNotAllowed: 'Lo stato non può passare a questo valore',
+    transitionForbidden: 'Lo stato non può essere cambiato ora',
+  },
   geo: {
     q: { required: 'Inserisci cosa cercare' },
     unavailable: 'La ricerca indirizzi non è disponibile. Riprova più tardi.',

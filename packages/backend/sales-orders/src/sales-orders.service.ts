@@ -14,6 +14,10 @@ import {
   SalesOrderItemBody,
 } from '@dafne/contracts';
 import { PostgresErrorCode } from '@dafne/backend-common';
+import { InjectStateMachine, StateMachine } from '@dafne/backend-fsm';
+import type { SessionUser } from '@dafne/backend-session';
+import type { SalesOrderStatus } from '@dafne/contracts';
+import { SALES_ORDER_STATE_MACHINE } from './sales-order.states.js';
 
 type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0];
 
@@ -66,7 +70,11 @@ function rethrowConstraint(error: unknown): never {
 export class SalesOrdersService {
   logger = new Logger(SalesOrdersService.name);
 
-  constructor(@InjectDrizzle() private readonly db: Database) { }
+  constructor(
+    @InjectDrizzle() private readonly db: Database,
+    @InjectStateMachine(SALES_ORDER_STATE_MACHINE)
+    private readonly stateMachine: StateMachine<SalesOrderStatus, number>,
+  ) { }
 
   /**
    * Lists sales orders that aren't deleted, paged and sorted, filtered by
@@ -165,7 +173,8 @@ export class SalesOrdersService {
     this.logger.log("CREATING", JSON.stringify(body))
     const id = await this.db
       .transaction(async (tx) => {
-        const [{ id }] = await this.db
+        // Born in draft: another status goes through the state machine.
+        const [{ id }] = await tx
           .insert(salesOrder)
           .values({
             notes: body.notes,
@@ -178,6 +187,7 @@ export class SalesOrdersService {
           })
           .returning({ id: salesOrder.id });
 
+        if (body.status) await this.stateMachine.transition(id, body.status, { tx });
         return id;
       })
       .catch(rethrowConstraint);
@@ -208,6 +218,9 @@ export class SalesOrdersService {
 
       await tx.delete(salesOrderItem).where(eq(salesOrderItem.orderId, id));
       await this.insertSalesOrderItems(tx, id, body.items);
+      
+      // After the items: the guards see the order as saved.
+      if (body.status) await this.stateMachine.transition(id, body.status, { tx });
     });
 
     return this.getSalesOrder(id);
@@ -224,6 +237,16 @@ export class SalesOrdersService {
       .set({ deletedAt: now, updatedAt: now, updatedById: userId })
       .where(and(eq(salesOrder.id, id), notDeleted));
     if (result.rowCount === 0) throw new NotFoundException(msg('salesOrders.notFound'));
+  }
+
+  /**
+   * Moves a sales order to `status` through its state machine; `user` is
+   * the editor. Throws 404 if it doesn't exist or is deleted, 400 if the
+   * status can't follow the current one, 403 if a guard says no.
+   */
+  async changeSalesOrderStatus(id: number, status: SalesOrderStatus, user: SessionUser): Promise<SalesOrderDetail> {
+    await this.stateMachine.transition(id, status, { user });
+    return this.getSalesOrder(id);
   }
 
   async insertSalesOrderItems(tx: Transaction, salesOrderId: number, items: SalesOrderItemBody[]) {

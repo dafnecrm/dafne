@@ -1,4 +1,4 @@
-import { salesOrderBodySchema, listSalesOrdersQuerySchema } from './sales-orders.ts';
+import { salesOrderBodySchema, listSalesOrdersQuerySchema, salesOrderStatusBodySchema } from './sales-orders.ts';
 
 /** Paths of the fields that failed, e.g. ['name']. */
 function failedFields(body: unknown) {
@@ -55,5 +55,13 @@ describe('listSalesOrdersQuerySchema', () => {
       limit: '500',
     });
     expect(result.success).toBe(false);
+  });
+});
+
+describe('salesOrderStatusBodySchema', () => {
+  it('takes a known status, and nothing else', () => {
+    expect(salesOrderStatusBodySchema.parse({ status: 'open' })).toEqual({ status: 'open' });
+    for (const body of [{}, { status: 'confirmed' }, { status: 'open', notes: 'x' }])
+      expect(salesOrderStatusBodySchema.safeParse(body).success).toBe(false);
   });
 });

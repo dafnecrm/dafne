@@ -27,6 +27,7 @@
     "@dafne/backend-common": "workspace:*",
     "@dafne/backend-customers": "workspace:*",
     "@dafne/backend-database": "workspace:*",
+    "@dafne/backend-fsm": "workspace:*",
     "@dafne/backend-geo": "workspace:*",
     "@dafne/backend-migrator": "workspace:*",
     "@dafne/backend-products": "workspace:*",

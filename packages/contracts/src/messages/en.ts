@@ -52,6 +52,10 @@ export const en = {
     lastname: { required: 'Enter the last name' },
     email: { taken: 'A user with this email already exists' },
   },
+  fsm: {
+    transitionNotAllowed: "The status can't be changed to this one",
+    transitionForbidden: "The status can't be changed now",
+  },
   geo: {
     q: { required: 'Enter what to search' },
     unavailable: 'Address search is unavailable. Try again later.',

@@ -13,6 +13,7 @@
   "dependencies": {
     "@dafne/backend-common": "workspace:*",
     "@dafne/backend-database": "workspace:*",
+    "@dafne/backend-fsm": "workspace:*",
     "@dafne/backend-session": "workspace:*",
     "@dafne/contracts": "workspace:*",
     "@nestjs/common": "catalog:",

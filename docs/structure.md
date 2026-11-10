@@ -51,6 +51,7 @@ Each project has one scope tag (see [Project boundaries](boundaries.md)).
 | `@dafne/backend-common`        | `ZodValidationPipe`, translated errors (`I18nExceptionFilter`), i18n helpers                        |
 | `@dafne/backend-notifications` | Notifications and emails (Resend)                                                                   |
 | `@dafne/backend-geo`           | Place search and countries                                                                          |
+| `@dafne/backend-fsm`           | State machines for a record's status (`FsmModule.forFeature`, `@InjectStateMachine()`): guards, pre/post hooks, one transaction |
 | `@dafne/backend-customers`, `-products`, `-activities` | Feature libs of the sales app (module, controller, service)                       |
 
 ### Frontend libs (`packages/frontend/*`)

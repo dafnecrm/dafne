@@ -15,7 +15,7 @@ import { setServerError } from "@dafne/frontend-forms/client";
 import { useResetOnLeave } from "@dafne/frontend-forms/client";
 import { saveSalesOrder } from "../actions.ts";
 import { useAppForm } from "./form-hook.ts";
-import { salesOrderFormOpts, salesOrderSchema } from "../schema.ts";
+import { salesOrderFormOpts, salesOrderSchema, STATUS_OPTIONS } from "../schema.ts";
 import type { SalesOrderDetail } from "../types.ts";
 import { DetailSection } from "@dafne/frontend-ui/components/detail";
 import { SalesOrderItemTable } from "./sales-order-items-table.tsx";
@@ -23,6 +23,7 @@ import { PencilIcon, Trash2Icon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { SalesOrderItemSheet } from "./sales-order-item-sheet.tsx";
 import type { ProductOption } from "@dafne/frontend-products/actions";
+import { useOptionLabels } from "@dafne/frontend-ui/hooks/use-option-labels";
 
 /**
  * Creates a sales order, or edits `salesOrder`. Saving opens the sales order's page
@@ -36,6 +37,7 @@ export function SalesOrderForm({
   path: string;
 }) {
   const t = useTranslations();
+  const statusOptions = useOptionLabels(STATUS_OPTIONS);
   const form = useAppForm({
     ...salesOrderFormOpts(salesOrder),
     // Validate on submit, then on every change.
@@ -124,6 +126,10 @@ export function SalesOrderForm({
                   )}
                 </form.AppField>
 
+                <form.AppField name="status">
+                  {(field) => <field.SelectField label={t("salesOrders.fields.status")} options={statusOptions} />}
+                </form.AppField>
+
                 <form.AppField name="notes">
                   {(field) => (
                     <field.TextEditorField
@@ -190,9 +196,9 @@ export function SalesOrderForm({
                       salesOrderItemSheet.index === null
                         ? undefined
                         : productOf(
-                            items.state.value[salesOrderItemSheet.index]
-                              .productId,
-                          )
+                          items.state.value[salesOrderItemSheet.index]
+                            .productId,
+                        )
                     }
                     onOpenChange={(open) =>
                       setSalesOrderItemSheet((item) => ({ ...item, open }))
