@@ -13,7 +13,7 @@ import {
   msg,
   SalesOrderItemBody,
 } from '@dafne/contracts';
-import { PostgresErrorCode } from '@dafne/backend-common';
+import { PostgresErrorCode, rethrowPostgresError } from '@dafne/backend-common';
 import { InjectStateMachine, StateMachine } from '@dafne/backend-fsm';
 import type { SessionUser } from '@dafne/backend-session';
 import type { SalesOrderStatus } from '@dafne/contracts';
@@ -48,23 +48,21 @@ const userSummary = { columns: { id: true, name: true } } as const;
 const customerSummary = { columns: { id: true, name: true } } as const;
 
 /**
- * Turns the Postgres errors a body can cause (drizzle wraps them as the
- * cause) into client errors: a taken email (409), an address country that
- * isn't in the countries table (400). Rethrows anything else.
+ * Turns the Postgres errors a body can cause into client errors (400): a
+ * customer or an item's product that doesn't exist.
  */
-function rethrowConstraint(error: unknown): never {
-  const cause = error instanceof Error && error.cause ? error.cause : error;
-  const { code, constraint } = cause instanceof Error ? (cause as { code?: unknown; constraint?: unknown }) : {};
-  const name = typeof constraint === 'string' ? constraint : '';
-  if (code === PostgresErrorCode.FOREIGN_KEY_VIOLATION) {
-    if (name.includes('customer_id')) {
-      throw new BadRequestException([`addresses: ${msg('salesOrders.customerId.notFound')}`]);
-    } else if (name.includes('product_id')) {
-      throw new BadRequestException([`items: ${msg('salesOrders.items.productId.notFound')}`]);
-    }
-  }
-  throw error;
-}
+const rethrowConstraint = rethrowPostgresError([
+  {
+    code: PostgresErrorCode.FOREIGN_KEY_VIOLATION,
+    constraint: /customer_id/,
+    error: () => new BadRequestException([`addresses: ${msg('salesOrders.customerId.notFound')}`]),
+  },
+  {
+    code: PostgresErrorCode.FOREIGN_KEY_VIOLATION,
+    constraint: /product_id/,
+    error: () => new BadRequestException([`items: ${msg('salesOrders.items.productId.notFound')}`]),
+  },
+]);
 
 @Injectable()
 export class SalesOrdersService {

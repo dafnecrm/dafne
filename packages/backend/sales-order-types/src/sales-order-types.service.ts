@@ -1,8 +1,13 @@
-import { PostgresErrorCode } from '@dafne/backend-common';
+import {
+  PostgresErrorCode,
+  rethrowPostgresError,
+} from '@dafne/backend-common';
 import { schema, type Database } from '@dafne/backend-database';
 import { InjectDrizzle } from '@nestjs/drizzle';
+import { CACHE_MANAGER, type Cache } from '@nestjs/cache-manager';
 import {
   ConflictException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -46,31 +51,24 @@ const EXACT_FILTERS: Partial<
 /** Sales order types that haven't been deleted. */
 const notDeleted = isNull(salesOrderType.deletedAt);
 
-/**
- * A taken id (the client picks it) becomes a 409; drizzle wraps the
- * Postgres error as the cause. Rethrows anything else.
- */
-function rethrowTakenId(error: unknown): never {
-  const cause = error instanceof Error && error.cause ? error.cause : error;
-  const { code, constraint } =
-    cause instanceof Error
-      ? (cause as { code?: unknown; constraint?: unknown })
-      : {};
-  if (
-    code === PostgresErrorCode.UNIQUE_VIOLATION &&
-    constraint === 'sales_order_type_pkey'
-  ) {
-    throw new ConflictException(msg('salesOrderTypes.id.taken'));
-  }
-  throw error;
-}
+/** A taken id (the client picks it) becomes a 409. */
+const rethrowTakenId = rethrowPostgresError([
+  {
+    code: PostgresErrorCode.UNIQUE_VIOLATION,
+    constraint: 'sales_order_type_pkey',
+    error: () => new ConflictException(msg('salesOrderTypes.id.taken')),
+  },
+]);
 
 /** Only the user's ID and name, for "created by" / "updated by". */
 const userSummary = { columns: { id: true, name: true } } as const;
 
 @Injectable()
 export class SalesOrderTypesService {
-  constructor(@InjectDrizzle() private readonly db: Database) {}
+  constructor(
+    @InjectDrizzle() private readonly db: Database,
+    @Inject(CACHE_MANAGER) private readonly cache: Cache,
+  ) {}
 
   /**
    * Lists sales order types that aren't deleted, paged and sorted, filtered by

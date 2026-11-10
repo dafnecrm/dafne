@@ -121,7 +121,8 @@ describe('backend-resource', () => {
     // Set on create only.
     expect(service).not.toMatch(/\.set\(\{[^}]*id: body\.id/);
     expect(service).toContain(".catch(rethrowTakenId)");
-    expect(service).toContain("constraint === 'voucher_pkey'");
+    expect(service).toContain('const rethrowTakenId = rethrowPostgresError([');
+    expect(service).toContain("constraint: 'voucher_pkey'");
     expect(read('packages/contracts/src/messages/en.ts')).toMatch(/id: \{[^}]*taken: 'This id is already in use'/);
     expect(read('packages/backend/vouchers/src/vouchers.controller.ts')).toContain("@Param('id', new TextIdPipe(12)) id: string");
   });

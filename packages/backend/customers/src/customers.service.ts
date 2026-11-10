@@ -17,7 +17,10 @@ import {
   type ListCustomersQuery,
   msg,
 } from '@dafne/contracts';
-import { PostgresErrorCode } from '@dafne/backend-common';
+import {
+  PostgresErrorCode,
+  rethrowPostgresError,
+} from '@dafne/backend-common';
 
 export const DEFAULT_PAGE_SIZE = 20;
 
@@ -38,27 +41,24 @@ const EXACT_FILTERS: Partial<Record<CustomerFilterField, (value: string) => numb
 const notDeleted = isNull(customer.deletedAt);
 
 /**
- * Turns the Postgres errors a body can cause (drizzle wraps them as the
- * cause) into client errors: a taken email (409), an address country that
- * isn't in the countries table (400). Rethrows anything else.
+ * Turns the Postgres errors a body can cause into client errors: a taken
+ * email (409), an address country that isn't in the countries table (400).
  */
-function rethrowConstraint(error: unknown): never {
-  const cause = error instanceof Error && error.cause ? error.cause : error;
-  const { code, constraint } =
-    cause instanceof Error
-      ? (cause as { code?: unknown; constraint?: unknown })
-      : {};
-  const name = typeof constraint === 'string' ? constraint : '';
-  if (code === PostgresErrorCode.UNIQUE_VIOLATION && name === 'customer_email_unique_idx') {
-    throw new ConflictException(msg('customers.email.taken'));
-  }
-  if (code === PostgresErrorCode.FOREIGN_KEY_VIOLATION && name.includes('country_code')) {
-    throw new BadRequestException([
-      `addresses: ${msg('customers.addresses.country')}`,
-    ]);
-  }
-  throw error;
-}
+const rethrowConstraint = rethrowPostgresError([
+  {
+    code: PostgresErrorCode.UNIQUE_VIOLATION,
+    constraint: 'customer_email_unique_idx',
+    error: () => new ConflictException(msg('customers.email.taken')),
+  },
+  {
+    code: PostgresErrorCode.FOREIGN_KEY_VIOLATION,
+    constraint: /country_code/,
+    error: () =>
+      new BadRequestException([
+        `addresses: ${msg('customers.addresses.country')}`,
+      ]),
+  },
+]);
 
 /** Only the user's ID and name, for "created by" / "updated by". */
 const userSummary = { columns: { id: true, name: true } } as const;

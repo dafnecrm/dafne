@@ -1,6 +1,6 @@
 import { schema, type Database } from '@dafne/backend-database';
 import { InjectDrizzle } from '@nestjs/drizzle';
-<% if (id.clientPicks) { %>import { PostgresErrorCode } from '@dafne/backend-common';
+<% if (id.clientPicks) { %>import { PostgresErrorCode, rethrowPostgresError } from '@dafne/backend-common';
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 <% } else { %>import { Injectable, NotFoundException } from '@nestjs/common';
 <% } %>
@@ -33,19 +33,14 @@ const EXACT_FILTERS: Partial<Record<<%= s.pascal %>FilterField, (value: string) 
 /** <%= p.title %> that haven't been deleted. */
 const notDeleted = isNull(<%= s.camel %>.deletedAt);
 
-<% if (id.clientPicks) { %>/**
- * A taken id (the client picks it) becomes a 409; drizzle wraps the
- * Postgres error as the cause. Rethrows anything else.
- */
-function rethrowTakenId(error: unknown): never {
-  const cause = error instanceof Error && error.cause ? error.cause : error;
-  const { code, constraint } =
-    cause instanceof Error ? (cause as { code?: unknown; constraint?: unknown }) : {};
-  if (code === PostgresErrorCode.UNIQUE_VIOLATION && constraint === '<%= s.snake %>_pkey') {
-    throw new ConflictException(msg('<%= p.camel %>.id.taken'));
-  }
-  throw error;
-}
+<% if (id.clientPicks) { %>/** A taken id (the client picks it) becomes a 409. */
+const rethrowTakenId = rethrowPostgresError([
+  {
+    code: PostgresErrorCode.UNIQUE_VIOLATION,
+    constraint: '<%= s.snake %>_pkey',
+    error: () => new ConflictException(msg('<%= p.camel %>.id.taken')),
+  },
+]);
 
 <% } %>/** Only the user's ID and name, for "created by" / "updated by". */
 const userSummary = { columns: { id: true, name: true } } as const;
@@ -147,8 +142,9 @@ export class <%= p.pascal %>Service {
         updatedAt: new Date(),
       })
       .where(and(eq(<%= s.camel %>.id, id), notDeleted));
-    if (result.rowCount === 0)
+    if (result.rowCount === 0) {
       throw new NotFoundException(msg('<%= p.camel %>.notFound'));
+    }
     return this.get<%= s.pascal %>(id);
   }
 
