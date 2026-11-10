@@ -3,15 +3,7 @@ import type { Json } from "@dafne/contracts";
 import { backendFetch } from "@dafne/frontend-api/server";
 import type { TableFilters, TableSort } from "@dafne/frontend-data-table";
 import { ACTIVITIES_DEFAULT_SORT } from "./activities-table";
-
-/*
- * API types come from the backend's contracts (dates arrive as strings,
- * hence Json<...>), so they can't drift from what the backend returns.
- */
-export type ListedActivity = Json<contracts.ListedActivity>;
-export type ActivitiesList = Json<contracts.ActivitiesList>;
-export type ActivityUser = Json<contracts.ActivityUser>;
-export type ActivityDetail = Json<contracts.ActivityDetail>;
+import { ActivitiesList, ActivityDetail } from "./types";
 
 /**
  * Calls the backend's GET /activities/:id. Throws a BackendError with
