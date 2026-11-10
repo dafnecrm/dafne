@@ -59,8 +59,9 @@ function rethrowTakenId(error: unknown): never {
   if (
     code === PostgresErrorCode.UNIQUE_VIOLATION &&
     constraint === 'sales_order_type_pkey'
-  )
+  ) {
     throw new ConflictException(msg('salesOrderTypes.id.taken'));
+  }
   throw error;
 }
 
@@ -87,7 +88,9 @@ export class SalesOrderTypesService {
     const { db } = this;
     const filters = SALES_ORDER_TYPE_FILTER_FIELDS.flatMap((field) => {
       const value = query[field]?.trim();
-      if (!value) return [];
+      if (!value) {
+        return [];
+      }
       const exact = EXACT_FILTERS[field];
       // As a plain Column: eq can't type a union of columns against number | string.
       return [
@@ -128,7 +131,9 @@ export class SalesOrderTypesService {
       columns: { createdById: false, updatedById: false },
       with: { createdBy: userSummary, updatedBy: userSummary },
     });
-    if (!found) throw new NotFoundException(msg('salesOrderTypes.notFound'));
+    if (!found) {
+      throw new NotFoundException(msg('salesOrderTypes.notFound'));
+    }
     return found;
   }
 
@@ -173,8 +178,9 @@ export class SalesOrderTypesService {
         updatedAt: new Date(),
       })
       .where(and(eq(salesOrderType.id, id), notDeleted));
-    if (result.rowCount === 0)
+    if (result.rowCount === 0) {
       throw new NotFoundException(msg('salesOrderTypes.notFound'));
+    }
     return this.getSalesOrderType(id);
   }
 
@@ -188,7 +194,8 @@ export class SalesOrderTypesService {
       .update(salesOrderType)
       .set({ deletedAt: now, updatedAt: now, updatedById: userId })
       .where(and(eq(salesOrderType.id, id), notDeleted));
-    if (result.rowCount === 0)
+    if (result.rowCount === 0) {
       throw new NotFoundException(msg('salesOrderTypes.notFound'));
+    }
   }
 }

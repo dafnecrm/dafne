@@ -25,10 +25,14 @@ async function askTable(changes: Changes, value: string | undefined, options: Re
   const tables = listResources(changes);
   if (value) {
     const name = resourceNames(value).p.kebab;
-    if (!tables.includes(name)) throw new Error(`No table "${value}": pick one of ${tables.join(', ')}.`);
+    if (!tables.includes(name)) {
+      throw new Error(`No table "${value}": pick one of ${tables.join(', ')}.`);
+    }
     return name;
   }
-  if (!interactive(options)) throw new Error('Missing argument: the table (e.g. orders).');
+  if (!interactive(options)) {
+    throw new Error('Missing argument: the table (e.g. orders).');
+  }
   return cancelled<string>(
     await p.select<string>({ message: 'Table', options: tables.map((t) => ({ value: t, label: t })) }),
   );
@@ -36,10 +40,16 @@ async function askTable(changes: Changes, value: string | undefined, options: Re
 
 /** The columns: given, or picked (several) among the table's columns and relations. */
 async function askColumns(changes: Changes, table: string, values: string[], options: RemoveColumnOptions): Promise<string[]> {
-  if (values.length) return values;
-  if (!interactive(options)) throw new Error('Missing argument: the columns to remove (e.g. name).');
+  if (values.length) {
+    return values;
+  }
+  if (!interactive(options)) {
+    throw new Error('Missing argument: the columns to remove (e.g. name).');
+  }
   const { columns, relations } = listFields(changes, table);
-  if (!columns.length && !relations.length) throw new Error(`${table} has no column to remove.`);
+  if (!columns.length && !relations.length) {
+    throw new Error(`${table} has no column to remove.`);
+  }
   const picked = cancelled<string[]>(
     await p.multiselect<string>({
       message: `Columns of ${table} to remove (space to toggle, enter to confirm)`,
@@ -91,7 +101,9 @@ then: dafne db generate --name drop-<table>-<columns>`,
     )
     .action(async (tableArg: string | undefined, columnArgs: string[], options: RemoveColumnOptions, command: Command) => {
       const root = findWorkspaceRoot();
-      if (interactive(options)) p.intro('dafne remove backend-db-column');
+      if (interactive(options)) {
+        p.intro('dafne remove backend-db-column');
+      }
       // The prompts read the workspace as it is on disk.
       const changes = new Changes(new FsTree(root, false));
       const table = await askTable(changes, tableArg, options);
@@ -99,13 +111,20 @@ then: dafne db generate --name drop-<table>-<columns>`,
 
       // --no-migration: no; otherwise asked (default yes), or yes with -y. Never on a dry run.
       let migration = options.migration !== false && !options.dryRun;
-      if (migration && interactive(options) && command.getOptionValueSource('migration') !== 'cli')
+      if (migration && interactive(options) && command.getOptionValueSource('migration') !== 'cli') {
         migration = cancelled<boolean>(await p.confirm({ message: 'Generate the migration?', initialValue: true }));
+      }
 
       const args = ['g', '@dafne/cli:remove-backend-db-column', table, ...columns.map((c) => `--columns=${c}`), '--no-interactive'];
-      if (migration) args.push('--migration');
-      if (options.dryRun) args.push('--dry-run');
-      if (interactive(options)) p.log.step(`nx ${args.join(' ')}`);
+      if (migration) {
+        args.push('--migration');
+      }
+      if (options.dryRun) {
+        args.push('--dry-run');
+      }
+      if (interactive(options)) {
+        p.log.step(`nx ${args.join(' ')}`);
+      }
       const code = await runNx(root, args);
       if (code !== 0 || !migration) {
         process.exitCode = code;
@@ -113,7 +132,9 @@ then: dafne db generate --name drop-<table>-<columns>`,
       }
 
       const name = migrationName(resourceNames(table).s.kebab, columns);
-      if (interactive(options)) p.log.step(`dafne db generate --name ${name}`);
+      if (interactive(options)) {
+        p.log.step(`dafne db generate --name ${name}`);
+      }
       process.exitCode = await generateMigration(root, undefined, { name });
     });
 

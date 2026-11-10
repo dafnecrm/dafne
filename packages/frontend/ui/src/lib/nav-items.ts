@@ -34,14 +34,20 @@ export function isNavGroup(item: NavNode): item is NavGroup<NavNode> {
 }
 
 function matches(url: string, pathname: string) {
-  if (url === "/") return pathname === "/";
+  if (url === "/") {
+    return pathname === "/";
+  }
   return pathname === url || pathname.startsWith(`${url}/`);
 }
 
 function* urls(items: readonly NavNode[]): Generator<string> {
   for (const item of items) {
-    if (item.url) yield item.url;
-    if (isNavGroup(item)) yield* urls(item.children);
+    if (item.url) {
+      yield item.url;
+    }
+    if (isNavGroup(item)) {
+      yield* urls(item.children);
+    }
   }
 }
 
@@ -54,7 +60,9 @@ export function findActiveUrl(
   items: readonly NavNode[],
   pathname: string | null | undefined,
 ): string | undefined {
-  if (!pathname) return undefined;
+  if (!pathname) {
+    return undefined;
+  }
   let best: string | undefined;
   for (const url of urls(items)) {
     if (matches(url, pathname) && (!best || url.length > best.length)) {
@@ -69,10 +77,16 @@ export function containsUrl(
   group: NavGroup<NavNode>,
   url: string | undefined,
 ): boolean {
-  if (!url) return false;
+  if (!url) {
+    return false;
+  }
   for (const child of group.children) {
-    if (child.url === url) return true;
-    if (isNavGroup(child) && containsUrl(child, url)) return true;
+    if (child.url === url) {
+      return true;
+    }
+    if (isNavGroup(child) && containsUrl(child, url)) {
+      return true;
+    }
   }
   return false;
 }

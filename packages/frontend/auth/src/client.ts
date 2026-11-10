@@ -21,7 +21,9 @@ export function useAuthErrorMessage() {
   const t = useTranslations();
   return (error: AuthError) => {
     const key = authErrorKey(error);
-    if (key) return t(key);
+    if (key) {
+      return t(key);
+    }
     return error.message || t("common.errors.generic");
   };
 }

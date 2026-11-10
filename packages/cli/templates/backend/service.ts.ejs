@@ -41,8 +41,9 @@ function rethrowTakenId(error: unknown): never {
   const cause = error instanceof Error && error.cause ? error.cause : error;
   const { code, constraint } =
     cause instanceof Error ? (cause as { code?: unknown; constraint?: unknown }) : {};
-  if (code === PostgresErrorCode.UNIQUE_VIOLATION && constraint === '<%= s.snake %>_pkey')
+  if (code === PostgresErrorCode.UNIQUE_VIOLATION && constraint === '<%= s.snake %>_pkey') {
     throw new ConflictException(msg('<%= p.camel %>.id.taken'));
+  }
   throw error;
 }
 
@@ -67,7 +68,9 @@ export class <%= p.pascal %>Service {
     const { db } = this;
     const filters = <%= s.constant %>_FILTER_FIELDS.flatMap((field) => {
       const value = query[field]?.trim();
-      if (!value) return [];
+      if (!value) {
+        return [];
+      }
       const exact = EXACT_FILTERS[field];
       // As a plain Column: eq can't type a union of columns against number | string.
       return [exact ? eq(<%= s.camel %>[field] as Column, exact(value)) : ilike(<%= s.camel %>[field], `%${escapeLike(value)}%`)];
@@ -103,7 +106,9 @@ export class <%= p.pascal %>Service {
       columns: { createdById: false, updatedById: false },
       with: { createdBy: userSummary, updatedBy: userSummary },
     });
-    if (!found) throw new NotFoundException(msg('<%= p.camel %>.notFound'));
+    if (!found) {
+      throw new NotFoundException(msg('<%= p.camel %>.notFound'));
+    }
     return found;
   }
 
@@ -157,7 +162,8 @@ export class <%= p.pascal %>Service {
       .update(<%= s.camel %>)
       .set({ deletedAt: now, updatedAt: now, updatedById: userId })
       .where(and(eq(<%= s.camel %>.id, id), notDeleted));
-    if (result.rowCount === 0)
+    if (result.rowCount === 0) {
       throw new NotFoundException(msg('<%= p.camel %>.notFound'));
+    }
   }
 }

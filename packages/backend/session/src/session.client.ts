@@ -24,7 +24,9 @@ export class SessionClient {
   async get(cookie: string): Promise<UserSession | null> {
     const now = Date.now();
     const cached = this.cache.get(cookie);
-    if (cached && cached.until > now) return cached.session;
+    if (cached && cached.until > now) {
+      return cached.session;
+    }
 
     let res: Response;
     try {
@@ -34,10 +36,14 @@ export class SessionClient {
       throw new ServiceUnavailableException('auth service unreachable');
     }
     // A failed check is not "signed out": don't drop the user on an outage.
-    if (res.status >= 500) throw new ServiceUnavailableException(`auth service answered ${res.status}`);
+    if (res.status >= 500) {
+      throw new ServiceUnavailableException(`auth service answered ${res.status}`);
+    }
     const session = res.ok ? ((await res.json()) as UserSession | null) : null;
 
-    if (this.cache.size >= CACHE_MAX) this.cache.clear();
+    if (this.cache.size >= CACHE_MAX) {
+      this.cache.clear();
+    }
     this.cache.set(cookie, { session, until: now + CACHE_MS });
     return session;
   }

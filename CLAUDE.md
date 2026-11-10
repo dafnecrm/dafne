@@ -108,6 +108,8 @@ keep it in line when these rules change. Each project has its own
   generate` runs drizzle-kit. Tables of another schema are imported from
   outside `src/tables/` (e.g. `src/auth.ts`): drizzle-kit would put every
   table its schema files export into the package's migrations.
+- **Braces on every `if`/`else`/loop body**, one-liners included
+  (`curly: all`, in the oxlint and ESLint configs and the CLI's templates).
 - `.nxignore` hides the CLIs' test fixtures, which look like projects.
 
 ## Workflow

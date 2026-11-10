@@ -21,7 +21,9 @@ export function translateMessage(
 ): string | null {
   let node: unknown = CONTRACT_MESSAGES[locale];
   for (const part of key.split('.')) {
-    if (typeof node !== 'object' || node === null) return null;
+    if (typeof node !== 'object' || node === null) {
+      return null;
+    }
     node = (node as Record<string, unknown>)[part];
   }
   return typeof node === 'string' ? node : null;

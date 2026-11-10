@@ -19,9 +19,13 @@ interface TaskOptions {
 
 /** Projects to run: the arguments, else picked from those with the target (--pick), else `fallback`. */
 async function projectsFor(root: string, target: string, given: string[], options: TaskOptions, fallback: string[]) {
-  if (given.length || !options.pick) return given.length ? given : fallback;
+  if (given.length || !options.pick) {
+    return given.length ? given : fallback;
+  }
   const available = listProjects(root, target);
-  if (!available.length) throw new Error(`No project has a "${target}" target.`);
+  if (!available.length) {
+    throw new Error(`No project has a "${target}" target.`);
+  }
   return cancelled<string[]>(
     await p.multiselect<string>({
       message: `Projects to ${target} (space to toggle, enter to confirm)`,
@@ -36,7 +40,9 @@ async function runTarget(target: string, projects: string[], options: TaskOption
   const root = findWorkspaceRoot();
   const chosen = await projectsFor(root, target, projects, options, fallback);
   const args = ['run-many', '-t', target, ...(chosen.length ? ['-p', chosen.join(',')] : [])];
-  if (options.skipNxCache) args.push('--skip-nx-cache');
+  if (options.skipNxCache) {
+    args.push('--skip-nx-cache');
+  }
   process.exitCode = await runNx(root, args);
 }
 
@@ -74,7 +80,9 @@ export function taskCommands(): Command[] {
       .description('List the workspace projects (optionally those with a target)')
       .option('-t, --target <target>', 'only projects with this target')
       .action((options: { target?: string }) => {
-        for (const project of listProjects(findWorkspaceRoot(), options.target)) console.log(project);
+        for (const project of listProjects(findWorkspaceRoot(), options.target)) {
+          console.log(project);
+        }
       }),
   ];
 }

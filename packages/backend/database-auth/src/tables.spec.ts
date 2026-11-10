@@ -12,8 +12,9 @@ describe('auth tables', () => {
       expect(config.schema).toBe('auth');
       for (const column of config.columns.filter(
         (c) => c instanceof PgTimestamp,
-      ))
+      )) {
         expect((column as PgTimestamp).withTimezone, column.name).toBe(true);
+      }
     },
   );
 

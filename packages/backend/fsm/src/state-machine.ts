@@ -42,33 +42,47 @@ export class StateMachine<S extends string = string, Id = unknown> {
    */
   async transition(id: Id, to: S, options: TransitionOptions = {}): Promise<void> {
     const { tx, user } = options;
-    if (tx) return this.run(id, to, tx, user);
+    if (tx) {
+      return this.run(id, to, tx, user);
+    }
     return this.db.transaction((tx) => this.run(id, to, tx, user));
   }
 
   private async run(id: Id, to: S, tx: Transaction, user?: SessionUser) {
     const from = await this.stateTransition.currentStatus(id, tx);
     // Already there (e.g. a form saved with the same status): nothing to do.
-    if (from === to) return;
+    if (from === to) {
+      return;
+    }
     const config: TransitionConfig<S, Id> | undefined = this.states[from]?.[to];
-    if (!config) throw new BadRequestException(msg('fsm.transitionNotAllowed'));
+    if (!config) {
+      throw new BadRequestException(msg('fsm.transitionNotAllowed'));
+    }
 
     const context: TransitionContext<S, Id> = { id, from, to, tx, user };
 
     for (const guard of this.instances<TransitionGuard<S, Id>>(config.guards)) {
       const result = await guard.canTransition(context);
-      if (result === true) continue;
+      if (result === true) {
+        continue;
+      }
       throw new ForbiddenException(typeof result === 'string' && result ? result : msg('fsm.transitionForbidden'));
     }
-    for (const hook of this.instances<TransitionHook<S, Id>>(config.pre)) await this.runHook(hook, context);
+    for (const hook of this.instances<TransitionHook<S, Id>>(config.pre)) {
+      await this.runHook(hook, context);
+    }
     await this.stateTransition.execute(context);
-    for (const hook of this.instances<TransitionHook<S, Id>>(config.post)) await this.runHook(hook, context);
+    for (const hook of this.instances<TransitionHook<S, Id>>(config.post)) {
+      await this.runHook(hook, context);
+    }
   }
 
   /** Runs a hook: a message it returns fails the transition with it. */
   private async runHook(hook: TransitionHook<S, Id>, context: TransitionContext<S, Id>) {
     const message = await hook.run(context);
-    if (typeof message === 'string' && message) throw new ForbiddenException(message);
+    if (typeof message === 'string' && message) {
+      throw new ForbiddenException(message);
+    }
   }
 
   private instances<T>(classes: Type<T>[] = []): T[] {

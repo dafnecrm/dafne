@@ -74,13 +74,21 @@ function detailCode(names: ResourceNames, record: string, field: ResponseField, 
 
 /** "Details" or "Record": a section's title, as text or as its message key. */
 const titleOf = (e: Node) => {
-  if (!Node.isJsxElement(e)) return undefined;
+  if (!Node.isJsxElement(e)) {
+    return undefined;
+  }
   const attr = e.getOpeningElement().getAttribute('title');
   const init = attr && Node.isJsxAttribute(attr) ? attr.getInitializer() : undefined;
-  if (init && Node.isStringLiteral(init)) return init.getLiteralValue();
+  if (init && Node.isStringLiteral(init)) {
+    return init.getLiteralValue();
+  }
   const key = init && /\bt\(\s*"([^"]+)"/.exec(init.getText())?.[1];
-  if (key?.endsWith('.sections.details')) return 'Details';
-  if (key === 'common.record.title') return 'Record';
+  if (key?.endsWith('.sections.details')) {
+    return 'Details';
+  }
+  if (key === 'common.record.title') {
+    return 'Record';
+  }
   return undefined;
 };
 
@@ -135,9 +143,12 @@ export function syncDetail(
       const hook = file
         .getDescendantsOfKind(SyntaxKind.VariableStatement)
         .find((st) => st.getDeclarations()[0]?.getInitializer()?.getText() === 'useOptionLabel()');
-      if (report.removed!.length && hook && !/\boptionLabel\(/.test(file.getFullText())) hook.remove();
-      if (report.removed!.length)
+      if (report.removed!.length && hook && !/\boptionLabel\(/.test(file.getFullText())) {
+        hook.remove();
+      }
+      if (report.removed!.length) {
         removeUnusedImports(file, (module) => module === 'lucide-react' || module.startsWith('@dafne/frontend-ui/') || module.startsWith('@/lib/') || module === refs.table || module === '@dafne/frontend-ui/hooks/use-option-labels');
+      }
     }
     for (const field of missing) {
       const { code, imports } = detailCode(names, record, field, refs);
@@ -157,14 +168,21 @@ export function syncDetail(
         const section = `<DetailSection title={t("${names.p.camel}.sections.details")}>\n  ${code.replace(/\n/g, '\n  ')}\n</DetailSection>`;
         file.insertText(anchor.getStart(), `${section.replace(/\n/g, `\n${indent}`)}\n${indent}`);
       }
-      for (const [module, name] of imports) ensureNamedImport(file, module, name);
-      if (field.kind === 'enum' && ensureHookLine(file, 'const optionLabel = useOptionLabel();'))
+      for (const [module, name] of imports) {
+        ensureNamedImport(file, module, name);
+      }
+      if (field.kind === 'enum' && ensureHookLine(file, 'const optionLabel = useOptionLabel();')) {
         ensureNamedImport(file, '@dafne/frontend-ui/hooks/use-option-labels', 'useOptionLabel');
+      }
       report.added.push(`<Detail> ${field.key}`);
     }
   });
 
   // Fields the page still reads that the contract doesn't have any more.
-  for (const m of reads(content)) if (!known.has(m)) report.stale.push(`${record}.${m}`);
+  for (const m of reads(content)) {
+    if (!known.has(m)) {
+      report.stale.push(`${record}.${m}`);
+    }
+  }
   return { content, report };
 }

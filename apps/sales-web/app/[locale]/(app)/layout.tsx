@@ -66,7 +66,9 @@ function UserSkeleton() {
 
 /** Admin-only sidebar sections; nothing for other users. */
 async function AdminNav() {
-  if (!isAdmin(await getCurrentUser())) return null;
+  if (!isAdmin(await getCurrentUser())) {
+    return null;
+  }
   return <NavSections admin />;
 }
 

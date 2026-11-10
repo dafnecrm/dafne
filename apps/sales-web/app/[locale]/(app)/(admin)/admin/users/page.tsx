@@ -57,7 +57,9 @@ export default function UsersPage({
 async function UsersList({
   searchParams,
 }: Pick<PageProps<"/[locale]/admin/users">, "searchParams">) {
-  if (!isAdmin(await requireUser())) return <NotAllowed />;
+  if (!isAdmin(await requireUser())) {
+    return <NotAllowed />;
+  }
 
   const params = getTableParams(await searchParams, usersTable);
   let data;
@@ -70,8 +72,9 @@ async function UsersList({
     });
   } catch (error) {
     // The backend checks the role too (e.g. it changed since sign-in).
-    if (error instanceof BackendError && error.status === 403)
+    if (error instanceof BackendError && error.status === 403) {
       return <NotAllowed />;
+    }
     throw error;
   }
 

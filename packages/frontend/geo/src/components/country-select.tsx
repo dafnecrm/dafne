@@ -48,7 +48,9 @@ export function useCountries() {
     };
   }, []);
   return useMemo(() => {
-    if (!loaded) return undefined;
+    if (!loaded) {
+      return undefined;
+    }
     return loaded
       .map((country) => ({
         ...country,

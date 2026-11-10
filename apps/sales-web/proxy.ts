@@ -20,9 +20,13 @@ const intl = createMiddleware(routing);
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   // Route handlers outside app/[locale]: no locale rewrite.
-  if (pathname === SESSION_EXPIRED_PATH) return NextResponse.next();
+  if (pathname === SESSION_EXPIRED_PATH) {
+    return NextResponse.next();
+  }
   // Better Auth's API, proxied to the backend (next.config.ts).
-  if (pathname.startsWith("/api/auth/")) return NextResponse.next();
+  if (pathname.startsWith("/api/auth/")) {
+    return NextResponse.next();
+  }
 
   const hasSession = SESSION_COOKIES.some((name) => request.cookies.has(name));
   const isPublic = PUBLIC_PATHS.includes(pathname);

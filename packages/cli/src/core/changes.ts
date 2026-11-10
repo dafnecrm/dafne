@@ -57,8 +57,12 @@ export class Changes {
 
   /** Adds a new file (text, or a Buffer for binaries). Fails if it already exists, unless `force`. */
   create(path: string, content: string | Buffer) {
-    if (this.changes.has(path)) throw new Error(`${path} is generated twice in the same run.`);
-    if (this.exists(path) && !this.force) throw new Error(`${path} already exists. Pass --force to overwrite it.`);
+    if (this.changes.has(path)) {
+      throw new Error(`${path} is generated twice in the same run.`);
+    }
+    if (this.exists(path) && !this.force) {
+      throw new Error(`${path} already exists. Pass --force to overwrite it.`);
+    }
     this.changes.set(path, { kind: 'create' });
     this.tree.write(path, content);
   }
@@ -66,9 +70,13 @@ export class Changes {
   /** Rewrites an existing file; `edit` returns the same text when nothing changes. */
   update(path: string, edit: (source: string) => string, options: { format?: boolean } = {}) {
     const source = this.read(path);
-    if (source === undefined) throw new Error(`${path} not found: it's needed to register the new code.`);
+    if (source === undefined) {
+      throw new Error(`${path} not found: it's needed to register the new code.`);
+    }
     const content = edit(source);
-    if (content === source) return;
+    if (content === source) {
+      return;
+    }
     const previous = this.changes.get(path);
     this.changes.set(path, {
       kind: previous?.kind ?? 'update',
@@ -92,12 +100,18 @@ export class Changes {
     const contents = new Map([...this.changes.keys()].map((path) => [path, this.tree.read(path)]));
     return () => {
       for (const [path, change] of this.changes) {
-        if (saved.has(path)) this.tree.write(path, contents.get(path)!);
-        else if (change.kind === 'create') this.tree.delete(path);
-        else this.tree.write(path, change.original!);
+        if (saved.has(path)) {
+          this.tree.write(path, contents.get(path)!);
+        } else if (change.kind === 'create') {
+          this.tree.delete(path);
+        } else {
+          this.tree.write(path, change.original!);
+        }
       }
       this.changes.clear();
-      for (const [path, change] of saved) this.changes.set(path, change);
+      for (const [path, change] of saved) {
+        this.changes.set(path, change);
+      }
     };
   }
 
@@ -123,7 +137,9 @@ export class Changes {
         change.format ? undefined : change.original,
         this.newPrettierConfig(path),
       );
-      if (formatted !== content) this.tree.write(path, formatted);
+      if (formatted !== content) {
+        this.tree.write(path, formatted);
+      }
     }
   }
 
@@ -135,8 +151,12 @@ export class Changes {
     const parts = path.split('/').slice(0, -1);
     for (let i = parts.length; i >= 0; i--) {
       const rc = [...parts.slice(0, i), '.prettierrc'].join('/');
-      if (!this.exists(rc)) continue;
-      if (this.changes.get(rc)?.kind !== 'create') return undefined;
+      if (!this.exists(rc)) {
+        continue;
+      }
+      if (this.changes.get(rc)?.kind !== 'create') {
+        return undefined;
+      }
       try {
         return JSON.parse(this.read(rc)!) as Record<string, unknown>;
       } catch {

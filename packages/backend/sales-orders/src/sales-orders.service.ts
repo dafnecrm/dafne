@@ -85,7 +85,9 @@ export class SalesOrdersService {
     const { db } = this;
     const filters = SALES_ORDER_FILTER_FIELDS.flatMap((field) => {
       const value = query[field]?.trim();
-      if (!value) return [];
+      if (!value) {
+        return [];
+      }
       const exact = EXACT_FILTERS[field];
       // As a plain Column: eq can't type a union of columns against number | string.
       return [exact ? eq(salesOrder[field] as Column, exact(value)) : ilike(salesOrder[field], `%${escapeLike(value)}%`)];
@@ -146,7 +148,9 @@ export class SalesOrdersService {
       },
     });
 
-    if (!found) throw new NotFoundException(msg('salesOrders.notFound'));
+    if (!found) {
+      throw new NotFoundException(msg('salesOrders.notFound'));
+    }
 
     return found;
   }
@@ -161,7 +165,9 @@ export class SalesOrdersService {
       columns: { orderId: false },
       with: { product: { columns: { id: true, name: true } } },
     });
-    if (!found) throw new NotFoundException(msg('salesOrders.items.notFound'));
+    if (!found) {
+      throw new NotFoundException(msg('salesOrders.items.notFound'));
+    }
     return found;
   }
 
@@ -187,7 +193,9 @@ export class SalesOrdersService {
           })
           .returning({ id: salesOrder.id });
 
-        if (body.status) await this.stateMachine.transition(id, body.status, { tx, user });
+        if (body.status) {
+          await this.stateMachine.transition(id, body.status, { tx, user });
+        }
         return id;
       })
       .catch(rethrowConstraint);
@@ -214,13 +222,17 @@ export class SalesOrdersService {
         })
         .where(and(eq(salesOrder.id, id), notDeleted));
 
-      if (result.rowCount === 0) throw new NotFoundException(msg('salesOrders.notFound'));
+      if (result.rowCount === 0) {
+        throw new NotFoundException(msg('salesOrders.notFound'));
+      }
 
       await tx.delete(salesOrderItem).where(eq(salesOrderItem.orderId, id));
       await this.insertSalesOrderItems(tx, id, body.items);
       
       // After the items: the guards see the order as saved.
-      if (body.status) await this.stateMachine.transition(id, body.status, { tx, user });
+      if (body.status) {
+        await this.stateMachine.transition(id, body.status, { tx, user });
+      }
     });
 
     return this.getSalesOrder(id);
@@ -236,7 +248,9 @@ export class SalesOrdersService {
       .update(salesOrder)
       .set({ deletedAt: now, updatedAt: now, updatedById: userId })
       .where(and(eq(salesOrder.id, id), notDeleted));
-    if (result.rowCount === 0) throw new NotFoundException(msg('salesOrders.notFound'));
+    if (result.rowCount === 0) {
+      throw new NotFoundException(msg('salesOrders.notFound'));
+    }
   }
 
   /**
@@ -250,7 +264,9 @@ export class SalesOrdersService {
   }
 
   async insertSalesOrderItems(tx: Transaction, salesOrderId: number, items: SalesOrderItemBody[]) {
-    if (!items.length) return;
+    if (!items.length) {
+      return;
+    }
     await tx.insert(schema.salesOrderItem).values(
       items.map((item) => ({
         orderId: salesOrderId,

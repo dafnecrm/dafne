@@ -28,9 +28,15 @@ const SORTABLE = new Set(['string', 'text', 'int', 'float', 'decimal', 'datetime
  */
 export function rolesOf(column: Column): Roles {
   const { key, kind, tags } = column;
-  if (kind === 'unknown' || tags.has('internal') || AUDIT.has(key)) return NONE;
-  if (SENSITIVE.test(key) && !tags.has('writeonly')) return NONE;
-  if (key === 'deletedAt') return { ...NONE, detail: true };
+  if (kind === 'unknown' || tags.has('internal') || AUDIT.has(key)) {
+    return NONE;
+  }
+  if (SENSITIVE.test(key) && !tags.has('writeonly')) {
+    return NONE;
+  }
+  if (key === 'deletedAt') {
+    return { ...NONE, detail: true };
+  }
 
   const writeonly = tags.has('writeonly');
   const detailOnly = tags.has('detail');
@@ -48,10 +54,18 @@ export function rolesOf(column: Column): Roles {
     filter: (idFilter || (FILTERABLE.has(kind) && !generated && !column.references)) && !writeonly && !detailOnly,
     sort: SORTABLE.has(kind) && (column.primaryKey || !column.references) && !writeonly && !detailOnly,
   };
-  if (tags.has('filter')) roles.filter = idFilter || FILTERABLE.has(kind);
-  if (tags.has('nofilter')) roles.filter = false;
-  if (tags.has('sort')) roles.sort = SORTABLE.has(kind);
-  if (tags.has('nosort')) roles.sort = false;
+  if (tags.has('filter')) {
+    roles.filter = idFilter || FILTERABLE.has(kind);
+  }
+  if (tags.has('nofilter')) {
+    roles.filter = false;
+  }
+  if (tags.has('sort')) {
+    roles.sort = SORTABLE.has(kind);
+  }
+  if (tags.has('nosort')) {
+    roles.sort = false;
+  }
   return roles;
 }
 
@@ -88,34 +102,52 @@ export function bodyZod(names: ResourceNames, column: Column): string {
 
   // A uuid (e.g. a key to a record with a uuid id): Postgres rejects anything else.
   if (column.builder === 'uuid') {
-    if (required) return `requiredUuid(${required_})`;
-    if (optionalDefault) return `requiredUuid(${required_}).optional()`;
+    if (required) {
+      return `requiredUuid(${required_})`;
+    }
+    if (optionalDefault) {
+      return `requiredUuid(${required_}).optional()`;
+    }
     return `optionalUuid(${required_})`;
   }
 
   if (column.kind === 'string' || column.kind === 'text') {
     const max = column.length ?? (column.kind === 'text' ? 65535 : 255);
-    if (required) return `requiredText(${max}, ${required_})`;
-    if (optionalDefault) return `requiredText(${max}, ${required_}).optional()`;
+    if (required) {
+      return `requiredText(${max}, ${required_})`;
+    }
+    if (optionalDefault) {
+      return `requiredText(${max}, ${required_}).optional()`;
+    }
     return `optionalText(z.string().max(${max}))`;
   }
 
   // A key to another table's identity id: a positive integer, which a form sends as text.
   if (column.references && column.kind === 'int') {
-    if (required) return `requiredId(${required_})`;
-    if (optionalDefault) return `requiredId(${required_}).optional()`;
+    if (required) {
+      return `requiredId(${required_})`;
+    }
+    if (optionalDefault) {
+      return `requiredId(${required_}).optional()`;
+    }
     return `optionalId(${required_})`;
   }
 
   // A form sends "" for an empty date: optionalDate turns it into null.
-  if ((column.kind === 'datetime' || column.kind === 'date') && !column.stringMode && !required && !optionalDefault)
+  if ((column.kind === 'datetime' || column.kind === 'date') && !column.stringMode && !required && !optionalDefault) {
     return `optionalDate(${DATE_INVALID})`;
-  if ((column.kind === 'datetime' || column.kind === 'date') && column.stringMode && !required && !optionalDefault)
+  }
+  if ((column.kind === 'datetime' || column.kind === 'date') && column.stringMode && !required && !optionalDefault) {
     return `optionalText(${column.kind === 'date' ? 'z.iso.date' : 'z.iso.datetime'}({ error: ${DATE_INVALID} }))`;
+  }
 
   const base = baseZod(names, column, required_);
-  if (required) return base;
-  if (optionalDefault) return `${base}.optional()`;
+  if (required) {
+    return base;
+  }
+  if (optionalDefault) {
+    return `${base}.optional()`;
+  }
   // Blank, null or missing all become null, like optionalText.
   return `${base}.nullish().transform((value) => value ?? null)`;
 }
@@ -146,12 +178,17 @@ function baseZod(names: ResourceNames, column: Column, required: string): string
 /** Zod for the list's query string (each filter is a param of its own). */
 export function filterZod(names: ResourceNames, column: Column): string {
   // The id or a key, which the service matches exactly: digits (an int4), a uuid or text.
-  if (exactFilter(column))
+  if (exactFilter(column)) {
     return idTemplate(
       column.builder === 'uuid' ? { type: 'uuid' } : column.kind === 'string' ? { type: 'varchar', length: column.length ?? 255 } : { type: 'serial' },
     ).filterZod;
-  if (column.kind === 'enum') return `z.enum(${enumNames(names, column).constant}).optional()`;
-  if (column.kind === 'boolean') return `z.enum(['true', 'false']).optional()`;
+  }
+  if (column.kind === 'enum') {
+    return `z.enum(${enumNames(names, column).constant}).optional()`;
+  }
+  if (column.kind === 'boolean') {
+    return `z.enum(['true', 'false']).optional()`;
+  }
   return `z.string().max(${column.length ?? 255}).optional()`;
 }
 

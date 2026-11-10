@@ -49,12 +49,14 @@ function rethrowConstraint(error: unknown): never {
       ? (cause as { code?: unknown; constraint?: unknown })
       : {};
   const name = typeof constraint === 'string' ? constraint : '';
-  if (code === PostgresErrorCode.UNIQUE_VIOLATION && name === 'customer_email_unique_idx')
+  if (code === PostgresErrorCode.UNIQUE_VIOLATION && name === 'customer_email_unique_idx') {
     throw new ConflictException(msg('customers.email.taken'));
-  if (code === PostgresErrorCode.FOREIGN_KEY_VIOLATION && name.includes('country_code'))
+  }
+  if (code === PostgresErrorCode.FOREIGN_KEY_VIOLATION && name.includes('country_code')) {
     throw new BadRequestException([
       `addresses: ${msg('customers.addresses.country')}`,
     ]);
+  }
   throw error;
 }
 
@@ -81,7 +83,9 @@ export class CustomersService {
     const { db } = this;
     const filters = CUSTOMER_FILTER_FIELDS.flatMap((field) => {
       const value = query[field]?.trim();
-      if (!value) return [];
+      if (!value) {
+        return [];
+      }
       const exact = EXACT_FILTERS[field];
       // As a plain Column: eq can't type a union of columns against number | string.
       return [exact ? eq(customer[field] as Column, exact(value)) : ilike(customer[field], `%${escapeLike(value)}%`)];
@@ -129,7 +133,9 @@ export class CustomersService {
         updatedBy: userSummary,
       },
     });
-    if (!found) throw new NotFoundException(msg('customers.notFound'));
+    if (!found) {
+      throw new NotFoundException(msg('customers.notFound'));
+    }
     return found;
   }
 
@@ -204,7 +210,9 @@ export class CustomersService {
             where: { id, deletedAt: { isNull: true } },
             columns: { id: true },
           });
-          if (!found) throw new NotFoundException(msg('customers.notFound'));
+          if (!found) {
+            throw new NotFoundException(msg('customers.notFound'));
+          }
           throw new BadRequestException([
             `type: ${msg('customers.type.locked')}`,
           ]);
@@ -229,8 +237,9 @@ export class CustomersService {
       .update(customer)
       .set({ deletedAt: now, updatedAt: now, updatedById: userId })
       .where(and(eq(customer.id, id), notDeleted));
-    if (result.rowCount === 0)
+    if (result.rowCount === 0) {
       throw new NotFoundException(msg('customers.notFound'));
+    }
   }
 }
 
@@ -239,7 +248,9 @@ async function insertAddresses(
   customerId: number,
   addresses: CustomerAddressBody[],
 ) {
-  if (!addresses.length) return;
+  if (!addresses.length) {
+    return;
+  }
   await tx.insert(customerAddress).values(
     addresses.map((address, position) => ({
       customerId,

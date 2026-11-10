@@ -60,10 +60,16 @@ export function resourceMessages({ s, p }: ResourceNames): { frontend: MessageMa
 /** A default English text for a frontend key, or undefined when none fits. */
 export function frontendText(key: string): string | undefined {
   const parts = key.split('.');
-  if (parts.length !== 3) return undefined;
+  if (parts.length !== 3) {
+    return undefined;
+  }
   const [, group, leaf] = parts;
-  if (group === 'fields' || group === 'sections') return title(leaf);
-  if (!RESERVED.has(group)) return title(leaf); // an enum value: invoices.status.paid
+  if (group === 'fields' || group === 'sections') {
+    return title(leaf);
+  }
+  if (!RESERVED.has(group)) {
+    return title(leaf);
+  } // an enum value: invoices.status.paid
   return undefined;
 }
 
@@ -73,20 +79,32 @@ export function frontendText(key: string): string | undefined {
  */
 export function contractText(key: string, enumField = false): string | undefined {
   const parts = key.split('.');
-  if (parts.length < 3) return undefined;
+  if (parts.length < 3) {
+    return undefined;
+  }
   const rule = parts[parts.length - 1];
   const what = lower(parts[parts.length - 2]);
-  if (rule === 'required') return `${enumField ? 'Choose' : 'Enter'} the ${what}`;
-  if (rule === 'invalid') return `Enter a valid ${what}`;
-  if (rule === 'taken') return `This ${what} is already in use`;
+  if (rule === 'required') {
+    return `${enumField ? 'Choose' : 'Enter'} the ${what}`;
+  }
+  if (rule === 'invalid') {
+    return `Enter a valid ${what}`;
+  }
+  if (rule === 'taken') {
+    return `This ${what} is already in use`;
+  }
   return undefined;
 }
 
 /** t("…") calls and `label: "…"` keys of a frontend file. */
 export function frontendKeys(source: string): string[] {
   const keys = new Set<string>();
-  for (const m of source.matchAll(/\bt\(\s*["']([A-Za-z0-9_]+(?:\.[A-Za-z0-9_]+)+)["']/g)) keys.add(m[1]);
-  for (const m of source.matchAll(/\b(?:label|placeholder): "([A-Za-z0-9_]+(?:\.[A-Za-z0-9_]+)+)"/g)) keys.add(m[1]);
+  for (const m of source.matchAll(/\bt\(\s*["']([A-Za-z0-9_]+(?:\.[A-Za-z0-9_]+)+)["']/g)) {
+    keys.add(m[1]);
+  }
+  for (const m of source.matchAll(/\b(?:label|placeholder): "([A-Za-z0-9_]+(?:\.[A-Za-z0-9_]+)+)"/g)) {
+    keys.add(m[1]);
+  }
   return [...keys];
 }
 
@@ -108,7 +126,9 @@ export function contractKeys(source: string): { key: string; enumField: boolean 
 function jsonHas(tree: unknown, key: string): boolean {
   let node = tree;
   for (const part of key.split('.')) {
-    if (typeof node !== 'object' || node === null || !(part in node)) return false;
+    if (typeof node !== 'object' || node === null || !(part in node)) {
+      return false;
+    }
     node = (node as Record<string, unknown>)[part];
   }
   return true;
@@ -119,15 +139,21 @@ export function ensureFrontendMessages(changes: Changes, messages: MessageMap, a
   let added = 0;
   for (const locale of LOCALES) {
     const path = FRONTEND_MESSAGES(locale, app);
-    if (!changes.exists(path)) continue;
+    if (!changes.exists(path)) {
+      continue;
+    }
     changes.update(path, (source) => {
       for (const [key, text] of messages) {
-        if (jsonHas(parse(source), key)) continue;
+        if (jsonHas(parse(source), key)) {
+          continue;
+        }
         const edits = modify(source, key.split('.'), text, {
           formattingOptions: { insertSpaces: true, tabSize: 2 },
         });
         source = applyEdits(source, edits);
-        if (locale === 'it') added++;
+        if (locale === 'it') {
+          added++;
+        }
       }
       return source;
     });
@@ -140,8 +166,12 @@ const propertyName = (key: string) => (/^[A-Za-z_$][\w$]*$/.test(key) ? key : `'
 /** The property `name` of an object literal, if it holds an object or a string. */
 function child(object: ObjectLiteralExpression, name: string) {
   for (const prop of object.getProperties()) {
-    if (!Node.isPropertyAssignment(prop)) continue;
-    if (prop.getName().replace(/^['"]|['"]$/g, '') !== name) continue;
+    if (!Node.isPropertyAssignment(prop)) {
+      continue;
+    }
+    if (prop.getName().replace(/^['"]|['"]$/g, '') !== name) {
+      continue;
+    }
     return prop.getInitializer();
   }
   return undefined;
@@ -156,7 +186,9 @@ function ensurePath(file: SourceFile, root: () => ObjectLiteralExpression, path:
       object = node;
       continue;
     }
-    if (node) return; // a text already: keep it
+    if (node) {
+      return;
+    } // a text already: keep it
     const q = quoteOf(file);
     const value = `${q}${text.replace(new RegExp(q, 'g'), `\\${q}`)}${q}`;
     const nested = path
@@ -186,12 +218,18 @@ export function libCatalogs(changes: Changes): LibCatalog[] {
   const found: LibCatalog[] = [];
   const add = (dir: string) => {
     const ns = /MessageKey\s*=\s*`(\w+)\./.exec(changes.read(`${dir}/en.ts`) ?? '')?.[1];
-    if (ns) found.push({ ns, dir });
+    if (ns) {
+      found.push({ ns, dir });
+    }
   };
   for (const lib of changes.list(FRONTEND_LIBS)) {
     const src = `${FRONTEND_LIBS}/${lib}/src`;
     add(`${src}/messages`);
-    for (const sub of changes.list(src)) if (sub !== 'messages' && !changes.exists(`${src}/${sub}`)) add(`${src}/${sub}/messages`);
+    for (const sub of changes.list(src)) {
+      if (sub !== 'messages' && !changes.exists(`${src}/${sub}`)) {
+        add(`${src}/${sub}/messages`);
+      }
+    }
   }
   return found;
 }
@@ -204,14 +242,18 @@ export function ensureLibMessages(changes: Changes, catalog: LibCatalog, message
   let added = 0;
   for (const locale of LOCALES) {
     const path = `${catalog.dir}/${locale}.ts`;
-    if (!changes.exists(path)) continue;
+    if (!changes.exists(path)) {
+      continue;
+    }
     changes.update(path, (source) => {
       for (const [key, text] of messages) {
         const before = source;
         source = editSource(path, source, (file) =>
           ensurePath(file, () => variableObject(file, locale), key.split('.').slice(1), text),
         );
-        if (source !== before && locale === 'it') added++;
+        if (source !== before && locale === 'it') {
+          added++;
+        }
       }
       return source;
     });
@@ -224,14 +266,18 @@ export function ensureContractMessages(changes: Changes, messages: MessageMap): 
   let added = 0;
   for (const locale of LOCALES) {
     const path = CONTRACT_MESSAGES(locale);
-    if (!changes.exists(path)) continue;
+    if (!changes.exists(path)) {
+      continue;
+    }
     changes.update(path, (source) => {
       for (const [key, text] of messages) {
         const before = source;
         source = editSource(path, source, (file) =>
           ensurePath(file, () => variableObject(file, locale), key.split('.'), text),
         );
-        if (source !== before && locale === 'it') added++;
+        if (source !== before && locale === 'it') {
+          added++;
+        }
       }
       return source;
     });
@@ -256,12 +302,16 @@ export function syncMessages(
     if (isFrontendSource(path, app)) {
       for (const key of frontendKeys(source)) {
         const text = frontendText(key);
-        if (text && !frontend.has(key)) frontend.set(key, text);
+        if (text && !frontend.has(key)) {
+          frontend.set(key, text);
+        }
       }
     } else if ((path.startsWith(`${BACKEND_LIBS}/`) || path.startsWith(`${CONTRACTS_SRC}/`)) && /\.ts$/.test(path) && !path.includes('/messages/')) {
       for (const { key, enumField } of contractKeys(source)) {
         const text = contractText(key, enumField);
-        if (text && !contracts.has(key)) contracts.set(key, text);
+        if (text && !contracts.has(key)) {
+          contracts.set(key, text);
+        }
       }
     }
   }
@@ -270,14 +320,22 @@ export function syncMessages(
   const byCatalog = new Map<LibCatalog, MessageMap>();
   for (const [key, text] of frontend) {
     const catalog = catalogOf(catalogs, key);
-    if (!catalog) continue;
+    if (!catalog) {
+      continue;
+    }
     frontend.delete(key);
-    if (!byCatalog.has(catalog)) byCatalog.set(catalog, new Map());
+    if (!byCatalog.has(catalog)) {
+      byCatalog.set(catalog, new Map());
+    }
     byCatalog.get(catalog)!.set(key, text);
   }
   let untranslated = ensureFrontendMessages(changes, frontend, app) + ensureContractMessages(changes, contracts);
-  for (const [catalog, messages] of byCatalog) untranslated += ensureLibMessages(changes, catalog, messages);
-  if (!untranslated) return undefined;
+  for (const [catalog, messages] of byCatalog) {
+    untranslated += ensureLibMessages(changes, catalog, messages);
+  }
+  if (!untranslated) {
+    return undefined;
+  }
   const files = [FRONTEND_MESSAGES('it', app), CONTRACT_MESSAGES('it'), ...[...byCatalog.keys()].map((c) => `${c.dir}/it.ts`)];
   const note =
     `${untranslated} new message${untranslated === 1 ? '' : 's'} in the Italian catalogs ` +
@@ -297,7 +355,9 @@ const SKIP_DIRS = new Set(['node_modules', '.next', 'dist', 'out-tsc', 'messages
 function filesUnder(changes: Changes, dir: string, pattern: RegExp): string[] {
   return changes.list(dir).flatMap((name) => {
     const path = `${dir}/${name}`;
-    if (changes.exists(path)) return pattern.test(name) ? [path] : [];
+    if (changes.exists(path)) {
+      return pattern.test(name) ? [path] : [];
+    }
     return SKIP_DIRS.has(name) ? [] : filesUnder(changes, path, pattern);
   });
 }
@@ -311,9 +371,15 @@ function droppedKeys(changes: Changes, inScope: (path: string) => boolean, keysO
   const before = new Set<string>();
   for (const { path } of changes.summary()) {
     const original = changes.original(path);
-    if (original !== undefined && inScope(path)) for (const key of keysOf(original)) before.add(key);
+    if (original !== undefined && inScope(path)) {
+      for (const key of keysOf(original)) {
+        before.add(key);
+      }
+    }
   }
-  if (!before.size) return [];
+  if (!before.size) {
+    return [];
+  }
   const now = new Set(scan.flatMap((path) => keysOf(changes.read(path) ?? '')));
   return [...before].filter((key) => !now.has(key));
 }
@@ -324,9 +390,15 @@ function removeJsonKey(source: string, key: string): string {
   for (let depth = path.length; depth > 0; depth--) {
     const at = path.slice(0, depth);
     let node: unknown = parse(source);
-    for (const part of at) node = (node as Record<string, unknown> | undefined)?.[part];
-    if (node === undefined) return source;
-    if (depth < path.length && (typeof node !== 'object' || node === null || Object.keys(node).length)) return source;
+    for (const part of at) {
+      node = (node as Record<string, unknown> | undefined)?.[part];
+    }
+    if (node === undefined) {
+      return source;
+    }
+    if (depth < path.length && (typeof node !== 'object' || node === null || Object.keys(node).length)) {
+      return source;
+    }
     source = applyEdits(source, modify(source, at, undefined, { formattingOptions: { insertSpaces: true, tabSize: 2 } }));
   }
   return source;
@@ -338,16 +410,22 @@ function removeTsKey(file: SourceFile, root: ObjectLiteralExpression, key: strin
   const path = key.split('.');
   for (const part of path.slice(0, -1)) {
     const node = child(chain[chain.length - 1], part);
-    if (!node || !Node.isObjectLiteralExpression(node)) return;
+    if (!node || !Node.isObjectLiteralExpression(node)) {
+      return;
+    }
     chain.push(node);
   }
   const property = (object: ObjectLiteralExpression, name: string) =>
     object.getProperties().find((p) => Node.isPropertyAssignment(p) && p.getName().replace(/^['"]|['"]$/g, '') === name);
   for (let depth = path.length - 1; depth >= 0; depth--) {
     const prop = property(chain[depth], path[depth]);
-    if (!prop) return;
+    if (!prop) {
+      return;
+    }
     const value = Node.isPropertyAssignment(prop) ? prop.getInitializer() : undefined;
-    if (depth < path.length - 1 && value && Node.isObjectLiteralExpression(value) && value.getProperties().length) return;
+    if (depth < path.length - 1 && value && Node.isObjectLiteralExpression(value) && value.getProperties().length) {
+      return;
+    }
     prop.remove();
   }
 }
@@ -363,14 +441,19 @@ export function pruneContractMessages(changes: Changes): string[] {
   const keysOf = (source: string) => contractKeys(source).map((k) => k.key);
   const scan = [...filesUnder(changes, CONTRACTS_SRC, /\.ts$/), ...filesUnder(changes, BACKEND_LIBS, /\.ts$/)];
   const keys = droppedKeys(changes, inScope, keysOf, scan);
-  if (!keys.length) return [];
+  if (!keys.length) {
+    return [];
+  }
   for (const locale of LOCALES) {
     const path = CONTRACT_MESSAGES(locale);
-    if (!changes.exists(path))
+    if (!changes.exists(path)) {
       continue;
+    }
     changes.update(path, (source) =>
       editSource(path, source, (file) => {
-        for (const key of keys) removeTsKey(file, variableObject(file, locale), key);
+        for (const key of keys) {
+          removeTsKey(file, variableObject(file, locale), key);
+        }
       }),
     );
   }
@@ -387,22 +470,32 @@ export function pruneFrontendMessages(changes: Changes, app = DEFAULT_FRONTEND_A
   const inScope = (path: string) => isFrontendSource(path, app);
   const scan = [...filesUnder(changes, frontendApp(app), /\.tsx?$/), ...filesUnder(changes, FRONTEND_LIBS, /\.tsx?$/)];
   const keys = droppedKeys(changes, inScope, frontendKeys, scan);
-  if (!keys.length) return [];
+  if (!keys.length) {
+    return [];
+  }
   const catalogs = libCatalogs(changes);
   const appKeys = keys.filter((key) => !catalogOf(catalogs, key));
   for (const locale of LOCALES) {
     const path = FRONTEND_MESSAGES(locale, app);
-    if (appKeys.length && changes.exists(path)) changes.update(path, (source) => appKeys.reduce(removeJsonKey, source));
+    if (appKeys.length && changes.exists(path)) {
+      changes.update(path, (source) => appKeys.reduce(removeJsonKey, source));
+    }
   }
   for (const catalog of catalogs) {
     const own = keys.filter((key) => catalogOf(catalogs, key) === catalog).map((key) => key.slice(catalog.ns.length + 1));
-    if (!own.length) continue;
+    if (!own.length) {
+      continue;
+    }
     for (const locale of LOCALES) {
       const path = `${catalog.dir}/${locale}.ts`;
-      if (!changes.exists(path)) continue;
+      if (!changes.exists(path)) {
+        continue;
+      }
       changes.update(path, (source) =>
         editSource(path, source, (file) => {
-          for (const key of own) removeTsKey(file, variableObject(file, locale), key);
+          for (const key of own) {
+            removeTsKey(file, variableObject(file, locale), key);
+          }
         }),
       );
     }

@@ -220,17 +220,23 @@ type UsersT = ReturnType<typeof useTranslations<"users">>;
 
 /** "Mozilla/5.0 (Macintosh; …) … Chrome/130…" → "Chrome on macOS". */
 function describeUserAgent(userAgent: string | null, t: UsersT) {
-  if (!userAgent) return t("sessions.unknownDevice");
+  if (!userAgent) {
+    return t("sessions.unknownDevice");
+  }
   const match = (list: [RegExp, string][]) =>
     list.find(([pattern]) => pattern.test(userAgent))?.[1];
   const browser = match(BROWSERS);
   const os = match(SYSTEMS);
-  if (browser && os) return t("sessions.browserOn", { browser, os });
+  if (browser && os) {
+    return t("sessions.browserOn", { browser, os });
+  }
   return browser ?? os ?? userAgent;
 }
 
 /** "credential" → "Email and password", "google" → "Google". */
 function providerLabel(provider: string, credentialLabel: string) {
-  if (provider === "credential") return credentialLabel;
+  if (provider === "credential") {
+    return credentialLabel;
+  }
   return provider.charAt(0).toUpperCase() + provider.slice(1);
 }

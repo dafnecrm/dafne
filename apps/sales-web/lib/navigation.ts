@@ -122,11 +122,15 @@ export function findNavItem(
   for (const section of NAV_SECTIONS) {
     for (const entry of section.items) {
       if (!isNavGroup(entry)) {
-        if (matches(entry, pathname)) return { section, item: entry };
+        if (matches(entry, pathname)) {
+          return { section, item: entry };
+        }
         continue;
       }
       const item = entry.items.find((page) => matches(page, pathname));
-      if (item) return { section, group: entry, item };
+      if (item) {
+        return { section, group: entry, item };
+      }
     }
   }
   return undefined;

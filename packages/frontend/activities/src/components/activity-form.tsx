@@ -26,7 +26,9 @@ export function ActivityForm({ activity }: { activity?: ActivityDetail }) {
     onSubmit: async ({ value, formApi }) => {
       // Redirects on success, so only an error comes back.
       const result = await saveActivity(activity?.id ?? null, value);
-      if (result?.error) setServerError(formApi, result.error);
+      if (result?.error) {
+        setServerError(formApi, result.error);
+      }
     },
   });
   // The page stays mounted (hidden) after leaving it: start fresh next time.

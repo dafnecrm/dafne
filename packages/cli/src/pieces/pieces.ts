@@ -31,19 +31,29 @@ export function generatePieces<C extends Ctx>(pieces: Record<string, Piece<C>>, 
   const addedDeps: string[] = [];
 
   const visit = (key: string, explicit: boolean) => {
-    if (done.has(key)) return;
+    if (done.has(key)) {
+      return;
+    }
     done.add(key);
     const piece = pieces[key];
-    if (!piece) throw new Error(`Unknown piece "${key}".`);
+    if (!piece) {
+      throw new Error(`Unknown piece "${key}".`);
+    }
     if (!explicit) {
       const marker = piece.marker(ctx.names, ctx);
-      if (marker && ctx.changes.exists(marker)) return;
+      if (marker && ctx.changes.exists(marker)) {
+        return;
+      }
       addedDeps.push(key);
     }
-    for (const dep of piece.deps) visit(dep, requested.includes(dep));
+    for (const dep of piece.deps) {
+      visit(dep, requested.includes(dep));
+    }
     piece.generate(ctx);
   };
 
-  for (const key of requested) visit(key, true);
+  for (const key of requested) {
+    visit(key, true);
+  }
   return addedDeps;
 }

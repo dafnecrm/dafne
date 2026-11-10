@@ -43,8 +43,11 @@ export function insertImportLine(file: SourceFile, clause: string, module: strin
   const line = `import ${clause} from ${q}${module}${q};`;
   const imports = file.getImportDeclarations();
   const last = imports[imports.length - 1];
-  if (last) file.insertText(last.getEnd(), `\n${line}`);
-  else file.insertText(0, `${line}\n`);
+  if (last) {
+    file.insertText(last.getEnd(), `\n${line}`);
+  } else {
+    file.insertText(0, `${line}\n`);
+  }
 }
 
 /** Adds `import { name } from 'module'` unless the name is already imported from it. */
@@ -58,9 +61,13 @@ export function ensureNamedImport(
     (decl) => decl.getModuleSpecifierValue() === module,
   );
   const spec = typeOnly && !existing?.isTypeOnly() ? `type ${name}` : name;
-  if (!existing) return insertImportLine(file, `{ ${spec} }`, module);
+  if (!existing) {
+    return insertImportLine(file, `{ ${spec} }`, module);
+  }
   const named = existing.getNamedImports();
-  if (named.some((n) => n.getName() === name)) return;
+  if (named.some((n) => n.getName() === name)) {
+    return;
+  }
   // A value from an `import type { … }` line: `import { type …, name }`.
   if (!typeOnly && existing.isTypeOnly()) {
     const names = named.map((n) => `type ${n.getText()}`);
@@ -72,9 +79,14 @@ export function ensureNamedImport(
   // Before the first type-only import (`type LucideIcon`), or at the end.
   const typeIndex = named.findIndex((n) => n.isTypeOnly());
   const list = named[0]?.getParentOrThrow();
-  if (!list || !Node.isNamedImports(list)) return void existing.addNamedImport(name);
-  if (typeIndex > 0) insertListElement(file, list.getElements(), typeIndex, name);
-  else appendToList(file, list, list.getElements(), name);
+  if (!list || !Node.isNamedImports(list)) {
+    return void existing.addNamedImport(name);
+  }
+  if (typeIndex > 0) {
+    insertListElement(file, list.getElements(), typeIndex, name);
+  } else {
+    appendToList(file, list, list.getElements(), name);
+  }
 }
 
 export type ListNode = ArrayLiteralExpression | ObjectLiteralExpression | Node;
@@ -123,7 +135,9 @@ export function insertListElement(file: SourceFile, elements: Node[], index: num
 
 /** Appends `element` to the array unless it's already there. */
 export function ensureArrayElement(file: SourceFile, array: ArrayLiteralExpression, element: string) {
-  if (array.getElements().some((e) => e.getText() === element)) return;
+  if (array.getElements().some((e) => e.getText() === element)) {
+    return;
+  }
   appendToList(file, array, array.getElements(), element);
 }
 
@@ -140,7 +154,9 @@ export function insertArrayElement(
       const first = elements[0];
       const indent = indentAt(file, first.getStart());
       file.insertText(first.getStart(), `${element},\n${indent}`);
-    } else appendToList(file, array, elements, element);
+    } else {
+      appendToList(file, array, elements, element);
+    }
     return;
   }
   insertListElement(file, elements, index, element);
@@ -150,7 +166,9 @@ export function insertArrayElement(
 export function decoratorObject(file: SourceFile, name: string): ObjectLiteralExpression {
   for (const cls of file.getClasses()) {
     const arg = cls.getDecorator(name)?.getArguments()[0];
-    if (arg && Node.isObjectLiteralExpression(arg)) return arg;
+    if (arg && Node.isObjectLiteralExpression(arg)) {
+      return arg;
+    }
   }
   throw new Error(`No @${name}({...}) class found in ${file.getBaseName()}.`);
 }
@@ -161,11 +179,13 @@ export function arrayProperty(
   object: () => ObjectLiteralExpression,
   property: string,
 ): ArrayLiteralExpression {
-  if (!object().getProperty(property))
+  if (!object().getProperty(property)) {
     appendToList(file, object(), object().getProperties(), `${property}: []`);
+  }
   const prop = object().getPropertyOrThrow(property);
-  if (!Node.isPropertyAssignment(prop))
+  if (!Node.isPropertyAssignment(prop)) {
     throw new Error(`"${property}" isn't a plain array property.`);
+  }
   return prop.getInitializerIfKindOrThrow(SyntaxKind.ArrayLiteralExpression);
 }
 
@@ -175,7 +195,9 @@ export function variableObject(file: SourceFile, name: string): ObjectLiteralExp
   const object = Node.isObjectLiteralExpression(init)
     ? init
     : init.getFirstDescendantByKind(SyntaxKind.ObjectLiteralExpression);
-  if (!object) throw new Error(`"${name}" isn't an object literal.`);
+  if (!object) {
+    throw new Error(`"${name}" isn't an object literal.`);
+  }
   return object;
 }
 
@@ -185,7 +207,9 @@ export function ensureSpread(file: SourceFile, object: ObjectLiteralExpression, 
   const has = properties.some(
     (p) => Node.isSpreadAssignment(p) && p.getExpression().getText() === name,
   );
-  if (!has) appendToList(file, object, properties, `...${name}`);
+  if (!has) {
+    appendToList(file, object, properties, `...${name}`);
+  }
 }
 
 /**
@@ -218,12 +242,16 @@ export function removeUnusedImports(file: SourceFile, module: (specifier: string
     // Re-read after each removal: editing the text forgets the old nodes.
     const decl = file.getImportDeclarations().find((d) => {
       const name = d.getDefaultImport()?.getText();
-      if (!name || d.getNamedImports().length || d.getNamespaceImport() || !module(d.getModuleSpecifierValue())) return false;
+      if (!name || d.getNamedImports().length || d.getNamespaceImport() || !module(d.getModuleSpecifierValue())) {
+        return false;
+      }
       return !file
         .getDescendantsOfKind(SyntaxKind.Identifier)
         .some((id) => id.getText() === name && !id.getFirstAncestorByKind(SyntaxKind.ImportDeclaration));
     });
-    if (!decl) break;
+    if (!decl) {
+      break;
+    }
     const end = decl.getEnd();
     const next = file.getFullText().slice(end).match(/^\r?\n/)?.[0].length ?? 0;
     file.removeText(decl.getStart(), end + next);
@@ -241,20 +269,28 @@ export function removeUnusedImports(file: SourceFile, module: (specifier: string
           // `.primaryKey()` or `{ primaryKey: 1 }` don't use the import.
           .filter((id) => {
             const parent = id.getParent();
-            if (Node.isPropertyAccessExpression(parent) && parent.getNameNode() === id) return false;
-            if (Node.isPropertyAssignment(parent) && parent.getNameNode() === id) return false;
+            if (Node.isPropertyAccessExpression(parent) && parent.getNameNode() === id) {
+              return false;
+            }
+            if (Node.isPropertyAssignment(parent) && parent.getNameNode() === id) {
+              return false;
+            }
             return true;
           });
         return uses.length === 0;
       });
-    if (!unused) return;
+    if (!unused) {
+      return;
+    }
     const named = unused.d.getNamedImports();
     if (named.length === 1) {
       const decl = unused.d;
       const end = decl.getEnd();
       const next = file.getFullText().slice(end).match(/^\r?\n/)?.[0].length ?? 0;
       file.removeText(decl.getStart(), end + next);
-    } else removeListElement(file, named, unused.n);
+    } else {
+      removeListElement(file, named, unused.n);
+    }
   }
 }
 
@@ -266,9 +302,13 @@ export function removeUnusedImports(file: SourceFile, module: (specifier: string
  */
 export function ensureHookLine(file: SourceFile, line: string): boolean {
   const text = file.getFullText();
-  if (text.includes(line)) return true;
+  if (text.includes(line)) {
+    return true;
+  }
   const t = /\n([ \t]*)const t = (?:await get|use)Translations\([^)]*\);?\n/.exec(text);
-  if (!t) return false;
+  if (!t) {
+    return false;
+  }
   file.insertText(t.index + t[0].length, `${t[1]}${line}\n`);
   return true;
 }
@@ -279,6 +319,9 @@ export function removeJsxElement(file: SourceFile, element: Node) {
   const lineStart = text.lastIndexOf('\n', element.getStart() - 1) + 1;
   const alone = /^[ \t]*$/.test(text.slice(lineStart, element.getStart()));
   const after = /^[ \t]*\r?\n/.exec(text.slice(element.getEnd()));
-  if (alone && after) file.removeText(lineStart, element.getEnd() + after[0].length);
-  else file.removeText(element.getStart(), element.getEnd());
+  if (alone && after) {
+    file.removeText(lineStart, element.getEnd() + after[0].length);
+  } else {
+    file.removeText(element.getStart(), element.getEnd());
+  }
 }

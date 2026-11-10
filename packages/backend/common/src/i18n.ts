@@ -24,7 +24,9 @@ export function localeFrom(acceptLanguage: string | undefined): ContractLocale {
     .sort((a, b) => b.q - a.q);
   for (const { tag } of tags) {
     const language = tag.split('-')[0] as ContractLocale;
-    if (LOCALES.includes(language)) return language;
+    if (LOCALES.includes(language)) {
+      return language;
+    }
   }
   return DEFAULT_LOCALE;
 }
@@ -39,9 +41,13 @@ export const zodErrorMap = (locale: ContractLocale) =>
  */
 export function translate(message: string, locale: ContractLocale): string {
   const whole = translateMessage(message, locale);
-  if (whole) return whole;
+  if (whole) {
+    return whole;
+  }
   const at = message.lastIndexOf(': ');
-  if (at < 0) return message;
+  if (at < 0) {
+    return message;
+  }
   const text = translateMessage(message.slice(at + 2), locale);
   return text ? `${message.slice(0, at)}: ${text}` : message;
 }

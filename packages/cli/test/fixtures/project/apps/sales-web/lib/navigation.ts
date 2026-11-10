@@ -59,7 +59,9 @@ export function findNavItem(pathname: string) {
         ? pathname === "/"
         : pathname === item.href || pathname.startsWith(`${item.href}/`),
     );
-    if (item) return { section, item };
+    if (item) {
+      return { section, item };
+    }
   }
   return undefined;
 }

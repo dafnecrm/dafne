@@ -62,10 +62,14 @@ interface GenerateOptions {
 
 async function askKind(value: string | undefined, options: GenerateOptions): Promise<Kind> {
   if (value) {
-    if (!(value in KINDS)) throw new Error(`"${value}" isn't one of: ${Object.keys(KINDS).join(', ')}.`);
+    if (!(value in KINDS)) {
+      throw new Error(`"${value}" isn't one of: ${Object.keys(KINDS).join(', ')}.`);
+    }
     return value as Kind;
   }
-  if (!interactive(options)) throw new Error(`Missing argument: pick one of ${Object.keys(KINDS).join(', ')}.`);
+  if (!interactive(options)) {
+    throw new Error(`Missing argument: pick one of ${Object.keys(KINDS).join(', ')}.`);
+  }
   return cancelled<Kind>(
     await p.select<Kind>({
       message: 'What do you want to generate?',
@@ -75,8 +79,12 @@ async function askKind(value: string | undefined, options: GenerateOptions): Pro
 }
 
 async function askName(value: string | undefined, kind: Kind, options: GenerateOptions): Promise<string> {
-  if (value) return value;
-  if (!interactive(options)) throw new Error('Missing argument: the name.');
+  if (value) {
+    return value;
+  }
+  if (!interactive(options)) {
+    throw new Error('Missing argument: the name.');
+  }
   return cancelled<string>(
     await p.text({
       message: RESOURCE_KINDS.includes(kind) ? 'Resource name (singular or plural)' : 'Name',
@@ -88,13 +96,21 @@ async function askName(value: string | undefined, kind: Kind, options: GenerateO
 
 /** The fields of a new resource: from --field, or asked (unless -y). */
 async function resourceFields(root: string, name: string, options: GenerateOptions): Promise<string[]> {
-  if (options.field?.length) return options.field.map((text) => formatFieldSpec(parseFieldSpec(text)));
-  if (!interactive(options)) return [];
+  if (options.field?.length) {
+    return options.field.map((text) => formatFieldSpec(parseFieldSpec(text)));
+  }
+  if (!interactive(options)) {
+    return [];
+  }
   // The prompts read the workspace (tables, ref targets) as it is on disk.
   const changes = new Changes(new FsTree(root, false));
-  if (changes.exists(tableFile(resourceNames(name)))) return [];
+  if (changes.exists(tableFile(resourceNames(name)))) {
+    return [];
+  }
   const now = cancelled<boolean>(await p.confirm({ message: 'Add the fields of the table now?', initialValue: true }));
-  if (!now) return [];
+  if (!now) {
+    return [];
+  }
   return (await askNewFields(changes, name)).map(formatFieldSpec);
 }
 
@@ -107,13 +123,17 @@ const ID_HINTS: Record<IdType, string> = {
 /** The id of a new resource: from --id-type/--id-length, or asked (unless -y). */
 async function resourceId(root: string, name: string, options: GenerateOptions): Promise<IdSpec> {
   const length = (value: string | undefined) => {
-    if (value === undefined) return undefined;
-    if (!/^[1-9]\d*$/.test(value)) throw new Error('--id-length must be a positive whole number.');
+    if (value === undefined) {
+      return undefined;
+    }
+    if (!/^[1-9]\d*$/.test(value)) {
+      throw new Error('--id-length must be a positive whole number.');
+    }
     return Number(value);
   };
   const ask = interactive(options) && !new Changes(new FsTree(root, false)).exists(tableFile(resourceNames(name)));
   let type = options.idType;
-  if (!type && ask)
+  if (!type && ask) {
     type = cancelled<IdType>(
       await p.select<IdType>({
         message: 'Type of the id',
@@ -121,8 +141,9 @@ async function resourceId(root: string, name: string, options: GenerateOptions):
         options: ID_TYPES.map((value) => ({ value, label: value, hint: ID_HINTS[value] })),
       }),
     );
+  }
   let idLength = length(options.idLength);
-  if (type === 'varchar' && idLength === undefined && ask)
+  if (type === 'varchar' && idLength === undefined && ask) {
     idLength = Number(
       cancelled<string>(
         await p.text({
@@ -132,6 +153,7 @@ async function resourceId(root: string, name: string, options: GenerateOptions):
         }),
       ).trim(),
     );
+  }
   return idSpec(type, idLength);
 }
 
@@ -143,17 +165,25 @@ const NEW_LIB = '\0new';
  * asked: the app, an existing lib or a new one (unless -y: the app).
  */
 async function frontendLibOf(root: string, kind: Kind, name: string, options: GenerateOptions): Promise<string | undefined> {
-  if (!LIB_KINDS.includes(kind)) return undefined;
-  if (options.lib) return libName(options.lib);
+  if (!LIB_KINDS.includes(kind)) {
+    return undefined;
+  }
+  if (options.lib) {
+    return libName(options.lib);
+  }
   const app = options.app ?? DEFAULT_FRONTEND_APP;
   const changes = new Changes(new FsTree(root, false));
   const names = resourceNames(name);
   const found = findFrontendTarget(changes, names, app);
   if (found) {
-    if (interactive(options)) p.log.info(`The frontend of ${names.p.kebab} is in ${found.kind === 'app' ? frontendApp(app) : frontendLib(found.lib)}: generating there.`);
+    if (interactive(options)) {
+      p.log.info(`The frontend of ${names.p.kebab} is in ${found.kind === 'app' ? frontendApp(app) : frontendLib(found.lib)}: generating there.`);
+    }
     return undefined;
   }
-  if (!interactive(options)) return undefined;
+  if (!interactive(options)) {
+    return undefined;
+  }
   const where = cancelled<'app' | 'lib'>(
     await p.select<'app' | 'lib'>({
       message: 'Where should the code go?',
@@ -164,7 +194,9 @@ async function frontendLibOf(root: string, kind: Kind, name: string, options: Ge
       ],
     }),
   );
-  if (where === 'app') return undefined;
+  if (where === 'app') {
+    return undefined;
+  }
   const choice = cancelled<string>(
     await p.select<string>({
       message: 'Which lib?',
@@ -175,7 +207,9 @@ async function frontendLibOf(root: string, kind: Kind, name: string, options: Ge
       ],
     }),
   );
-  if (choice !== NEW_LIB) return choice;
+  if (choice !== NEW_LIB) {
+    return choice;
+  }
   const lib = cancelled<string>(
     await p.text({
       message: 'Name of the lib',
@@ -242,11 +276,15 @@ Same as: nx g @dafne/cli:<kind> <name> ...`,
     )
     .action(async (kindArg: string | undefined, nameArg: string | undefined, options: GenerateOptions) => {
       const root = findWorkspaceRoot();
-      if (interactive(options)) p.intro('dafne generate');
+      if (interactive(options)) {
+        p.intro('dafne generate');
+      }
       const kind = await askKind(kindArg, options);
       const name = await askName(nameArg, kind, options);
       const only = (option: string, kinds: Kind[], set: unknown) => {
-        if (set !== undefined && !kinds.includes(kind)) throw new Error(`${option} is only for ${kinds.join(', ')}.`);
+        if (set !== undefined && !kinds.includes(kind)) {
+          throw new Error(`${option} is only for ${kinds.join(', ')}.`);
+        }
       };
       only('--field', ['backend-resource'], options.field);
       only('--id-type', ['backend-resource'], options.idType);
@@ -262,22 +300,48 @@ Same as: nx g @dafne/cli:<kind> <name> ...`,
       const args = ['g', `@dafne/cli:${kind}`, name, '--no-interactive'];
       if (kind === 'backend-resource') {
         const id = await resourceId(root, name, options);
-        if (id.type !== 'serial') args.push(`--idType=${id.type}`);
-        if (id.length !== undefined) args.push(`--idLength=${id.length}`);
-        for (const spec of await resourceFields(root, name, options)) args.push(`--fields=${spec}`);
+        if (id.type !== 'serial') {
+          args.push(`--idType=${id.type}`);
+        }
+        if (id.length !== undefined) {
+          args.push(`--idLength=${id.length}`);
+        }
+        for (const spec of await resourceFields(root, name, options)) {
+          args.push(`--fields=${spec}`);
+        }
       }
-      if (options.app) args.push(`--app=${options.app}`);
+      if (options.app) {
+        args.push(`--app=${options.app}`);
+      }
       const lib = await frontendLibOf(root, kind, name, options);
-      if (lib) args.push(`--lib=${lib}`);
-      if (options.port) args.push(`--port=${options.port}`);
-      if (options.backendUrl) args.push(`--backendUrl=${options.backendUrl}`);
-      if (options.icon) args.push(`--icon=${options.icon}`);
-      if (options.section) args.push(`--section=${options.section}`);
-      if (options.admin) args.push('--admin');
-      if (options.force) args.push('--force');
-      if (options.dryRun) args.push('--dry-run');
+      if (lib) {
+        args.push(`--lib=${lib}`);
+      }
+      if (options.port) {
+        args.push(`--port=${options.port}`);
+      }
+      if (options.backendUrl) {
+        args.push(`--backendUrl=${options.backendUrl}`);
+      }
+      if (options.icon) {
+        args.push(`--icon=${options.icon}`);
+      }
+      if (options.section) {
+        args.push(`--section=${options.section}`);
+      }
+      if (options.admin) {
+        args.push('--admin');
+      }
+      if (options.force) {
+        args.push('--force');
+      }
+      if (options.dryRun) {
+        args.push('--dry-run');
+      }
 
-      if (interactive(options)) p.log.step(`nx ${args.join(' ')}`);
+      if (interactive(options)) {
+        p.log.step(`nx ${args.join(' ')}`);
+      }
       process.exitCode = await runNx(root, args);
     });
 }

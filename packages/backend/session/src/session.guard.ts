@@ -53,15 +53,21 @@ export class SessionGuard implements CanActivate {
     const session = typeof cookie === 'string' && cookie ? await this.sessions.get(cookie) : null;
 
     if (!session) {
-      if (anonymous || optional) return true;
+      if (anonymous || optional) {
+        return true;
+      }
       throw new UnauthorizedException();
     }
 
     const { user } = session;
     const admin = user.role === 'admin';
     const appRole = user.apps?.[this.app];
-    if (!admin && !appRole && !anonymous) throw new ForbiddenException(`No access to ${this.app}.`);
-    if (roles?.length && !admin && !(appRole && roles.includes(appRole))) throw new ForbiddenException();
+    if (!admin && !appRole && !anonymous) {
+      throw new ForbiddenException(`No access to ${this.app}.`);
+    }
+    if (roles?.length && !admin && !(appRole && roles.includes(appRole))) {
+      throw new ForbiddenException();
+    }
 
     request.session = session;
     request.user = user;

@@ -50,7 +50,9 @@ export function resourceFiles(changes: Changes, names: ResourceNames, target: Fr
 function contractOf(changes: Changes, names: ResourceNames) {
   const contractPath = contractFile(names);
   const contract = changes.read(contractPath);
-  if (contract === undefined) return undefined;
+  if (contract === undefined) {
+    return undefined;
+  }
   const tablePath = tableFile(names);
   const tableSource = changes.read(tablePath);
   const table = tableSource === undefined ? undefined : readTable(tablePath, tableSource, names);
@@ -63,7 +65,9 @@ function apply(
   sync: (source: string) => { content: string; report: FormReport },
 ): [string, FormReport] {
   const source = changes.read(path);
-  if (source === undefined) throw new Error(`${path} not found.`);
+  if (source === undefined) {
+    throw new Error(`${path} not found.`);
+  }
   const { content, report } = sync(source);
   changes.update(path, () => content, { format: true });
   return [path, report];
@@ -72,7 +76,9 @@ function apply(
 /** The list page: table config (filters, sort, enum labels) and columns. */
 export function syncList(changes: Changes, names: ResourceNames, target: FrontendTarget | string, options: SyncOptions = {}): FrontendReports {
   const source = contractOf(changes, names);
-  if (!source) return [];
+  if (!source) {
+    return [];
+  }
   const info = readResponse(source.contractPath, source.contract, names, source.table);
   const { table } = dataFiles(names, target);
   const { columns } = listFiles(names, target);
@@ -86,7 +92,9 @@ export function syncList(changes: Changes, names: ResourceNames, target: Fronten
 /** The detail component, and the enum labels it reads in lib/<plural>-table.ts. */
 export function syncDetailPage(changes: Changes, names: ResourceNames, target: FrontendTarget | string, options: SyncOptions = {}): FrontendReports {
   const source = contractOf(changes, names);
-  if (!source) return [];
+  if (!source) {
+    return [];
+  }
   const info = readResponse(source.contractPath, source.contract, names, source.table);
   const { component, page } = detailFiles(names, target);
   const refs = pageRefs(names, target);
@@ -98,15 +106,18 @@ export function syncDetailPage(changes: Changes, names: ResourceNames, target: F
   const detail = changes.read(component)!;
   const used = info.fields.filter((f) => f.kind === 'enum' && detail.includes(enumOptionsName(names, f)));
   const { table } = dataFiles(names, target);
-  if (used.length && changes.exists(table))
+  if (used.length && changes.exists(table)) {
     reports.push(apply(changes, table, (text) => syncEnumOptions(table, text, names, used, refs)));
+  }
   return reports;
 }
 
 /** The form: the values, defaults and options in schema.ts, the inputs in <singular>-form.tsx. */
 export function syncForm(changes: Changes, names: ResourceNames, target: FrontendTarget | string, options: SyncOptions = {}): FrontendReports {
   const source = contractOf(changes, names);
-  if (!source) return [];
+  if (!source) {
+    return [];
+  }
   const fields = readBody(source.contractPath, source.contract, names, source.table);
   const responseKeys = responseFields(source.contractPath, source.contract, names);
   const files = formFiles(names, target);
@@ -121,8 +132,11 @@ export function syncForm(changes: Changes, names: ResourceNames, target: Fronten
 function responseFields(path: string, contract: string, names: ResourceNames): Set<string> {
   const keys = new Set<string>();
   editSource(path, contract, (file) => {
-    for (const name of [`Listed${names.s.pascal}`, `${names.s.pascal}Detail`])
-      for (const prop of file.getInterface(name)?.getProperties() ?? []) keys.add(prop.getName());
+    for (const name of [`Listed${names.s.pascal}`, `${names.s.pascal}Detail`]) {
+      for (const prop of file.getInterface(name)?.getProperties() ?? []) {
+        keys.add(prop.getName());
+      }
+    }
   });
   return keys;
 }
@@ -142,15 +156,21 @@ const PARTS = [
 export function syncResourcePages(changes: Changes, names: ResourceNames, target: FrontendTarget | string, options: SyncOptions = {}) {
   const t = toTarget(target);
   const source = contractOf(changes, names);
-  if (!source) throw new Error(`${contractFile(names)} not found: generate the backend first (dafne g backend-resource ${names.p.kebab}).`);
+  if (!source) {
+    throw new Error(`${contractFile(names)} not found: generate the backend first (dafne g backend-resource ${names.p.kebab}).`);
+  }
   const reports: FrontendReports = [];
   const skipped: string[] = [];
   for (const { part, files, sync } of PARTS) {
-    if (files(names, t).every((path) => changes.exists(path))) reports.push(...sync(changes, names, t, options));
-    else skipped.push(part);
+    if (files(names, t).every((path) => changes.exists(path))) {
+      reports.push(...sync(changes, names, t, options));
+    } else {
+      skipped.push(part);
+    }
   }
-  if (skipped.length === PARTS.length)
+  if (skipped.length === PARTS.length) {
     throw new Error(`${t.kind === 'app' ? routeDir(names, t) : t.dir}: no list, detail or form to sync (dafne g frontend-resource ${names.p.kebab}).`);
+  }
   if (options.prune) {
     reports.push(...pruneEnumOptions(changes, names, t, source.contract));
     reports.push(...useIdForDropped(changes, names, t, source.contractPath, source.contract));
@@ -162,7 +182,9 @@ export function syncResourcePages(changes: Changes, names: ResourceNames, target
 function filesIn(changes: Changes, dir: string): string[] {
   return changes.list(dir).flatMap((name) => {
     const path = `${dir}/${name}`;
-    if (changes.exists(path)) return /\.tsx?$/.test(name) ? [path] : [];
+    if (changes.exists(path)) {
+      return /\.tsx?$/.test(name) ? [path] : [];
+    }
     return name === 'messages' ? [] : filesIn(changes, path);
   });
 }
@@ -179,7 +201,9 @@ function pruneEnumOptions(changes: Changes, names: ResourceNames, target: Fronte
   const removed = new Set<string>();
   const reports: FrontendReports = [];
   for (const path of [dataFiles(names, target).table, formFiles(names, target).schema]) {
-    if (!changes.exists(path)) continue;
+    if (!changes.exists(path)) {
+      continue;
+    }
     const report: FormReport = { added: [], removed: [], stale: [], warnings: [] };
     changes.update(
       path,
@@ -191,25 +215,34 @@ function pruneEnumOptions(changes: Changes, names: ResourceNames, target: Fronte
               const type = /satisfies\s*\{\s*value:\s*(\w+)/.exec(st.getText())?.[1];
               return type && /_OPTIONS$/.test(st.getDeclarations()[0]?.getName() ?? '') && !exported(type);
             });
-            if (!statement) break;
+            if (!statement) {
+              break;
+            }
             const name = statement.getDeclarations()[0].getName();
             statement.remove();
             removed.add(name);
             report.removed!.push(name);
           }
-          if (report.removed!.length)
+          if (report.removed!.length) {
             removeUnusedImports(file, (m) => m === CONTRACTS_PACKAGE || m === '@dafne/frontend-ui/lib/message-key' || m === './messages/index.ts');
+          }
         }),
       { format: true },
     );
-    if (report.removed!.length) reports.push([path, report]);
+    if (report.removed!.length) {
+      reports.push([path, report]);
+    }
   }
-  if (!removed.size) return reports;
+  if (!removed.size) {
+    return reports;
+  }
 
   const uses = (text: string, name: string) => [...text.matchAll(new RegExp(`\\b${name}\\b`, 'g'))].length;
   for (const path of resourceFiles(changes, names, target)) {
     const source = changes.read(path)!;
-    if (![...removed].some((name) => uses(source, name))) continue;
+    if (![...removed].some((name) => uses(source, name))) {
+      continue;
+    }
     const report: FormReport = { added: [], removed: [], stale: [], warnings: [] };
     changes.update(
       path,
@@ -222,7 +255,9 @@ function pruneEnumOptions(changes: Changes, names: ResourceNames, target: Fronte
               const init = decl?.getInitializer()?.getText() ?? '';
               return [...removed].some((name) => new RegExp(`^use\\w+\\(\\s*${name}\\s*\\)$`).test(init)) && uses(file.getFullText(), decl.getName()) === 1;
             });
-            if (!hook) break;
+            if (!hook) {
+              break;
+            }
             report.removed!.push(hook.getDeclarations()[0].getName());
             hook.remove();
           }
@@ -231,8 +266,12 @@ function pruneEnumOptions(changes: Changes, names: ResourceNames, target: Fronte
       { format: true },
     );
     const left = [...removed].filter((name) => uses(changes.read(path)!, name));
-    for (const name of left) report.warnings.push(`${path}: still uses ${name}, whose enum the contract dropped: fix it by hand.`);
-    if (report.removed!.length || left.length) reports.push([path, report]);
+    for (const name of left) {
+      report.warnings.push(`${path}: still uses ${name}, whose enum the contract dropped: fix it by hand.`);
+    }
+    if (report.removed!.length || left.length) {
+      reports.push([path, report]);
+    }
   }
   return reports;
 }
@@ -285,7 +324,9 @@ function useIdForDropped(changes: Changes, names: ResourceNames, target: Fronten
         }),
       { format: true },
     );
-    if (report.removed!.length) reports.push([path, report]);
+    if (report.removed!.length) {
+      reports.push([path, report]);
+    }
   }
   return reports;
 }
@@ -301,7 +342,11 @@ function leftoverReads(changes: Changes, names: ResourceNames, target: FrontendT
     const read = new RegExp(`\\b(?:${names.s.camel}\\??${path === columns ? '|row\\.original' : ''})\\.(\\w+)\\b`, 'g');
     const lines = (changes.read(path) ?? '').split('\n');
     lines.forEach((line, i) => {
-      for (const m of line.matchAll(read)) if (!known.has(m[1])) found.push(`${path}:${i + 1}: ${m[0]}`);
+      for (const m of line.matchAll(read)) {
+        if (!known.has(m[1])) {
+          found.push(`${path}:${i + 1}: ${m[0]}`);
+        }
+      }
     });
   }
   return found;
@@ -310,8 +355,11 @@ function leftoverReads(changes: Changes, names: ResourceNames, target: FrontendT
 /** Turns the reports into warnings of the change set (what was added is in the files). */
 export function warnReports(changes: Changes, reports: FrontendReports) {
   for (const [file, report] of reports) {
-    for (const item of report.stale)
+    for (const item of report.stale) {
       changes.warn(`${file}: ${item} isn't in the contract any more: kept. Remove it if the field was dropped.`);
-    for (const warning of report.warnings) changes.warn(warning);
+    }
+    for (const warning of report.warnings) {
+      changes.warn(warning);
+    }
   }
 }

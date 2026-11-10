@@ -54,7 +54,9 @@ function ensureIgnoredDependency(source: string, name: string) {
   const path = ['nx', 'sync', 'ignoredDependencies'];
   const current = (parse(source) as { nx?: { sync?: { ignoredDependencies?: string[] } } }).nx?.sync
     ?.ignoredDependencies;
-  if (current?.includes(name)) return source;
+  if (current?.includes(name)) {
+    return source;
+  }
   const edits = current
     ? modify(source, [...path, current.length], name, { ...JSON_FORMAT, isArrayInsertion: true })
     : modify(source, path, [name], JSON_FORMAT);
@@ -75,7 +77,9 @@ export interface NavEntry {
 
 function stringProperty(object: ObjectLiteralExpression, name: string) {
   const prop = object.getProperty(name);
-  if (!prop || !Node.isPropertyAssignment(prop)) return undefined;
+  if (!prop || !Node.isPropertyAssignment(prop)) {
+    return undefined;
+  }
   const init = prop.getInitializer();
   return init && Node.isStringLiteral(init) ? init.getLiteralValue() : undefined;
 }
@@ -116,7 +120,9 @@ export function wireNav(changes: Changes, app: string, entry: NavEntry) {
           .getDescendantsOfKind(SyntaxKind.ObjectLiteralExpression)
           .some((item) => stringProperty(item, 'href') === entry.href && item !== section),
       );
-      if (linked) return;
+      if (linked) {
+        return;
+      }
 
       ensureNamedImport(file, 'lucide-react', entry.icon);
       const item = `{ title: ${JSON.stringify(titleKey)}, href: ${JSON.stringify(entry.href)}, icon: ${entry.icon} }`;
@@ -155,7 +161,9 @@ const LIB_FILES = ['package.json', 'tsconfig.json', 'vitest.config.ts', 'eslint.
  */
 export function createFrontendLib(changes: Changes, lib: string, app: string) {
   const l = casings(words(lib));
-  for (const file of LIB_FILES) changes.create(`${frontendLib(l.kebab)}/${file}`, render(`frontend-lib/${file}`, { l }));
+  for (const file of LIB_FILES) {
+    changes.create(`${frontendLib(l.kebab)}/${file}`, render(`frontend-lib/${file}`, { l }));
+  }
   wireFrontendLib(changes, l.kebab, app);
 }
 
@@ -173,8 +181,12 @@ const RESOURCE_DEPENDENCIES: Record<string, string> = {
 /** Sets `pkg[path]` in a package.json unless it's there (jsonc edits keep the file's layout). */
 function ensureJsonValue(source: string, path: string[], value: string) {
   let node: unknown = parse(source);
-  for (const part of path) node = (node as Record<string, unknown> | undefined)?.[part];
-  if (node !== undefined) return source;
+  for (const part of path) {
+    node = (node as Record<string, unknown> | undefined)?.[part];
+  }
+  if (node !== undefined) {
+    return source;
+  }
   return applyEdits(source, modify(source, path, value, JSON_FORMAT));
 }
 
@@ -187,8 +199,11 @@ function ensureJsonValue(source: string, path: string[], value: string) {
  */
 export function wireResourceLib(changes: Changes, names: ResourceNames, target: LibTarget) {
   const root = frontendLib(target.lib);
-  if (!changes.exists(`${root}/package.json`)) createFrontendLib(changes, target.lib, target.app);
-  else wireFrontendLib(changes, target.lib, target.app);
+  if (!changes.exists(`${root}/package.json`)) {
+    createFrontendLib(changes, target.lib, target.app);
+  } else {
+    wireFrontendLib(changes, target.lib, target.app);
+  }
 
   const sub = target.sub;
   const src = `./${target.dir.slice(root.length + 1)}`;
@@ -200,8 +215,12 @@ export function wireResourceLib(changes: Changes, names: ResourceNames, target: 
       [`./${sub}server`, `${src}/server.ts`],
       [`./${sub}components/*`, `${src}/components/*.tsx`],
     ];
-    for (const [key, value] of exports) source = ensureJsonValue(source, ['exports', key], value);
-    for (const [name, version] of Object.entries(RESOURCE_DEPENDENCIES)) source = ensureJsonValue(source, ['dependencies', name], version);
+    for (const [key, value] of exports) {
+      source = ensureJsonValue(source, ['exports', key], value);
+    }
+    for (const [name, version] of Object.entries(RESOURCE_DEPENDENCIES)) {
+      source = ensureJsonValue(source, ['dependencies', name], version);
+    }
     source = ensureJsonValue(source, ['peerDependencies', 'next-intl'], 'catalog:');
     return ensureJsonValue(source, ['devDependencies', 'next-intl'], 'catalog:');
   });
@@ -213,7 +232,9 @@ export function wireResourceLib(changes: Changes, names: ResourceNames, target: 
     'export * from "./messages/index.ts";',
     'export type * from "./types.ts";',
   ];
-  if (!changes.exists(index)) changes.create(index, render('frontend-lib-resource/index.ts', { ...names, pkg: target.pkg }));
+  if (!changes.exists(index)) {
+    changes.create(index, render('frontend-lib-resource/index.ts', { ...names, pkg: target.pkg }));
+  }
   changes.update(index, (source) => {
     source = source.replace(/^export \{\};\n?/m, '');
     const missing = lines.filter((line) => !source.includes(line));
@@ -221,8 +242,11 @@ export function wireResourceLib(changes: Changes, names: ResourceNames, target: 
   });
 
   const messages = libMessagesDir(target);
-  for (const file of ['en.ts', 'it.ts', 'index.ts'])
-    if (!changes.exists(`${messages}/${file}`)) changes.create(`${messages}/${file}`, render(`frontend-lib-resource/messages/${file}`, names));
+  for (const file of ['en.ts', 'it.ts', 'index.ts']) {
+    if (!changes.exists(`${messages}/${file}`)) {
+      changes.create(`${messages}/${file}`, render(`frontend-lib-resource/messages/${file}`, names));
+    }
+  }
   wireLibMessages(changes, names, target);
 }
 
@@ -242,8 +266,9 @@ export function wireLibMessages(changes: Changes, { p }: ResourceNames, target: 
   const type = `${p.pascal}Messages`;
 
   const request = i18nRequest(target.app);
-  if (!changes.exists(request)) changes.warn(`${request} not found: merge ${value} (${target.pkg}) into the app's messages by hand.`);
-  else
+  if (!changes.exists(request)) {
+    changes.warn(`${request} not found: merge ${value} (${target.pkg}) into the app's messages by hand.`);
+  } else {
     changes.update(request, (source) =>
       editSource(request, source, (file) => {
         const object = () =>
@@ -252,8 +277,12 @@ export function wireLibMessages(changes: Changes, { p }: ResourceNames, target: 
             .find((a) => a.getName() === 'messages' && Node.isObjectLiteralExpression(a.getInitializer()))
             ?.getInitializer() as ObjectLiteralExpression | undefined;
         const messages = object();
-        if (!messages) return void changes.warn(`${request}: no \`messages: { … }\`: merge ${value} by hand.`);
-        if (messages.getProperty(ns)) return;
+        if (!messages) {
+          return void changes.warn(`${request}: no \`messages: { … }\`: merge ${value} by hand.`);
+        }
+        if (messages.getProperty(ns)) {
+          return;
+        }
         // The locale variable the other catalogs are indexed with.
         const locale =
           messages
@@ -265,10 +294,12 @@ export function wireLibMessages(changes: Changes, { p }: ResourceNames, target: 
         appendToList(file, fresh, fresh.getProperties(), `${ns}: ${value}[${locale}]`);
       }),
     );
+  }
 
   const types = i18nTypes(target.app);
-  if (!changes.exists(types)) changes.warn(`${types} not found: add ${ns}: ${type} (${target.pkg}) to the app's Messages type by hand.`);
-  else
+  if (!changes.exists(types)) {
+    changes.warn(`${types} not found: add ${ns}: ${type} (${target.pkg}) to the app's Messages type by hand.`);
+  } else {
     changes.update(types, (source) =>
       editSource(types, source, (file) => {
         const messages = () =>
@@ -276,10 +307,17 @@ export function wireLibMessages(changes: Changes, { p }: ResourceNames, target: 
             .getDescendantsOfKind(SyntaxKind.PropertySignature)
             .find((prop) => prop.getName() === 'Messages' && prop.getFirstAncestorByKind(SyntaxKind.InterfaceDeclaration)?.getName() === 'AppConfig');
         const literal = () => messages()?.getTypeNode()?.getFirstDescendantByKind(SyntaxKind.TypeLiteral) ?? messages()?.getTypeNode()?.asKind(SyntaxKind.TypeLiteral);
-        if (!messages()) return void changes.warn(`${types}: no AppConfig.Messages: add ${ns}: ${type} by hand.`);
-        if (literal()?.getProperty(ns)) return;
-        if (!file.getImportDeclaration((d) => d.getModuleSpecifierValue() === target.pkg)) insertImportLine(file, `type { ${type} }`, target.pkg);
-        else ensureNamedImport(file, target.pkg, type, { typeOnly: true });
+        if (!messages()) {
+          return void changes.warn(`${types}: no AppConfig.Messages: add ${ns}: ${type} by hand.`);
+        }
+        if (literal()?.getProperty(ns)) {
+          return;
+        }
+        if (!file.getImportDeclaration((d) => d.getModuleSpecifierValue() === target.pkg)) {
+          insertImportLine(file, `type { ${type} }`, target.pkg);
+        } else {
+          ensureNamedImport(file, target.pkg, type, { typeOnly: true });
+        }
         const typeLiteral = literal();
         if (!typeLiteral) {
           const node = messages()!.getTypeNode()!;
@@ -288,7 +326,9 @@ export function wireLibMessages(changes: Changes, { p }: ResourceNames, target: 
         }
         const members = typeLiteral.getMembers();
         const last = members[members.length - 1];
-        if (!last) return void typeLiteral.replaceWithText(`{ ${ns}: ${type} }`);
+        if (!last) {
+          return void typeLiteral.replaceWithText(`{ ${ns}: ${type} }`);
+        }
         const text = file.getFullText();
         const lineStart = text.lastIndexOf('\n', last.getStart() - 1) + 1;
         const indent = /^[ \t]*/.exec(text.slice(lineStart))![0];
@@ -296,4 +336,5 @@ export function wireLibMessages(changes: Changes, { p }: ResourceNames, target: 
         file.insertText(last.getEnd(), `${semicolon}\n${indent}${ns}: ${type};`);
       }),
     );
+  }
 }

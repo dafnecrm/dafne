@@ -51,8 +51,11 @@ export function Delete<%= s.pascal %>Dialog({
         return;
       }
       onClose();
-      if (then === "list") router.replace("/<%= p.kebab %>");
-      else router.refresh();
+      if (then === "list") {
+        router.replace("/<%= p.kebab %>");
+      } else {
+        router.refresh();
+      }
     });
 
   return (

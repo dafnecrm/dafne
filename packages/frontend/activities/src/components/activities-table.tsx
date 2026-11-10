@@ -76,7 +76,9 @@ function useActivityColumns() {
             const status = ACTIVITY_STATUS_OPTIONS.find(
               (o) => o.value === info.getValue(),
             );
-            if (!status) return "—";
+            if (!status) {
+              return "—";
+            }
             // A component, not an element: render it with a capitalized name.
             const Icon = ACTIVITY_STATUS_ICONS[status.value];
             return (

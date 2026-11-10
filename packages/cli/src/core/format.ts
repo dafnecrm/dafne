@@ -14,15 +14,20 @@ export async function formatSource(
   config?: prettier.Options,
 ): Promise<string> {
   const info = await prettier.getFileInfo(path);
-  if (info.ignored || !info.inferredParser) return source;
+  if (info.ignored || !info.inferredParser) {
+    return source;
+  }
   // JSON config files keep their own layout.
-  if (info.inferredParser.startsWith('json')) return source;
+  if (info.inferredParser.startsWith('json')) {
+    return source;
+  }
   const options = {
     ...(config ?? (await prettier.resolveConfig(path))),
     filepath: path,
   };
-  if (original !== undefined && !(await prettier.check(original, options)))
+  if (original !== undefined && !(await prettier.check(original, options))) {
     return source;
+  }
   try {
     return await prettier.format(source, options);
   } catch {

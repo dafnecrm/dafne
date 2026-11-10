@@ -54,7 +54,9 @@ export const toTarget = (target: FrontendTarget | string): FrontendTarget =>
 /** A lib name as packages/frontend wants it: kebab-case, starting with a letter. */
 export function libName(input: string): string {
   const parts = words(input);
-  if (!parts.length || !/^[a-z]/.test(parts[0])) throw new Error(`"${input}" must start with a letter.`);
+  if (!parts.length || !/^[a-z]/.test(parts[0])) {
+    throw new Error(`"${input}" must start with a letter.`);
+  }
   return casings(parts).kebab;
 }
 
@@ -72,13 +74,18 @@ export function frontendLibs(changes: Changes): string[] {
  * define<Plural>Table (in src or src/<plural>), else undefined.
  */
 export function findFrontendTarget(changes: Changes, names: ResourceNames, app = DEFAULT_FRONTEND_APP): FrontendTarget | undefined {
-  if (changes.exists(`${frontendApp(app)}/lib/${names.p.kebab}.ts`)) return appTarget(app);
-  for (const lib of frontendLibs(changes))
+  if (changes.exists(`${frontendApp(app)}/lib/${names.p.kebab}.ts`)) {
+    return appTarget(app);
+  }
+  for (const lib of frontendLibs(changes)) {
     for (const nested of [false, true]) {
       const target = libTarget(names, lib, app, nested);
       const source = changes.read(`${target.dir}/${names.p.kebab}-table.ts`);
-      if (source && new RegExp(`\\bfunction define${names.p.pascal}Table\\b`).test(source)) return target;
+      if (source && new RegExp(`\\bfunction define${names.p.pascal}Table\\b`).test(source)) {
+        return target;
+      }
     }
+  }
   return undefined;
 }
 
@@ -101,7 +108,9 @@ export function dataFiles(names: ResourceNames, target: FrontendTarget | string)
   const t = toTarget(target);
   const { p } = names;
   const appLib = `${frontendApp(t.app)}/lib`;
-  if (t.kind === 'app') return { lib: `${appLib}/${p.kebab}.ts`, table: `${appLib}/${p.kebab}-table.ts` };
+  if (t.kind === 'app') {
+    return { lib: `${appLib}/${p.kebab}.ts`, table: `${appLib}/${p.kebab}-table.ts` };
+  }
   return {
     lib: `${t.dir}/server.ts`,
     table: `${t.dir}/${p.kebab}-table.ts`,
@@ -162,7 +171,7 @@ export interface PageRefs {
 export function pageRefs(names: ResourceNames, target: FrontendTarget | string = DEFAULT_FRONTEND_APP): PageRefs {
   const t = toTarget(target);
   const { p } = names;
-  if (t.kind === 'app')
+  if (t.kind === 'app') {
     return {
       kind: 'app',
       table: `@/lib/${p.kebab}-table`,
@@ -170,6 +179,7 @@ export function pageRefs(names: ResourceNames, target: FrontendTarget | string =
       link: `/${p.kebab}`,
       messageKey: { name: 'MessageKey', module: '@dafne/frontend-ui/lib/message-key' },
     };
+  }
   return {
     kind: 'lib',
     table: `../${p.kebab}-table.ts`,

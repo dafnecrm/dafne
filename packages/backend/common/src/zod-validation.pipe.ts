@@ -38,7 +38,9 @@ export class ZodValidationPipe<T extends z.ZodType> implements PipeTransform<
 
   transform(value: unknown): z.output<T> {
     const result = this.schema.safeParse(value);
-    if (result.success) return result.data;
+    if (result.success) {
+      return result.data;
+    }
     throw new ZodValidationException(this.schema, value, result.error);
   }
 }

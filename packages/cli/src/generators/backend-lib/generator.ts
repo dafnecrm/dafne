@@ -17,7 +17,9 @@ export interface BackendLibSchema {
 export default async function backendLibGenerator(tree: Tree, options: BackendLibSchema) {
   return runGenerator(tree, options, (changes) => {
     const parts = words(options.name);
-    if (!parts.length || !/^[a-z]/.test(parts[0])) throw new Error(`"${options.name}" must start with a letter.`);
+    if (!parts.length || !/^[a-z]/.test(parts[0])) {
+      throw new Error(`"${options.name}" must start with a letter.`);
+    }
     const name = casings(parts);
     backendPieces.lib.generate({ changes, names: { s: name, p: name }, app: options.app ?? DEFAULT_APP });
     return {

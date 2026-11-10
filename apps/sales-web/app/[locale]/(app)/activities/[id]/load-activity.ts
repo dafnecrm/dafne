@@ -9,7 +9,9 @@ export async function loadActivity(id: string) {
   try {
     return await getActivity(id);
   } catch (error) {
-    if (error instanceof BackendError && error.status === 404) notFound();
+    if (error instanceof BackendError && error.status === 404) {
+      notFound();
+    }
     throw error;
   }
 }

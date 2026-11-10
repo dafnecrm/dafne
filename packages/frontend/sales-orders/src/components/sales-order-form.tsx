@@ -46,7 +46,9 @@ export function SalesOrderForm({
     onSubmit: async ({ value, formApi }) => {
       // Redirects on success, so only an error comes back.
       const result = await saveSalesOrder(salesOrder?.id ?? null, value, path);
-      if (result?.error) setServerError(formApi, result.error);
+      if (result?.error) {
+        setServerError(formApi, result.error);
+      }
     },
   });
   // The page stays mounted (hidden) after leaving it: start fresh next time.

@@ -60,8 +60,9 @@ export class UsersService {
       if (
         isAPIError(error) &&
         error.body?.code === 'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL'
-      )
+      ) {
         throw new ConflictException(msg('users.email.taken'));
+      }
       throw error;
     }
     try {
@@ -130,7 +131,9 @@ export class UsersService {
         },
       },
     });
-    if (!found) throw new NotFoundException(msg('users.notFound'));
+    if (!found) {
+      throw new NotFoundException(msg('users.notFound'));
+    }
 
     const { accounts, sessions, ...rest } = found;
     const now = new Date();

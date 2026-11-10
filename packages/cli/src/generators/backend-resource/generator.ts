@@ -34,20 +34,29 @@ export default async function backendResourceGenerator(tree: Tree, options: Back
     const names = resourceNames(options.name);
     const fields = (options.fields ?? []).map(parseFieldSpec);
     const id = idSpec(options.idType, options.idLength);
-    if (changes.exists(tableFile(names)) && !options.force)
+    if (changes.exists(tableFile(names)) && !options.force) {
       throw new Error(`${tableFile(names)} already exists: the resource "${names.p.kebab}" is there already.`);
+    }
 
     generatePieces(backendPieces, BACKEND_RESOURCE, { changes, names, app: options.app ?? DEFAULT_APP, id });
 
-    for (const spec of fields)
-      for (const note of addField(changes, names.p.kebab, spec).notes)
+    for (const spec of fields) {
+      for (const note of addField(changes, names.p.kebab, spec).notes) {
         // The table is new: it has no rows a NOT NULL column could break.
-        if (!note.includes('already has rows')) changes.warn(note);
+        if (!note.includes('already has rows')) {
+          changes.warn(note);
+        }
+      }
+    }
     // A varchar id is the client's: the sync puts it in the body too.
     if (fields.length || id.type === 'varchar') {
       const report = await syncOne(changes, names.p.kebab);
-      for (const warning of report.warnings) changes.warn(warning);
-      for (const key of report.unknown) changes.warn(`contract: ${key} isn't a column.`);
+      for (const warning of report.warnings) {
+        changes.warn(warning);
+      }
+      for (const key of report.unknown) {
+        changes.warn(`contract: ${key} isn't a column.`);
+      }
     }
 
     syncMessages(changes, { contracts: resourceMessages(names).contracts });

@@ -32,10 +32,13 @@ try {
     }
     const allowed = DEP_CONSTRAINTS.find((c) => c.sourceTag === scopes[0]).onlyDependOnLibsWithTags;
     for (const { target } of graph.dependencies[name] ?? []) {
-      if (!graph.nodes[target]) continue; // npm packages
+      if (!graph.nodes[target]) {
+        continue;
+      } // npm packages
       const [targetScope] = scopeOf(target);
-      if (!allowed.includes(targetScope))
+      if (!allowed.includes(targetScope)) {
         problems.push(`${name} (${scopes[0]}) depends on ${target} (${targetScope ?? "no scope"}): ${scopes[0]} may only depend on ${allowed.join(", ")}`);
+      }
     }
   }
 

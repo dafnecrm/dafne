@@ -10,9 +10,13 @@ const MAX_ID = 2_147_483_647;
  */
 export class IdPipe implements PipeTransform<string, number> {
   transform(value: string): number {
-    if (!/^[1-9]\d*$/.test(value)) throw new NotFoundException();
+    if (!/^[1-9]\d*$/.test(value)) {
+      throw new NotFoundException();
+    }
     const id = Number(value);
-    if (id > MAX_ID) throw new NotFoundException();
+    if (id > MAX_ID) {
+      throw new NotFoundException();
+    }
     return id;
   }
 }
@@ -26,7 +30,9 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
  */
 export class UuidPipe implements PipeTransform<string, string> {
   transform(value: string): string {
-    if (!UUID.test(value)) throw new NotFoundException();
+    if (!UUID.test(value)) {
+      throw new NotFoundException();
+    }
     return value.toLowerCase();
   }
 }
@@ -44,7 +50,9 @@ export class TextIdPipe implements PipeTransform<string, string> {
   }
 
   transform(value: string): string {
-    if (!value || value.length > this.maxLength) throw new NotFoundException();
+    if (!value || value.length > this.maxLength) {
+      throw new NotFoundException();
+    }
     return value;
   }
 }

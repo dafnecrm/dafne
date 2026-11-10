@@ -35,14 +35,17 @@ export function createSessionHelpers({
    */
   const getCurrentUser = cache(async (): Promise<User | null> => {
     const cookie = (await headers()).get("cookie");
-    if (!cookie) return null;
+    if (!cookie) {
+      return null;
+    }
 
     const { data, error } = await serverAuthClient.getSession({
       fetchOptions: { headers: { cookie, origin: appUrl }, cache: "no-store" },
     });
     // A failed check is not "signed out": don't let an outage clear sessions.
-    if (error)
+    if (error) {
       throw new Error(`Session check failed (${error.status}): ${error.message}`);
+    }
     return data?.user ?? null;
   });
 
@@ -52,7 +55,9 @@ export function createSessionHelpers({
    */
   async function requireUser(): Promise<User> {
     const user = await getCurrentUser();
-    if (!user) redirect(expiredPath);
+    if (!user) {
+      redirect(expiredPath);
+    }
     return user;
   }
 

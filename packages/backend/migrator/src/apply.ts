@@ -66,7 +66,9 @@ export async function migrate({
     );
     const applied = new Map<string, Set<string>>();
     for (const { schema, name } of rows) {
-      if (!applied.has(schema)) applied.set(schema, new Set());
+      if (!applied.has(schema)) {
+        applied.set(schema, new Set());
+      }
       applied.get(schema)!.add(name);
     }
 
@@ -80,7 +82,9 @@ export async function migrate({
         // Unqualified names in a migration are its own schema's.
         await client.query(`SET LOCAL search_path TO ${id(migration.schema)}`);
         for (const statement of migration.sql) {
-          if (isEmptyStatement(statement)) continue;
+          if (isEmptyStatement(statement)) {
+            continue;
+          }
           await client.query(statement);
         }
         await client.query(

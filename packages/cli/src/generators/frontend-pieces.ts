@@ -26,9 +26,13 @@ export interface FrontendPieceSchema extends Partial<FrontendOptions> {
 export function resolveTarget(changes: Changes, names: ResourceNames, options: { app?: string; lib?: string }): FrontendTarget {
   const app = options.app ?? DEFAULT_FRONTEND_APP;
   const found = findFrontendTarget(changes, names, app);
-  if (!options.lib) return found ?? appTarget(app);
+  if (!options.lib) {
+    return found ?? appTarget(app);
+  }
   const lib = libName(options.lib);
-  if (found?.kind === 'lib' && found.lib === lib) return found;
+  if (found?.kind === 'lib' && found.lib === lib) {
+    return found;
+  }
   if (found) {
     const where = found.kind === 'app' ? `apps/${app}` : frontendLib(found.lib);
     throw new Error(`The frontend of "${names.p.kebab}" is in ${where} already: generate its parts there (leave out --lib).`);
@@ -50,8 +54,9 @@ export function generateFrontendPieces(tree: Tree, options: FrontendPieceSchema,
     const target = resolveTarget(changes, names, options);
     const whole = pieces === FRONTEND_RESOURCE;
     const { lib: data } = dataFiles(names, target);
-    if (whole && changes.exists(data) && !options.force)
+    if (whole && changes.exists(data) && !options.force) {
       throw new Error(`${data} already exists: the pages of "${names.p.kebab}" are there already.`);
+    }
     const newLib = target.kind === 'lib' && !changes.exists(`${frontendLib(target.lib)}/package.json`);
 
     const ctx = { changes, names, app, target, options: frontendOptions(options) };

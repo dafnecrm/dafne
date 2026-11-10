@@ -27,16 +27,20 @@ export async function migrateOnStart({
   env = process.env,
   log = () => {},
 }: MigrateOnStartOptions): Promise<Migration[]> {
-  if (env.MIGRATE_ON_START !== 'true') return [];
+  if (env.MIGRATE_ON_START !== 'true') {
+    return [];
+  }
   const url = env.MIGRATIONS_DATABASE_URL;
-  if (!url)
+  if (!url) {
     throw new Error(
       'MIGRATE_ON_START=true needs MIGRATIONS_DATABASE_URL (e.g. postgres://user:pass@host:5432/dafne).',
     );
-  if (!existsSync(migrations))
+  }
+  if (!existsSync(migrations)) {
     throw new Error(
       `MIGRATE_ON_START=true, but the build has no migrations (${migrations}).`,
     );
+  }
   const applied = await migrate({
     url,
     packages: bundledPackages(migrations),

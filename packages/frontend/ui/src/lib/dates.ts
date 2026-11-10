@@ -38,7 +38,9 @@ const LOCALES: Record<string, Locale> = {
 export function localeFor(languages: readonly string[]): Locale {
   for (const tag of languages) {
     const locale = LOCALES[tag] ?? LOCALES[tag.split("-")[0]];
-    if (locale) return locale;
+    if (locale) {
+      return locale;
+    }
   }
   return DEFAULT_LOCALE;
 }

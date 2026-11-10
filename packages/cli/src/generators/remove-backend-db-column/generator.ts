@@ -26,15 +26,23 @@ export default async function removeBackendDbColumnGenerator(tree: Tree, options
   return runGenerator(tree, {}, async (changes) => {
     const names = resourceNames(options.name);
     const columns = [...new Set(options.columns ?? [])];
-    if (!columns.length) throw new Error('No column to remove: pass --columns.');
+    if (!columns.length) {
+      throw new Error('No column to remove: pass --columns.');
+    }
 
     const touched = new Set<string>();
     const dropped: Record<string, string[]> = {};
     for (const column of columns) {
       const result = removeField(changes, names.p.kebab, column);
-      for (const note of result.notes) changes.warn(note);
-      for (const resource of result.touched) touched.add(resource);
-      for (const [resource, keys] of Object.entries(result.dropped)) (dropped[resource] ??= []).push(...keys);
+      for (const note of result.notes) {
+        changes.warn(note);
+      }
+      for (const resource of result.touched) {
+        touched.add(resource);
+      }
+      for (const [resource, keys] of Object.entries(result.dropped)) {
+        (dropped[resource] ??= []).push(...keys);
+      }
     }
 
     for (const resource of touched) {
@@ -43,8 +51,12 @@ export default async function removeBackendDbColumnGenerator(tree: Tree, options
         continue;
       }
       const report = await syncOne(changes, resource, dropped[resource] ?? []);
-      for (const warning of report.warnings) changes.warn(warning);
-      for (const key of report.unknown) changes.warn(`contract ${resource}: ${key} isn't a column: kept.`);
+      for (const warning of report.warnings) {
+        changes.warn(warning);
+      }
+      for (const key of report.unknown) {
+        changes.warn(`contract ${resource}: ${key} isn't a column: kept.`);
+      }
       syncDropped(changes, resourceNames(resource), dropped[resource] ?? []);
     }
     pruneContractMessages(changes);

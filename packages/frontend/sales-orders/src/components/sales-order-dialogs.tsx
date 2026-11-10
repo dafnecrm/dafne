@@ -52,8 +52,11 @@ export function DeleteSalesOrderDialog({
         return;
       }
       onClose();
-      if (then === "list") router.replace(path);
-      else router.refresh();
+      if (then === "list") {
+        router.replace(path);
+      } else {
+        router.refresh();
+      }
     });
 
   return (

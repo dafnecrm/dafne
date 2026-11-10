@@ -145,7 +145,9 @@ export function useDescribeFilters() {
     filters
       .flatMap((def) => {
         const value = active[def.field];
-        if (!value) return [];
+        if (!value) {
+          return [];
+        }
         const label = t(def.label);
         const option = def.options?.find((o) => o.value === value);
         return option
@@ -312,8 +314,11 @@ export function DataTable<TData extends RowData>({
       if (!manualSorting) {
         setLocalSorting(updater);
         // A new order starts again from page 1.
-        if (manualPagination) navigate(tableHref(config, { ...params, page: 1 }));
-        else setLocalPagination((current) => ({ ...current, pageIndex: 0 }));
+        if (manualPagination) {
+          navigate(tableHref(config, { ...params, page: 1 }));
+        } else {
+          setLocalPagination((current) => ({ ...current, pageIndex: 0 }));
+        }
         return;
       }
       const [next] = typeof updater === "function" ? updater(sorting) : updater;
@@ -531,7 +536,7 @@ export function DataTableFilters({
     >
       {filters.map((def) => {
         const Control = controls?.[def.field];
-        if (Control)
+        if (Control) {
           return (
             <Control
               key={def.field}
@@ -542,6 +547,7 @@ export function DataTableFilters({
               disabled={disabled}
             />
           );
+        }
         const options = optionsOf(def);
         return options ? (
           <Combobox

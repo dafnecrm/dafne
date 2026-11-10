@@ -42,18 +42,22 @@ async function UserProfile({
   params,
 }: Pick<PageProps<"/[locale]/admin/users/[id]">, "params">) {
   const t = await getTranslations("users");
-  if (!isAdmin(await requireUser()))
+  if (!isAdmin(await requireUser())) {
     return <NotAllowed>{t("notAllowed.detail")}</NotAllowed>;
+  }
 
   const { id } = await params;
   let user;
   try {
     user = await getUser(id);
   } catch (error) {
-    if (error instanceof BackendError && error.status === 404) notFound();
+    if (error instanceof BackendError && error.status === 404) {
+      notFound();
+    }
     // The backend checks the role too (e.g. it changed since sign-in).
-    if (error instanceof BackendError && error.status === 403)
+    if (error instanceof BackendError && error.status === 403) {
       return <NotAllowed>{t("notAllowed.detail")}</NotAllowed>;
+    }
     throw error;
   }
 

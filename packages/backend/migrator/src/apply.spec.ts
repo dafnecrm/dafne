@@ -31,8 +31,9 @@ describe.skipIf(!url)('migrate (Postgres)', () => {
     }
   };
   const reset = async () => {
-    for (const schema of schemas)
+    for (const schema of schemas) {
       await query(`DROP SCHEMA IF EXISTS ${schema} CASCADE`);
+    }
     await query('DROP TABLE IF EXISTS public._migrations');
   };
 

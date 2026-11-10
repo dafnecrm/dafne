@@ -26,8 +26,12 @@ const newReport = (): FormReport => ({ added: [], removed: [], stale: [], warnin
 const typed = (f: FormField) => f.kind === 'enum' || f.kind === 'boolean' || f.kind === 'number';
 
 function valueType(f: FormField): string {
-  if (f.kind === 'enum') return f.optional ? `${f.enumType} | null` : f.enumType!;
-  if (f.kind === 'number') return f.optional ? 'number | null' : 'number';
+  if (f.kind === 'enum') {
+    return f.optional ? `${f.enumType} | null` : f.enumType!;
+  }
+  if (f.kind === 'number') {
+    return f.optional ? 'number | null' : 'number';
+  }
   return 'boolean';
 }
 
@@ -37,8 +41,12 @@ const optionsName = (f: FormField) => `${casings(words(f.key)).constant}_OPTIONS
 function defaultValue(f: FormField, param?: string): string {
   const literal = (() => {
     if (f.defaultValue !== undefined) {
-      if (f.kind === 'number' || f.kind === 'boolean') return f.defaultValue;
-      if (/^['"`].*['"`]$/.test(f.defaultValue)) return `"${f.defaultValue.slice(1, -1).replace(/"/g, '\\"')}"`;
+      if (f.kind === 'number' || f.kind === 'boolean') {
+        return f.defaultValue;
+      }
+      if (/^['"`].*['"`]$/.test(f.defaultValue)) {
+        return `"${f.defaultValue.slice(1, -1).replace(/"/g, '\\"')}"`;
+      }
     }
     switch (f.kind) {
       case 'enum':
@@ -51,14 +59,24 @@ function defaultValue(f: FormField, param?: string): string {
         return '""';
     }
   })();
-  if (!param) return literal;
+  if (!param) {
+    return literal;
+  }
   const from = `${param}?.${f.key}`;
   // Dates arrive as ISO strings; the pickers want "2026-10-29" / "2026-10-29T10:30".
-  if (f.kind === 'date') return `${from}?.slice(0, 10) ?? ${literal}`;
-  if (f.kind === 'datetime') return `${from}?.slice(0, 16) ?? ${literal}`;
-  if (f.kind === 'decimal') return `${from} ?? ${literal}`;
+  if (f.kind === 'date') {
+    return `${from}?.slice(0, 10) ?? ${literal}`;
+  }
+  if (f.kind === 'datetime') {
+    return `${from}?.slice(0, 16) ?? ${literal}`;
+  }
+  if (f.kind === 'decimal') {
+    return `${from} ?? ${literal}`;
+  }
   // Ids are numbers; the input holds text.
-  if (f.kind === 'id') return `${from}?.toString() ?? ${literal}`;
+  if (f.kind === 'id') {
+    return `${from}?.toString() ?? ${literal}`;
+  }
   return `${from} ?? ${literal}`;
 }
 
@@ -85,24 +103,30 @@ export function syncFormSchema(
   // Values type: Record<Exclude<keyof Body, "a">, string> & { a: T }.
   step((file) => {
     const alias = file.getTypeAlias(`${s.pascal}FormValues`);
-    if (!alias) return void report.warnings.push(`${path}: no ${s.pascal}FormValues type.`);
+    if (!alias) {
+      return void report.warnings.push(`${path}: no ${s.pascal}FormValues type.`);
+    }
     const node = alias.getTypeNodeOrThrow();
     const parts = Node.isIntersectionTypeNode(node) ? node.getTypeNodes() : [node];
     const record = parts.find((t) => Node.isTypeReference(t) && t.getTypeName().getText() === 'Record');
-    if (!record || !Node.isTypeReference(record))
+    if (!record || !Node.isTypeReference(record)) {
       return void report.warnings.push(`${path}: ${s.pascal}FormValues isn't Record<keyof …, string> (& {...}): add the new fields to it by hand.`);
+    }
     const [keys] = record.getTypeArguments();
     let body: string;
     let excluded: string[] = [];
-    if (Node.isTypeOperatorTypeNode(keys)) body = keys.getTypeNode().getText();
-    else if (Node.isTypeReference(keys) && keys.getTypeName().getText() === 'Exclude') {
+    if (Node.isTypeOperatorTypeNode(keys)) {
+      body = keys.getTypeNode().getText();
+    } else if (Node.isTypeReference(keys) && keys.getTypeName().getText() === 'Exclude') {
       const [all, removed] = keys.getTypeArguments();
       body = all.getText().replace(/^keyof\s+/, '');
       excluded = removed
         .getText()
         .split('|')
         .map((k) => k.trim().replace(/^["']|["']$/g, ''));
-    } else return void report.warnings.push(`${path}: unexpected keys in ${s.pascal}FormValues: add the new fields by hand.`);
+    } else {
+      return void report.warnings.push(`${path}: unexpected keys in ${s.pascal}FormValues: add the new fields by hand.`);
+    }
 
     const literal = parts.find(Node.isTypeLiteral);
     const members = literal?.getMembers().map((m) => m.getText(true)) ?? [];
@@ -112,12 +136,16 @@ export function syncFormSchema(
     const newTyped = usable.filter((f) => typed(f) && !excluded.includes(f.key) && !memberNames.has(f.key));
     // Typed members of fields the body dropped: from the literal and the Exclude list.
     const gone = prune ? [...memberNames].filter((key) => !bodyKeys.has(key)) : [];
-    if (!newTyped.length && !gone.length) return;
+    if (!newTyped.length && !gone.length) {
+      return;
+    }
     if (gone.length) {
       excluded = excluded.filter((key) => !gone.includes(key));
-      for (const key of gone) report.removed!.push(`${s.pascal}FormValues: ${key}`);
+      for (const key of gone) {
+        report.removed!.push(`${s.pascal}FormValues: ${key}`);
+      }
     }
-    if (gone.length)
+    if (gone.length) {
       members.splice(
         0,
         members.length,
@@ -126,10 +154,13 @@ export function syncFormSchema(
           .filter((m) => !(Node.isPropertySignature(m) && gone.includes(m.getName())))
           .map((m) => m.getText(true)) ?? []),
       );
+    }
     excluded.push(...newTyped.map((f) => f.key));
     members.push(...newTyped.map((f) => `${f.key}: ${valueType(f)};`));
     for (const f of newTyped) {
-      if (f.kind === 'enum') ensureNamedImport(file, CONTRACTS_PACKAGE, f.enumType!, { typeOnly: true });
+      if (f.kind === 'enum') {
+        ensureNamedImport(file, CONTRACTS_PACKAGE, f.enumType!, { typeOnly: true });
+      }
       report.added.push(`${s.pascal}FormValues: ${f.key}`);
     }
     const keysText = excluded.length ? `Exclude<keyof ${body}, ${excluded.map((k) => `"${k}"`).join(' | ')}>` : `keyof ${body}`;
@@ -151,7 +182,9 @@ export function syncFormSchema(
       const exported = file
         .getExportDeclarations()
         .some((d) => d.getNamedExports().some((e) => (e.getAliasNode()?.getText() ?? e.getName()) === name));
-      if (file.getVariableDeclaration(name) || exported) return;
+      if (file.getVariableDeclaration(name) || exported) {
+        return;
+      }
       // Labels are message keys, translated by the form (useOptionLabels).
       const options = f.values!.map((v) => `{ value: "${v}", label: "${names.p.camel}.${f.key}.${v}" }`).join(',\n  ');
       const keyType = refs.messageKey;
@@ -173,7 +206,9 @@ export function syncFormSchema(
       .find((p) => p.getName() === 'defaultValues')
       ?.getInitializer();
     const object = values && (Node.isObjectLiteralExpression(values) ? values : values.getFirstDescendantByKind(SyntaxKind.ObjectLiteralExpression));
-    if (!object) return void report.warnings.push(`${path}: no defaultValues in ${s.camel}FormOpts.`);
+    if (!object) {
+      return void report.warnings.push(`${path}: no defaultValues in ${s.camel}FormOpts.`);
+    }
     const param = opts && Node.isFunctionDeclaration(opts) ? opts.getParameters()[0]?.getName() : undefined;
     const present = new Set(object.getProperties().flatMap((p) => (Node.isPropertyAssignment(p) || Node.isShorthandPropertyAssignment(p) ? [p.getName()] : [])));
     const missing = usable.filter((f) => !present.has(f.key));
@@ -183,14 +218,18 @@ export function syncFormSchema(
       report.added.push(`defaultValues: ${f.key}`);
     }
     for (const key of present) {
-      if (bodyKeys.has(key)) continue;
+      if (bodyKeys.has(key)) {
+        continue;
+      }
       if (!prune) {
         report.stale.push(`defaultValues: ${key}`);
         continue;
       }
       const current = freshDefaults(file, s.camel);
       const prop = current.getProperties().find((p) => (Node.isPropertyAssignment(p) || Node.isShorthandPropertyAssignment(p)) && p.getName() === key);
-      if (prop) removeListElement(file, current.getProperties(), prop);
+      if (prop) {
+        removeListElement(file, current.getProperties(), prop);
+      }
       report.removed!.push(`defaultValues: ${key}`);
     }
   });
@@ -267,7 +306,9 @@ export function syncFormComponent(
         .getDescendantsOfKind(SyntaxKind.JsxElement)
         .filter((e) => e.getOpeningElement().getTagNameNode().getText() === 'form.AppField');
     const nameOf = (e: Node) => {
-      if (!Node.isJsxElement(e)) return undefined;
+      if (!Node.isJsxElement(e)) {
+        return undefined;
+      }
       const attr = e.getOpeningElement().getAttribute('name');
       const init = attr && Node.isJsxAttribute(attr) ? attr.getInitializer() : undefined;
       return init && Node.isStringLiteral(init) ? init.getLiteralValue() : undefined;
@@ -277,18 +318,23 @@ export function syncFormComponent(
 
     const body = new Set(fields.map((f) => f.key));
     for (const name of present) {
-      if (body.has(name) || /[[.]/.test(name)) continue;
+      if (body.has(name) || /[[.]/.test(name)) {
+        continue;
+      }
       if (!prune) {
         report.stale.push(`<form.AppField name="${name}">`);
         continue;
       }
       // Looked up again after each removal: editing the text forgets the old nodes.
       const next = () => appFields().find((e) => nameOf(e) === name);
-      for (let element = next(); element; element = next()) removeJsxElement(file, element);
+      for (let element = next(); element; element = next()) {
+        removeJsxElement(file, element);
+      }
       report.removed!.push(`<form.AppField name="${name}">`);
     }
-    for (const f of missing.filter((f) => f.kind === 'unsupported'))
+    for (const f of missing.filter((f) => f.kind === 'unsupported')) {
       report.warnings.push(`${f.key}: no input for this kind of field; add it by hand, or mark it {/* dafne-ignore: ${f.key} */}.`);
+    }
 
     for (const f of missing.filter((f) => f.kind !== 'unsupported')) {
       const topLevel = appFields().filter((e) => !e.getAncestors().some((a) => Node.isJsxElement(a) && a.getOpeningElement().getTagNameNode().getText() === 'form.AppField'));
@@ -314,8 +360,9 @@ export function syncFormComponent(
       }
       if (f.kind === 'enum') {
         ensureNamedImport(file, refs.schema, optionsName(f));
-        if (ensureHookLine(file, `const ${optionsVar(f)} = useOptionLabels(${optionsName(f)});`))
+        if (ensureHookLine(file, `const ${optionsVar(f)} = useOptionLabels(${optionsName(f)});`)) {
           ensureNamedImport(file, '@dafne/frontend-ui/hooks/use-option-labels', 'useOptionLabels');
+        }
       }
       report.added.push(`<form.AppField name="${f.key}">`);
     }

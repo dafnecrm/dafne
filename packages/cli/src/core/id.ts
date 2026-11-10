@@ -21,14 +21,19 @@ export const SERIAL_ID: IdSpec = { type: 'serial' };
 
 /** Checks `--idType`/`--idLength` and fills in the default length. */
 export function idSpec(type: string | undefined = 'serial', length?: number): IdSpec {
-  if (!(ID_TYPES as readonly string[]).includes(type))
+  if (!(ID_TYPES as readonly string[]).includes(type)) {
     throw new Error(`The id type "${type}" isn't one of: ${ID_TYPES.join(', ')}.`);
+  }
   if (type !== 'varchar') {
-    if (length !== undefined) throw new Error('--idLength is only for a varchar id.');
+    if (length !== undefined) {
+      throw new Error('--idLength is only for a varchar id.');
+    }
     return { type: type as IdType };
   }
   const value = length ?? DEFAULT_ID_LENGTH;
-  if (!Number.isInteger(value) || value < 1 || value > 255) throw new Error('The id length must be a whole number from 1 to 255.');
+  if (!Number.isInteger(value) || value < 1 || value > 255) {
+    throw new Error('The id length must be a whole number from 1 to 255.');
+  }
   return { type: 'varchar', length: value };
 }
 

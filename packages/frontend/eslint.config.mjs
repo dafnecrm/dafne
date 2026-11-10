@@ -32,11 +32,15 @@ export const boundaries = {
   },
 };
 
+/** Braces on every if/else body, one-liners included. */
+export const codeStyle = { rules: { curly: ["error", "all"] } };
+
 export default tseslint.config(
   { ignores: ["**/out-tsc/**", "**/node_modules/**"] },
   tseslint.configs.recommended,
   reactHooks.configs.flat["recommended-latest"],
   // As in eslint-config-next (apps/frontend): unused code is a warning.
   { rules: { "@typescript-eslint/no-unused-vars": "warn" } },
+  codeStyle,
   boundaries,
 );

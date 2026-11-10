@@ -90,7 +90,9 @@ export class CustomersService {
         updatedBy: userSummary,
       },
     });
-    if (!found) throw new NotFoundException('Customer not found');
+    if (!found) {
+      throw new NotFoundException('Customer not found');
+    }
     return found;
   }
 
@@ -139,8 +141,9 @@ export class CustomersService {
           updatedAt: new Date(),
         })
         .where(and(eq(customer.id, id), notDeleted));
-      if (result.rowCount === 0)
+      if (result.rowCount === 0) {
         throw new NotFoundException('Customer not found');
+      }
 
       await tx
         .delete(customerAddress)
@@ -160,8 +163,9 @@ export class CustomersService {
       .update(customer)
       .set({ deletedAt: now, updatedAt: now, updatedById: userId })
       .where(and(eq(customer.id, id), notDeleted));
-    if (result.rowCount === 0)
+    if (result.rowCount === 0) {
       throw new NotFoundException('Customer not found');
+    }
   }
 }
 
@@ -170,7 +174,9 @@ async function insertAddresses(
   customerId: string,
   addresses: CustomerAddressBody[],
 ) {
-  if (!addresses.length) return;
+  if (!addresses.length) {
+    return;
+  }
   await tx.insert(customerAddress).values(
     addresses.map((address, position) => ({
       id: randomUUID(),

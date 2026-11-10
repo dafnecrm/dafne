@@ -25,7 +25,9 @@ import { SalesOrderTypesModule } from '@dafne/backend-sales-order-types';
       useFactory: (config: ConfigService): CacheModuleOptions => {
         const ttl = 10 * 60 * 1000;
         const url = config.get<string>('REDIS_URL');
-        if (!url) return { ttl };
+        if (!url) {
+          return { ttl };
+        }
         const redis = createKeyv(url, { namespace: 'dafne' });
         // Without a listener, a Redis error would crash the process.
         redis.on('error', (error: unknown) =>

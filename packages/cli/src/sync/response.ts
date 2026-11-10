@@ -43,8 +43,9 @@ export function readResponse(path: string, contract: string, names: ResourceName
     for (const alias of file.getTypeAliases()) {
       const constant = /^\(typeof(\w+)\)\[number\]$/.exec(alias.getTypeNode()?.getText().replace(/\s/g, '') ?? '')?.[1];
       const array = constant && file.getVariableDeclaration(constant)?.getFirstDescendantByKind(SyntaxKind.ArrayLiteralExpression);
-      if (constant && array)
+      if (constant && array) {
         enums.set(alias.getName(), { constant, values: array.getElements().filter(Node.isStringLiteral).map((e) => e.getLiteralValue()) });
+      }
     }
 
     const strings = (name: string) =>
@@ -59,7 +60,9 @@ export function readResponse(path: string, contract: string, names: ResourceName
 
     for (const [name, listed] of [[`Listed${s.pascal}`, true], [`${s.pascal}Detail`, false]] as const) {
       const iface = file.getInterface(name);
-      if (!iface) throw new Error(`${path}: no ${name} interface.`);
+      if (!iface) {
+        throw new Error(`${path}: no ${name} interface.`);
+      }
       for (const prop of iface.getProperties()) {
         const key = prop.getName();
         const type = prop.getTypeNodeOrThrow().getText().replace(/\s/g, '');
@@ -67,21 +70,32 @@ export function readResponse(path: string, contract: string, names: ResourceName
         const base = type.replace(/\|null$/, '');
         const column = table?.columns.find((c) => c.key === key);
         let kind: ResponseKind | undefined;
-        if (base === 'string') kind = /Id$/.test(key) ? 'id' : column?.kind === 'date' ? 'date' : column?.kind === 'datetime' ? 'datetime' : 'text';
+        if (base === 'string') {
+          kind = /Id$/.test(key) ? 'id' : column?.kind === 'date' ? 'date' : column?.kind === 'datetime' ? 'datetime' : 'text';
+        }
         // customerId: number is a key to another record, like a string one.
-        else if (base === 'number') kind = /Id$/.test(key) ? 'id' : 'number';
-        else if (base === 'boolean') kind = 'boolean';
-        else if (base === 'Date') kind = column?.kind === 'date' ? 'date' : 'datetime';
-        else if (enums.has(base)) kind = 'enum';
+        else if (base === 'number') {
+          kind = /Id$/.test(key) ? 'id' : 'number';
+        } else if (base === 'boolean') {
+          kind = 'boolean';
+        } else if (base === 'Date') {
+          kind = column?.kind === 'date' ? 'date' : 'datetime';
+        } else if (enums.has(base)) {
+          kind = 'enum';
+        }
         if (!kind) {
           info.skipped.push(key);
-          if (listed) info.listedSkipped.push(key);
+          if (listed) {
+            info.listedSkipped.push(key);
+          }
           continue;
         }
         // customerId → "Customer".
         const label = casings(words(kind === 'id' ? key.replace(/Id$/, '') : key)).title;
         const field: ResponseField = { key, kind, optional, label, listed };
-        if (kind === 'text' && column?.kind === 'text' && column.formInput === 'editor') field.richText = true;
+        if (kind === 'text' && column?.kind === 'text' && column.formInput === 'editor') {
+          field.richText = true;
+        }
         if (kind === 'enum') {
           const e = enums.get(base)!;
           Object.assign(field, { enumType: base, enumConst: e.constant, values: e.values });

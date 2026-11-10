@@ -16,7 +16,9 @@ export class SalesOrderTransition extends StateTransition<SalesOrderStatus, numb
       .from(salesOrder)
       .where(and(eq(salesOrder.id, id), isNull(salesOrder.deletedAt)))
       .for('update');
-    if (!found) throw new NotFoundException(msg('salesOrders.notFound'));
+    if (!found) {
+      throw new NotFoundException(msg('salesOrders.notFound'));
+    }
     return found.status;
   }
 

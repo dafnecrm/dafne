@@ -88,7 +88,9 @@ export function syncContract(
   // Body schema.
   step((file) => {
     const object = schemaObject(file, `${s.camel}BodySchema`);
-    if (!object) return missing(`${s.camel}BodySchema`);
+    if (!object) {
+      return missing(`${s.camel}BodySchema`);
+    }
     const wanted = pick('body').map((column) => {
       const zod = bodyZod(names, column);
       return { name: column.key, text: `${column.key}: ${zod}`, column };
@@ -97,7 +99,9 @@ export function syncContract(
     const merged = merge('body', objectMembers(object), wanted, isColumn, report, { known: relations, refresh: refreshBody });
     for (const name of [...merged.added, ...merged.refreshed]) {
       const column = table.columns.find((c) => c.key === name)!;
-      if (column.notNull && !column.hasDefault) report.required.push(name);
+      if (column.notNull && !column.hasDefault) {
+        report.required.push(name);
+      }
     }
     replaceObject(file, object, merged.members);
   });
@@ -109,7 +113,9 @@ export function syncContract(
   // Query string of the list: one param per filter.
   step((file) => {
     const object = schemaObject(file, `list${p.pascal}QuerySchema`);
-    if (!object) return missing(`list${p.pascal}QuerySchema`);
+    if (!object) {
+      return missing(`list${p.pascal}QuerySchema`);
+    }
     const filters = pick('filter');
     const wanted = filters.map((column) => ({
       name: column.key,
@@ -139,7 +145,9 @@ export function syncContract(
     step((file) => {
       const declaration = file.getVariableDeclaration(name);
       const array = declaration?.getFirstDescendantByKind(SyntaxKind.ArrayLiteralExpression);
-      if (!array) return missing(name);
+      if (!array) {
+        return missing(name);
+      }
       const members = array.getElements().map((e) => ({
         name: Node.isStringLiteral(e) ? e.getLiteralValue() : e.getText(),
         text: e.getText(),
@@ -181,12 +189,16 @@ export function syncChildContract(
   step((file) => {
     const name = `${s.camel}BodySchema`;
     const object = schemaObject(file, name);
-    if (!object) return report.warnings.push(`${path}: "${name}" not found, so it wasn't synced.`);
+    if (!object) {
+      return report.warnings.push(`${path}: "${name}" not found, so it wasn't synced.`);
+    }
     const wanted = columns.filter(({ roles }) => roles.body).map(({ column }) => ({ name: column.key, text: `${column.key}: ${bodyZod(names, column)}`, column }));
     const merged = merge(name, objectMembers(object), wanted, isColumn, report, { refresh: refreshBody });
     for (const key of [...merged.added, ...merged.refreshed]) {
       const column = table.columns.find((c) => c.key === key)!;
-      if (column.notNull && !column.hasDefault) report.required.push(`${s.camel}.${key}`);
+      if (column.notNull && !column.hasDefault) {
+        report.required.push(`${s.camel}.${key}`);
+      }
     }
     replaceObject(file, object, merged.members);
   });
@@ -207,7 +219,9 @@ export function childRoles(column: Column, parent: string): Roles {
   // (`@api input`: the client sends them).
   const parentKey = column.referencesTable === parent || (!column.referencesTable && column.key === `${parent}Id`);
   const managed = parentKey || column.key === 'position';
-  if (managed && !column.tags.size) return { body: false, listed: false, detail: false, filter: false, sort: false };
+  if (managed && !column.tags.size) {
+    return { body: false, listed: false, detail: false, filter: false, sort: false };
+  }
   // Children are never filtered or sorted on their own.
   return { ...rolesOf(column), filter: false, sort: false };
 }
@@ -222,7 +236,9 @@ function syncEnums(step: (edit: (file: SourceFile) => void) => void, names: Reso
       const existing = file.getVariableDeclaration(constant);
       if (existing) {
         const array = existing.getFirstDescendantByKind(SyntaxKind.ArrayLiteralExpression);
-        if (array && array.getText() !== values) file.replaceText([array.getStart(), array.getEnd()], values);
+        if (array && array.getText() !== values) {
+          file.replaceText([array.getStart(), array.getEnd()], values);
+        }
         return;
       }
       const body = file.getVariableStatement(`${s.camel}BodySchema`);
@@ -239,9 +255,15 @@ function syncEnums(step: (edit: (file: SourceFile) => void) => void, names: Reso
 /** Helpers from common.ts the fields use. */
 function importHelpers(file: SourceFile) {
   const text = file.getFullText();
-  for (const helper of COMMON_HELPERS) if (text.includes(`${helper}(`)) ensureNamedImport(file, './common.ts', helper);
+  for (const helper of COMMON_HELPERS) {
+    if (text.includes(`${helper}(`)) {
+      ensureNamedImport(file, './common.ts', helper);
+    }
+  }
   // Message keys (see wiring/messages.ts).
-  if (/\bmsg\(/.test(text)) ensureNamedImport(file, './messages/index.ts', 'msg');
+  if (/\bmsg\(/.test(text)) {
+    ensureNamedImport(file, './messages/index.ts', 'msg');
+  }
 }
 
 function syncInterface(
@@ -254,7 +276,9 @@ function syncInterface(
   options: { known: Set<string>; inherited?: Set<string> },
 ) {
   const iface = file.getInterface(name);
-  if (!iface) return report.warnings.push(`${path}: "${name}" not found, so it wasn't synced.`);
+  if (!iface) {
+    return report.warnings.push(`${path}: "${name}" not found, so it wasn't synced.`);
+  }
   const members = iface.getMembers().map((m) => ({
     name: Node.isPropertySignature(m) ? m.getName() : m.getText(),
     text: memberText(m),
@@ -348,10 +372,11 @@ function merge(
     const want = wantedByName.get(member.name);
     if (want) {
       const text = options.refresh?.(member, want, report, where);
-      if (text !== undefined) refreshed.push(member.name);
+      if (text !== undefined) {
+        refreshed.push(member.name);
+      }
       kept.push(text === undefined ? member : { ...member, text });
-    }
-    else if (isColumn.has(member.name) && !options.inherited?.has(member.name)) {
+    } else if (isColumn.has(member.name) && !options.inherited?.has(member.name)) {
       report.removed.push(`${where}: ${member.name}`);
     } else {
       kept.push(member);
@@ -359,8 +384,9 @@ function merge(
         member.name.startsWith('...') ||
         options.known?.has(member.name) ||
         options.inherited?.has(member.name);
-      if (!options.quietUnknown && !explained)
+      if (!options.quietUnknown && !explained) {
         report.unknown.push(`${where}: ${member.name}`);
+      }
     }
   }
 
@@ -369,12 +395,16 @@ function merge(
   const result = [...kept];
   const added: Wanted[] = [];
   wanted.forEach((w, index) => {
-    if (result.some((m) => m.name === w.name)) return;
+    if (result.some((m) => m.name === w.name)) {
+      return;
+    }
     const before = wanted.slice(0, index).map((x) => x.name);
     const after = wanted.slice(index + 1).map((x) => x.name);
     let at = -1;
     result.forEach((m, i) => {
-      if (before.includes(m.name)) at = i + 1;
+      if (before.includes(m.name)) {
+        at = i + 1;
+      }
     });
     if (at === -1) {
       const next = result.findIndex((m) => after.includes(m.name));
@@ -383,7 +413,9 @@ function merge(
     result.splice(at, 0, w);
     added.push(w);
   });
-  for (const w of added) report.added.push(`${where}: ${w.name}`);
+  for (const w of added) {
+    report.added.push(`${where}: ${w.name}`);
+  }
   return { members: result.map((m) => m.text), added: added.map((w) => w.name), refreshed };
 }
 
@@ -402,9 +434,13 @@ const acceptsNull = (code: string) => /\boptional(Text|Date|Id|Uuid)\(|\.nullish
  * other hand-written validation in it is lost, so the report says so.
  */
 function refreshBody(member: Member, wanted: Wanted, report: SyncReport, where: string) {
-  if (!wanted.column) return undefined;
+  if (!wanted.column) {
+    return undefined;
+  }
   const { comments, code } = splitComments(member.text);
-  if (acceptsNull(code) === !wanted.column.notNull) return undefined;
+  if (acceptsNull(code) === !wanted.column.notNull) {
+    return undefined;
+  }
   report.added.push(`${where}: ${member.name} (now ${wanted.column.notNull ? 'required' : 'optional'})`);
   report.warnings.push(
     `${where}: ${member.name} was generated again because its column is now ${wanted.column.notNull ? 'NOT NULL' : 'nullable'}; add back any custom validation it had.`,
@@ -414,9 +450,13 @@ function refreshBody(member: Member, wanted: Wanted, report: SyncReport, where: 
 
 /** Adds or removes `| null` in a response member, keeping the rest of its type. */
 function refreshResponse(member: Member, wanted: Wanted, report: SyncReport, where: string) {
-  if (!wanted.column) return undefined;
+  if (!wanted.column) {
+    return undefined;
+  }
   const hasNull = /\|\s*null\b/.test(member.text);
-  if (hasNull === !wanted.column.notNull) return undefined;
+  if (hasNull === !wanted.column.notNull) {
+    return undefined;
+  }
   report.added.push(`${where}: ${member.name} (${wanted.column.notNull ? 'not null' : '| null'})`);
   return wanted.column.notNull
     ? member.text.replace(/\s*\|\s*null\b/, '')

@@ -39,7 +39,9 @@ function removeTests(file: SourceFile, matches: (test: Node) => boolean): string
   const removed: string[] = [];
   for (let i = tests(file).length - 1; i >= 0; i--) {
     const test = tests(file)[i];
-    if (!matches(test)) continue;
+    if (!matches(test)) {
+      continue;
+    }
     removed.push(titleOf(test));
     (test.getParent() as Node & { remove(): void }).remove();
   }
@@ -51,10 +53,14 @@ function removeTests(file: SourceFile, matches: (test: Node) => boolean): string
  * of a resource whose columns `dropped` were just removed (after syncOne).
  */
 export function syncDropped(changes: Changes, names: ResourceNames, dropped: string[]) {
-  if (!dropped.length) return;
+  if (!dropped.length) {
+    return;
+  }
   const contractPath = contractFile(names);
   const contract = changes.read(contractPath);
-  if (contract === undefined) return;
+  if (contract === undefined) {
+    return;
+  }
   const tablePath = tableFile(names);
   const tableSource = changes.read(tablePath);
   const table = tableSource === undefined ? undefined : readTable(tablePath, tableSource, names);
@@ -67,13 +73,16 @@ export function syncDropped(changes: Changes, names: ResourceNames, dropped: str
 
   // Contract: the enums only the removed columns used (INVOICE_STATUSES, InvoiceStatus).
   const original = changes.original(contractPath);
-  if (original !== undefined) changes.update(contractPath, (text) => dropUnusedEnums(contractPath, text, original));
+  if (original !== undefined) {
+    changes.update(contractPath, (text) => dropUnusedEnums(contractPath, text, original));
+  }
 
   // Contract: `/** Defaults to name. */` above sortBy.
-  if (sort)
+  if (sort) {
     changes.update(contractPath, (text) =>
       text.replace(new RegExp(`(\\/\\*\\*\\s*Defaults to )(${keys})(\\.\\s*\\*\\/)`), `$1${sort}$3`),
     );
+  }
 
   const servicePath = `${backendLib(names.p.kebab)}/src/${names.p.kebab}.service.ts`;
   if (changes.exists(servicePath)) {
@@ -85,11 +94,12 @@ export function syncDropped(changes: Changes, names: ResourceNames, dropped: str
         return sort ? `${head}${q}${sort}${q}` : match;
       }),
     );
-    if (defaultDropped && !sort)
+    if (defaultDropped && !sort) {
       changes.warn(`${servicePath}: the default sort was a removed column, and no sort field is left: fix it by hand.`);
+    }
 
     const specPath = servicePath.replace(/\.ts$/, '.spec.ts');
-    if (changes.exists(specPath))
+    if (changes.exists(specPath)) {
       changes.update(specPath, (text) => {
         if (defaultDropped && sort) {
           // The default-order test: asc(order.name) → asc(order.createdAt), and its title.
@@ -99,15 +109,17 @@ export function syncDropped(changes: Changes, names: ResourceNames, dropped: str
         return editSource(specPath, text, (file) => {
           // The rows written: expect(row).toEqual({ … }), expect(update.set.mock…).toMatchObject({ … }).
           dropExpectedKeys(file, gone, /^(\w*[rR]ow|\w+\.(values|set)\.mock\b.*)$/);
-          for (const title of dropFilters(file, names, gone, filter))
+          for (const title of dropFilters(file, names, gone, filter)) {
             changes.warn(`${specPath}: no text filter is left: removed the test "${title}".`);
+          }
           dropFieldTests(file, gone);
         });
       });
+    }
   }
 
   const contractSpecPath = contractPath.replace(/\.ts$/, '.spec.ts');
-  if (changes.exists(contractSpecPath))
+  if (changes.exists(contractSpecPath)) {
     changes.update(contractSpecPath, (text) =>
       editSource(contractSpecPath, text, (file) => {
         dropExpectedFailures(file, gone);
@@ -116,6 +128,7 @@ export function syncDropped(changes: Changes, names: ResourceNames, dropped: str
         dropFieldTests(file, gone);
       }),
     );
+  }
 }
 
 /** Uses of `name` in `text` outside the statements in `except`. */
@@ -134,13 +147,17 @@ function dropUnusedEnums(path: string, text: string, original: string): string {
       const found = file.getTypeAliases().flatMap((alias) => {
         const constant = /^\(typeof(\w+)\)\[number\]$/.exec(alias.getTypeNode()?.getText().replace(/\s/g, '') ?? '')?.[1];
         const statement = constant && file.getVariableStatement(constant);
-        if (!statement) return [];
+        if (!statement) {
+          return [];
+        }
         const declarations = [alias.getText(true), statement.getText(true)];
         const usedNow = [alias.getName(), constant].some((n) => usesOf(file.getFullText(), n, declarations) > 0);
         const usedBefore = [alias.getName(), constant].some((n) => usesOf(original, n, declarations) > 0);
         return usedBefore && !usedNow ? [{ alias, statement }] : [];
       })[0];
-      if (!found) return;
+      if (!found) {
+        return;
+      }
       found.alias.remove();
       file.getVariableStatement(found.statement.getDeclarations()[0].getName())?.remove();
     }
@@ -157,15 +174,21 @@ function dropExpectedKeys(file: SourceFile, gone: Set<string>, actual: RegExp) {
       .getDescendantsOfKind(SyntaxKind.CallExpression)
       .filter((call) => {
         const callee = call.getExpression();
-        if (!Node.isPropertyAccessExpression(callee) || !['toEqual', 'toMatchObject'].includes(callee.getName())) return false;
+        if (!Node.isPropertyAccessExpression(callee) || !['toEqual', 'toMatchObject'].includes(callee.getName())) {
+          return false;
+        }
         const target = callee.getExpression();
-        if (!Node.isCallExpression(target) || target.getExpression().getText() !== 'expect') return false;
+        if (!Node.isCallExpression(target) || target.getExpression().getText() !== 'expect') {
+          return false;
+        }
         return actual.test(target.getArguments()[0]?.getText().replace(/\s/g, '') ?? '');
       })
       .flatMap((call) => call.getArguments()[0]?.asKind(SyntaxKind.ObjectLiteralExpression) ?? [])
       .map((object) => ({ object, prop: object.getProperties().find((p) => Node.isPropertyAssignment(p) && gone.has(p.getName())) }))
       .find(({ prop }) => prop);
-  for (let found = next(); found; found = next()) removeListElement(file, found.object.getProperties(), found.prop!);
+  for (let found = next(); found; found = next()) {
+    removeListElement(file, found.object.getProperties(), found.prop!);
+  }
 }
 
 /**
@@ -183,7 +206,9 @@ function dropExpectedFailures(file: SourceFile, gone: Set<string>) {
   removeTests(file, (test) => failures(test).some((a) => a.getElements().length > 0 && a.getElements().every(isGone)));
   for (;;) {
     const array = failures(file).find((a) => a.getElements().some(isGone));
-    if (!array) return;
+    if (!array) {
+      return;
+    }
     removeListElement(file, array.getElements(), array.getElements().find(isGone)!);
   }
 }
@@ -198,7 +223,9 @@ function dropExpectedFailures(file: SourceFile, gone: Set<string>) {
 function dropFilters(file: SourceFile, names: ResourceNames, gone: Set<string>, filter: string | undefined): string[] {
   const variable = names.s.camel;
   const keyOf = (call: Node) => {
-    if (!Node.isCallExpression(call) || call.getExpression().getText() !== 'ilike') return undefined;
+    if (!Node.isCallExpression(call) || call.getExpression().getText() !== 'ilike') {
+      return undefined;
+    }
     const column = call.getArguments()[0];
     return column && Node.isPropertyAccessExpression(column) && column.getExpression().getText() === variable ? column.getName() : undefined;
   };
@@ -218,20 +245,28 @@ function dropFilters(file: SourceFile, names: ResourceNames, gone: Set<string>, 
   const removed: string[] = [];
   for (let i = tests(file).length - 1; i >= 0; i--) {
     const test = () => tests(file)[i];
-    if (!droppedIn(test()).length) continue;
+    if (!droppedIn(test()).length) {
+      continue;
+    }
     if (droppedIn(test()).length < ilikes(test()).length) {
       // Other filters are left: only the removed ones go.
       for (let call = droppedIn(test())[0]; call; call = droppedIn(test())[0]) {
         const parent = call.getParentIfKind(SyntaxKind.CallExpression);
-        if (!parent) break;
+        if (!parent) {
+          break;
+        }
         removeListElement(file, parent.getArguments(), call);
       }
-      for (let found = listProp(test()); found; found = listProp(test()))
+      for (let found = listProp(test()); found; found = listProp(test())) {
         removeListElement(file, found.object.getProperties(), found.prop!);
+      }
     } else if (filter) {
-      for (let call = droppedIn(test())[0]; call; call = droppedIn(test())[0])
+      for (let call = droppedIn(test())[0]; call; call = droppedIn(test())[0]) {
         call.getArguments()[0].replaceWithText(`${variable}.${filter}`);
-      for (let found = listProp(test()); found; found = listProp(test())) found.prop!.getNameNode().replaceWithText(filter);
+      }
+      for (let found = listProp(test()); found; found = listProp(test())) {
+        found.prop!.getNameNode().replaceWithText(filter);
+      }
     } else {
       removed.push(titleOf(test()));
       (test().getParent() as Node & { remove(): void }).remove();
@@ -255,14 +290,22 @@ function dropFieldTests(file: SourceFile, gone: Set<string>) {
   const phrases = [...gone].map((key) => new RegExp(`\\b${lower(key)}\\b`, 'i'));
   for (let i = 0; i < tests(file).length; i++) {
     const title = tests(file)[i].getArguments()[0];
-    if (!title || !Node.isStringLiteral(title)) continue;
+    if (!title || !Node.isStringLiteral(title)) {
+      continue;
+    }
     // "verb a, b and c": the clauses after the first word.
     const [, verb, rest] = /^(\w+ )(.+)$/.exec(title.getLiteralValue()) ?? [];
-    if (!rest) continue;
+    if (!rest) {
+      continue;
+    }
     const clauses = rest.split(/, | and /);
-    if (clauses.length < 2) continue;
+    if (clauses.length < 2) {
+      continue;
+    }
     const kept = clauses.filter((c) => !phrases.some((phrase) => phrase.test(c)));
-    if (kept.length === clauses.length || !kept.length) continue;
+    if (kept.length === clauses.length || !kept.length) {
+      continue;
+    }
     const joined = kept.length === 1 ? kept[0] : `${kept.slice(0, -1).join(', ')} and ${kept[kept.length - 1]}`;
     title.setLiteralValue(`${verb}${joined}`);
   }

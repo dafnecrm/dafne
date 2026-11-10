@@ -24,13 +24,23 @@ export async function runGenerator(
   const { dependencies = [], next } = await generate(changes);
   await changes.format();
 
-  if (!changes.summary().length) logger.warn('Nothing to do: everything is already there.');
-  if (dependencies.length) logger.info(`Also generated, since they were missing: ${dependencies.join(', ')}.`);
-  for (const warning of changes.warnings) logger.warn(warning);
+  if (!changes.summary().length) {
+    logger.warn('Nothing to do: everything is already there.');
+  }
+  if (dependencies.length) {
+    logger.info(`Also generated, since they were missing: ${dependencies.join(', ')}.`);
+  }
+  for (const warning of changes.warnings) {
+    logger.warn(warning);
+  }
 
   return () => {
-    if (!next.length) return;
+    if (!next.length) {
+      return;
+    }
     logger.info('\nNext steps:');
-    for (const step of next) logger.info(`  ${step}`);
+    for (const step of next) {
+      logger.info(`  ${step}`);
+    }
   };
 }

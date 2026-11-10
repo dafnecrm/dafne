@@ -15,7 +15,9 @@ export async function fileToAvatar(file: File): Promise<string> {
   const canvas = document.createElement("canvas");
   canvas.width = canvas.height = AVATAR_SIZE;
   const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("Canvas is not supported");
+  if (!ctx) {
+    throw new Error("Canvas is not supported");
+  }
   ctx.drawImage(
     bitmap,
     (bitmap.width - side) / 2,
@@ -33,8 +35,9 @@ export async function fileToAvatar(file: File): Promise<string> {
   for (const quality of [0.85, 0.7, 0.5]) {
     for (const type of ["image/webp", "image/jpeg"]) {
       const url = canvas.toDataURL(type, quality);
-      if (url.startsWith(`data:${type}`) && url.length <= AVATAR_MAX_LENGTH)
+      if (url.startsWith(`data:${type}`) && url.length <= AVATAR_MAX_LENGTH) {
         return url;
+      }
     }
   }
   throw new AvatarTooDetailedError();

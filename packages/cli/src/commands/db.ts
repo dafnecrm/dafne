@@ -17,8 +17,12 @@ export function generateMigration(
   options: { name?: string; custom?: boolean } = {},
 ) {
   const args = ["run", `${project}:migration:generate`, "--"];
-  if (options.name) args.push("--name", options.name);
-  if (options.custom) args.push("--custom");
+  if (options.name) {
+    args.push("--name", options.name);
+  }
+  if (options.custom) {
+    args.push("--custom");
+  }
   return runNx(root, args);
 }
 
@@ -41,9 +45,15 @@ export function dbCommand() {
         locale?: string;
       }) => {
         const args = ["run", `${MIGRATOR}:create-database`, "--"];
-        if (options.adminUrl) args.push("--admin-url", options.adminUrl);
-        if (options.icuLocale) args.push("--icu-locale", options.icuLocale);
-        if (options.locale) args.push("--locale", options.locale);
+        if (options.adminUrl) {
+          args.push("--admin-url", options.adminUrl);
+        }
+        if (options.icuLocale) {
+          args.push("--icu-locale", options.icuLocale);
+        }
+        if (options.locale) {
+          args.push("--locale", options.locale);
+        }
         process.exitCode = await runNx(findWorkspaceRoot(), args);
       },
     );

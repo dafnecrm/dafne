@@ -46,10 +46,15 @@ export function BreadcrumbProvider({ children }: { children: ReactNode }) {
   const [labels, setLabels] = useState<Labels>({});
   const setLabel = (href: string, label: string | undefined) =>
     setLabels((current) => {
-      if (current[href] === label) return current;
+      if (current[href] === label) {
+        return current;
+      }
       const next = { ...current };
-      if (label === undefined) delete next[href];
-      else next[href] = label;
+      if (label === undefined) {
+        delete next[href];
+      } else {
+        next[href] = label;
+      }
       return next;
     });
   return (
@@ -108,7 +113,9 @@ interface Level {
 function useSegmentLabel() {
   const t = useTranslations("breadcrumb");
   return (segment: string) => {
-    if (t.has(segment as never)) return t(segment as never);
+    if (t.has(segment as never)) {
+      return t(segment as never);
+    }
     const words = decodeURIComponent(segment).replace(/[-_]+/g, " ");
     return words.charAt(0).toUpperCase() + words.slice(1);
   };
@@ -121,7 +128,9 @@ function ActiveBreadcrumb() {
   const active = findNavItem(pathname);
   const t = useTranslations("nav");
   const segmentLabel = useSegmentLabel();
-  if (!active) return null;
+  if (!active) {
+    return null;
+  }
 
   const dynamic = new Set(
     Object.values(params)
@@ -129,9 +138,12 @@ function ActiveBreadcrumb() {
       .map((value) => encodeURIComponent(decodeURIComponent(String(value)))),
   );
   const levels: Level[] = [];
-  if (active.section.href !== active.item.href || active.section.title !== active.item.title)
+  if (active.section.href !== active.item.href || active.section.title !== active.item.title) {
     levels.push({ href: active.section.href, label: t(active.section.title) });
-  if (active.group) levels.push({ href: undefined, label: t(active.group.title) });
+  }
+  if (active.group) {
+    levels.push({ href: undefined, label: t(active.group.title) });
+  }
   levels.push({ href: active.item.href, label: t(active.item.title) });
 
   // Segments after the page, e.g. "/customers" + "/abc" + "/edit".

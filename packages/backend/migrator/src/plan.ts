@@ -16,7 +16,9 @@ export interface Migration {
 
 /** The migrations of a schema package, as drizzle reads them. */
 export function readMigrations(pkg: DatabasePackage): Migration[] {
-  if (!existsSync(pkg.migrations)) return [];
+  if (!existsSync(pkg.migrations)) {
+    return [];
+  }
   return readMigrationFiles({ migrationsFolder: pkg.migrations }).map((m) => ({
     schema: pkg.schema,
     name: m.name!,

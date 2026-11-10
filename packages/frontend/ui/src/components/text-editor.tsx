@@ -66,7 +66,7 @@ function TextEditor(props: TextEditorProps) {
     () => true,
     () => false
   )
-  if (!inBrowser)
+  if (!inBrowser) {
     return (
       <div
         data-slot="text-editor"
@@ -77,6 +77,7 @@ function TextEditor(props: TextEditorProps) {
         <div className={cn('min-h-16', props.contentClassName)} />
       </div>
     )
+  }
   return <TiptapEditor {...props} />
 }
 
@@ -118,9 +119,13 @@ function TiptapEditor({
 
   // Follow changes from outside (a form reset, a record loaded later…).
   React.useEffect(() => {
-    if (!editor) return
+    if (!editor) {
+      return
+    }
     const current = editor.isEmpty ? '' : editor.getHTML()
-    if (value !== current) editor.commands.setContent(value, { emitUpdate: false })
+    if (value !== current) {
+      editor.commands.setContent(value, { emitUpdate: false })
+    }
   }, [editor, value])
 
   React.useEffect(() => {
@@ -229,10 +234,15 @@ const ACTION_GROUPS: Action[][] = [
       run: (e, text) => {
         const previous = e.getAttributes('link').href as string | undefined
         const href = window.prompt(text('linkPrompt'), previous ?? 'https://')
-        if (href === null) return
+        if (href === null) {
+          return
+        }
         const chain = e.chain().focus().extendMarkRange('link')
-        if (href.trim() === '') chain.unsetLink().run()
-        else chain.setLink({ href: href.trim() }).run()
+        if (href.trim() === '') {
+          chain.unsetLink().run()
+        } else {
+          chain.setLink({ href: href.trim() }).run()
+        }
       },
     },
   ],
