@@ -95,7 +95,8 @@ export function PageBreadcrumb() {
 }
 
 interface Level {
-  href: string;
+  /** undefined: a group of pages, shown as text. */
+  href: string | undefined;
   /** undefined: an id whose page hasn't named it yet. */
   label: string | undefined;
 }
@@ -130,6 +131,7 @@ function ActiveBreadcrumb() {
   const levels: Level[] = [];
   if (active.section.href !== active.item.href || active.section.title !== active.item.title)
     levels.push({ href: active.section.href, label: t(active.section.title) });
+  if (active.group) levels.push({ href: undefined, label: t(active.group.title) });
   levels.push({ href: active.item.href, label: t(active.item.title) });
 
   // Segments after the page, e.g. "/customers" + "/abc" + "/edit".
@@ -160,6 +162,8 @@ function ActiveBreadcrumb() {
               <BreadcrumbItem className={hidden}>
                 {last ? (
                   <BreadcrumbPage>{label}</BreadcrumbPage>
+                ) : level.href === undefined ? (
+                  <span>{label}</span>
                 ) : (
                   <BreadcrumbLink render={<Link href={level.href} />}>
                     {label}
