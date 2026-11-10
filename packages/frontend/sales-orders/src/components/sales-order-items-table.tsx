@@ -63,11 +63,13 @@ export function SalesOrderItemTable({
   items,
   path,
   rowActions,
+  editButton,
 }: {
   salesOrderId: number;
   items: SalesOrderItemRow[];
   path: string;
   rowActions?: (row: SalesOrderItemRow, index: number) => ReactNode;
+  editButton?: ReactNode;
 }) {
   const t = useTranslations();
   const columns = useSalesOrderItemColumns();
@@ -109,9 +111,9 @@ export function SalesOrderItemTable({
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
-            <Button variant="outline" size="sm">
-              <Link href={editHref}>{t("salesOrders.items.addOne")}</Link>
-            </Button>
+            {editButton ?? <Button variant="outline" size="sm">
+                <Link href={editHref}>{t("salesOrders.items.addOne")}</Link>
+              </Button>}
           </EmptyContent>
         </Empty>
       }

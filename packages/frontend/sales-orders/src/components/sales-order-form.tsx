@@ -76,6 +76,20 @@ export function SalesOrderForm({
     index: number | null;
   }>({ open: false, index: null });
 
+  function CreateSalesOrderButton() {
+    return <Button
+      variant="outline"
+      onClick={() =>
+        setSalesOrderItemSheet({
+          open: true,
+          index: null,
+        })
+      }
+    >
+      {t("salesOrders.items.addOne")}
+    </Button>
+  }
+
   return (
     <form
       noValidate
@@ -136,6 +150,7 @@ export function SalesOrderForm({
                   <DetailSection
                     title={t("salesOrders.sections.items")}
                     groupClassName="flex"
+                    actions={<CreateSalesOrderButton />}
                   >
                     <SalesOrderItemTable
                       salesOrderId={salesOrder.id}
@@ -163,6 +178,7 @@ export function SalesOrderForm({
                           </Button>
                         </>
                       )}
+                      editButton={<CreateSalesOrderButton />}
                     />
                   </DetailSection>
                   <SalesOrderItemSheet

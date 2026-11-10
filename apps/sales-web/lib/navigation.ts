@@ -55,16 +55,17 @@ export const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
-    title: "admin",
-    href: "/users",
-    adminOnly: true,
-    items: [{ title: "users", href: "/users", icon: UsersIcon }],
-  },
-  {
     title: "account",
     href: "/account",
     items: [{ title: "account", href: "/account", icon: UserIcon }],
     hidden: true,
+  },
+  // Admin
+  {
+    title: "admin",
+    href: ".",
+    adminOnly: true,
+    items: [{ title: "users", href: "/admin/users", icon: UsersIcon }],
   },
 ];
 
