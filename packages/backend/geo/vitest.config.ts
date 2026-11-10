@@ -6,6 +6,7 @@ export default defineConfig({
   // needs decorators and their type metadata (emitDecoratorMetadata).
   plugins: [swc.vite({ module: { type: 'es6' } })],
   test: {
+    name: '@dafne/backend-geo',
     globals: true,
     include: ['src/**/*.spec.ts'],
   },

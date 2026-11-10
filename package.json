@@ -24,6 +24,7 @@
     "eslint-plugin-react-hooks": "catalog:",
     "nx": "catalog:",
     "typescript": "catalog:",
-    "typescript-eslint": "catalog:"
+    "typescript-eslint": "catalog:",
+    "vitest": "catalog:"
   }
 }
