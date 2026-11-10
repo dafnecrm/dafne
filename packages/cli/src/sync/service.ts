@@ -80,6 +80,9 @@ export function syncService(
 
   const listed = keys((r) => r.listed);
   const body = keys((r) => r.body);
+  // The primary key is set on create only: an update keeps the path's.
+  const primary = new Set(table.columns.filter((c) => c.primaryKey).map((c) => c.key));
+  const updatable = body.filter((key) => !primary.has(key));
   // Not in the response: left out of findFirst. createdById/updatedById are
   // already there in the generated services.
   const hidden = keys((r) => !r.listed && !r.detail);
@@ -125,7 +128,7 @@ export function syncService(
       method: `update${s.pascal}`,
       locate: inMethod(`update${s.pascal}`, callArgument('set')),
       owns: (key, value) => isColumn.has(key) && value === `body.${key}`,
-      wanted: body.map((key) => ({ key, text: `${key}: body.${key}` })),
+      wanted: updatable.map((key) => ({ key, text: `${key}: body.${key}` })),
       label: 'update set',
     },
   ];

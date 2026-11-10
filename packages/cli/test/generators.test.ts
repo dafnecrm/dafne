@@ -107,12 +107,22 @@ describe('backend-resource', () => {
     expect(read('packages/backend/refunds/src/refunds.service.spec.ts')).toContain("paymentId: '00000000-0000-4000-8000-000000000001'");
   });
 
-  it('makes a varchar id of the length given, random by default', async () => {
+  it('makes a varchar id of the length given, picked by the client', async () => {
     await generate(backendResourceGenerator, { name: 'voucher', idType: 'varchar', idLength: 12 });
     const table = read('packages/backend/database/src/tables/vouchers.ts');
-    expect(table).toContain("import { randomUUID } from 'node:crypto';");
-    expect(table).toMatch(/id: varchar\('id', \{ length: 12 \}\)\s*\.primaryKey\(\)\s*\.\$defaultFn\(\(\) => randomUUID\(\)\.replaceAll\('-', ''\)\.slice\(0, 12\)\)/);
-    expect(read('packages/contracts/src/vouchers.ts')).toContain('id: z.string().max(12).optional()');
+    expect(table).not.toMatch(/randomUUID|\$defaultFn/);
+    expect(table).toMatch(/id: varchar\('id', \{ length: 12 \}\)\.primaryKey\(\)/);
+    const contract = read('packages/contracts/src/vouchers.ts');
+    expect(contract).toContain('id: z.string().max(12).optional()');
+    // In the body: the client picks it.
+    expect(contract).toMatch(/voucherBodySchema = z\.strictObject\(\{\s*id: requiredText\(12, msg\('vouchers\.id\.required'\)\)/);
+    const service = read('packages/backend/vouchers/src/vouchers.service.ts');
+    expect(service).toMatch(/\.values\(\{\s*id: body\.id,/);
+    // Set on create only.
+    expect(service).not.toMatch(/\.set\(\{[^}]*id: body\.id/);
+    expect(service).toContain(".catch(rethrowTakenId)");
+    expect(service).toContain("constraint === 'voucher_pkey'");
+    expect(read('packages/contracts/src/messages/en.ts')).toMatch(/id: \{[^}]*taken: 'This id is already in use'/);
     expect(read('packages/backend/vouchers/src/vouchers.controller.ts')).toContain("@Param('id', new TextIdPipe(12)) id: string");
   });
 

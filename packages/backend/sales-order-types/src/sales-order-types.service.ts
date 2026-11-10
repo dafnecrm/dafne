@@ -1,6 +1,11 @@
+import { PostgresErrorCode } from '@dafne/backend-common';
 import { schema, type Database } from '@dafne/backend-database';
 import { InjectDrizzle } from '@nestjs/drizzle';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   and,
   asc,
@@ -41,6 +46,24 @@ const EXACT_FILTERS: Partial<
 /** Sales order types that haven't been deleted. */
 const notDeleted = isNull(salesOrderType.deletedAt);
 
+/**
+ * A taken id (the client picks it) becomes a 409; drizzle wraps the
+ * Postgres error as the cause. Rethrows anything else.
+ */
+function rethrowTakenId(error: unknown): never {
+  const cause = error instanceof Error && error.cause ? error.cause : error;
+  const { code, constraint } =
+    cause instanceof Error
+      ? (cause as { code?: unknown; constraint?: unknown })
+      : {};
+  if (
+    code === PostgresErrorCode.UNIQUE_VIOLATION &&
+    constraint === 'sales_order_type_pkey'
+  )
+    throw new ConflictException(msg('salesOrderTypes.id.taken'));
+  throw error;
+}
+
 /** Only the user's ID and name, for "created by" / "updated by". */
 const userSummary = { columns: { id: true, name: true } } as const;
 
@@ -80,6 +103,7 @@ export class SalesOrderTypesService {
       db
         .select({
           id: salesOrderType.id,
+          description: salesOrderType.description,
           createdAt: salesOrderType.createdAt,
           updatedAt: salesOrderType.updatedAt,
         })
@@ -101,7 +125,7 @@ export class SalesOrderTypesService {
   async getSalesOrderType(id: string): Promise<SalesOrderTypeDetail> {
     const found = await this.db.query.salesOrderType.findFirst({
       where: { id, deletedAt: { isNull: true } },
-      columns: { description: false, createdById: false, updatedById: false },
+      columns: { createdById: false, updatedById: false },
       with: { createdBy: userSummary, updatedBy: userSummary },
     });
     if (!found) throw new NotFoundException(msg('salesOrderTypes.notFound'));
@@ -115,16 +139,19 @@ export class SalesOrderTypesService {
   ): Promise<SalesOrderTypeDetail> {
     // One instant for both: createdAt and updatedAt start equal.
     const now = new Date();
-    // The id is random: Drizzle picks it ($defaultFn).
+    // The id is the body's: the client picks it (409 when taken).
     const [{ id }] = await this.db
       .insert(salesOrderType)
       .values({
+        id: body.id,
+        description: body.description,
         createdAt: now,
         updatedAt: now,
         createdById: userId,
         updatedById: userId,
       })
-      .returning({ id: salesOrderType.id });
+      .returning({ id: salesOrderType.id })
+      .catch(rethrowTakenId);
     return this.getSalesOrderType(id);
   }
 
@@ -140,6 +167,7 @@ export class SalesOrderTypesService {
     const result = await this.db
       .update(salesOrderType)
       .set({
+        description: body.description,
         updatedById: userId,
         // The time of this change.
         updatedAt: new Date(),

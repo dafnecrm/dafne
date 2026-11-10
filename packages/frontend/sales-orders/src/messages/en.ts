@@ -31,6 +31,7 @@ export const en = {
     customer: "Customer",
     type: "Type",
     items: "Items",
+    customerId: "Customer id",
   },
   items: {
     add: "Add item",

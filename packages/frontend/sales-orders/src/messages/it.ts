@@ -29,6 +29,7 @@ export const it: SalesOrdersMessages = {
     customer: "Cliente",
     type: "Tipo",
     items: "Items",
+    customerId: "Customer id",
   },
   items: {
     add: "Aggiungi riga",

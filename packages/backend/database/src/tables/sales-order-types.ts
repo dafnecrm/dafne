@@ -1,4 +1,3 @@
-import { randomUUID } from 'node:crypto';
 import { defineRelationsPart } from 'drizzle-orm';
 import { index, timestamp, varchar } from 'drizzle-orm/pg-core';
 import { user } from '../auth.js';
@@ -11,10 +10,8 @@ import { salesSchema } from './sales.js';
 export const salesOrderType = salesSchema.table(
   'sales_order_type',
   {
-    id: varchar('id', { length: 5 })
-      .primaryKey()
-      .$defaultFn(() => randomUUID().replaceAll('-', '').slice(0, 5)),
-    /** @api internal */
+    // A code the users pick (no default): in the contract's body.
+    id: varchar('id', { length: 5 }).primaryKey(),
     description: varchar('description', { length: 255 }).notNull(),
     createdAt: timestamp('created_at', { precision: 3, withTimezone: true })
       .defaultNow()

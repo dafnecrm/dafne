@@ -78,6 +78,7 @@ export function contractText(key: string, enumField = false): string | undefined
   const what = lower(parts[parts.length - 2]);
   if (rule === 'required') return `${enumField ? 'Choose' : 'Enter'} the ${what}`;
   if (rule === 'invalid') return `Enter a valid ${what}`;
+  if (rule === 'taken') return `This ${what} is already in use`;
   return undefined;
 }
 

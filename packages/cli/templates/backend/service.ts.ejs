@@ -1,6 +1,9 @@
 import { schema, type Database } from '@dafne/backend-database';
 import { InjectDrizzle } from '@nestjs/drizzle';
-import { Injectable, NotFoundException } from '@nestjs/common';
+<% if (id.clientPicks) { %>import { PostgresErrorCode } from '@dafne/backend-common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+<% } else { %>import { Injectable, NotFoundException } from '@nestjs/common';
+<% } %>
 import { and, asc, desc, eq, isNull, ilike, type Column, type SQL } from 'drizzle-orm';
 import {
   <%= s.constant %>_FILTER_FIELDS,
@@ -30,7 +33,20 @@ const EXACT_FILTERS: Partial<Record<<%= s.pascal %>FilterField, (value: string) 
 /** <%= p.title %> that haven't been deleted. */
 const notDeleted = isNull(<%= s.camel %>.deletedAt);
 
-/** Only the user's ID and name, for "created by" / "updated by". */
+<% if (id.clientPicks) { %>/**
+ * A taken id (the client picks it) becomes a 409; drizzle wraps the
+ * Postgres error as the cause. Rethrows anything else.
+ */
+function rethrowTakenId(error: unknown): never {
+  const cause = error instanceof Error && error.cause ? error.cause : error;
+  const { code, constraint } =
+    cause instanceof Error ? (cause as { code?: unknown; constraint?: unknown }) : {};
+  if (code === PostgresErrorCode.UNIQUE_VIOLATION && constraint === '<%= s.snake %>_pkey')
+    throw new ConflictException(msg('<%= p.camel %>.id.taken'));
+  throw error;
+}
+
+<% } %>/** Only the user's ID and name, for "created by" / "updated by". */
 const userSummary = { columns: { id: true, name: true } } as const;
 
 @Injectable()
@@ -104,7 +120,8 @@ export class <%= p.pascal %>Service {
         createdById: userId,
         updatedById: userId,
       })
-      .returning({ id: <%= s.camel %>.id });
+      .returning({ id: <%= s.camel %>.id })<% if (id.clientPicks) { %>
+      .catch(rethrowTakenId)<% } %>;
     return this.get<%= s.pascal %>(id);
   }
 

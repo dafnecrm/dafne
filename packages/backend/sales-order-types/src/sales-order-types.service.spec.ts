@@ -1,6 +1,6 @@
 import { schema } from '@dafne/backend-database';
 import { getDrizzleToken } from '@nestjs/drizzle';
-import { NotFoundException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { and, asc, desc, eq, isNull } from 'drizzle-orm';
 import {
@@ -127,23 +127,45 @@ describe('SalesOrderTypesService', () => {
 
   describe('createSalesOrderType', () => {
     it('inserts the sales order type with its creator', async () => {
-      await expect(service.createSalesOrderType(body({}), 'u1')).resolves.toBe(
-        found,
-      );
+      await expect(
+        service.createSalesOrderType(
+          body({ description: 'Description', id: 'Id' }),
+          'u1',
+        ),
+      ).resolves.toBe(found);
 
       const [row] = insert.values.mock.calls[0];
       expect(row).toMatchObject({
+        id: 'Id',
         createdById: 'u1',
         updatedById: 'u1',
       });
-      // The id the database gave it.
+      // Read back by the id the insert returned.
       expect(findFirst.mock.calls[0][0].where.id).toBe('id-1');
+    });
+
+    it('throws 409 when the id is taken', async () => {
+      const cause = Object.assign(new Error('duplicate key'), {
+        code: '23505',
+        constraint: 'sales_order_type_pkey',
+      });
+      insert.returning.mockRejectedValue(new Error('insert failed', { cause }));
+      await expect(
+        service.createSalesOrderType(
+          body({ description: 'Description', id: 'Id' }),
+          'u1',
+        ),
+      ).rejects.toBeInstanceOf(ConflictException);
     });
   });
 
   describe('updateSalesOrderType', () => {
     it('updates the sales order type', async () => {
-      await service.updateSalesOrderType('id-1', body({}), 'u2');
+      await service.updateSalesOrderType(
+        'id-1',
+        body({ description: 'Description', id: 'Id' }),
+        'u2',
+      );
 
       expect(update.set.mock.calls[0][0]).toMatchObject({
         updatedById: 'u2',
@@ -157,7 +179,11 @@ describe('SalesOrderTypesService', () => {
       update.where.mockResolvedValue({ rowCount: 0 });
 
       await expect(
-        service.updateSalesOrderType('id-999', body({}), 'u2'),
+        service.updateSalesOrderType(
+          'id-999',
+          body({ description: 'Description', id: 'Id' }),
+          'u2',
+        ),
       ).rejects.toBeInstanceOf(NotFoundException);
     });
   });

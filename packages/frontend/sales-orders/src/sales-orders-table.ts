@@ -34,12 +34,20 @@ export function defineSalesOrdersTable({
     path,
     // The backend allows up to 100.
     pageSizes: [10, 20, 50],
-    sortable: ["createdAt", "updatedAt"] satisfies SalesOrderSortField[],
+    sortable: ["id", "createdAt", "updatedAt"] satisfies SalesOrderSortField[],
     defaultSort: SALES_ORDERS_DEFAULT_SORT,
     filters: [
       {
         field: "id" satisfies SalesOrderFilterField,
         label: "salesOrders.fields.id" satisfies SalesOrdersMessageKey,
+      },
+      {
+        field: "customerId" satisfies SalesOrderFilterField,
+        label: "salesOrders.fields.customerId" satisfies SalesOrdersMessageKey,
+      },
+      {
+        field: "type" satisfies SalesOrderFilterField,
+        label: "salesOrders.fields.type" satisfies SalesOrdersMessageKey,
       },
     ],
   });

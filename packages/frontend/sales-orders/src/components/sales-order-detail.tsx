@@ -52,6 +52,12 @@ export function SalesOrderDetails({
             "—"
           )}
         </Detail>
+        <Detail icon={LinkIcon} label={t("salesOrders.fields.customerId")}>
+          <code className="font-mono text-xs">{salesOrder.customerId}</code>
+        </Detail>
+        <Detail icon={TextIcon} label={t("salesOrders.fields.type")}>
+          {salesOrder.type}
+        </Detail>
       </DetailSection>
       <DetailSection
         title={t("salesOrders.sections.items")}

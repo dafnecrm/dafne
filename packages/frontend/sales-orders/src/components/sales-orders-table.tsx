@@ -51,6 +51,10 @@ function useSalesOrderColumns(path: string) {
             </Link>
           ),
         }),
+        col.accessor("type", {
+          header: t("salesOrders.fields.type"),
+          enableSorting: false,
+        }),
         col.accessor("createdAt", {
           header: t("salesOrders.fields.createdAt"),
           meta: { className: "text-right" },

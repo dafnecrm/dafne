@@ -13,11 +13,11 @@ function failedFields(body: unknown) {
 
 describe('salesOrderTypeBodySchema', () => {
   it('parses a body', () => {
-    expect(salesOrderTypeBodySchema.parse({})).toEqual({});
+    expect(salesOrderTypeBodySchema.parse({description: 'Description', id: 'Id'})).toEqual({description: 'Description', id: 'Id'});
   });
 
   it('rejects unknown properties such as deletedAt', () => {
-    expect(failedFields({ deletedAt: '2026-01-01' })).toEqual([
+    expect(failedFields({ deletedAt: '2026-01-01', description: 'Description', id: 'Id' })).toEqual([
       'unrecognized_keys',
     ]);
   });

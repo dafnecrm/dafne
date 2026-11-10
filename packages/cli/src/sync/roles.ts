@@ -34,7 +34,9 @@ export function rolesOf(column: Column): Roles {
 
   const writeonly = tags.has('writeonly');
   const detailOnly = tags.has('detail');
-  const generated = column.primaryKey || column.serverManaged;
+  // Filled by the database or Drizzle (serial, defaultRandom, $defaultFn…);
+  // a primary key without one (a varchar id) is the client's: in the body.
+  const generated = column.serverManaged;
   // The id is always a filter (an exact match, see filterZod) and a sort
   // field, unless tagged nofilter / nosort; a key to another record is a
   // filter (exact) too.

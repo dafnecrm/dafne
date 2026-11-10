@@ -76,7 +76,16 @@ export const en = {
     },
     type: { required: 'Enter the type' }
   },
-  salesOrderTypes: { notFound: 'Sales order type not found' },
+  salesOrderTypes: { 
+    notFound: 'Sales order type not found',
+    id: {
+      required: 'Enter the type id',
+      taken: 'This id is already in use'
+    },
+    description: {
+      required: 'Enter the type description'
+    },
+  },
 };
 
 /** The shape every language must have: same keys, any text. */

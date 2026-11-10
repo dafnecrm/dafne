@@ -1,13 +1,18 @@
 import { z } from 'zod';
-import { pageQuery, SORT_DIRECTIONS } from './common.ts';
+import { pageQuery, requiredText, SORT_DIRECTIONS } from './common.ts';
+import { msg } from './messages/index.ts';
 
 /* ---------- Requests ---------- */
 
 /**
  * Body of POST /sales-order-types and PUT /sales-order-types/:id. PUT replaces the
- * whole sales order type: omitted optional fields are cleared.
+ * whole sales order type: omitted optional fields are cleared. The id is a
+ * code the client picks on POST (409 when taken); PUT keeps the path's.
  */
-export const salesOrderTypeBodySchema = z.strictObject({});
+export const salesOrderTypeBodySchema = z.strictObject({
+  id: requiredText(5, msg('salesOrderTypes.id.required')),
+  description: requiredText(255, msg('salesOrderTypes.description.required')),
+});
 
 /** What a client sends: blank optional fields may be "", null or missing. */
 export type SalesOrderTypeBodyInput = z.input<typeof salesOrderTypeBodySchema>;
@@ -15,7 +20,7 @@ export type SalesOrderTypeBodyInput = z.input<typeof salesOrderTypeBodySchema>;
 export type SalesOrderTypeBody = z.output<typeof salesOrderTypeBodySchema>;
 
 /** Sales order type fields the list can be sorted by. */
-export const SALES_ORDER_TYPE_SORT_FIELDS = ['id', 'createdAt', 'updatedAt'] as const;
+export const SALES_ORDER_TYPE_SORT_FIELDS = ['id', 'description', 'createdAt', 'updatedAt'] as const;
 export type SalesOrderTypeSortField =
   (typeof SALES_ORDER_TYPE_SORT_FIELDS)[number];
 
@@ -24,7 +29,7 @@ export type SalesOrderTypeSortField =
  * its own. Filters combine with AND and match text the field contains
  * (the id matches exactly).
  */
-export const SALES_ORDER_TYPE_FILTER_FIELDS = ['id'] as const;
+export const SALES_ORDER_TYPE_FILTER_FIELDS = ['id', 'description'] as const;
 export type SalesOrderTypeFilterField =
   (typeof SALES_ORDER_TYPE_FILTER_FIELDS)[number];
 
@@ -32,6 +37,7 @@ export type SalesOrderTypeFilterField =
 export const listSalesOrderTypesQuerySchema = z.strictObject({
   ...pageQuery,
   id: z.string().max(5).optional(),
+  description: z.string().max(255).optional(),
   /** Defaults to createdAt. */
     sortBy: z.enum(SALES_ORDER_TYPE_SORT_FIELDS).optional(),
   /** Defaults to asc. */
@@ -46,6 +52,7 @@ export type ListSalesOrderTypesQuery = z.output<
 /** A sales order type in GET /sales-order-types. */
 export interface ListedSalesOrderType {
   id: string;
+  description: string;
   createdAt: Date;
   updatedAt: Date;
 }
