@@ -26,7 +26,7 @@ export const en = {
   },
   fields: {
     createdAt: "Added",
-    id: "Order ID",
+    id: "ID",
     notes: "Notes",
     customer: "Customer",
     type: "Type",

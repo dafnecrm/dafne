@@ -124,7 +124,7 @@ export function UserDetails({ user }: { user: UserDetail }) {
       <DetailSection title={t("common.record.title")}>
         <Detail icon={FingerprintIcon} label={t("users.fields.id")}>
           <div className="flex items-center gap-2">
-            <code className="font-mono text-xs truncate">{user.id}</code>
+            <code className="font-sans text-xs truncate">{user.id}</code>
             <CopyButton variant="ghost" value={user.id} />
           </div>
         </Detail>

@@ -33,7 +33,7 @@ export const it: CustomersMessages = {
     email: "Email",
     phone: "Telefono",
     createdAt: "Aggiunto",
-    id: "ID cliente",
+    id: "ID",
   },
   type: {
     person: "Persona",

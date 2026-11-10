@@ -19,7 +19,7 @@ export function <%= s.pascal %>Details({ <%= s.camel %> }: { <%= s.camel %>: <%=
       <DetailSection title={t("common.record.title")}>
         <Detail icon={FingerprintIcon} label={t("<%= p.camel %>.fields.id")}>
           <div className="flex items-center gap-2">
-            <code className="truncate font-mono text-xs">{<%= s.camel %>.id}</code>
+            <code className="truncate font-sans text-xs">{<%= s.camel %>.id}</code>
             <CopyButton variant="ghost" value={String(<%= s.camel %>.id)} />
           </div>
         </Detail>

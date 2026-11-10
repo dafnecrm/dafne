@@ -24,7 +24,7 @@ export const it: SalesOrdersMessages = {
   },
   fields: {
     createdAt: "Aggiunto",
-    id: "ID Ordine",
+    id: "ID",
     notes: "Note",
     customer: "Cliente",
     type: "Tipo",

@@ -37,7 +37,7 @@ export const en = {
     completedAt: "Completed at",
     completedBy: "Completed by",
     createdAt: "Added",
-    id: "Activity ID"
+    id: "ID"
   },
   type: {
     call: "Call",

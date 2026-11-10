@@ -64,10 +64,10 @@ export function SalesOrderDetails({
           {optionLabel(SALES_ORDER_STATUS_OPTIONS, salesOrder.status)}
         </Detail>
         <Detail icon={LinkIcon} label={t("salesOrders.fields.customerId")}>
-          <code className="font-mono text-xs">{salesOrder.customerId}</code>
+          <code className="font-sans text-xs">{salesOrder.customerId}</code>
         </Detail>
         <Detail icon={LinkIcon} label={t("salesOrders.fields.typeId")}>
-          <code className="font-mono text-xs">{salesOrder.typeId}</code>
+          <code className="font-sans text-xs">{salesOrder.typeId}</code>
         </Detail>
       </DetailSection>
       <DetailSection
@@ -83,7 +83,7 @@ export function SalesOrderDetails({
       <DetailSection title={t("common.record.title")}>
         <Detail icon={FingerprintIcon} label={t("salesOrders.fields.id")}>
           <div className="flex items-center gap-2">
-            <code className="truncate font-mono text-xs">{salesOrder.id}</code>
+            <code className="truncate font-sans text-xs">{salesOrder.id}</code>
             {/* <CopyButton variant="ghost" value={String(salesOrder.id)} /> */}
           </div>
         </Detail>

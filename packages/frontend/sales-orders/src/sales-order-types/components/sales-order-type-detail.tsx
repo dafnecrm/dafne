@@ -29,7 +29,7 @@ export function SalesOrderTypeDetails({
       <DetailSection title={t("common.record.title")}>
         <Detail icon={FingerprintIcon} label={t("salesOrderTypes.fields.id")}>
           <div className="flex items-center gap-2">
-            <code className="truncate font-mono text-xs">
+            <code className="truncate font-sans text-xs">
               {salesOrderType.id}
             </code>
             <CopyButton variant="ghost" value={String(salesOrderType.id)} />

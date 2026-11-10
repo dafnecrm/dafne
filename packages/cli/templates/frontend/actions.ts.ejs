@@ -39,8 +39,9 @@ export async function save<%= s.pascal %>(
   values: <%= s.pascal %>FormValues,
 ): Promise<ActionError> {
   const parsed = <%= s.camel %>Schema.safeParse(values);
-  if (!parsed.success)
+  if (!parsed.success) {
     return { error: (await getTranslations())("common.errors.invalid") };
+  }
 
   let savedId: <%= s.pascal %>Detail["id"];
   try {

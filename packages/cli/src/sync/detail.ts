@@ -63,8 +63,8 @@ function detailCode(names: ResourceNames, record: string, field: ResponseField, 
     }
     case 'id':
       body = field.optional
-        ? `{${value} ? <code className="font-mono text-xs">{${value}}</code> : "—"}`
-        : `<code className="font-mono text-xs">{${value}}</code>`;
+        ? `{${value} ? <code className="font-sans text-xs">{${value}}</code> : "—"}`
+        : `<code className="font-sans text-xs">{${value}}</code>`;
       break;
     default:
       body = field.optional ? `{${value} ?? "—"}` : `{${value}}`;

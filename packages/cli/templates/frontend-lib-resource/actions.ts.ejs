@@ -43,7 +43,9 @@ export async function save<%= s.pascal %>(
   path: string,
 ): Promise<ActionError> {
   // Any POST can call this: only redirect within the app.
-  if (!/^\/[\w/-]*$/.test(path)) throw new Error(`Invalid path: ${path}`);
+  if (!/^\/[\w/-]*$/.test(path)) {
+    throw new Error(`Invalid path: ${path}`);
+  }
   const parsed = <%= s.camel %>Schema.safeParse(values);
   if (!parsed.success) {
     return { error: (await getTranslations())("common.errors.invalid") };

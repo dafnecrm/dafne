@@ -36,7 +36,7 @@ export const it: ActivitiesMessages = {
     completedAt: "Completata il",
     completedBy: "Completata da",
     createdAt: "Aggiunta",
-    id: "ID attività"
+    id: "ID"
   },
   type: {
     call: "Chiamata",
