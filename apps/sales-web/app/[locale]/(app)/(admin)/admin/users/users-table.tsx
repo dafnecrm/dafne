@@ -64,7 +64,7 @@ function useUserColumns() {
                   </AvatarFallback>
                 </Avatar>
                 <Link
-                  href={`/users/${encodeURIComponent(user.id)}`}
+                  href={`/admin/users/${encodeURIComponent(user.id)}`}
                   className="font-medium underline-offset-4 hover:underline"
                 >
                   {user.name}
@@ -146,7 +146,7 @@ function UserTableActions({ user }: { user: ListedUser }) {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem
-          render={<Link href={`/users/${encodeURIComponent(user.id)}`} />}
+          render={<Link href={`/admin/users/${encodeURIComponent(user.id)}`} />}
         >
           <UserIcon />
           {t("viewDetails")}

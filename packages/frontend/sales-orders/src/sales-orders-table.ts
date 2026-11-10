@@ -45,7 +45,7 @@ export function defineSalesOrdersTable({
       },
       {
         field: "customerId" satisfies SalesOrderFilterField,
-        label: "salesOrders.fields.customerId" satisfies SalesOrdersMessageKey,
+        label: "salesOrders.fields.customer" satisfies SalesOrdersMessageKey,
       },
       {
         field: "typeId" satisfies SalesOrderFilterField,

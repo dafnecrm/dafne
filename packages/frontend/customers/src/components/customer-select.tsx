@@ -39,6 +39,7 @@ export function CustomerSelect({
   className,
   onBlur,
   "aria-invalid": ariaInvalid,
+  "aria-label": ariaLabel,
 }: {
   value: string;
   /** The value\'s customer, when the caller has it: no lookup to name it. */
@@ -51,6 +52,8 @@ export function CustomerSelect({
   className?: string;
   onBlur?: () => void;
   "aria-invalid"?: boolean;
+  /** For a picker with no visible label, e.g. a table filter. */
+  "aria-label"?: string;
 }) {
   const t = useTranslations("customers");
   const [query, setQuery] = useState("");
@@ -121,6 +124,7 @@ export function CustomerSelect({
         className={className}
         disabled={disabled}
         aria-invalid={ariaInvalid}
+        aria-label={ariaLabel}
         showClear
         onBlur={onBlur}
       />

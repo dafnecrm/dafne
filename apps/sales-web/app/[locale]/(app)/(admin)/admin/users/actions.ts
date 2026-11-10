@@ -46,5 +46,5 @@ export async function createUser(values: UserFormValues): Promise<ActionError> {
     return { error: await errorMessage(error) };
   }
   // Outside the try: redirect works by throwing.
-  redirect(`/users/${encodeURIComponent(id)}`);
+  redirect(`/admin/users/${encodeURIComponent(id)}`);
 }

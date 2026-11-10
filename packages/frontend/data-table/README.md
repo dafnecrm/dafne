@@ -30,6 +30,11 @@ source of truth, so any view can be shared or reloaded.
 
 Labels are the app's message keys, translated by the component.
 
+A filter is a text box, or a combobox when it has `options`. For a richer
+picker, the client table passes `filterControls` to `DataTable`, keyed by
+filter field (e.g. `{ customerId: CustomerFilter }`): components can't go
+in the config, which the server page passes to the client as plain data.
+
 ## Tasks
 
 From the monorepo root:

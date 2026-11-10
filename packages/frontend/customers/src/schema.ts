@@ -8,8 +8,8 @@ import {
   type CustomerBody,
 } from "@dafne/contracts";
 import { formSchema } from "@dafne/frontend-forms";
-import { CUSTOMER_ADDRESS_TYPE_OPTIONS } from "./customer-address-type-options.ts";
 import type { CustomerDetail } from "./types.ts";
+import { CUSTOMER_ADDRESS_TYPE_OPTIONS } from "./customers-table.ts";
 
 /**
  * Form values: every field is text, "" when blank, except the types
@@ -69,9 +69,6 @@ export const emptyAddress = (
   region: "",
   countryCode: "",
 });
-
-/** The customer types, for the form's select (labels are message keys). */
-export { CUSTOMER_TYPE_OPTIONS as TYPE_OPTIONS } from "./customer-type-options.ts";
 
 /** Form values for a new customer, or for editing `customer`. */
 export function customerFormOpts(customer?: CustomerDetail) {

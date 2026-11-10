@@ -29,14 +29,13 @@ import { setServerError } from "@dafne/frontend-forms/client";
 import { useAppForm } from "./form-hook.ts";
 import { useResetOnLeave } from "@dafne/frontend-forms/client";
 import type { CustomerDetail } from "../types.ts";
-import { CUSTOMER_ADDRESS_TYPE_OPTIONS } from "../customer-address-type-options.ts";
+import { CUSTOMER_ADDRESS_TYPE_OPTIONS, CUSTOMER_TYPE_OPTIONS } from "../customers-table.ts";
 import { saveCustomer } from "../actions.ts";
 import { CustomerAddressSheet } from "./customer-address-sheet.tsx";
 import {
   addressTypeOptions,
   customerFormOpts,
   customerSchema,
-  TYPE_OPTIONS,
 } from "../schema.ts";
 
 /**
@@ -52,7 +51,7 @@ export function CustomerForm({
   path: string;
 }) {
   const t = useTranslations();
-  const typeOptions = useOptionLabels(TYPE_OPTIONS);
+  const typeOptions = useOptionLabels(CUSTOMER_TYPE_OPTIONS);
   const optionLabel = useOptionLabel();
   const form = useAppForm({
     ...customerFormOpts(customer),

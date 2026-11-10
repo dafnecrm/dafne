@@ -39,6 +39,7 @@ export function SalesOrderTypeSelect({
   className,
   onBlur,
   "aria-invalid": ariaInvalid,
+  "aria-label": ariaLabel,
 }: {
   value: string;
   /** The value\'s sales order type, when the caller has it: no lookup to name it. */
@@ -51,6 +52,7 @@ export function SalesOrderTypeSelect({
   className?: string;
   onBlur?: () => void;
   "aria-invalid"?: boolean;
+  "aria-label": string,
 }) {
   const t = useTranslations("salesOrders.salesOrderTypes");
   const [query, setQuery] = useState("");
@@ -121,6 +123,7 @@ export function SalesOrderTypeSelect({
         className={className}
         disabled={disabled}
         aria-invalid={ariaInvalid}
+        aria-label={ariaLabel}
         showClear
         onBlur={onBlur}
       />

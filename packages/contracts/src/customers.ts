@@ -116,7 +116,7 @@ export type CustomerBody = z.output<typeof customerBodySchema>;
 export type CustomerAddressBody = CustomerBody['addresses'][number];
 
 /** Customer fields the list can be sorted by. */
-export const CUSTOMER_SORT_FIELDS = ['id', 'type', 'name', 'birthDate', 'fiscalCode', 'vatNumber', 'email', 'phone', 'createdAt', 'updatedAt'] as const;
+export const CUSTOMER_SORT_FIELDS = ['id', 'type', 'name', 'email', 'phone', 'createdAt', 'updatedAt'] as const;
 export type CustomerSortField = (typeof CUSTOMER_SORT_FIELDS)[number];
 
 /**
@@ -124,7 +124,7 @@ export type CustomerSortField = (typeof CUSTOMER_SORT_FIELDS)[number];
  * own. Filters combine with AND and match text the field contains
  * (the id matches exactly).
  */
-export const CUSTOMER_FILTER_FIELDS = ['id', 'type', 'name', 'fiscalCode', 'vatNumber', 'email', 'phone'] as const;
+export const CUSTOMER_FILTER_FIELDS = ['id', 'type', 'name', 'email', 'phone'] as const;
 export type CustomerFilterField = (typeof CUSTOMER_FILTER_FIELDS)[number];
 
 /** Query string of GET /customers. Deleted customers are never listed. */
@@ -136,8 +136,6 @@ export const listCustomersQuerySchema = z.strictObject({
       .optional(),
   type: z.enum(CUSTOMER_TYPES).optional(),
   name: z.string().max(255).optional(),
-  fiscalCode: z.string().max(16).optional(),
-  vatNumber: z.string().max(13).optional(),
   email: z.string().max(255).optional(),
   phone: z.string().max(32).optional(),
   /** Defaults to name. */
@@ -154,9 +152,6 @@ export interface ListedCustomer {
   id: number;
   type: CustomerType;
   name: string;
-  birthDate: Date | null;
-  fiscalCode: string | null;
-  vatNumber: string | null;
   email: string;
   phone: string | null;
   createdAt: Date;
@@ -200,6 +195,9 @@ export interface CustomerDetail extends ListedCustomer {
     addresses: CustomerAddress[];
   createdBy: CustomerUser | null;
   updatedBy: CustomerUser | null;
+  birthDate: Date | null;
+  fiscalCode: string | null;
+  vatNumber: string | null;
   /** Always null: deleted customers aren't returned. */
     deletedAt: Date | null;
 }

@@ -18,7 +18,7 @@ import { Detail, DetailSection } from "@dafne/frontend-ui/components/detail";
 import { LocalDate } from "@dafne/frontend-ui/components/local-date";
 import { PlainDate } from "@dafne/frontend-ui/components/plain-date";
 import type { CustomerDetail } from "../types.ts";
-import { CUSTOMER_TYPE_OPTIONS } from "../customer-type-options.ts";
+import { CUSTOMER_TYPE_OPTIONS } from "../customers-table.ts";
 import { CustomerAddressTable } from "./customer-address-table.tsx";
 
 /**

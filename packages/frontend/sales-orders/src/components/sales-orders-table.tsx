@@ -7,7 +7,9 @@ import {
   createDataTableColumnHelper,
   DataTable,
   useDescribeFilters,
+  type DataTableFilterControls,
 } from "@dafne/frontend-data-table/table";
+import { CustomerSelect } from "@dafne/frontend-customers/components/customer-select";
 import { LocalDate } from "@dafne/frontend-ui/components/local-date";
 import {
   Empty,
@@ -23,6 +25,7 @@ import type { ListedSalesOrder } from "../types.ts";
 import { SalesOrderTableActions } from "./sales-order-table-actions.tsx";
 import Link from "next/link";
 import { Button } from "@dafne/frontend-ui/components/button";
+import { SalesOrderTypeSelect } from "../sales-order-types/components/sales-order-type-select.tsx";
 
 /*
  * Columns of the sales orders table. Column ids double as the backend's
@@ -54,6 +57,11 @@ function useSalesOrderColumns({ path, customersPath }: { path: string, customers
             className: 'w-30'
           }
         }),
+        col.accessor("type", {
+          header: t("salesOrders.fields.type"),
+          enableSorting: false,
+          cell: ({ row }) => row.original.type.description,
+        }),
         col.accessor("customer", {
           header: t("salesOrders.fields.customer"),
           enableSorting: false,
@@ -81,6 +89,30 @@ function useSalesOrderColumns({ path, customersPath }: { path: string, customers
     [t, path],
   );
 }
+
+/** The customer filter picks a customer by name; the URL keeps its id. */
+const filterControls: DataTableFilterControls = {
+  customerId: ({ value, onValueChange, label, placeholder, disabled }) => (
+    <CustomerSelect
+      value={value}
+      onValueChange={onValueChange}
+      placeholder={placeholder}
+      aria-label={label}
+      disabled={disabled}
+      className="w-52"
+    />
+  ),
+  typeId: ({ value, onValueChange, label, placeholder, disabled }) => (
+    <SalesOrderTypeSelect
+      value={value}
+      onValueChange={onValueChange}
+      placeholder={placeholder}
+      aria-label={label}
+      disabled={disabled}
+      className="w-52"
+    />
+  ),
+};
 
 const getRowId = (salesOrder: ListedSalesOrder) => String(salesOrder.id);
 
@@ -119,6 +151,7 @@ export function SalesOrdersTable({
       getRowId={getRowId}
       config={config}
       rowActions={salesOrderActions}
+      filterControls={filterControls}
       params={params}
       total={total}
       noun={t("salesOrders.noun")}

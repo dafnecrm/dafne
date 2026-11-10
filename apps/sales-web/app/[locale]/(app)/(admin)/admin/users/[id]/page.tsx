@@ -29,7 +29,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function UserPage({
   params,
-}: PageProps<"/[locale]/users/[id]">) {
+}: PageProps<"/[locale]/admin/users/[id]">) {
   return (
     <Suspense fallback={<Skeleton className="h-96 w-full" />}>
       <UserProfile params={params} />
@@ -40,7 +40,7 @@ export default function UserPage({
 /** Checks the role and fetches the user: name and avatar, then the details. */
 async function UserProfile({
   params,
-}: Pick<PageProps<"/[locale]/users/[id]">, "params">) {
+}: Pick<PageProps<"/[locale]/admin/users/[id]">, "params">) {
   const t = await getTranslations("users");
   if (!isAdmin(await requireUser()))
     return <NotAllowed>{t("notAllowed.detail")}</NotAllowed>;
@@ -63,7 +63,7 @@ async function UserProfile({
   return (
     <PageContent>
       <BreadcrumbLabel
-        href={`/users/${encodeURIComponent(user.id)}`}
+        href={`/admin/users/${encodeURIComponent(user.id)}`}
         label={user.name}
       />
       <PageContentHeader>
@@ -83,7 +83,7 @@ async function UserProfile({
             size="sm"
             // Renders a link, not a <button>.
             nativeButton={false}
-            render={<Link href="/users" />}
+            render={<Link href="/admin/users" />}
           >
             <ArrowLeftIcon data-icon="inline-start" />
             {t("all")}

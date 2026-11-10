@@ -21,7 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function EditSalesOrderTypePage({
   params,
-}: PageProps<"/[locale]/sales-order-types/[id]/edit">) {
+}: PageProps<"/[locale]/admin/sales-order-types/[id]/edit">) {
   return (
     <Suspense fallback={<Skeleton className="h-96 w-full" />}>
       <EditSalesOrderType params={params} />
@@ -31,7 +31,7 @@ export default function EditSalesOrderTypePage({
 
 async function EditSalesOrderType({
   params,
-}: Pick<PageProps<"/[locale]/sales-order-types/[id]/edit">, "params">) {
+}: Pick<PageProps<"/[locale]/admin/sales-order-types/[id]/edit">, "params">) {
   const salesOrderType = await loadSalesOrderType((await params).id);
   const t = await getTranslations();
 

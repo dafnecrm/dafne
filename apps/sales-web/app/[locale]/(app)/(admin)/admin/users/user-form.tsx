@@ -119,7 +119,7 @@ export function UserForm() {
             <Button
               variant="outline"
               nativeButton={false}
-              render={<Link href="/users" />}
+              render={<Link href="/admin/users" />}
             >
               {t("common.cancel")}
             </Button>

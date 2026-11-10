@@ -40,12 +40,12 @@ export function defineProductsTable({
     defaultSort: PRODUCTS_DEFAULT_SORT,
     filters: [
       {
-        field: "name" satisfies ProductFilterField,
-        label: "products.fields.name" satisfies ProductsMessageKey,
-      },
-      {
         field: "id" satisfies ProductFilterField,
         label: "products.fields.id" satisfies ProductsMessageKey,
+      },
+      {
+        field: "name" satisfies ProductFilterField,
+        label: "products.fields.name" satisfies ProductsMessageKey,
       },
     ],
   });

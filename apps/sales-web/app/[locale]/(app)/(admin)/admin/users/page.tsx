@@ -29,7 +29,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function UsersPage({
   searchParams,
-}: PageProps<"/[locale]/users">) {
+}: PageProps<"/[locale]/admin/users">) {
   const t = useTranslations("users");
   return (
     <PageContent>
@@ -37,7 +37,7 @@ export default function UsersPage({
         <PageContentTitle>{t("title")}</PageContentTitle>
         <PageContentDescription>{t("listDescription")}</PageContentDescription>
         <PageContentAction>
-          <Button nativeButton={false} render={<Link href="/users/new" />}>
+          <Button nativeButton={false} render={<Link href="/admin/users/new" />}>
             <PlusIcon data-icon="inline-start" />
             {t("new")}
           </Button>
@@ -56,7 +56,7 @@ export default function UsersPage({
 /** Checks the role and fetches one page; the client table renders it. */
 async function UsersList({
   searchParams,
-}: Pick<PageProps<"/[locale]/users">, "searchParams">) {
+}: Pick<PageProps<"/[locale]/admin/users">, "searchParams">) {
   if (!isAdmin(await requireUser())) return <NotAllowed />;
 
   const params = getTableParams(await searchParams, usersTable);
