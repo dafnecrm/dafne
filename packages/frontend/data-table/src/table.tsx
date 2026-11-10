@@ -26,7 +26,13 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useMemo, useState, useTransition, type ReactNode } from "react";
+import {
+  useMemo,
+  useState,
+  useTransition,
+  type ComponentType,
+  type ReactNode,
+} from "react";
 import { Button } from "@dafne/frontend-ui/components/button";
 import {
   Empty,
@@ -156,7 +162,7 @@ function ActionsHeader() {
 
 /** The column `rowActions` adds: not sortable, as narrow as its content. */
 function actionsColumn<TData extends RowData>(
-  render: (row: TData) => ReactNode,
+  render: (row: TData, index: number) => ReactNode,
 ): DataTableColumnDef<TData> {
   return createDataTableColumnHelper<TData>().display({
     id: "actions",
@@ -164,10 +170,37 @@ function actionsColumn<TData extends RowData>(
     enableSorting: false,
     meta: { className: "w-0 text-right" },
     cell: ({ row }) => (
-      <div className="flex justify-end gap-1">{render(row.original)}</div>
+      <div className="flex justify-end gap-1">
+        {render(row.original, row.index)}
+      </div>
     ),
   });
 }
+
+/** Props of a custom filter control (see `DataTableFilterControls`). */
+export interface DataTableFilterControlProps {
+  /** The filter's text, as in the URL; "" when not set. */
+  value: string;
+  onValueChange: (value: string) => void;
+  /** The filter's label, translated: use it as the control's aria-label. */
+  label: string;
+  /** The filter's placeholder, translated. */
+  placeholder: string;
+  disabled?: boolean;
+}
+
+export type DataTableFilterControl = ComponentType<DataTableFilterControlProps>;
+
+/**
+ * Custom filter controls by filter field, replacing the text box or
+ * combobox, e.g. `{ customerId: CustomerFilter }`. They come from the
+ * client table, not the config: the config is plain data the server page
+ * passes to the client, and components can't cross that boundary. Keep
+ * stable (module scope).
+ */
+export type DataTableFilterControls = Readonly<
+  Record<string, DataTableFilterControl>
+>;
 
 export interface DataTableProps<TData extends RowData> {
   /** Keep stable (module scope or useMemo). */
@@ -185,10 +218,13 @@ export interface DataTableProps<TData extends RowData> {
   /**
    * Content of a last, right-aligned "Actions" column for each row, e.g. a
    * button or a dropdown menu. No column when unset. Keep stable.
+   * `index` is the row's position in `data` (the current page).
    */
-  rowActions?: (row: TData) => ReactNode;
+  rowActions?: (row: TData, index: number) => ReactNode;
   /** Shown instead of the table when there are no rows. */
   empty?: ReactNode;
+  /** Custom controls for some filters, by field. Keep stable. */
+  filterControls?: DataTableFilterControls;
   /** Unit for the count, already translated, e.g. "users" ("1–20 of 42 users"). */
   noun?: string;
   /**
@@ -215,6 +251,7 @@ export function DataTable<TData extends RowData>({
   total,
   rowActions,
   empty,
+  filterControls,
   noun,
   manualPagination = true,
   manualSorting = true,
@@ -305,6 +342,7 @@ export function DataTable<TData extends RowData>({
           // Reset the inputs when the URL's filters change (e.g. Back).
           key={JSON.stringify(params.filters)}
           filters={config.filters}
+          controls={filterControls}
           active={params.filters}
           disabled={navigating}
           onChange={(next) =>
@@ -444,17 +482,28 @@ export function DataTable<TData extends RowData>({
 }
 
 /**
- * Filter bar: one control per filter (a text box, or a combobox when the
- * filter has `options`). They combine with AND. Applying or clearing calls
- * `onChange`; the table puts the filters in the URL.
+ * Filter bar: one control per filter (its custom control from `controls`,
+ * else a combobox when the filter has `options`, else a text box). They
+ * combine with AND. Applying or clearing calls `onChange`; the table puts
+ * the filters in the URL.
+ *
+ *   const controls: DataTableFilterControls = {
+ *     customerId: ({ value, onValueChange, label, placeholder }) => (
+ *       <CustomerSelect value={value} onValueChange={onValueChange}
+ *         aria-label={label} placeholder={placeholder} />
+ *     ),
+ *   };
+ *   <DataTable filterControls={controls} … />
  */
 export function DataTableFilters({
   filters,
+  controls,
   active,
   disabled,
   onChange,
 }: {
   filters: readonly TableFilterDef[];
+  controls?: DataTableFilterControls;
   active: TableFilters;
   disabled?: boolean;
   onChange: (filters: TableFilters) => void;
@@ -466,6 +515,11 @@ export function DataTableFilters({
     def.options?.map((o) => ({ value: o.value, label: t(o.label) }));
   const set = (field: string, value: string) =>
     setValues((current) => ({ ...current, [field]: value }));
+  // "Any customer"-style placeholder, for pickers.
+  const pickPlaceholder = (def: TableFilterDef) =>
+    def.placeholder
+      ? t(def.placeholder)
+      : t("dataTable.any", { label: t(def.label).toLowerCase() });
 
   return (
     <form
@@ -476,6 +530,18 @@ export function DataTableFilters({
       }}
     >
       {filters.map((def) => {
+        const Control = controls?.[def.field];
+        if (Control)
+          return (
+            <Control
+              key={def.field}
+              value={values[def.field] ?? ""}
+              onValueChange={(value) => set(def.field, value)}
+              label={t(def.label)}
+              placeholder={pickPlaceholder(def)}
+              disabled={disabled}
+            />
+          );
         const options = optionsOf(def);
         return options ? (
           <Combobox
@@ -487,11 +553,7 @@ export function DataTableFilters({
           >
             <ComboboxInput
               className="w-40"
-              placeholder={
-                def.placeholder
-                  ? t(def.placeholder)
-                  : t("dataTable.any", { label: t(def.label).toLowerCase() })
-              }
+              placeholder={pickPlaceholder(def)}
               aria-label={t(def.label)}
               showClear={Boolean(values[def.field])}
             />

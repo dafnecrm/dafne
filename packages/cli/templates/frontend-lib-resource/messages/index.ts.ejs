@@ -1,0 +1,12 @@
+import { en } from "./en.ts";
+import { it } from "./it.ts";
+
+export type { <%= p.pascal %>MessageKey, <%= p.pascal %>Messages } from "./en.ts";
+
+/**
+ * The <%= s.lower %> texts, by language. Each app merges them under
+ * `<%= p.camel %>` in its next-intl messages (i18n/request.ts) and in its
+ * `Messages` type (i18n/global.d.ts).
+ */
+export const <%= p.constant %>_MESSAGES = { en, it };
+export type <%= p.pascal %>Locale = keyof typeof <%= p.constant %>_MESSAGES;

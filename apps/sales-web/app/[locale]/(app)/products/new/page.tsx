@@ -8,7 +8,8 @@ import {
   PageContentHeader,
   PageContentTitle,
 } from "@dafne/frontend-ui/components/page-content";
-import { ProductForm } from "../product-form";
+import { ProductForm } from "@dafne/frontend-products/components/product-form";
+import { productsTable } from "@/lib/products-table";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("products");
@@ -24,7 +25,7 @@ export default function NewProductPage() {
         <PageContentDescription>{t("newDescription")}</PageContentDescription>
       </PageContentHeader>
       <PageContentBody>
-        <ProductForm />
+        <ProductForm path={productsTable.path} />
       </PageContentBody>
     </PageContent>
   );

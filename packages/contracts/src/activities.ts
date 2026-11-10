@@ -35,15 +35,7 @@ export type ActivityBodyInput = z.input<typeof activityBodySchema>;
 export type ActivityBody = z.output<typeof activityBodySchema>;
 
 /** Activity fields the list can be sorted by. */
-export const ACTIVITY_SORT_FIELDS = [
-  'name',
-  'type',
-  'dueDate',
-  'completedAt',
-  'status',
-  'createdAt',
-  'updatedAt',
-] as const;
+export const ACTIVITY_SORT_FIELDS = ['id', 'name', 'type', 'dueDate', 'completedAt', 'status', 'createdAt', 'updatedAt'] as const;
 export type ActivitySortField = (typeof ACTIVITY_SORT_FIELDS)[number];
 
 /**
@@ -51,23 +43,24 @@ export type ActivitySortField = (typeof ACTIVITY_SORT_FIELDS)[number];
  * its own. Filters combine with AND and match text the field contains
  * (the id matches exactly).
  */
-export const ACTIVITY_FILTER_FIELDS = ['id', 'name', 'type', 'status'] as const;
+export const ACTIVITY_FILTER_FIELDS = ['id', 'name', 'type', 'status', 'completedById'] as const;
 export type ActivityFilterField = (typeof ACTIVITY_FILTER_FIELDS)[number];
 
 /** Query string of GET /activities. Deleted activities are never listed. */
 export const listActivitiesQuerySchema = z.strictObject({
   ...pageQuery,
   id: z
-    .string()
-    .regex(/^\s*\d{0,9}\s*$/)
-    .optional(),
+      .string()
+      .regex(/^\s*\d{0,9}\s*$/)
+      .optional(),
   name: z.string().max(255).optional(),
   type: z.enum(ACTIVITY_TYPES).optional(),
   status: z.enum(ACTIVITY_STATUSES).optional(),
+  completedById: z.string().max(36).optional(),
   /** Defaults to name. */
-  sortBy: z.enum(ACTIVITY_SORT_FIELDS).optional(),
+    sortBy: z.enum(ACTIVITY_SORT_FIELDS).optional(),
   /** Defaults to asc. */
-  sortDirection: z.enum(SORT_DIRECTIONS).optional(),
+    sortDirection: z.enum(SORT_DIRECTIONS).optional(),
 });
 export type ListActivitiesQuery = z.output<typeof listActivitiesQuerySchema>;
 
@@ -106,5 +99,5 @@ export interface ActivityDetail extends ListedActivity {
   updatedBy: ActivityUser | null;
   notes: string | null;
   /** Always null: deleted activities aren't returned. */
-  deletedAt: Date | null;
+    deletedAt: Date | null;
 }

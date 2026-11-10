@@ -69,6 +69,9 @@ export const en = {
     billing: "Billing",
   },
   editMeta: "Edit customer",
+  customerPlaceholder: "Choose a customer…",
+  loadingCustomers: "Searching customers…",
+  noCustomers: "No customers found.",
 };
 
 /** The shape every language must have: same keys, any text. */

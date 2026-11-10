@@ -7,7 +7,7 @@ Next (`transpilePackages`).
 - Imports by path, no index: `@dafne/frontend-ui/components/<name>`
   (`src/components/<name>.tsx`), `@dafne/frontend-ui/lib/<name>`
   (`src/lib/<name>.ts`: utils, dates, theme, message-key, currencies,
-  country-name), `@dafne/frontend-ui/hooks/<name>` (`src/hooks/<name>.ts`:
+  country-name, nav-items), `@dafne/frontend-ui/hooks/<name>` (`src/hooks/<name>.ts`:
   use-mobile, use-option-labels). The folder decides the path: a `.ts` file
   under `lib/` isn't found as `components/<name>`. The components import
   each other the same way (tsconfig `paths` points the package name at
@@ -15,6 +15,12 @@ Next (`transpilePackages`).
 - After adding or moving a file here, if the app doesn't see it, rebuild
   the declarations: `pnpm exec tsc --build --emitDeclarationOnly --force`
   from this folder (see `docs/nx.md`, "Packages that ship sources").
+- `components/nav-sidebar`: the app sidebar from data (`NavItem`, in
+  `lib/nav-items`: label, optional icon, url required on leaves; at most
+  3 levels, enforced by the type). Every group collapses; with `rail` it
+  minimizes to icons: top-level groups stay (collapsible), the groups
+  inside them don't (their pages are listed directly). No `next` here: the app passes
+  `linkComponent` (Next's `Link`) and the `pathname`.
 - New shadcn components: `pnpm --filter @dafne/frontend-ui shadcn:add
   <name>` (`components.json` here). It writes the CSS variables into
   `src/styles/globals.css`.

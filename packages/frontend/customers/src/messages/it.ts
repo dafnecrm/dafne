@@ -68,4 +68,7 @@ export const it: CustomersMessages = {
     billing: "Fatturazione",
   },
   editMeta: "Modifica cliente",
+  customerPlaceholder: "Scegli un cliente…",
+  loadingCustomers: "Ricerca clienti…",
+  noCustomers: "Nessun cliente trovato.",
 };

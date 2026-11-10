@@ -1,4 +1,5 @@
 import { Node, type SourceFile, SyntaxKind } from 'ts-morph';
+import { pageRefs, type PageRefs } from '../core/frontend-target.ts';
 import type { ResourceNames } from '../core/names.ts';
 import { editSource, ensureHookLine, ensureNamedImport, removeJsxElement, removeUnusedImports } from '../wiring/ast.ts';
 import type { FormReport as Report } from './form.ts';
@@ -26,7 +27,7 @@ const ICONS: Record<ResponseField['kind'], string> = {
   datetime: 'CalendarClockIcon',
 };
 
-function detailCode(names: ResourceNames, record: string, field: ResponseField): { code: string; imports: [string, string][] } {
+function detailCode(names: ResourceNames, record: string, field: ResponseField, refs: PageRefs): { code: string; imports: [string, string][] } {
   const value = `${record}.${field.key}`;
   const label = `{t("${names.p.camel}.fields.${field.key}")}`;
   const imports: [string, string][] = [['lucide-react', ICONS[field.kind]]];
@@ -49,7 +50,7 @@ function detailCode(names: ResourceNames, record: string, field: ResponseField):
       break;
     case 'enum': {
       const name = enumOptionsName(names, field);
-      imports.push([`@/lib/${names.p.kebab}-table`, name]);
+      imports.push([refs.table, name]);
       body = `{optionLabel(${name}, ${value})}`;
       break;
     }
@@ -102,7 +103,7 @@ export function syncDetail(
   names: ResourceNames,
   info: ResponseInfo,
   alsoShownIn: string[] = [],
-  { prune = false }: { prune?: boolean } = {},
+  { prune = false, refs = pageRefs(names) }: { prune?: boolean; refs?: PageRefs } = {},
 ): { content: string; report: Report } {
   const report: Report = { added: [], removed: [], stale: [], warnings: [] };
   const record = names.s.camel;
@@ -136,10 +137,10 @@ export function syncDetail(
         .find((st) => st.getDeclarations()[0]?.getInitializer()?.getText() === 'useOptionLabel()');
       if (report.removed!.length && hook && !/\boptionLabel\(/.test(file.getFullText())) hook.remove();
       if (report.removed!.length)
-        removeUnusedImports(file, (module) => module === 'lucide-react' || module.startsWith('@dafne/frontend-ui/') || module.startsWith('@/lib/') || module === '@dafne/frontend-ui/hooks/use-option-labels');
+        removeUnusedImports(file, (module) => module === 'lucide-react' || module.startsWith('@dafne/frontend-ui/') || module.startsWith('@/lib/') || module === refs.table || module === '@dafne/frontend-ui/hooks/use-option-labels');
     }
     for (const field of missing) {
-      const { code, imports } = detailCode(names, record, field);
+      const { code, imports } = detailCode(names, record, field, refs);
       const details = sections(file).find((e) => titleOf(e) === 'Details');
       if (details) {
         // Last in the section.

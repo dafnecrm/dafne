@@ -21,7 +21,7 @@ pnpm dafne db migrate
 pnpm dafne test @dafne/backend-invoices
 ```
 
-The table has only a `serial` `id` besides the given fields: the pages
+The table has only an `id` (`serial`, or `--id-type uuid|varchar`) besides the given fields: the pages
 name a record "Invoice 12" (title, breadcrumb, dialogs) and the list links
 to it from the id column, until you pick a field for them. Then adjust the service and controller to the real use cases.
 Try it first with `--dry-run`.
@@ -44,12 +44,12 @@ frontend app.
 
 ## Remove columns from a resource
 
-E.g. `notes` from orders:
+E.g. `notes` from sales orders:
 
 ```sh
-pnpm dafne remove backend-db-column orders notes   # or with no arguments: asks for the table and the columns
-pnpm dafne test @dafne/backend-orders @dafne/contracts
-pnpm dafne sync frontend-resource orders           # the pages
+pnpm dafne remove backend-db-column sales-orders notes   # or with no arguments: asks for the table and the columns
+pnpm dafne test @dafne/backend-sales-orders @dafne/contracts
+pnpm dafne sync frontend-resource sales-orders           # the pages
 pnpm dafne typecheck @dafne/sales-web
 pnpm dafne db migrate
 ```

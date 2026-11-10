@@ -1,13 +1,56 @@
 import type {
+  CustomerAddressType,
   CustomerFilterField,
-  CustomerSortField
+  CustomerSortField,
+  CustomerType,
 } from "@dafne/contracts";
 import {
   defineDataTable,
   type DataTableConfig,
 } from "@dafne/frontend-data-table";
 import type { CustomersMessageKey } from "./messages/index.ts";
-import { CUSTOMER_TYPE_OPTIONS } from "./customer-type-options.ts";
+
+/**
+ * Labels (message keys) of an address's type, for the form and the detail
+ * page, with the customer types each one is offered to.
+ */
+export const CUSTOMER_ADDRESS_TYPE_OPTIONS: readonly {
+  value: CustomerAddressType;
+  label: CustomersMessageKey;
+  customerType: readonly CustomerType[];
+}[] = [
+  {
+    value: "residence",
+    label: "customers.addressType.residence",
+    customerType: ["person"],
+  },
+  {
+    value: "domicile",
+    label: "customers.addressType.domicile",
+    customerType: ["person"],
+  },
+  {
+    value: "head_office",
+    label: "customers.addressType.head_office",
+    customerType: ["company"],
+  },
+  {
+    value: "shipping",
+    label: "customers.addressType.shipping",
+    customerType: ["company"],
+  },
+  {
+    value: "billing",
+    label: "customers.addressType.billing",
+    customerType: ["company"],
+  },
+];
+
+/** Labels (message keys) of the type values. */
+export const CUSTOMER_TYPE_OPTIONS = [
+  { value: "person", label: "customers.type.person" },
+  { value: "company", label: "customers.type.company" },
+] satisfies { value: CustomerType; label: CustomersMessageKey }[];
 
 /** Sort of the list without `?sort=`. */
 export const CUSTOMERS_DEFAULT_SORT = { id: "name", desc: false };
@@ -36,11 +79,9 @@ export function defineCustomersTable({
     // The backend allows up to 100.
     pageSizes: [10, 20, 50],
     sortable: [
+      "id",
       "type",
       "name",
-      "birthDate",
-      "fiscalCode",
-      "vatNumber",
       "email",
       "phone",
       "createdAt",
@@ -48,6 +89,15 @@ export function defineCustomersTable({
     ] satisfies CustomerSortField[],
     defaultSort: CUSTOMERS_DEFAULT_SORT,
     filters: [
+      {
+        field: "id" satisfies CustomerFilterField,
+        label: "customers.fields.id" satisfies CustomersMessageKey,
+      },
+      {
+        field: "type" satisfies CustomerFilterField,
+        label: "customers.fields.type" satisfies CustomersMessageKey,
+        options: CUSTOMER_TYPE_OPTIONS,
+      },
       {
         field: "name" satisfies CustomerFilterField,
         label: "customers.fields.name" satisfies CustomersMessageKey,
@@ -59,23 +109,6 @@ export function defineCustomersTable({
       {
         field: "phone" satisfies CustomerFilterField,
         label: "customers.fields.phone" satisfies CustomersMessageKey,
-      },
-      {
-        field: "type" satisfies CustomerFilterField,
-        label: "customers.fields.type" satisfies CustomersMessageKey,
-        options: CUSTOMER_TYPE_OPTIONS,
-      },
-      {
-        field: "fiscalCode" satisfies CustomerFilterField,
-        label: "customers.fields.fiscalCode" satisfies CustomersMessageKey,
-      },
-      {
-        field: "vatNumber" satisfies CustomerFilterField,
-        label: "customers.fields.vatNumber" satisfies CustomersMessageKey,
-      },
-      {
-        field: "id" satisfies CustomerFilterField,
-        label: "customers.fields.id" satisfies CustomersMessageKey,
       },
     ],
   });

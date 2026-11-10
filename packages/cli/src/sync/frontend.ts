@@ -1,6 +1,15 @@
 import type { Changes } from '../core/changes.ts';
 import type { ResourceNames } from '../core/names.ts';
-import { frontendApp } from '../core/workspace.ts';
+import {
+  dataFiles,
+  detailFiles,
+  formFiles,
+  listFiles,
+  pageRefs,
+  routeDir,
+  toTarget,
+  type FrontendTarget,
+} from '../core/frontend-target.ts';
 import { contractFile, tableFile } from '../pieces/backend.ts';
 import { CONTRACTS_PACKAGE } from '../wiring/backend.ts';
 import { editSource, removeUnusedImports } from '../wiring/ast.ts';
@@ -25,25 +34,17 @@ export interface SyncOptions {
   prune?: boolean;
 }
 
-/** The folder of a resource's pages, e.g. apps/sales-web/app/[locale]/(app)/invoices. */
-export const routeDir = ({ p }: ResourceNames, app: string) => `${frontendApp(app)}/app/[locale]/(app)/${p.kebab}`;
-/** lib/<plural>.ts (API types and fetchers) and lib/<plural>-table.ts (table config, enum labels). */
-export const dataFiles = ({ p }: ResourceNames, app: string) => ({
-  lib: `${frontendApp(app)}/lib/${p.kebab}.ts`,
-  table: `${frontendApp(app)}/lib/${p.kebab}-table.ts`,
-});
-export const formFiles = (names: ResourceNames, app: string) => ({
-  schema: `${routeDir(names, app)}/schema.ts`,
-  form: `${routeDir(names, app)}/${names.s.kebab}-form.tsx`,
-});
-export const listFiles = (names: ResourceNames, app: string) => ({
-  page: `${routeDir(names, app)}/page.tsx`,
-  columns: `${routeDir(names, app)}/${names.p.kebab}-table.tsx`,
-});
-export const detailFiles = (names: ResourceNames, app: string) => ({
-  component: `${routeDir(names, app)}/${names.s.kebab}-detail.tsx`,
-  page: `${routeDir(names, app)}/[id]/page.tsx`,
-});
+export { actionFiles, componentsDir, dataFiles, detailFiles, formFiles, listFiles, routeDir } from '../core/frontend-target.ts';
+
+/** The files a resource's pages are made of: the route folder, plus the lib's sources (not its catalogs) or the app's data modules. */
+export function resourceFiles(changes: Changes, names: ResourceNames, target: FrontendTarget | string): string[] {
+  const t = toTarget(target);
+  const data = dataFiles(names, t);
+  // A lib's top-level modules and components/ (not the folders of its other resources).
+  const top = (dir: string) => changes.list(dir).filter((name) => /\.tsx?$/.test(name)).map((name) => `${dir}/${name}`);
+  const own = t.kind === 'app' ? [data.lib, data.table] : [...top(t.dir), ...filesIn(changes, `${t.dir}/components`), data.appTable!];
+  return [...new Set([...filesIn(changes, routeDir(names, t)), ...own])].filter((path) => changes.exists(path));
+}
 
 /** The contract and the table of a resource, or undefined without a contract. */
 function contractOf(changes: Changes, names: ResourceNames) {
@@ -69,47 +70,50 @@ function apply(
 }
 
 /** The list page: table config (filters, sort, enum labels) and columns. */
-export function syncList(changes: Changes, names: ResourceNames, app: string, options: SyncOptions = {}): FrontendReports {
+export function syncList(changes: Changes, names: ResourceNames, target: FrontendTarget | string, options: SyncOptions = {}): FrontendReports {
   const source = contractOf(changes, names);
   if (!source) return [];
   const info = readResponse(source.contractPath, source.contract, names, source.table);
-  const { table } = dataFiles(names, app);
-  const { columns } = listFiles(names, app);
+  const { table } = dataFiles(names, target);
+  const { columns } = listFiles(names, target);
+  const refs = pageRefs(names, target);
   return [
-    apply(changes, table, (text) => syncTableConfig(table, text, names, info, options)),
-    apply(changes, columns, (text) => syncColumns(columns, text, names, info, options)),
+    apply(changes, table, (text) => syncTableConfig(table, text, names, info, { ...options, refs })),
+    apply(changes, columns, (text) => syncColumns(columns, text, names, info, { ...options, refs })),
   ];
 }
 
 /** The detail component, and the enum labels it reads in lib/<plural>-table.ts. */
-export function syncDetailPage(changes: Changes, names: ResourceNames, app: string, options: SyncOptions = {}): FrontendReports {
+export function syncDetailPage(changes: Changes, names: ResourceNames, target: FrontendTarget | string, options: SyncOptions = {}): FrontendReports {
   const source = contractOf(changes, names);
   if (!source) return [];
   const info = readResponse(source.contractPath, source.contract, names, source.table);
-  const { component, page } = detailFiles(names, app);
+  const { component, page } = detailFiles(names, target);
+  const refs = pageRefs(names, target);
   // The page shows the title and the actions: what it reads counts too.
   const pageSource = changes.read(page);
   const reports = [
-    apply(changes, component, (text) => syncDetail(component, text, names, info, pageSource ? [pageSource] : [], options)),
+    apply(changes, component, (text) => syncDetail(component, text, names, info, pageSource ? [pageSource] : [], { ...options, refs })),
   ];
   const detail = changes.read(component)!;
   const used = info.fields.filter((f) => f.kind === 'enum' && detail.includes(enumOptionsName(names, f)));
-  const { table } = dataFiles(names, app);
+  const { table } = dataFiles(names, target);
   if (used.length && changes.exists(table))
-    reports.push(apply(changes, table, (text) => syncEnumOptions(table, text, names, used)));
+    reports.push(apply(changes, table, (text) => syncEnumOptions(table, text, names, used, refs)));
   return reports;
 }
 
 /** The form: the values, defaults and options in schema.ts, the inputs in <singular>-form.tsx. */
-export function syncForm(changes: Changes, names: ResourceNames, app: string, options: SyncOptions = {}): FrontendReports {
+export function syncForm(changes: Changes, names: ResourceNames, target: FrontendTarget | string, options: SyncOptions = {}): FrontendReports {
   const source = contractOf(changes, names);
   if (!source) return [];
   const fields = readBody(source.contractPath, source.contract, names, source.table);
   const responseKeys = responseFields(source.contractPath, source.contract, names);
-  const files = formFiles(names, app);
+  const files = formFiles(names, target);
+  const refs = pageRefs(names, target);
   return [
-    apply(changes, files.schema, (text) => syncFormSchema(files.schema, text, names, fields, responseKeys, options)),
-    apply(changes, files.form, (text) => syncFormComponent(files.form, text, fields, names, options)),
+    apply(changes, files.schema, (text) => syncFormSchema(files.schema, text, names, fields, responseKeys, { ...options, refs })),
+    apply(changes, files.form, (text) => syncFormComponent(files.form, text, fields, names, { ...options, refs })),
   ];
 }
 
@@ -125,9 +129,9 @@ function responseFields(path: string, contract: string, names: ResourceNames): S
 
 /** The parts of a resource's pages, each with the files it needs (a part without them is skipped). */
 const PARTS = [
-  { part: 'list', files: (n: ResourceNames, app: string) => [dataFiles(n, app).table, listFiles(n, app).columns], sync: syncList },
-  { part: 'detail', files: (n: ResourceNames, app: string) => [detailFiles(n, app).component], sync: syncDetailPage },
-  { part: 'form', files: (n: ResourceNames, app: string) => [formFiles(n, app).schema, formFiles(n, app).form], sync: syncForm },
+  { part: 'list', files: (n: ResourceNames, t: FrontendTarget) => [dataFiles(n, t).table, listFiles(n, t).columns], sync: syncList },
+  { part: 'detail', files: (n: ResourceNames, t: FrontendTarget) => [detailFiles(n, t).component], sync: syncDetailPage },
+  { part: 'form', files: (n: ResourceNames, t: FrontendTarget) => [formFiles(n, t).schema, formFiles(n, t).form], sync: syncForm },
 ] as const;
 
 /**
@@ -135,28 +139,31 @@ const PARTS = [
  * the contract dropped that the pages still read elsewhere (titles, dialogs,
  * links), as `file:line` for the warnings.
  */
-export function syncResourcePages(changes: Changes, names: ResourceNames, app: string, options: SyncOptions = {}) {
+export function syncResourcePages(changes: Changes, names: ResourceNames, target: FrontendTarget | string, options: SyncOptions = {}) {
+  const t = toTarget(target);
   const source = contractOf(changes, names);
   if (!source) throw new Error(`${contractFile(names)} not found: generate the backend first (dafne g backend-resource ${names.p.kebab}).`);
   const reports: FrontendReports = [];
   const skipped: string[] = [];
   for (const { part, files, sync } of PARTS) {
-    if (files(names, app).every((path) => changes.exists(path))) reports.push(...sync(changes, names, app, options));
+    if (files(names, t).every((path) => changes.exists(path))) reports.push(...sync(changes, names, t, options));
     else skipped.push(part);
   }
-  if (skipped.length === PARTS.length) throw new Error(`${routeDir(names, app)}: no list, detail or form to sync (dafne g frontend-resource ${names.p.kebab}).`);
+  if (skipped.length === PARTS.length)
+    throw new Error(`${t.kind === 'app' ? routeDir(names, t) : t.dir}: no list, detail or form to sync (dafne g frontend-resource ${names.p.kebab}).`);
   if (options.prune) {
-    reports.push(...pruneEnumOptions(changes, names, app, source.contract));
-    reports.push(...useIdForDropped(changes, names, app, source.contractPath, source.contract));
+    reports.push(...pruneEnumOptions(changes, names, t, source.contract));
+    reports.push(...useIdForDropped(changes, names, t, source.contractPath, source.contract));
   }
-  return { reports, skipped, leftovers: leftoverReads(changes, names, app, source.contractPath, source.contract) };
+  return { reports, skipped, leftovers: leftoverReads(changes, names, t, source.contractPath, source.contract) };
 }
 
-/** The .ts/.tsx files under a folder of the tree. */
+/** The .ts/.tsx files under a folder of the tree, but the catalogs (messages/). */
 function filesIn(changes: Changes, dir: string): string[] {
   return changes.list(dir).flatMap((name) => {
     const path = `${dir}/${name}`;
-    return changes.exists(path) ? (/\.tsx?$/.test(name) ? [path] : []) : filesIn(changes, path);
+    if (changes.exists(path)) return /\.tsx?$/.test(name) ? [path] : [];
+    return name === 'messages' ? [] : filesIn(changes, path);
   });
 }
 
@@ -167,11 +174,11 @@ function filesIn(changes: Changes, dir: string): string[] {
  * resource's pages: `const statusOptions = useOptionLabels(STATUS_OPTIONS)`
  * and the imports.
  */
-function pruneEnumOptions(changes: Changes, names: ResourceNames, app: string, contract: string): FrontendReports {
+function pruneEnumOptions(changes: Changes, names: ResourceNames, target: FrontendTarget, contract: string): FrontendReports {
   const exported = (type: string) => new RegExp(`\\bexport\\s+type\\s+${type}\\b`).test(contract);
   const removed = new Set<string>();
   const reports: FrontendReports = [];
-  for (const path of [dataFiles(names, app).table, formFiles(names, app).schema]) {
+  for (const path of [dataFiles(names, target).table, formFiles(names, target).schema]) {
     if (!changes.exists(path)) continue;
     const report: FormReport = { added: [], removed: [], stale: [], warnings: [] };
     changes.update(
@@ -191,7 +198,7 @@ function pruneEnumOptions(changes: Changes, names: ResourceNames, app: string, c
             report.removed!.push(name);
           }
           if (report.removed!.length)
-            removeUnusedImports(file, (m) => m === CONTRACTS_PACKAGE || m === '@dafne/frontend-ui/lib/message-key');
+            removeUnusedImports(file, (m) => m === CONTRACTS_PACKAGE || m === '@dafne/frontend-ui/lib/message-key' || m === './messages/index.ts');
         }),
       { format: true },
     );
@@ -200,7 +207,7 @@ function pruneEnumOptions(changes: Changes, names: ResourceNames, app: string, c
   if (!removed.size) return reports;
 
   const uses = (text: string, name: string) => [...text.matchAll(new RegExp(`\\b${name}\\b`, 'g'))].length;
-  for (const path of filesIn(changes, routeDir(names, app))) {
+  for (const path of resourceFiles(changes, names, target)) {
     const source = changes.read(path)!;
     if (![...removed].some((name) => uses(source, name))) continue;
     const report: FormReport = { added: [], removed: [], stale: [], warnings: [] };
@@ -219,7 +226,7 @@ function pruneEnumOptions(changes: Changes, names: ResourceNames, app: string, c
             report.removed!.push(hook.getDeclarations()[0].getName());
             hook.remove();
           }
-          removeUnusedImports(file, (m) => m === './schema' || m.startsWith('@/lib/') || m === '@dafne/frontend-ui/hooks/use-option-labels');
+          removeUnusedImports(file, (m) => m.startsWith('.') || m.startsWith('@/lib/') || m === '@dafne/frontend-ui/hooks/use-option-labels');
         }),
       { format: true },
     );
@@ -237,12 +244,14 @@ function pruneEnumOptions(changes: Changes, names: ResourceNames, app: string, c
  * `String(order.id)` in a file without `t`. The field also leaves the
  * `<S>Ref` type (what the dialogs take).
  */
-function useIdForDropped(changes: Changes, names: ResourceNames, app: string, contractPath: string, contract: string): FrontendReports {
+function useIdForDropped(changes: Changes, names: ResourceNames, target: FrontendTarget, contractPath: string, contract: string): FrontendReports {
   const info = readResponse(contractPath, contract, names);
   const known = new Set([...info.fields.map((f) => f.key), ...info.skipped, 'id']);
-  const records = new Set([names.s.camel, 'row.original']);
+  // `row.original` is the record only in the list's columns (other tables have other rows).
+  const { columns } = listFiles(names, target);
   const reports: FrontendReports = [];
-  for (const path of filesIn(changes, routeDir(names, app))) {
+  for (const path of resourceFiles(changes, names, target)) {
+    const records = new Set(path === columns ? [names.s.camel, 'row.original'] : [names.s.camel]);
     const report: FormReport = { added: [], removed: [], stale: [], warnings: [] };
     changes.update(
       path,
@@ -282,13 +291,14 @@ function useIdForDropped(changes: Changes, names: ResourceNames, app: string, co
 }
 
 /** `<record>.x` and `row.original.x` reads, in the resource's files, of fields the contract doesn't have. */
-function leftoverReads(changes: Changes, names: ResourceNames, app: string, contractPath: string, contract: string): string[] {
+function leftoverReads(changes: Changes, names: ResourceNames, target: FrontendTarget, contractPath: string, contract: string): string[] {
   const info = readResponse(contractPath, contract, names);
   const known = new Set([...info.fields.map((f) => f.key), ...info.skipped]);
-  const { lib, table } = dataFiles(names, app);
   const found: string[] = [];
-  const read = new RegExp(`\\b(?:${names.s.camel}\\??|row\\.original)\\.(\\w+)\\b`, 'g');
-  for (const path of [...filesIn(changes, routeDir(names, app)), lib, table]) {
+  const { columns } = listFiles(names, target);
+  for (const path of resourceFiles(changes, names, target)) {
+    // `row.original` is the record only in the list's columns.
+    const read = new RegExp(`\\b(?:${names.s.camel}\\??${path === columns ? '|row\\.original' : ''})\\.(\\w+)\\b`, 'g');
     const lines = (changes.read(path) ?? '').split('\n');
     lines.forEach((line, i) => {
       for (const m of line.matchAll(read)) if (!known.has(m[1])) found.push(`${path}:${i + 1}: ${m[0]}`);

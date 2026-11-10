@@ -1,0 +1,15 @@
+import { notFound } from "next/navigation";
+import { BackendError } from "@dafne/frontend-api";
+import { get<%= s.pascal %> } from "<%= pkg %>/server";
+import { requireUser } from "@/lib/session";
+
+/** The <%= s.lower %> for a page, or the 404 page if missing or deleted. */
+export async function load<%= s.pascal %>(id: string) {
+  await requireUser();
+  try {
+    return await get<%= s.pascal %>(id);
+  } catch (error) {
+    if (error instanceof BackendError && error.status === 404) notFound();
+    throw error;
+  }
+}

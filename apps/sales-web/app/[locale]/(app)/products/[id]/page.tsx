@@ -13,8 +13,9 @@ import {
 } from "@dafne/frontend-ui/components/page-content";
 import { Button } from "@dafne/frontend-ui/components/button";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
-import { ProductDetailActions } from "../product-detail-actions";
-import { ProductDetails } from "../product-detail";
+import { ProductDetails } from "@dafne/frontend-products/components/product-detail";
+import { ProductDetailActions } from "@dafne/frontend-products/components/product-detail-actions";
+import { productsTable } from "@/lib/products-table";
 import { loadProduct } from "./load-product";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -42,7 +43,7 @@ async function ProductProfile({
   return (
     <PageContent>
       <BreadcrumbLabel
-        href={`/products/${encodeURIComponent(product.id)}`}
+        href={`${productsTable.path}/${encodeURIComponent(product.id)}`}
         label={product.name}
       />
       <PageContentHeader>
@@ -52,12 +53,12 @@ async function ProductProfile({
             variant="outline"
             size="sm"
             nativeButton={false}
-            render={<Link href="/products" />}
+            render={<Link href={productsTable.path} />}
           >
             <ArrowLeftIcon data-icon="inline-start" />
             {t("all")}
           </Button>
-          <ProductDetailActions product={product} />
+          <ProductDetailActions product={product} path={productsTable.path} />
         </PageContentAction>
       </PageContentHeader>
       <PageContentBody>

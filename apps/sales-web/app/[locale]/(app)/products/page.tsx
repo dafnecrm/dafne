@@ -15,10 +15,10 @@ import {
 import { Button } from "@dafne/frontend-ui/components/button";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { getTableParams } from "@dafne/frontend-data-table";
-import { listProducts } from "@/lib/products";
+import { listProducts } from "@dafne/frontend-products/server";
 import { productsTable } from "@/lib/products-table";
 import { requireUser } from "@/lib/session";
-import { ProductsTable } from "./products-table";
+import { ProductsTable } from "@dafne/frontend-products/components/products-table";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("products");
@@ -35,7 +35,7 @@ export default function ProductsPage({
         <PageContentTitle>{t("products.title")}</PageContentTitle>
         <PageContentDescription>{t("common.listHint")}</PageContentDescription>
         <PageContentAction>
-          <Button nativeButton={false} render={<Link href="/products/new" />}>
+          <Button nativeButton={false} render={<Link href={`${productsTable.path}/new`} />}>
             <PlusIcon data-icon="inline-start" />
             {t("products.new")}
           </Button>
@@ -66,6 +66,7 @@ async function ProductsList({
 
   return (
     <ProductsTable
+      config={productsTable}
       products={data.products}
       total={data.total}
       params={params}

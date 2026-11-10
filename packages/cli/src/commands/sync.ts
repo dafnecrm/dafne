@@ -2,9 +2,10 @@ import * as p from '@clack/prompts';
 import { Command } from 'commander';
 import { FsTree } from 'nx/src/generators/tree.js';
 import { Changes } from '../core/changes.ts';
+import { findFrontendTarget, frontendLibs, libName } from '../core/frontend-target.ts';
 import { resourceNames } from '../core/names.ts';
 import { findWorkspaceRoot, runNx } from '../core/nx.ts';
-import { DEFAULT_FRONTEND_APP, frontendApp } from '../core/workspace.ts';
+import { DEFAULT_FRONTEND_APP, frontendApp, frontendLib } from '../core/workspace.ts';
 import { syncableContracts } from '../generators/contract-sync/generator.ts';
 import { contractFile } from '../pieces/backend.ts';
 import { API_TAGS } from '../sync/table.ts';
@@ -25,21 +26,37 @@ interface ContractSyncOptions {
 
 interface FrontendSyncOptions {
   app?: string;
+  lib?: string;
   keep?: boolean;
   dryRun?: boolean;
   yes?: boolean;
 }
 
-/** Resources with a contract and pages in the app (lib/<plural>.ts). */
-function frontendResources(changes: Changes, app: string): string[] {
-  return changes
-    .list(`${frontendApp(app)}/lib`)
-    .filter((file) => /^[a-z0-9-]+\.ts$/.test(file) && !file.endsWith('-table.ts'))
-    .map((file) => file.replace(/\.ts$/, ''))
-    .filter((name) => {
-      const names = resourceNames(name);
-      return changes.exists(contractFile(names)) && changes.exists(dataFiles(names, app).table);
-    });
+/**
+ * Resources with a contract and pages: in the app (lib/<plural>.ts), or in
+ * a frontend lib (<plural>-table.ts with define<Plural>Table, in src or
+ * src/<plural>). With the place they're in, for the picker.
+ */
+function frontendResources(changes: Changes, app: string): { name: string; where: string }[] {
+  const candidates = new Set(
+    changes
+      .list(`${frontendApp(app)}/lib`)
+      .filter((file) => /^[a-z0-9-]+(-table)?\.ts$/.test(file))
+      .map((file) => file.replace(/(-table)?\.ts$/, '')),
+  );
+  for (const lib of frontendLibs(changes))
+    for (const entry of changes.list(`${frontendLib(lib)}/src`)) {
+      const table = /^([a-z0-9-]+)-table\.ts$/.exec(entry)?.[1];
+      if (table) candidates.add(table);
+      else if (!changes.exists(`${frontendLib(lib)}/src/${entry}`)) candidates.add(entry);
+    }
+  return [...candidates].sort().flatMap((name) => {
+    const names = resourceNames(name);
+    if (names.p.kebab !== name || !changes.exists(contractFile(names))) return [];
+    const target = findFrontendTarget(changes, names, app);
+    if (!target || !changes.exists(dataFiles(names, target).table)) return [];
+    return [{ name, where: target.kind === 'app' ? frontendApp(app) : frontendLib(target.lib) }];
+  });
 }
 
 export function syncCommand() {
@@ -103,6 +120,7 @@ Same as: nx g @dafne/cli:contract-sync <resource> ...`,
     )
     .argument('[resource]', 'resource name, singular or plural (e.g. orders)')
     .option('--app <name>', `frontend app of the pages (default ${DEFAULT_FRONTEND_APP})`)
+    .option('--lib <name>', 'frontend lib the resource is in (default: found by itself)')
     .option('--keep', 'only add: keep (and report) what the contract dropped')
     .option('--dry-run', 'show what would change, write nothing')
     .option('-y, --yes', 'never prompt; fail when an argument is missing')
@@ -112,6 +130,7 @@ Same as: nx g @dafne/cli:contract-sync <resource> ...`,
 Examples:
   dafne sync frontend-resource orders
   dafne sync frontend-resource invoices --app billing-web --dry-run
+  dafne sync frontend-resource sales-orders   # in packages/frontend/sales-orders
 
 The form follows the contract's body, the list and the detail its
 responses. Reads of dropped fields elsewhere (page titles, dialogs) are
@@ -130,12 +149,16 @@ Same as: nx g @dafne/cli:frontend-resource-sync <resource> ...`,
         const choices = frontendResources(new Changes(new FsTree(root, false)), app);
         if (!choices.length) throw new Error(`${frontendApp(app)} has no resource pages to sync.`);
         resource = cancelled<string>(
-          await p.select<string>({ message: 'Resource', options: choices.map((value) => ({ value, label: value })) }),
+          await p.select<string>({
+            message: 'Resource',
+            options: choices.map(({ name, where }) => ({ value: name, label: name, hint: where })),
+          }),
         );
       }
 
       const args = ['g', '@dafne/cli:frontend-resource-sync', resource, '--no-interactive'];
       if (options.app) args.push(`--app=${options.app}`);
+      if (options.lib) args.push(`--lib=${libName(options.lib)}`);
       if (options.keep) args.push('--keep');
       if (options.dryRun) args.push('--dry-run');
       if (interactive(options)) p.log.step(`nx ${args.join(' ')}`);

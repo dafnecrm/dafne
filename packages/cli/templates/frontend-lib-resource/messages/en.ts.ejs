@@ -1,0 +1,17 @@
+/**
+ * <%= s.title %> texts in English. The source of truth: it.ts must have the
+ * same keys (<%= p.pascal %>Messages), and the apps merge them under
+ * `<%= p.camel %>`.
+ */
+export const en = {};
+
+/** The shape every language must have: same keys, any text. */
+type Shape<T> = { [K in keyof T]: T[K] extends string ? string : Shape<T[K]> };
+export type <%= p.pascal %>Messages = Shape<typeof en>;
+
+type Paths<T> = {
+  [K in keyof T & string]: T[K] extends string ? K : `${K}.${Paths<T[K]>}`;
+}[keyof T & string];
+
+/** A full key of these texts, e.g. "<%= p.camel %>.fields.id". */
+export type <%= p.pascal %>MessageKey = `<%= p.camel %>.${Paths<<%= p.pascal %>Messages>}`;

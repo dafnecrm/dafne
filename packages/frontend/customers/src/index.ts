@@ -2,8 +2,6 @@
 // Plain data only (no "use client", no next/headers): server and client
 // code both import it. Also: "./components/*", "./schema" (Zod, for
 // forms), "./actions" (server actions), "./server" (backend reads).
-export * from "./customer-address-type-options.ts";
-export * from "./customer-type-options.ts";
 export * from "./customers-table.ts";
 export * from "./format-address.ts";
 export * from "./messages/index.ts";

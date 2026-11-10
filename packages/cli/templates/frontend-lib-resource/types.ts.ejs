@@ -1,0 +1,11 @@
+import type * as contracts from "@dafne/contracts";
+import type { Json } from "@dafne/contracts";
+
+/*
+ * API types come from the backend's contracts (dates arrive as strings,
+ * hence Json<...>), so they can't drift from what the backend returns.
+ */
+export type Listed<%= s.pascal %> = Json<contracts.Listed<%= s.pascal %>>;
+export type <%= p.pascal %>List = Json<contracts.<%= p.pascal %>List>;
+export type <%= s.pascal %>User = Json<contracts.<%= s.pascal %>User>;
+export type <%= s.pascal %>Detail = Json<contracts.<%= s.pascal %>Detail>;

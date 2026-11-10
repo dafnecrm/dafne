@@ -13,7 +13,7 @@ import type { Column, TableInfo } from './table.ts';
  */
 
 /** Helpers from contracts/src/common.ts the generated fields use. */
-export const COMMON_HELPERS = ['requiredText', 'optionalText', 'optionalDate', 'requiredId', 'optionalId'];
+export const COMMON_HELPERS = ['requiredText', 'optionalText', 'optionalDate', 'requiredId', 'optionalId', 'requiredUuid', 'optionalUuid', 'requiredNumber', 'requiredInt'];
 
 /** Imported by common.ts for OPTIONAL_DATE_HELPER. */
 export const MESSAGE_KEY_IMPORT = "import type { ContractMessageKey } from './messages/index.ts';";
@@ -202,7 +202,11 @@ export function syncChildContract(
 
 /** A child column's roles: no key to the parent and no position by default. */
 export function childRoles(column: Column, parent: string): Roles {
-  const managed = column.key === `${parent}Id` || column.key === 'position';
+  // The key to the parent (customerId, or orderId → salesOrder) and the
+  // position (the list's order) are set by the service, unless tagged
+  // (`@api input`: the client sends them).
+  const parentKey = column.referencesTable === parent || (!column.referencesTable && column.key === `${parent}Id`);
+  const managed = parentKey || column.key === 'position';
   if (managed && !column.tags.size) return { body: false, listed: false, detail: false, filter: false, sort: false };
   // Children are never filtered or sorted on their own.
   return { ...rolesOf(column), filter: false, sort: false };
@@ -258,8 +262,7 @@ function syncInterface(
   const merged = merge(name, members, wanted, isColumn, report, { ...options, refresh: refreshResponse });
   const text = iface.getText();
   const open = iface.getStart() + text.indexOf('{', iface.getNameNode().getEnd() - iface.getStart());
-  const body = merged.members.map((t) => (/[;,]$/.test(t) ? t : `${t};`)).join('\n');
-  file.replaceText([open + 1, iface.getEnd() - 1], `\n${body}\n`);
+  writeMembers(file, open, iface.getEnd() - 1, merged.members, ';');
 }
 
 /** The object passed to `z.strictObject({...})` / `z.object({...})`. */
@@ -280,14 +283,43 @@ function objectMembers(object: import('ts-morph').ObjectLiteralExpression): Memb
   }));
 }
 
-/** A member's text with its leading comments. */
+/** Leading whitespace of the line `pos` is on. */
+function indentAt(text: string, pos: number) {
+  const lineStart = text.lastIndexOf('\n', pos - 1) + 1;
+  return /^[ \t]*/.exec(text.slice(lineStart))![0];
+}
+
+/**
+ * A member's text with its leading comments, its lines relative to the
+ * member's own indent (so it can be written back at any depth).
+ */
 function memberText(node: Node) {
-  return node.getFullText().trim();
+  const full = node.getFullText();
+  const text = full.trim();
+  const indent = indentAt(node.getSourceFile().getFullText(), node.getPos() + full.length - full.trimStart().length);
+  return text
+    .split('\n')
+    .map((line, i) => (i > 0 && indent && line.startsWith(indent) ? line.slice(indent.length) : line))
+    .join('\n');
+}
+
+/**
+ * The members between `{` (at `open`) and `}`, one level deeper than the
+ * line of `{`: the sync keeps the file's layout itself, since Prettier
+ * only runs on files that were formatted before.
+ */
+function writeMembers(file: SourceFile, open: number, close: number, members: string[], end: string) {
+  const outer = indentAt(file.getFullText(), open);
+  const inner = `${outer}  `;
+  const body = members
+    .map((m) => `${/[;,]$/.test(m) ? m : `${m}${end}`}`)
+    .map((m) => m.split('\n').map((line) => (line ? inner + line : line)).join('\n'))
+    .join('\n');
+  file.replaceText([open + 1, close], members.length ? `\n${body}\n${outer}` : '');
 }
 
 function replaceObject(file: SourceFile, object: import('ts-morph').ObjectLiteralExpression, members: string[]) {
-  const body = members.map((m) => `${m},`).join('\n');
-  file.replaceText([object.getStart() + 1, object.getEnd() - 1], members.length ? `\n${body}\n` : '');
+  writeMembers(file, object.getStart(), object.getEnd() - 1, members, ',');
 }
 
 /**
@@ -362,7 +394,7 @@ function splitComments(text: string) {
 }
 
 /** Whether a body member's Zod accepts null (optionalText, .nullish()…). */
-const acceptsNull = (code: string) => /\boptional(Text|Date)\(|\.nullish\(|\.nullable\(/.test(code);
+const acceptsNull = (code: string) => /\boptional(Text|Date|Id|Uuid)\(|\.nullish\(|\.nullable\(/.test(code);
 
 /**
  * A body member whose nullability no longer matches its column (e.g. the

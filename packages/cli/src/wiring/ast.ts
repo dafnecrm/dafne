@@ -61,6 +61,13 @@ export function ensureNamedImport(
   if (!existing) return insertImportLine(file, `{ ${spec} }`, module);
   const named = existing.getNamedImports();
   if (named.some((n) => n.getName() === name)) return;
+  // A value from an `import type { … }` line: `import { type …, name }`.
+  if (!typeOnly && existing.isTypeOnly()) {
+    const names = named.map((n) => `type ${n.getText()}`);
+    const q = quoteOf(file);
+    existing.replaceWithText(`import { ${[...names, name].join(', ')} } from ${q}${module}${q};`);
+    return;
+  }
   name = spec;
   // Before the first type-only import (`type LucideIcon`), or at the end.
   const typeIndex = named.findIndex((n) => n.isTypeOnly());

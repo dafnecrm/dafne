@@ -12,6 +12,10 @@
       "x-prompt": "Resource name (e.g. invoice)"
     },
     "app": { "type": "string", "description": "Frontend app the pages go into (apps/<app>).", "default": "sales-web" },
+    "lib": {
+      "type": "string",
+      "description": "Frontend lib (packages/frontend/<lib>, created if missing) the code goes into; the route pages stay in the app. Without it: where the resource already is, else the app."
+    },
     "icon": { "type": "string", "description": "lucide-react icon for the sidebar and the empty list (e.g. ReceiptIcon).", "default": "FileIcon" },
     "section": { "type": "string", "description": "Sidebar section, created if missing (default CRM, or Admin with admin)." },
     "admin": { "type": "boolean", "description": "Put the link in an admin-only section.", "default": false },

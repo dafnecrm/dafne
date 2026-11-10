@@ -18,8 +18,7 @@ import {
   EmptyTitle,
 } from "@dafne/frontend-ui/components/empty";
 import { LocalDate } from "@dafne/frontend-ui/components/local-date";
-import { CUSTOMER_TYPE_OPTIONS } from "../customer-type-options.ts";
-import type { CustomersTableConfig } from "../customers-table.ts";
+import { CUSTOMER_TYPE_OPTIONS, type CustomersTableConfig } from "../customers-table.ts";
 import type { ListedCustomer } from "../types.ts";
 import { CustomerTableActions } from "./customer-table-actions.tsx";
 
@@ -105,21 +104,6 @@ function useCustomerColumns(path: string) {
         header: t("type"),
         cell: (info) => typeLabel(info.getValue()),
       }),
-      col.accessor("birthDate", {
-        header: t("birthDate"),
-        cell: (info) => {
-          const value = info.getValue();
-          return value ? <LocalDate value={value} format="date" /> : "—";
-        },
-      }),
-      col.accessor("fiscalCode", {
-        header: t("fiscalCode"),
-        cell: (info) => info.getValue() ?? "—",
-      }),
-      col.accessor("vatNumber", {
-        header: t("vatNumber"),
-        cell: (info) => info.getValue() ?? "—",
-      }),
       col.accessor("createdAt", {
         header: t("createdAt"),
         meta: { className: "text-right" },
@@ -127,6 +111,7 @@ function useCustomerColumns(path: string) {
           <LocalDate
             value={info.getValue()}
             className="text-muted-foreground"
+            format="dateTime"
           />
         ),
       }),

@@ -12,7 +12,8 @@
   "scripts": {
     "lint": "oxlint -c ../.oxlintrc.json --type-aware src",
     "test": "vitest run --passWithNoTests",
-    "migration:generate": "node ../migrator/src/generate.ts"
+    "migration:generate": "node ../migrator/src/generate.ts",
+    "db:studio": "pnpm drizzle-kit studio"
   },
   "dependencies": {
     "@dafne/backend-database-auth": "workspace:*",
@@ -20,6 +21,7 @@
     "@nestjs/config": "catalog:",
     "@nestjs/drizzle": "catalog:",
     "drizzle-orm": "catalog:",
+    "drizzle-kit": "catalog:",
     "pg": "catalog:"
   },
   "devDependencies": {

@@ -5,6 +5,18 @@ import type { ContractMessageKey } from './messages/index.ts';
 export const requiredText = (max: number, error: ContractMessageKey) =>
   z.string().trim().min(1, { error }).max(max);
 
+/** Required number. */
+export const requiredNumber = (error: ContractMessageKey) =>
+  z.coerce.number({ error });
+
+/**
+ * Required whole number, e.g. an item's position: null or missing (a
+ * blank number input) fail with `error`, like anything that isn't a whole
+ * number.
+ */
+export const requiredInt = (error: ContractMessageKey) =>
+  z.preprocess((value) => value ?? undefined, z.number({ error }).int({ error }));
+
 /**
  * Optional text: trimmed, and blank, null or missing all become null, so a
  * form can send "" for an empty field. `inner` validates the rest.
@@ -82,3 +94,17 @@ export const optionalId = (error: ContractMessageKey) =>
     // Without it the key is required in z.input (preprocess takes unknown).
     .optional()
     .transform((value) => value ?? null);
+
+/**
+ * Required reference to a record with a uuid id: trimmed, and blank or
+ * anything that isn't a uuid fails with `error`.
+ */
+export const requiredUuid = (error: ContractMessageKey) =>
+  z.string({ error }).trim().pipe(z.guid({ error }));
+
+/**
+ * Optional reference to a record with a uuid id: blank, null or missing
+ * all become null; anything else must be a uuid.
+ */
+export const optionalUuid = (error: ContractMessageKey) =>
+  optionalText(z.guid({ error }));

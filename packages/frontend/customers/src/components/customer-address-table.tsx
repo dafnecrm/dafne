@@ -2,7 +2,7 @@
 
 import { useOptionLabel } from "@dafne/frontend-ui/hooks/use-option-labels";
 import { countryName } from "@dafne/frontend-ui/lib/country-name";
-import { CUSTOMER_ADDRESS_TYPE_OPTIONS } from "../customer-address-type-options.ts";
+import { CUSTOMER_ADDRESS_TYPE_OPTIONS } from "../customers-table.ts";
 import { CustomerAddress, CustomerDetail } from "@dafne/contracts";
 import { defineDataTable, TableParams } from "@dafne/frontend-data-table";
 import { createDataTableColumnHelper, DataTable } from "@dafne/frontend-data-table/table";

@@ -10,7 +10,7 @@ import { defineDataTable } from "@dafne/frontend-data-table";
  * exactly.
  */
 export const usersTable = defineDataTable({
-  path: "/users",
+  path: "/admin/users",
   // The backend allows up to 100.
   pageSizes: [10, 20, 50],
   sortable: [

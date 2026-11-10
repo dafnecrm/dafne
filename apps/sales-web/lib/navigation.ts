@@ -1,4 +1,4 @@
-import type { Messages } from "next-intl";
+import type { MessageKeys, Messages, NestedKeyOf } from "next-intl";
 import {
   ContactIcon,
   HouseIcon,
@@ -6,11 +6,21 @@ import {
   UsersIcon, type LucideIcon,
   ListClockIcon,
   GroceriesIcon,
-  PackageIcon
+  PackageIcon,
+  BoxesLinkedIcon,
+  BriefcaseBusinessIcon,
+  ShieldIcon,
+  KeyRoundIcon,
 } from "lucide-react";
 
-/** A title: a key of the `nav` messages, translated where it's shown. */
-export type NavTitle = keyof Messages["nav"];
+/**
+ * A title: a key of the `nav` messages, translated where it's shown.
+ * Nested messages use dotted paths (`customers.list`).
+ */
+export type NavTitle = MessageKeys<
+  Messages["nav"],
+  NestedKeyOf<Messages["nav"]>
+>;
 
 export interface NavItem {
   title: NavTitle;
@@ -19,11 +29,21 @@ export interface NavItem {
   icon: LucideIcon;
 }
 
+/** A group of pages inside a section (the sidebar's third level). */
+export interface NavGroup {
+  title: NavTitle;
+  /** Shown for the group when the sidebar is minimized to a rail. */
+  icon?: LucideIcon;
+  items: NavItem[];
+}
+
 export interface NavSection {
   title: NavTitle;
   /** Where the section title links to (usually its first page). */
   href: string;
-  items: NavItem[];
+  items: (NavItem | NavGroup)[];
+  /** Shown for the section when the sidebar is minimized to a rail. */
+  icon?: LucideIcon;
   /** Only shown to users with the `admin` role. */
   adminOnly?: boolean;
   /** Only used to show breadcrumb. */
@@ -35,23 +55,23 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     title: "home",
     href: "/",
+    icon: HouseIcon,
     items: [{ title: "dashboard", href: "/", icon: HouseIcon }],
   },
   {
     title: "sales",
-    href: "/customers",
+    href: "#",
+    icon: BriefcaseBusinessIcon,
     items: [
-      { title: "customers", href: "/customers", icon: ContactIcon },
+      { 
+        title: "customers", 
+        href: "/customers", 
+        icon: ContactIcon,
+      },
       { title: "activities", href: "/activities", icon: ListClockIcon },
       { title: "products", href: "/products", icon: GroceriesIcon },
-      { title: "orders", href: "/orders", icon: PackageIcon }
+      { title: "orders", href: "/sales-orders", icon: PackageIcon },
     ],
-  },
-  {
-    title: "admin",
-    href: "/users",
-    adminOnly: true,
-    items: [{ title: "users", href: "/users", icon: UsersIcon }],
   },
   {
     title: "account",
@@ -59,17 +79,55 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [{ title: "account", href: "/account", icon: UserIcon }],
     hidden: true,
   },
+  // Admin
+  {
+    title: "admin",
+    href: ".",
+    icon: ShieldIcon,
+    adminOnly: true,
+    items: [
+      {
+        title: "sales",
+        icon: BriefcaseBusinessIcon,
+        items: [
+          { title: "salesOrderTypes", href: "/admin/sales-order-types", icon: BoxesLinkedIcon },
+        ],
+      },
+      {
+        title: "access",
+        icon: KeyRoundIcon,
+        items: [{ title: "users", href: "/admin/users", icon: UsersIcon }],
+      },
+    ],
+  },
 ];
 
-/** The section and page for a path ("/account/x" matches "/account"). */
-export function findNavItem(pathname: string) {
+export function isNavGroup(item: NavItem | NavGroup): item is NavGroup {
+  return "items" in item;
+}
+
+function matches(item: NavItem, pathname: string) {
+  return item.href === "/"
+    ? pathname === "/"
+    : pathname === item.href || pathname.startsWith(`${item.href}/`);
+}
+
+/**
+ * The section, group (if the page is in one) and page for a path
+ * ("/account/x" matches "/account").
+ */
+export function findNavItem(
+  pathname: string,
+): { section: NavSection; group?: NavGroup; item: NavItem } | undefined {
   for (const section of NAV_SECTIONS) {
-    const item = section.items.find((item) =>
-      item.href === "/"
-        ? pathname === "/"
-        : pathname === item.href || pathname.startsWith(`${item.href}/`),
-    );
-    if (item) return { section, item };
+    for (const entry of section.items) {
+      if (!isNavGroup(entry)) {
+        if (matches(entry, pathname)) return { section, item: entry };
+        continue;
+      }
+      const item = entry.items.find((page) => matches(page, pathname));
+      if (item) return { section, group: entry, item };
+    }
   }
   return undefined;
 }

@@ -46,6 +46,7 @@ export type CustomerAddressBody = CustomerBody['addresses'][number];
 
 /** Customer fields the list can be sorted by. */
 export const CUSTOMER_SORT_FIELDS = [
+  'id',
   'name',
   'email',
   'phone',

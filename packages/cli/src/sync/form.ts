@@ -1,4 +1,5 @@
 import { Node, type SourceFile, SyntaxKind } from 'ts-morph';
+import { pageRefs, type PageRefs } from '../core/frontend-target.ts';
 import { casings, words, type ResourceNames } from '../core/names.ts';
 import type { FormField } from './body.ts';
 import { appendToList, editSource, ensureHookLine, ensureNamedImport, removeJsxElement, removeListElement } from '../wiring/ast.ts';
@@ -71,7 +72,7 @@ export function syncFormSchema(
   names: ResourceNames,
   fields: FormField[],
   responseKeys: Set<string>,
-  { prune = false }: { prune?: boolean } = {},
+  { prune = false, refs = pageRefs(names) }: { prune?: boolean; refs?: PageRefs } = {},
 ): { content: string; report: FormReport } {
   const report = newReport();
   const { s } = names;
@@ -153,12 +154,13 @@ export function syncFormSchema(
       if (file.getVariableDeclaration(name) || exported) return;
       // Labels are message keys, translated by the form (useOptionLabels).
       const options = f.values!.map((v) => `{ value: "${v}", label: "${names.p.camel}.${f.key}.${v}" }`).join(',\n  ');
-      const code = `export const ${name} = [\n  ${options},\n] satisfies { value: ${f.enumType}; label: MessageKey }[];\n\n`;
+      const keyType = refs.messageKey;
+      const code = `export const ${name} = [\n  ${options},\n] satisfies { value: ${f.enumType}; label: ${keyType.name} }[];\n\n`;
       const opts = formOptsNode(file, s.camel);
       const statement = opts?.getFirstAncestor((a) => a.getParent() === file) ?? opts;
       file.insertText(statement ? statement.getStart(true) : file.getEnd(), code);
       ensureNamedImport(file, CONTRACTS_PACKAGE, f.enumType!, { typeOnly: true });
-      ensureNamedImport(file, '@dafne/frontend-ui/lib/message-key', 'MessageKey', { typeOnly: true });
+      ensureNamedImport(file, keyType.module, keyType.name, { typeOnly: true });
       report.added.push(name);
     });
   }
@@ -253,7 +255,7 @@ export function syncFormComponent(
   source: string,
   fields: FormField[],
   names: ResourceNames,
-  { prune = false }: { prune?: boolean } = {},
+  { prune = false, refs = pageRefs(names) }: { prune?: boolean; refs?: PageRefs } = {},
 ): { content: string; report: FormReport } {
   const report = newReport();
   const ignored = new Set(
@@ -311,7 +313,7 @@ export function syncFormComponent(
         file.insertText(closing.getStart(), `\n${indent}  ${jsx}\n${indent}`);
       }
       if (f.kind === 'enum') {
-        ensureNamedImport(file, './schema', optionsName(f));
+        ensureNamedImport(file, refs.schema, optionsName(f));
         if (ensureHookLine(file, `const ${optionsVar(f)} = useOptionLabels(${optionsName(f)});`))
           ensureNamedImport(file, '@dafne/frontend-ui/hooks/use-option-labels', 'useOptionLabels');
       }

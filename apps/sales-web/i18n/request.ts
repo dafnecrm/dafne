@@ -5,6 +5,10 @@ import { hasLocale } from "next-intl";
 import { getRequestConfig } from "next-intl/server";
 import { locale as rootLocale } from "next/root-params";
 import { routing } from "./routing";
+import { ACTIVITIES_MESSAGES } from "@dafne/frontend-activities";
+import { PRODUCTS_MESSAGES } from "@dafne/frontend-products";
+import { SALES_ORDERS_MESSAGES } from "@dafne/frontend-sales-orders";
+import { SALES_ORDER_TYPES_MESSAGES } from "@dafne/frontend-sales-orders/sales-order-types";
 
 /**
  * The locale of the current render. Server Components read the [locale]
@@ -33,8 +37,15 @@ export default getRequestConfig(async ({ locale, requestLocale }) => {
       contracts: CONTRACT_MESSAGES[resolved],
       // Customer texts, shipped by @dafne/frontend-customers.
       customers: CUSTOMERS_MESSAGES[resolved],
+      // Activity texts, shipped by @dafne/frontend-activities.
+      activities: ACTIVITIES_MESSAGES[resolved],
+      // Product texts, shipped by @dafne/frontend-products.
+      products: PRODUCTS_MESSAGES[resolved],
+      // Sales order texts, shipped by @dafne/frontend-sales-orders.
+      salesOrders: SALES_ORDERS_MESSAGES[resolved],
       // Address search and country texts, shipped by @dafne/frontend-geo.
       geo: GEO_MESSAGES[resolved],
+      salesOrderTypes: SALES_ORDER_TYPES_MESSAGES[resolved],
     },
   };
 });

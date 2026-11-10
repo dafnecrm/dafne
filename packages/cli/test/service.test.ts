@@ -1,19 +1,19 @@
 import { resourceNames } from '../src/core/names.ts';
-import { render } from '../src/core/templates.ts';
 import { syncService } from '../src/sync/service.ts';
 import { readTable } from '../src/sync/table.ts';
+import { renderBackend } from '../src/pieces/backend.ts';
 
 const names = resourceNames('activity');
 const tableWith = (extra: string) =>
   readTable(
     'activities.ts',
-    render('backend/table.ts', names).replace(
+    renderBackend('table.ts', names).replace(
       "id: serial('id').primaryKey(),",
       `id: serial('id').primaryKey(),\n    name: varchar('name', { length: 255 }).notNull(),\n${extra}`,
     ),
     names,
   );
-const service = () => render('backend/service.ts', names);
+const service = () => renderBackend('service.ts', names);
 
 describe('syncService', () => {
   it('adds new columns to the list, the insert and the update, in table order', () => {
@@ -64,5 +64,41 @@ describe('syncService', () => {
     const twice = syncService('s.ts', once, names, table);
     expect(twice.content).toBe(once);
     expect(twice.report.added).toEqual([]);
+  });
+
+  it('matches the keys to other records exactly, and drops those no longer filters', () => {
+    const table = tableWith(`
+    customerId: integer('customer_id').references(() => customer.id),
+    ownerId: varchar('owner_id', { length: 12 }).references(() => owner.id),`);
+    const { content } = syncService('s.ts', service(), names, table);
+    expect(content).toMatch(/EXACT_FILTERS[^\n]*> = \{\s*id: Number,\s*customerId: Number,\s*ownerId: String,?\s*\}/);
+    expect(content).toContain('const exact = EXACT_FILTERS[field];');
+
+    const tagged = tableWith(`
+    /** @api nofilter */
+    customerId: integer('customer_id').references(() => customer.id),
+    ownerId: varchar('owner_id', { length: 12 }).references(() => owner.id),`);
+    expect(syncService('s.ts', content, names, tagged).content).toMatch(/EXACT_FILTERS[^\n]*> = \{\s*id: Number,\s*ownerId: String,?\s*\}/);
+  });
+
+  it('gives a service from before EXACT_FILTERS the map', () => {
+    const old = service()
+      .replace(/\/\*\*\n \* Filters matched exactly[\s\S]*?\n\};\n\n/, '')
+      .replace('  type ActivityFilterField,\n', '')
+      .replace('type Column, ', '')
+      .replace(
+        /const exact = EXACT_FILTERS\[field\];\n\s*\/\/[^\n]*\n(\s*)return \[[^\n]*\];/,
+        "// The id matches exactly (an integer column), the other fields contain the text.\n$1return [\n$1  field === 'id'\n$1    ? eq(activity.id, Number(value))\n$1    : ilike(activity[field], `%${escapeLike(value)}%`),\n$1];",
+      );
+    expect(old).not.toContain('EXACT_FILTERS');
+    const table = tableWith(`    customerId: integer('customer_id').references(() => customer.id),`);
+    const { content, report } = syncService('s.ts', old, names, table);
+    expect(content).toMatch(/EXACT_FILTERS[^\n]*> = \{\s*id: Number,\s*customerId: Number,?\s*\}/);
+    expect(content).toContain('return [exact ? eq(activity[field] as Column, exact(value)) : ilike(activity[field], `%${escapeLike(value)}%`)];');
+    expect(content).not.toContain("field === 'id'");
+    expect(content).toMatch(/type ActivityFilterField/);
+    expect(content).toMatch(/import \{[^}]*type Column[^}]*\} from 'drizzle-orm'/);
+    expect(content.indexOf('const EXACT_FILTERS')).toBeLessThan(content.indexOf('const notDeleted'));
+    expect(report.added).toContain('listActivities: EXACT_FILTERS (activity)');
   });
 });

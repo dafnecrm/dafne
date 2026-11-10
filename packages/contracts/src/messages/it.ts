@@ -53,8 +53,36 @@ export const it: ContractMessages = {
     q: { required: 'Inserisci cosa cercare' },
     unavailable: 'La ricerca indirizzi non è disponibile. Riprova più tardi.',
   },
-  orders: {
-    notFound: 'Order not found',
-    customerId: { required: 'Enter the customer id' },
+  salesOrders: {
+    notFound: 'Ordine di vendita non trovato',
+    customerId: {
+      required: 'Inserisci il cliente',
+      notFound: 'Scegli un cliente dall\'elenco',
+    },
+    items: {
+      notFound: 'Riga dell\'ordine di vendita non trovata',
+      position: {
+        required: 'Inserisci la posizione',
+        duplicate: 'Due righe hanno la stessa posizione',
+      },
+      productId: {
+        required: 'Inserisci il prodotto',
+        notFound: 'Scegli un prodotto esistente'
+      },
+      quantity: { required: 'Inserisci la quantità' },
+    },
+    type: { required: 'Inserisci il tipo' },
+    typeId: { required: 'Enter the type id' },
+    status: { required: 'Scegli lo stato' }
+  },
+  salesOrderTypes: { 
+    notFound: 'Tipo ordine non trovato',
+    id: {
+      required: 'Inserisci il tipo',
+      taken: 'Questo codice è già in uso'
+    },
+    description: {
+      required: 'Inserisci la descrizione'
+    },
   },
 };

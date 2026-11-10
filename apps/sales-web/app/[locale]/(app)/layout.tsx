@@ -1,5 +1,5 @@
 import { Suspense, type CSSProperties, type ReactNode } from "react";
-import { AppSidebar, NavSectionItems } from "@/components/app-sidebar";
+import { AppSidebar, NavSections } from "@/components/app-sidebar";
 import { NavUser } from "@/components/nav-user";
 import {
   BreadcrumbProvider,
@@ -13,7 +13,6 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@dafne/frontend-ui/components/sidebar";
-import { NAV_SECTIONS } from "@/lib/navigation";
 import { getCurrentUser, isAdmin, requireUser } from "@/lib/session";
 
 /** Layout for pages that need a signed-in user. */
@@ -68,9 +67,7 @@ function UserSkeleton() {
 /** Admin-only sidebar sections; nothing for other users. */
 async function AdminNav() {
   if (!isAdmin(await getCurrentUser())) return null;
-  return NAV_SECTIONS.filter((section) => section.adminOnly && !section.hidden).map((section) => (
-    <NavSectionItems key={section.title} title={section.title} />
-  ));
+  return <NavSections admin />;
 }
 
 async function SidebarUser() {

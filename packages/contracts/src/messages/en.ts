@@ -56,9 +56,37 @@ export const en = {
     q: { required: 'Enter what to search' },
     unavailable: 'Address search is unavailable. Try again later.',
   },
-  orders: {
-    notFound: 'Order not found',
-    customerId: { required: 'Enter the customer id' },
+  salesOrders: {
+    notFound: 'Sales order not found',
+    customerId: {
+      required: 'Enter the customer id',
+      notFound: 'Choose a customer from the list'
+    },
+    items: {
+      notFound: 'Sales order item not found',
+      position: {
+        required: 'Enter the position',
+        duplicate: 'Two items have the same position',
+      },
+      productId: {
+        required: 'Enter the product id',
+        notFound: 'Choose a product from the list'
+      },
+      quantity: { required: 'Enter the quantity' },
+    },
+    type: { required: 'Enter the type' },
+    typeId: { required: 'Enter the type id' },
+    status: { required: 'Choose the status' }
+  },
+  salesOrderTypes: { 
+    notFound: 'Sales order type not found',
+    id: {
+      required: 'Enter the type id',
+      taken: 'This id is already in use'
+    },
+    description: {
+      required: 'Enter the type description'
+    },
   },
 };
 

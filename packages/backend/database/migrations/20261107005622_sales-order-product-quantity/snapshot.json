@@ -1,0 +1,47 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "210747a0-7978-4579-93d2-74b5edf65d08",
+  "prevIds": [
+    "a10bfe2a-673b-452a-b902-e682d38f8fff"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "sales",
+        "sales_order_product",
+        "quantity"
+      ],
+      "writes": [
+        "s|col|sales.sales_order_product.quantity",
+        "n|col|sales.sales_order_product.quantity",
+        "e|col|sales.sales_order_product.quantity"
+      ],
+      "reads": [
+        "n|tbl|sales.sales_order_product",
+        "n|sch|sales"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "sales_order_product",
+        "name": "quantity",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    }
+  ]
+}

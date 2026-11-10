@@ -1,0 +1,70 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "d6dea76a-87ed-4101-96c9-9d850e11ccbd",
+  "prevIds": [
+    "210747a0-7978-4579-93d2-74b5edf65d08"
+  ],
+  "footprints": [
+    {
+      "statementType": "rename_table",
+      "statementTarget": [
+        "table",
+        "sales",
+        "sales_order_product"
+      ],
+      "writes": [
+        "s|tbl|sales.sales_order_product",
+        "n|tbl|sales.sales_order_product",
+        "n|rel|sales.sales_order_product",
+        "n|type|sales.sales_order_product",
+        "s|tbl|sales.sales_order_item",
+        "n|tbl|sales.sales_order_item",
+        "n|rel|sales.sales_order_item",
+        "n|type|sales.sales_order_item"
+      ],
+      "reads": [
+        "n|sch|sales"
+      ]
+    },
+    {
+      "statementType": "rename_index",
+      "statementTarget": [
+        "index",
+        "sales",
+        "sales_order_item",
+        "sales_order_product_productId_idx"
+      ],
+      "writes": [
+        "s|idx|sales.sales_order_product_productId_idx",
+        "n|idx|sales.sales_order_product_productId_idx",
+        "n|rel|sales.sales_order_product_productId_idx",
+        "s|idx|sales.sales_order_item_productId_idx",
+        "n|idx|sales.sales_order_item_productId_idx",
+        "n|rel|sales.sales_order_item_productId_idx"
+      ],
+      "reads": [
+        "e|tbl|sales.sales_order_item",
+        "n|sch|sales",
+        "e|col|sales.sales_order_item.product_id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "rename",
+      "key": "tables\u0000[\"sales\",\"sales_order_product\"]",
+      "set": {
+        "name": "sales_order_item"
+      }
+    },
+    {
+      "op": "rename",
+      "key": "indexes\u0000[\"sales\",\"sales_order_product_productId_idx\"]",
+      "set": {
+        "name": "sales_order_item_productId_idx"
+      }
+    }
+  ]
+}

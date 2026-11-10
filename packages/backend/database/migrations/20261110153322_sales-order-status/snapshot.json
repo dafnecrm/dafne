@@ -1,0 +1,47 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "376acf9c-e1be-4cd0-bf47-b993ac3ddc2a",
+  "prevIds": [
+    "d131fdd9-10cb-49d5-a674-d53d3033650d"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "sales",
+        "sales_order",
+        "status"
+      ],
+      "writes": [
+        "s|col|sales.sales_order.status",
+        "n|col|sales.sales_order.status",
+        "e|col|sales.sales_order.status"
+      ],
+      "reads": [
+        "n|tbl|sales.sales_order",
+        "n|sch|sales"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "sales_order",
+        "name": "status",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'draft'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    }
+  ]
+}

@@ -1,0 +1,373 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "ff09d3c7-9464-4651-ac43-e74419454a16",
+  "prevIds": [
+    "9d342031-5cd6-44d6-bdd9-19e818fbe0a7"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "sales",
+        "sales_order_type"
+      ],
+      "writes": [
+        "s|tbl|sales.sales_order_type",
+        "n|tbl|sales.sales_order_type",
+        "e|tbl|sales.sales_order_type",
+        "n|rel|sales.sales_order_type",
+        "n|type|sales.sales_order_type",
+        "n|rel|sales.sales_order_type_pkey"
+      ],
+      "reads": [
+        "n|sch|sales"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "sales",
+        "sales_order",
+        "type"
+      ],
+      "writes": [
+        "s|col|sales.sales_order.type",
+        "n|col|sales.sales_order.type",
+        "e|col|sales.sales_order.type"
+      ],
+      "reads": [
+        "n|tbl|sales.sales_order",
+        "n|sch|sales"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "sales",
+        "sales_order_type",
+        "sales_order_type_deletedAt_idx"
+      ],
+      "writes": [
+        "s|idx|sales.sales_order_type_deletedAt_idx",
+        "n|idx|sales.sales_order_type_deletedAt_idx",
+        "e|idx|sales.sales_order_type_deletedAt_idx",
+        "n|rel|sales.sales_order_type_deletedAt_idx"
+      ],
+      "reads": [
+        "n|tbl|sales.sales_order_type",
+        "n|sch|sales",
+        "n|col|sales.sales_order_type.deleted_at"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "sales_order_type"
+      ],
+      "writes": [
+        "s|fk|sales.sales_order_type.sales_order_type_created_by_id_user_id_fkey",
+        "n|fk|sales.sales_order_type.sales_order_type_created_by_id_user_id_fkey",
+        "e|fk|sales.sales_order_type.sales_order_type_created_by_id_user_id_fkey",
+        "n|con|sales.sales_order_type.sales_order_type_created_by_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.sales_order_type",
+        "n|sch|sales",
+        "n|tbl|auth.user",
+        "n|sch|auth",
+        "n|col|sales.sales_order_type.created_by_id",
+        "n|col|auth.user.id",
+        "e|uniqueness|auth.user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "sales_order_type"
+      ],
+      "writes": [
+        "s|fk|sales.sales_order_type.sales_order_type_updated_by_id_user_id_fkey",
+        "n|fk|sales.sales_order_type.sales_order_type_updated_by_id_user_id_fkey",
+        "e|fk|sales.sales_order_type.sales_order_type_updated_by_id_user_id_fkey",
+        "n|con|sales.sales_order_type.sales_order_type_updated_by_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.sales_order_type",
+        "n|sch|sales",
+        "n|tbl|auth.user",
+        "n|sch|auth",
+        "n|col|sales.sales_order_type.updated_by_id",
+        "n|col|auth.user.id",
+        "e|uniqueness|auth.user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "sales_order"
+      ],
+      "writes": [
+        "s|fk|sales.sales_order.sales_order_type_sales_order_type_id_fkey",
+        "n|fk|sales.sales_order.sales_order_type_sales_order_type_id_fkey",
+        "e|fk|sales.sales_order.sales_order_type_sales_order_type_id_fkey",
+        "n|con|sales.sales_order.sales_order_type_sales_order_type_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.sales_order",
+        "n|sch|sales",
+        "n|tbl|sales.sales_order_type",
+        "n|sch|sales",
+        "n|col|sales.sales_order.type",
+        "n|col|sales.sales_order_type.id",
+        "e|uniqueness|sales.sales_order_type.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "name": "sales_order_type",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "sales_order_type",
+        "name": "id",
+        "type": "varchar(5)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "sales_order_type",
+        "name": "description",
+        "type": "varchar(255)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "sales_order_type",
+        "name": "created_at",
+        "type": "timestamp(3) with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "sales_order_type",
+        "name": "updated_at",
+        "type": "timestamp(3) with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "sales_order_type",
+        "name": "deleted_at",
+        "type": "timestamp(3) with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "sales_order_type",
+        "name": "created_by_id",
+        "type": "varchar(36)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "sales_order_type",
+        "name": "updated_by_id",
+        "type": "varchar(36)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "sales_order",
+        "name": "type",
+        "type": "varchar(5)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "sales_order_type",
+        "name": "sales_order_type_deletedAt_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "deleted_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "sales_order_type",
+        "name": "sales_order_type_created_by_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "created_by_id"
+        ],
+        "schemaTo": "auth",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "sales_order_type",
+        "name": "sales_order_type_updated_by_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "updated_by_id"
+        ],
+        "schemaTo": "auth",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "sales_order",
+        "name": "sales_order_type_sales_order_type_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "type"
+        ],
+        "schemaTo": "sales",
+        "tableTo": "sales_order_type",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "RESTRICT",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "sales_order_type",
+        "name": "sales_order_type_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    }
+  ]
+}

@@ -1,5 +1,6 @@
-import { defineRelationsPart } from 'drizzle-orm';
-import { index, timestamp, varchar, serial } from 'drizzle-orm/pg-core';
+<% for (const line of id.tableImports) { %><%= line %>
+<% } %>import { defineRelationsPart } from 'drizzle-orm';
+import { index, timestamp, varchar<%= id.builder === 'varchar' ? '' : ', ' + id.builder %> } from 'drizzle-orm/pg-core';
 import { user } from '../auth.js';
 import { salesSchema } from './sales.js';
 
@@ -10,7 +11,7 @@ import { salesSchema } from './sales.js';
 export const <%= s.camel %> = salesSchema.table(
   '<%= s.snake %>',
   {
-    id: serial('id').primaryKey(),
+    id: <%= id.column %>,
     createdAt: timestamp('created_at', { precision: 3, withTimezone: true })
       .defaultNow()
       .notNull(),

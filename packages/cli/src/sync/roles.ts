@@ -1,4 +1,5 @@
 import pluralize from 'pluralize';
+import { idTemplate } from '../core/id.ts';
 import { casings, words, type ResourceNames } from '../core/names.ts';
 import type { Column } from './table.ts';
 
@@ -33,15 +34,19 @@ export function rolesOf(column: Column): Roles {
 
   const writeonly = tags.has('writeonly');
   const detailOnly = tags.has('detail');
-  const generated = column.primaryKey || column.serverManaged;
-  // The id is always a filter (an exact match, see filterZod), unless tagged nofilter.
-  const idFilter = column.primaryKey && kind === 'int';
+  // Filled by the database or Drizzle (serial, defaultRandom, $defaultFn…);
+  // a primary key without one (a varchar id) is the client's: in the body.
+  const generated = column.serverManaged;
+  // The id is always a filter (an exact match, see filterZod) and a sort
+  // field, unless tagged nofilter / nosort; a key to another record is a
+  // filter (exact) too.
+  const idFilter = exactFilter(column);
   const roles: Roles = {
     body: !generated && !tags.has('readonly'),
     listed: !writeonly && !detailOnly,
     detail: !writeonly && detailOnly,
     filter: (idFilter || (FILTERABLE.has(kind) && !generated && !column.references)) && !writeonly && !detailOnly,
-    sort: SORTABLE.has(kind) && !column.primaryKey && !column.references && !writeonly && !detailOnly,
+    sort: SORTABLE.has(kind) && (column.primaryKey || !column.references) && !writeonly && !detailOnly,
   };
   if (tags.has('filter')) roles.filter = idFilter || FILTERABLE.has(kind);
   if (tags.has('nofilter')) roles.filter = false;
@@ -49,6 +54,13 @@ export function rolesOf(column: Column): Roles {
   if (tags.has('nosort')) roles.sort = false;
   return roles;
 }
+
+/** The id and the keys to other records: filters the service matches exactly (EXACT_FILTERS). */
+export const exactFilter = (column: Column) =>
+  (column.primaryKey || column.references) && (column.kind === 'int' || column.kind === 'string');
+
+/** How the service turns the query param of an exact filter into the column's value. */
+export const exactFilterParse = (column: Column) => (column.kind === 'int' ? 'Number' : 'String');
 
 /** ACTIVITY_TYPES and ActivityType, for an enum column `type`. */
 export function enumNames({ s }: ResourceNames, column: Column) {
@@ -73,6 +85,13 @@ export function bodyZod(names: ResourceNames, column: Column): string {
   const required = column.notNull && !column.hasDefault;
   const optionalDefault = column.notNull && column.hasDefault;
   const required_ = msgKey(names, column, 'required');
+
+  // A uuid (e.g. a key to a record with a uuid id): Postgres rejects anything else.
+  if (column.builder === 'uuid') {
+    if (required) return `requiredUuid(${required_})`;
+    if (optionalDefault) return `requiredUuid(${required_}).optional()`;
+    return `optionalUuid(${required_})`;
+  }
 
   if (column.kind === 'string' || column.kind === 'text') {
     const max = column.length ?? (column.kind === 'text' ? 65535 : 255);
@@ -126,8 +145,11 @@ function baseZod(names: ResourceNames, column: Column, required: string): string
 
 /** Zod for the list's query string (each filter is a param of its own). */
 export function filterZod(names: ResourceNames, column: Column): string {
-  // The id: digits (an int4), which the service matches exactly.
-  if (column.primaryKey) return 'z.string().regex(/^\\s*\\d{0,9}\\s*$/).optional()';
+  // The id or a key, which the service matches exactly: digits (an int4), a uuid or text.
+  if (exactFilter(column))
+    return idTemplate(
+      column.builder === 'uuid' ? { type: 'uuid' } : column.kind === 'string' ? { type: 'varchar', length: column.length ?? 255 } : { type: 'serial' },
+    ).filterZod;
   if (column.kind === 'enum') return `z.enum(${enumNames(names, column).constant}).optional()`;
   if (column.kind === 'boolean') return `z.enum(['true', 'false']).optional()`;
   return `z.string().max(${column.length ?? 255}).optional()`;

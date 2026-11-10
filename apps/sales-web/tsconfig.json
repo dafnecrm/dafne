@@ -11,7 +11,10 @@
         "@dafne/frontend-forms",
         "@dafne/frontend-data-table",
         "@dafne/frontend-customers",
-        "@dafne/frontend-geo"
+        "@dafne/frontend-geo",
+        "@dafne/frontend-activities",
+        "@dafne/frontend-products",
+        "@dafne/frontend-sales-orders"
       ]
     }
   },

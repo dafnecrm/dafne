@@ -1,5 +1,6 @@
 import { resourceNames } from '../src/core/names.ts';
 import { render } from '../src/core/templates.ts';
+import { renderBackend } from '../src/pieces/backend.ts';
 import { syncContract } from '../src/sync/contract.ts';
 import { syncDetail } from '../src/sync/detail.ts';
 import { syncColumns, syncEnumOptions, syncTableConfig } from '../src/sync/table-page.ts';
@@ -20,12 +21,12 @@ const COLUMNS = `
     customerId: varchar('customer_id', { length: 36 }).references(() => customer.id),`;
 
 function info(idTags = '') {
-  const table = render('backend/table.ts', names).replace(
+  const table = renderBackend('table.ts', names).replace(
     "id: serial('id').primaryKey(),",
     `${idTags}id: serial('id').primaryKey(),\n    name: varchar('name', { length: 255 }).notNull(),${COLUMNS}`,
   );
   const tableInfo = readTable('activities.ts', table, names);
-  const contract = syncContract('activities.ts', render('backend/contract.ts', names), names, tableInfo).content;
+  const contract = syncContract('activities.ts', renderBackend('contract.ts', names), names, tableInfo).content;
   return readResponse('activities.ts', contract, names, tableInfo);
 }
 
@@ -41,7 +42,7 @@ describe('readResponse', () => {
     expect(byKey.description).toMatchObject({ kind: 'text', richText: true });
     expect(byKey.customerId).toMatchObject({ kind: 'id', label: 'Customer' });
     expect(sortFields).toContain('type');
-    expect(filterFields).toEqual(['id', 'name', 'type', 'done']);
+    expect(filterFields).toEqual(['id', 'name', 'type', 'done', 'customerId']);
   });
 });
 
@@ -49,7 +50,7 @@ describe('syncTableConfig', () => {
   it('adds sort fields in contract order, filters and enum labels', () => {
     const { content } = syncTableConfig('t.ts', render('frontend/lib-table.ts', view), names, info());
     expect(content).toContain('export const ACTIVITY_TYPE_OPTIONS = [');
-    expect(content).toMatch(/sortable: \["name", "type", "budget", "done", "dueDate", "createdAt", "updatedAt"\]/);
+    expect(content).toMatch(/sortable: \["id", "name", "type", "budget", "done", "dueDate", "createdAt", "updatedAt"\]/);
     expect(content).toMatch(/field: "type" satisfies ActivityFilterField,\s*label: "activities.fields.type",\s*options: ACTIVITY_TYPE_OPTIONS/);
     expect(content).toContain('{ value: "false", label: "common.no" }');
     expect(content).toContain('{ value: "phone", label: "activities.type.phone" }');
@@ -110,6 +111,24 @@ describe('syncColumns', () => {
     expect(content).toContain('header: t("id")');
     expect(content).toContain('header: t("type")');
     expect(content).not.toContain('t("activities.fields.');
+  });
+
+  it('keeps, with prune, a column of a listed member it has no kind for (an object)', () => {
+    const table = renderBackend('table.ts', names);
+    const tableInfo = readTable('activities.ts', table, names);
+    const contract = syncContract('activities.ts', renderBackend('contract.ts', names), names, tableInfo).content.replace(
+      /export interface ListedActivity \{/,
+      'export interface ListedActivity {\n  customer: { id: number; name: string };',
+    );
+    const withCustomer = readResponse('activities.ts', contract, names, tableInfo);
+    expect(withCustomer.listedSkipped).toContain('customer');
+    const source = syncColumns('c.tsx', render('frontend/table.tsx', view), names, withCustomer).content.replace(
+      'col.accessor("createdAt"',
+      'col.accessor("customer", { cell: ({ row }) => row.original.customer.name }),\n        col.accessor("createdAt"',
+    );
+    const { content, report } = syncColumns('c.tsx', source, names, withCustomer, { prune: true });
+    expect(content).toContain('col.accessor("customer"');
+    expect(report.removed).toEqual([]);
   });
 
   it('is idempotent', () => {

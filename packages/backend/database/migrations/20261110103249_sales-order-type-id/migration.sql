@@ -1,0 +1,1 @@
+ALTER TABLE "sales"."sales_order" RENAME COLUMN "type" TO "typeId";

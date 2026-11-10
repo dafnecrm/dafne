@@ -16,8 +16,9 @@ import {
 import CopyButton from "@dafne/frontend-ui/components/copy-button";
 import { Detail, DetailSection } from "@dafne/frontend-ui/components/detail";
 import { LocalDate } from "@dafne/frontend-ui/components/local-date";
+import { PlainDate } from "@dafne/frontend-ui/components/plain-date";
 import type { CustomerDetail } from "../types.ts";
-import { CUSTOMER_TYPE_OPTIONS } from "../customer-type-options.ts";
+import { CUSTOMER_TYPE_OPTIONS } from "../customers-table.ts";
 import { CustomerAddressTable } from "./customer-address-table.tsx";
 
 /**
@@ -44,7 +45,7 @@ export function CustomerDetails({
         {customer.type === "person" && (
           <Detail icon={CalendarIcon} label={t("customers.fields.birthDate")}>
             {customer.birthDate ? (
-              <LocalDate value={customer.birthDate} format="longDate" />
+              <PlainDate value={customer.birthDate} format="longDate" />
             ) : (
               "—"
             )}

@@ -23,8 +23,11 @@ export const customer = salesSchema.table(
     id: serial('id').primaryKey(),
     type: text('type', { enum: ['person', 'company'] }).notNull(),
     name: varchar('name', { length: 255 }).notNull(),
+    /** @api detail */
     birthDate: date('birth_date', { mode: 'date' }),
+    /** @api detail */
     fiscalCode: varchar('fiscal_code', { length: 16 }),
+    /** @api detail */
     vatNumber: varchar('vat_number', { length: 13 }),
     email: varchar('email', { length: 255 }).notNull(),
     phone: varchar('phone', { length: 32 }),

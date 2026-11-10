@@ -1,9 +1,13 @@
 import { schema, type Database } from '@dafne/backend-database';
 import { InjectDrizzle } from '@nestjs/drizzle';
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, desc, eq, isNull, ilike, type SQL } from 'drizzle-orm';
+<% if (id.clientPicks) { %>import { PostgresErrorCode } from '@dafne/backend-common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+<% } else { %>import { Injectable, NotFoundException } from '@nestjs/common';
+<% } %>
+import { and, asc, desc, eq, isNull, ilike, type Column, type SQL } from 'drizzle-orm';
 import {
   <%= s.constant %>_FILTER_FIELDS,
+  type <%= s.pascal %>FilterField,
   type <%= s.pascal %>Body,
   type <%= s.pascal %>Detail,
   type <%= p.pascal %>List,
@@ -18,10 +22,31 @@ const { <%= s.camel %> } = schema;
 /** Escapes LIKE wildcards so the value is matched literally. */
 const escapeLike = (value: string) => value.replace(/[\\%_]/g, '\\$&');
 
+/**
+ * Filters matched exactly (the id and the keys to other records), with how
+ * their query param becomes the column's value; the others contain the text.
+ */
+const EXACT_FILTERS: Partial<Record<<%= s.pascal %>FilterField, (value: string) => number | string>> = {
+  id: <%= id.filterParse %>,
+};
+
 /** <%= p.title %> that haven't been deleted. */
 const notDeleted = isNull(<%= s.camel %>.deletedAt);
 
-/** Only the user's ID and name, for "created by" / "updated by". */
+<% if (id.clientPicks) { %>/**
+ * A taken id (the client picks it) becomes a 409; drizzle wraps the
+ * Postgres error as the cause. Rethrows anything else.
+ */
+function rethrowTakenId(error: unknown): never {
+  const cause = error instanceof Error && error.cause ? error.cause : error;
+  const { code, constraint } =
+    cause instanceof Error ? (cause as { code?: unknown; constraint?: unknown }) : {};
+  if (code === PostgresErrorCode.UNIQUE_VIOLATION && constraint === '<%= s.snake %>_pkey')
+    throw new ConflictException(msg('<%= p.camel %>.id.taken'));
+  throw error;
+}
+
+<% } %>/** Only the user's ID and name, for "created by" / "updated by". */
 const userSummary = { columns: { id: true, name: true } } as const;
 
 @Injectable()
@@ -43,8 +68,9 @@ export class <%= p.pascal %>Service {
     const filters = <%= s.constant %>_FILTER_FIELDS.flatMap((field) => {
       const value = query[field]?.trim();
       if (!value) return [];
-      // The id matches exactly (an integer column), the other fields contain the text.
-      return [field === 'id' ? eq(<%= s.camel %>.id, Number(value)) : ilike(<%= s.camel %>[field], `%${escapeLike(value)}%`)];
+      const exact = EXACT_FILTERS[field];
+      // As a plain Column: eq can't type a union of columns against number | string.
+      return [exact ? eq(<%= s.camel %>[field] as Column, exact(value)) : ilike(<%= s.camel %>[field], `%${escapeLike(value)}%`)];
     });
     const where = and(notDeleted, ...filters) as SQL;
     const direction = sortDirection === 'asc' ? asc : desc;
@@ -71,7 +97,7 @@ export class <%= p.pascal %>Service {
    * One <%= s.lower %> that isn't deleted, with who created and last
    * updated it. Throws 404 otherwise.
    */
-  async get<%= s.pascal %>(id: number): Promise<<%= s.pascal %>Detail> {
+  async get<%= s.pascal %>(id: <%= id.ts %>): Promise<<%= s.pascal %>Detail> {
     const found = await this.db.query.<%= s.camel %>.findFirst({
       where: { id, deletedAt: { isNull: true } },
       columns: { createdById: false, updatedById: false },
@@ -85,7 +111,7 @@ export class <%= p.pascal %>Service {
   async create<%= s.pascal %>(body: <%= s.pascal %>Body, userId: string): Promise<<%= s.pascal %>Detail> {
     // One instant for both: createdAt and updatedAt start equal.
     const now = new Date();
-    // The id is serial: the database picks it.
+    // <%= id.createComment %>
     const [{ id }] = await this.db
       .insert(<%= s.camel %>)
       .values({
@@ -94,7 +120,8 @@ export class <%= p.pascal %>Service {
         createdById: userId,
         updatedById: userId,
       })
-      .returning({ id: <%= s.camel %>.id });
+      .returning({ id: <%= s.camel %>.id })<% if (id.clientPicks) { %>
+      .catch(rethrowTakenId)<% } %>;
     return this.get<%= s.pascal %>(id);
   }
 
@@ -103,7 +130,7 @@ export class <%= p.pascal %>Service {
    * if the <%= s.lower %> doesn't exist or is deleted.
    */
   async update<%= s.pascal %>(
-    id: number,
+    id: <%= id.ts %>,
     body: <%= s.pascal %>Body,
     userId: string,
   ): Promise<<%= s.pascal %>Detail> {
@@ -124,7 +151,7 @@ export class <%= p.pascal %>Service {
    * Deletes <%= s.a %> logically: sets deletedAt, so it disappears
    * from the API but stays in the database. Throws 404 if already deleted.
    */
-  async delete<%= s.pascal %>(id: number, userId: string) {
+  async delete<%= s.pascal %>(id: <%= id.ts %>, userId: string) {
     const now = new Date();
     const result = await this.db
       .update(<%= s.camel %>)

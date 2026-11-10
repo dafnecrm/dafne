@@ -446,12 +446,15 @@ importers:
       '@dafne/backend-migrator':
         specifier: workspace:*
         version: link:../../packages/backend/migrator
-      '@dafne/backend-orders':
-        specifier: workspace:*
-        version: link:../../packages/backend/orders
       '@dafne/backend-products':
         specifier: workspace:*
         version: link:../../packages/backend/products
+      '@dafne/backend-sales-order-types':
+        specifier: workspace:*
+        version: link:../../packages/backend/sales-order-types
+      '@dafne/backend-sales-orders':
+        specifier: workspace:*
+        version: link:../../packages/backend/sales-orders
       '@dafne/backend-session':
         specifier: workspace:*
         version: link:../../packages/backend/session
@@ -579,6 +582,9 @@ importers:
       '@dafne/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@dafne/frontend-activities':
+        specifier: workspace:*
+        version: link:../../packages/frontend/activities
       '@dafne/frontend-api':
         specifier: workspace:*
         version: link:../../packages/frontend/api
@@ -597,6 +603,12 @@ importers:
       '@dafne/frontend-geo':
         specifier: workspace:*
         version: link:../../packages/frontend/geo
+      '@dafne/frontend-products':
+        specifier: workspace:*
+        version: link:../../packages/frontend/products
+      '@dafne/frontend-sales-orders':
+        specifier: workspace:*
+        version: link:../../packages/frontend/sales-orders
       '@dafne/frontend-ui':
         specifier: workspace:*
         version: link:../../packages/frontend/ui
@@ -888,6 +900,9 @@ importers:
       '@nestjs/drizzle':
         specifier: 'catalog:'
         version: 0.0.2(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/core@12.3.2)(drizzle-orm@1.0.0-rc.5(@types/pg@8.23.1)(mysql2@3.24.6(@types/node@24.19.2))(pg@8.23.1)(zod@4.6.7))(reflect-metadata@0.2.2)
+      drizzle-kit:
+        specifier: 'catalog:'
+        version: 1.0.0-rc.5(drizzle-orm@1.0.0-rc.5(@types/pg@8.23.1)(mysql2@3.24.6(@types/node@24.19.2))(pg@8.23.1)(zod@4.6.7))
       drizzle-orm:
         specifier: 'catalog:'
         version: 1.0.0-rc.5(@types/pg@8.23.1)(mysql2@3.24.6(@types/node@24.19.2))(pg@8.23.1)(zod@4.6.7)
@@ -1089,7 +1104,7 @@ importers:
         specifier: 'catalog:'
         version: 4.1.12(@types/node@24.19.2)(@vitest/coverage-v8@4.1.12)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.0))
 
-  packages/backend/orders:
+  packages/backend/products:
     dependencies:
       '@dafne/backend-common':
         specifier: workspace:*
@@ -1138,7 +1153,56 @@ importers:
         specifier: 'catalog:'
         version: 4.1.12(@types/node@24.19.2)(@vitest/coverage-v8@4.1.12)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.0))
 
-  packages/backend/products:
+  packages/backend/sales-order-types:
+    dependencies:
+      '@dafne/backend-common':
+        specifier: workspace:*
+        version: link:../common
+      '@dafne/backend-database':
+        specifier: workspace:*
+        version: link:../database
+      '@dafne/backend-session':
+        specifier: workspace:*
+        version: link:../session
+      '@dafne/contracts':
+        specifier: workspace:*
+        version: link:../../contracts
+      '@nestjs/common':
+        specifier: 'catalog:'
+        version: 12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0)
+      '@nestjs/drizzle':
+        specifier: 'catalog:'
+        version: 0.0.2(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/core@12.3.2)(drizzle-orm@1.0.0-rc.5(@types/pg@8.23.1)(mysql2@3.24.6(@types/node@24.19.2))(pg@8.23.1)(zod@4.6.7))(reflect-metadata@0.2.2)
+      drizzle-orm:
+        specifier: 'catalog:'
+        version: 1.0.0-rc.5(@types/pg@8.23.1)(mysql2@3.24.6(@types/node@24.19.2))(pg@8.23.1)(zod@4.6.7)
+    devDependencies:
+      '@nestjs/testing':
+        specifier: 'catalog:'
+        version: 12.3.3(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/core@12.3.2)(@nestjs/platform-express@12.3.2)
+      '@swc/core':
+        specifier: 'catalog:'
+        version: 1.16.21(@swc/helpers@0.5.23)
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.2
+      oxlint:
+        specifier: 'catalog:'
+        version: 1.91.0(oxlint-tsgolint@7.0.2005)
+      oxlint-tsgolint:
+        specifier: 'catalog:'
+        version: 7.0.2005
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+      unplugin-swc:
+        specifier: 'catalog:'
+        version: 2.0.0(@rspack/core@2.3.1(@swc/helpers@0.5.23))(@swc/core@1.16.21(@swc/helpers@0.5.23))(esbuild@0.28.2)(rolldown@1.2.16)(rollup@4.67.5)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.0))
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.12(@types/node@24.19.2)(@vitest/coverage-v8@4.1.12)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.0))
+
+  packages/backend/sales-orders:
     dependencies:
       '@dafne/backend-common':
         specifier: workspace:*
@@ -1384,6 +1448,61 @@ importers:
         specifier: 'catalog:'
         version: 4.1.12(@types/node@26.6.6)(@vitest/coverage-v8@4.1.12)(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.0))
 
+  packages/frontend/activities:
+    dependencies:
+      '@dafne/contracts':
+        specifier: workspace:*
+        version: link:../../contracts
+      '@dafne/frontend-api':
+        specifier: workspace:*
+        version: link:../api
+      '@dafne/frontend-data-table':
+        specifier: workspace:*
+        version: link:../data-table
+      '@dafne/frontend-forms':
+        specifier: workspace:*
+        version: link:../forms
+      '@dafne/frontend-geo':
+        specifier: workspace:*
+        version: link:../geo
+      '@dafne/frontend-ui':
+        specifier: workspace:*
+        version: link:../ui
+      '@tanstack/react-form-nextjs':
+        specifier: 'catalog:'
+        version: 1.33.5(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      lucide-react:
+        specifier: 'catalog:'
+        version: 1.68.0(@types/react@19.3.0)(react@19.3.0)
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.7
+    devDependencies:
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.3.0
+      eslint:
+        specifier: 'catalog:'
+        version: 9.39.5(jiti@2.7.0)(supports-color@7.2.0)
+      next:
+        specifier: 'catalog:'
+        version: 16.4.3(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      next-intl:
+        specifier: 'catalog:'
+        version: 4.14.9(@swc/helpers@0.5.23)(@types/react@19.3.0)(next@16.4.3(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0)
+      react:
+        specifier: 'catalog:'
+        version: 19.3.0
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.3.0(react@19.3.0)
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.12(@types/node@26.6.6)(@vitest/coverage-v8@4.1.12)(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.0))
+
   packages/frontend/api:
     devDependencies:
       '@types/react':
@@ -1597,6 +1716,110 @@ importers:
       cn:
         specifier: 'catalog:'
         version: 0.5.2
+      lucide-react:
+        specifier: 'catalog:'
+        version: 1.68.0(@types/react@19.3.0)(react@19.3.0)
+    devDependencies:
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.3.0
+      eslint:
+        specifier: 'catalog:'
+        version: 9.39.5(jiti@2.7.0)(supports-color@7.2.0)
+      next:
+        specifier: 'catalog:'
+        version: 16.4.3(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      next-intl:
+        specifier: 'catalog:'
+        version: 4.14.9(@swc/helpers@0.5.23)(@types/react@19.3.0)(next@16.4.3(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0)
+      react:
+        specifier: 'catalog:'
+        version: 19.3.0
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.3.0(react@19.3.0)
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.12(@types/node@26.6.6)(@vitest/coverage-v8@4.1.12)(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.0))
+
+  packages/frontend/products:
+    dependencies:
+      '@dafne/contracts':
+        specifier: workspace:*
+        version: link:../../contracts
+      '@dafne/frontend-api':
+        specifier: workspace:*
+        version: link:../api
+      '@dafne/frontend-data-table':
+        specifier: workspace:*
+        version: link:../data-table
+      '@dafne/frontend-forms':
+        specifier: workspace:*
+        version: link:../forms
+      '@dafne/frontend-ui':
+        specifier: workspace:*
+        version: link:../ui
+      '@tanstack/react-form-nextjs':
+        specifier: 'catalog:'
+        version: 1.33.5(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      lucide-react:
+        specifier: 'catalog:'
+        version: 1.68.0(@types/react@19.3.0)(react@19.3.0)
+    devDependencies:
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.3.0
+      eslint:
+        specifier: 'catalog:'
+        version: 9.39.5(jiti@2.7.0)(supports-color@7.2.0)
+      next:
+        specifier: 'catalog:'
+        version: 16.4.3(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      next-intl:
+        specifier: 'catalog:'
+        version: 4.14.9(@swc/helpers@0.5.23)(@types/react@19.3.0)(next@16.4.3(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0)
+      react:
+        specifier: 'catalog:'
+        version: 19.3.0
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.3.0(react@19.3.0)
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.12(@types/node@26.6.6)(@vitest/coverage-v8@4.1.12)(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.0))
+
+  packages/frontend/sales-orders:
+    dependencies:
+      '@dafne/contracts':
+        specifier: workspace:*
+        version: link:../../contracts
+      '@dafne/frontend-api':
+        specifier: workspace:*
+        version: link:../api
+      '@dafne/frontend-customers':
+        specifier: workspace:*
+        version: link:../customers
+      '@dafne/frontend-data-table':
+        specifier: workspace:*
+        version: link:../data-table
+      '@dafne/frontend-forms':
+        specifier: workspace:*
+        version: link:../forms
+      '@dafne/frontend-products':
+        specifier: workspace:*
+        version: link:../products
+      '@dafne/frontend-ui':
+        specifier: workspace:*
+        version: link:../ui
+      '@tanstack/react-form-nextjs':
+        specifier: 'catalog:'
+        version: 1.33.5(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       lucide-react:
         specifier: 'catalog:'
         version: 1.68.0(@types/react@19.3.0)(react@19.3.0)

@@ -1,4 +1,5 @@
 import { Node, type ObjectLiteralExpression, type SourceFile, SyntaxKind } from 'ts-morph';
+import { pageRefs, type PageRefs } from '../core/frontend-target.ts';
 import type { ResourceNames } from '../core/names.ts';
 import { appendToList, editSource, ensureHookLine, ensureNamedImport, insertImportLine, insertListElement, removeListElement, removeUnusedImports } from '../wiring/ast.ts';
 import { fallbackSort } from './dropped.ts';
@@ -9,7 +10,8 @@ import { enumOptionsName, ignoredKeys, optionLabel, type ResponseField, type Res
 /*
  * `sync frontend table`: adds what the contract has and the table lacks, in
  * lib/<plural>-table.ts (sort fields, filters, enum labels) and in
- * app/[locale]/(app)/<plural>/<plural>-table.tsx (columns). Nothing that's there
+ * app/[locale]/(app)/<plural>/<plural>-table.tsx (columns), or in a lib's
+ * <plural>-table.ts (define<Plural>Table) and components/<plural>-table.tsx. Nothing that's there
  * changes, unless `prune`: then what the contract dropped goes too (and a
  * default sort on a dropped field moves to createdAt). Labels are message keys (`<plural>.fields.<key>`), whose texts
  * syncMessages adds to the catalogs.
@@ -21,12 +23,12 @@ const newReport = (): Report => ({ added: [], removed: [], stale: [], warnings: 
 const NO_COLUMN = new Set(['updatedAt']);
 
 /** The id column: first, and the link to the detail page (no field names the record). */
-const idColumn = (names: ResourceNames, key: (k: string) => string) =>
+const idColumn = (names: ResourceNames, key: (k: string) => string, link: string) =>
   `col.accessor("id", {
     header: t("${key(`${names.p.camel}.fields.id`)}"),
     cell: ({ row }) => (
       <Link
-        href={\`/${names.p.kebab}/\${encodeURIComponent(row.original.id)}\`}
+        href={\`${link}/\${encodeURIComponent(row.original.id)}\`}
         className="font-medium underline-offset-4 hover:underline"
       >
         {row.original.id}
@@ -35,34 +37,46 @@ const idColumn = (names: ResourceNames, key: (k: string) => string) =>
   })`;
 
 /** The `{ value, label }` list of an enum, shared by filters, columns and the detail page; labels are message keys. */
-export function ensureEnumOptions(file: SourceFile, names: ResourceNames, field: ResponseField, before: string, report: Report) {
+export function ensureEnumOptions(file: SourceFile, names: ResourceNames, field: ResponseField, report: Report, refs = pageRefs(names)) {
   const name = enumOptionsName(names, field);
   if (file.getVariableDeclaration(name)) return;
   const options = field.values!.map((v) => `{ value: "${v}", label: "${names.p.camel}.${field.key}.${v}" }`).join(',\n  ');
-  const statement = file.getVariableStatement(before);
+  const { name: keyType, module } = refs.messageKey;
+  const anchor = tableAnchor(file, names);
   file.insertText(
-    statement ? statement.getStart(true) : file.getEnd(),
-    `/** Labels (message keys) of the ${field.label.toLowerCase()} values. */\nexport const ${name} = [\n  ${options},\n] satisfies { value: ${field.enumType}; label: MessageKey }[];\n\n`,
+    anchor ? anchor.getStart(true) : file.getEnd(),
+    `/** Labels (message keys) of the ${field.label.toLowerCase()} values. */\nexport const ${name} = [\n  ${options},\n] satisfies { value: ${field.enumType}; label: ${keyType} }[];\n\n`,
   );
   ensureNamedImport(file, CONTRACTS_PACKAGE, field.enumType!, { typeOnly: true });
-  ensureNamedImport(file, '@dafne/frontend-ui/lib/message-key', 'MessageKey', { typeOnly: true });
+  ensureNamedImport(file, module, keyType, { typeOnly: true });
   report.added.push(name);
+}
+
+/** What the enum labels go before: the app's `<plural>Table`, or a lib's default sort or define<Plural>Table. */
+function tableAnchor(file: SourceFile, { p }: ResourceNames): Node | undefined {
+  return (
+    file.getVariableStatement(`${p.camel}Table`) ??
+    file.getVariableStatement(`${p.constant}_DEFAULT_SORT`) ??
+    file.getFunction(`define${p.pascal}Table`)
+  );
 }
 
 /**
  * The enum labels other pages use (the detail page), in lib/<plural>-table.ts,
  * for a resource without a table page: `sync frontend table` would add them otherwise.
  */
-export function syncEnumOptions(path: string, source: string, names: ResourceNames, fields: ResponseField[]): { content: string; report: Report } {
+export function syncEnumOptions(path: string, source: string, names: ResourceNames, fields: ResponseField[], refs = pageRefs(names)): { content: string; report: Report } {
   const report = newReport();
   for (const field of fields)
-    source = editSource(path, source, (file) => ensureEnumOptions(file, names, field, `${names.p.camel}Table`, report));
+    source = editSource(path, source, (file) => ensureEnumOptions(file, names, field, report, refs));
   return { content: source, report };
 }
 
-/** The object passed to defineDataTable({...}). */
-function tableConfig(file: SourceFile, variable: string): ObjectLiteralExpression | undefined {
-  return file.getVariableDeclaration(variable)?.getFirstDescendantByKind(SyntaxKind.ObjectLiteralExpression);
+/** The object passed to defineDataTable({...}): in `<plural>Table` (the app) or in define<Plural>Table (a lib). */
+function tableConfig(file: SourceFile, { p }: ResourceNames): ObjectLiteralExpression | undefined {
+  const holder = file.getVariableDeclaration(`${p.camel}Table`) ?? file.getFunction(`define${p.pascal}Table`);
+  const call = holder?.getDescendantsOfKind(SyntaxKind.CallExpression).find((c) => c.getExpression().getText() === 'defineDataTable');
+  return call?.getArguments()[0]?.asKind(SyntaxKind.ObjectLiteralExpression) ?? holder?.getFirstDescendantByKind(SyntaxKind.ObjectLiteralExpression);
 }
 
 function arrayOf(config: ObjectLiteralExpression, property: string) {
@@ -78,11 +92,15 @@ export function syncTableConfig(
   source: string,
   names: ResourceNames,
   info: ResponseInfo,
-  { prune = false }: { prune?: boolean } = {},
+  { prune = false, refs = pageRefs(names) }: { prune?: boolean; refs?: PageRefs } = {},
 ): { content: string; report: Report } {
   const report = newReport();
   const { s, p } = names;
-  const variable = `${p.camel}Table`;
+  // Named in the warnings.
+  const variable = refs.kind === 'app' ? `${p.camel}Table` : `define${p.pascal}Table`;
+  const configOf = (file: SourceFile) => tableConfig(file, names);
+  // A lib's labels are checked against its own keys.
+  const keyType = refs.kind === 'lib' ? refs.messageKey : undefined;
   const ignored = ignoredKeys(source);
   const byKey = new Map(info.fields.map((f) => [f.key, f]));
   const step = (edit: (file: SourceFile) => void) => {
@@ -91,10 +109,10 @@ export function syncTableConfig(
 
   // Enum labels used by the filters, the columns and the detail page.
   for (const field of info.fields.filter((f) => f.kind === 'enum' && !ignored.has(f.key)))
-    step((file) => ensureEnumOptions(file, names, field, variable, report));
+    step((file) => ensureEnumOptions(file, names, field, report, refs));
 
   step((file) => {
-    const config = tableConfig(file, variable);
+    const config = configOf(file);
     const sortable = config && arrayOf(config, 'sortable');
     if (!sortable) return void report.warnings.push(`${path}: no ${variable}.sortable list.`);
     const present = sortable.getElements().filter(Node.isStringLiteral).map((e) => e.getLiteralValue());
@@ -104,13 +122,13 @@ export function syncTableConfig(
         report.stale.push(`sortable: ${key}`);
         continue;
       }
-      const elements = arrayOf(tableConfig(file, variable)!, 'sortable')!.getElements();
+      const elements = arrayOf(configOf(file)!, 'sortable')!.getElements();
       const element = elements.find((e) => Node.isStringLiteral(e) && e.getLiteralValue() === key);
       if (element) removeListElement(file, elements, element);
       report.removed!.push(`sortable: ${key}`);
     }
     for (const key of info.sortFields.filter((k) => !present.includes(k) && !ignored.has(k))) {
-      const fresh = arrayOf(tableConfig(file, variable)!, 'sortable')!;
+      const fresh = arrayOf(configOf(file)!, 'sortable')!;
       const elements = fresh.getElements();
       const keys = elements.map((e) => (Node.isStringLiteral(e) ? e.getLiteralValue() : ''));
       // After the field that comes before it in the contract, if it's there.
@@ -124,7 +142,7 @@ export function syncTableConfig(
   });
 
   step((file) => {
-    const config = tableConfig(file, variable);
+    const config = configOf(file);
     const filters = config && arrayOf(config, 'filters');
     if (!filters) return void report.warnings.push(`${path}: no ${variable}.filters list.`);
     const fieldOf = (e: Node) => {
@@ -141,7 +159,7 @@ export function syncTableConfig(
         report.stale.push(`filters: ${key}`);
         continue;
       }
-      const elements = arrayOf(tableConfig(file, variable)!, 'filters')!.getElements();
+      const elements = arrayOf(configOf(file)!, 'filters')!.getElements();
       const element = elements.find((e) => fieldOf(e) === key);
       if (element) removeListElement(file, elements, element);
       report.removed!.push(`filters: ${key}`);
@@ -149,23 +167,29 @@ export function syncTableConfig(
     for (const key of info.filterFields.filter((k) => !present.includes(k) && !ignored.has(k))) {
       const field = byKey.get(key);
       // A message key; the filter shows "Any <label>" when empty.
-      const parts = [`field: "${key}" satisfies ${s.pascal}FilterField`, `label: "${names.p.camel}.fields.${key}"`];
+      const label = `"${names.p.camel}.fields.${key}"${keyType ? ` satisfies ${keyType.name}` : ''}`;
+      const parts = [`field: "${key}" satisfies ${s.pascal}FilterField`, `label: ${label}`];
       if (field?.kind === 'enum') parts.push(`options: ${enumOptionsName(names, field)}`);
       if (field?.kind === 'boolean')
         parts.push(`options: [{ value: "true", label: "common.yes" }, { value: "false", label: "common.no" }]`);
-      const fresh = arrayOf(tableConfig(file, variable)!, 'filters')!;
+      const fresh = arrayOf(configOf(file)!, 'filters')!;
       appendToList(file, fresh, fresh.getElements(), `{ ${parts.join(', ')} }`);
       report.added.push(`filters: ${key}`);
     }
-    if (report.added.some((a) => a.startsWith('filters:')))
+    if (report.added.some((a) => a.startsWith('filters:'))) {
       ensureNamedImport(file, CONTRACTS_PACKAGE, `${s.pascal}FilterField`, { typeOnly: true });
+      if (keyType) ensureNamedImport(file, keyType.module, keyType.name, { typeOnly: true });
+    }
   });
 
   // defaultSort: { id: "name", … } on a field the contract can't sort by any more.
   if (prune)
     step((file) => {
-      const prop = tableConfig(file, variable)?.getProperty('defaultSort');
-      const object = prop && Node.isPropertyAssignment(prop) ? prop.getInitializer()?.asKind(SyntaxKind.ObjectLiteralExpression) : undefined;
+      const prop = configOf(file)?.getProperty('defaultSort');
+      let init = prop && Node.isPropertyAssignment(prop) ? prop.getInitializer() : undefined;
+      // A lib's `defaultSort: <PLURAL>_DEFAULT_SORT`: the constant's object.
+      if (init && Node.isIdentifier(init)) init = file.getVariableDeclaration(init.getText())?.getInitializer();
+      const object = init?.asKind(SyntaxKind.ObjectLiteralExpression);
       const id = object?.getProperty('id');
       const value = id && Node.isPropertyAssignment(id) ? id.getInitializer() : undefined;
       if (!value || !Node.isStringLiteral(value) || info.sortFields.includes(value.getLiteralValue())) return;
@@ -184,6 +208,7 @@ function columnCode(
   field: ResponseField,
   sortable: boolean,
   key: (k: string) => string,
+  refs: PageRefs,
 ): { code: string; imports: [string, string][] } {
   const imports: [string, string][] = [];
   const options: string[] = [`header: t("${key(`${names.p.camel}.fields.${field.key}`)}")`];
@@ -200,7 +225,7 @@ function columnCode(
       break;
     case 'enum': {
       const name = enumOptionsName(names, field);
-      imports.push([`@/lib/${names.p.kebab}-table`, name]);
+      imports.push([refs.table, name]);
       options.push(`cell: (info) => optionLabel(${name}, info.getValue())`);
       break;
     }
@@ -242,7 +267,7 @@ export function syncColumns(
   source: string,
   names: ResourceNames,
   info: ResponseInfo,
-  { prune = false }: { prune?: boolean } = {},
+  { prune = false, refs = pageRefs(names) }: { prune?: boolean; refs?: PageRefs } = {},
 ): { content: string; report: Report } {
   const report = newReport();
   const ignored = ignoredKeys(source);
@@ -271,8 +296,10 @@ export function syncColumns(
     };
     const present = array.getElements().map(keyOf).filter(Boolean) as string[];
     const listed = new Set(info.fields.filter((f) => f.listed).map((f) => f.key));
+    // customer: CustomerSummary isn't a field the CLI writes a column for, but it's still listed.
+    const kept = new Set([...listed, ...info.listedSkipped]);
     for (const key of present) {
-      if (listed.has(key)) continue;
+      if (kept.has(key)) continue;
       if (!prune) {
         report.stale.push(`column ${key}`);
         continue;
@@ -288,14 +315,14 @@ export function syncColumns(
     }
     // Imports only the removed cells used (Link, LocalDate, enum labels…).
     if (report.removed!.length)
-      removeUnusedImports(file, (m) => ['next/link', 'lucide-react'].includes(m) || m.startsWith('@dafne/frontend-ui/') || m.startsWith('@/lib/'));
+      removeUnusedImports(file, (m) => ['next/link', 'lucide-react', refs.table].includes(m) || m.startsWith('@dafne/frontend-ui/') || m.startsWith('@/lib/'));
 
     // The id, listed unless its @api tags say otherwise (detail, internal…): the first column.
     if (listed.has('id') && !present.includes('id') && !ignored.has('id')) {
       const fresh = columnsArray(file)!;
       const elements = fresh.getElements();
-      if (elements.length) file.insertText(elements[0].getStart(), `${idColumn(names, key)},\n  `);
-      else appendToList(file, fresh, elements, idColumn(names, key));
+      if (elements.length) file.insertText(elements[0].getStart(), `${idColumn(names, key, refs.link)},\n  `);
+      else appendToList(file, fresh, elements, idColumn(names, key, refs.link));
       if (!file.getImportDeclaration((d) => d.getModuleSpecifierValue() === 'next/link')) insertImportLine(file, 'Link', 'next/link');
       report.added.push('column id');
     }
@@ -308,7 +335,7 @@ export function syncColumns(
         report.warnings.push(`${field.key}: an id, not added as a column; show the related record by hand, or mark it dafne-ignore.`);
         continue;
       }
-      const { code, imports } = columnCode(names, field, info.sortFields.includes(field.key), key);
+      const { code, imports } = columnCode(names, field, info.sortFields.includes(field.key), key, refs);
       const fresh = columnsArray(file)!;
       const elements = fresh.getElements();
       // Before "Added" (createdAt), which the generated lists keep last.

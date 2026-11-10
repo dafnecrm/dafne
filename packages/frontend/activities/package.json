@@ -1,0 +1,48 @@
+{
+  "name": "@dafne/frontend-activities",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./actions": "./src/actions.ts",
+    "./schema": "./src/schema.ts",
+    "./server": "./src/server.ts",
+    "./components/*": "./src/components/*.tsx"
+  },
+  "scripts": {
+    "lint": "eslint src",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@dafne/contracts": "workspace:*",
+    "@dafne/frontend-api": "workspace:*",
+    "@dafne/frontend-data-table": "workspace:*",
+    "@dafne/frontend-forms": "workspace:*",
+    "@dafne/frontend-geo": "workspace:*",
+    "@dafne/frontend-ui": "workspace:*",
+    "@tanstack/react-form-nextjs": "catalog:",
+    "lucide-react": "catalog:",
+    "zod": "catalog:"
+  },
+  "peerDependencies": {
+    "next": "catalog:",
+    "next-intl": "catalog:",
+    "react": "catalog:"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "eslint": "catalog:",
+    "next": "catalog:",
+    "next-intl": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "nx": {
+    "tags": [
+      "scope:frontend"
+    ]
+  }
+}

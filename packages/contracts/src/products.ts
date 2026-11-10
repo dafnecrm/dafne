@@ -17,8 +17,8 @@ export const productBodySchema = z.strictObject({
   name: requiredText(255, msg('products.name.required')),
   description: optionalText(z.string().max(65535)),
   price: z
-    .string()
-    .regex(/^-?\d+(\.\d+)?$/, { error: msg('common.number.invalid') }),
+      .string()
+      .regex(/^-?\d+(\.\d+)?$/, { error: msg('common.number.invalid') }),
 });
 
 /** What a client sends: blank optional fields may be "", null or missing. */
@@ -27,12 +27,7 @@ export type ProductBodyInput = z.input<typeof productBodySchema>;
 export type ProductBody = z.output<typeof productBodySchema>;
 
 /** Product fields the list can be sorted by. */
-export const PRODUCT_SORT_FIELDS = [
-  'name',
-  'price',
-  'createdAt',
-  'updatedAt',
-] as const;
+export const PRODUCT_SORT_FIELDS = ['id', 'name', 'price', 'createdAt', 'updatedAt'] as const;
 export type ProductSortField = (typeof PRODUCT_SORT_FIELDS)[number];
 
 /**
@@ -47,14 +42,14 @@ export type ProductFilterField = (typeof PRODUCT_FILTER_FIELDS)[number];
 export const listProductsQuerySchema = z.strictObject({
   ...pageQuery,
   id: z
-    .string()
-    .regex(/^\s*\d{0,9}\s*$/)
-    .optional(),
+      .string()
+      .regex(/^\s*\d{0,9}\s*$/)
+      .optional(),
   name: z.string().max(255).optional(),
   /** Defaults to name. */
-  sortBy: z.enum(PRODUCT_SORT_FIELDS).optional(),
+    sortBy: z.enum(PRODUCT_SORT_FIELDS).optional(),
   /** Defaults to asc. */
-  sortDirection: z.enum(SORT_DIRECTIONS).optional(),
+    sortDirection: z.enum(SORT_DIRECTIONS).optional(),
 });
 export type ListProductsQuery = z.output<typeof listProductsQuerySchema>;
 
@@ -89,5 +84,5 @@ export interface ProductDetail extends ListedProduct {
   updatedBy: ProductUser | null;
   description: string | null;
   /** Always null: deleted products aren't returned. */
-  deletedAt: Date | null;
+    deletedAt: Date | null;
 }

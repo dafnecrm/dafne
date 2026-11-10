@@ -14,6 +14,7 @@ import {
   AlertDialogTitle,
 } from "@dafne/frontend-ui/components/alert-dialog";
 import { Spinner } from "@dafne/frontend-ui/components/spinner";
+import type { <%= s.pascal %>Detail } from "@/lib/<%= p.kebab %>";
 import { delete<%= s.pascal %> } from "./actions";
 
 /*
@@ -22,7 +23,7 @@ import { delete<%= s.pascal %> } from "./actions";
  * (<%= s.kebab %>-detail-actions.tsx).
  */
 
-export type <%= s.pascal %>Ref = { id: number };
+export type <%= s.pascal %>Ref = Pick<<%= s.pascal %>Detail, "id">;
 
 /**
  * Confirms the deletion and runs it, then goes back to the list

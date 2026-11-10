@@ -42,7 +42,10 @@
       "path": "../../packages/backend/activities"
     },
     {
-      "path": "../../packages/backend/orders"
+      "path": "../../packages/backend/sales-orders"
+    },
+    {
+      "path": "../../packages/backend/sales-order-types"
     }
   ]
 }

@@ -1,16 +1,17 @@
+import { routeDir, type FrontendTarget } from '../core/frontend-target.ts';
 import { render } from '../core/templates.ts';
 import {
+  actionFiles,
   dataFiles,
   detailFiles,
   formFiles,
   listFiles,
-  routeDir,
   syncDetailPage,
   syncForm,
   syncList,
   warnReports,
 } from '../sync/frontend.ts';
-import { wireNav } from '../wiring/frontend.ts';
+import { wireNav, wireResourceLib } from '../wiring/frontend.ts';
 import { contractFile } from './backend.ts';
 import type { Ctx, Piece } from './pieces.ts';
 
@@ -22,9 +23,13 @@ export interface FrontendOptions {
   admin: boolean;
 }
 
-/** A frontend piece's context: `app` is the frontend app (apps/<app>). */
+/**
+ * A frontend piece's context: `target` says where the code goes (the app,
+ * or a lib with the route pages in the app); `app` is the app either way.
+ */
 export interface FrontendCtx extends Ctx {
   options: FrontendOptions;
+  target: FrontendTarget;
 }
 
 export const DEFAULT_ICON = 'FileIcon';
@@ -36,80 +41,100 @@ export const frontendOptions = (options: Partial<FrontendOptions>): FrontendOpti
   admin: options.admin ?? false,
 });
 
-const create = (ctx: FrontendCtx, path: string, template: string) =>
-  ctx.changes.create(path, render(`frontend/${template}`, { ...ctx.names, icon: ctx.options.icon }));
+/**
+ * Renders a template of the target's layout: templates/frontend (the app)
+ * or templates/frontend-lib-resource (a lib, `app/…` for its route pages).
+ */
+const create = (ctx: FrontendCtx, path: string, template: string) => {
+  const dir = ctx.target.kind === 'app' ? 'frontend' : 'frontend-lib-resource';
+  const pkg = ctx.target.kind === 'lib' ? ctx.target.pkg : undefined;
+  ctx.changes.create(path, render(`${dir}/${template}`, { ...ctx.names, icon: ctx.options.icon, pkg }));
+};
+
+/** In a lib, the template's name for the app layout's one. */
+const pick = (ctx: FrontendCtx, app: string, lib: string) => (ctx.target.kind === 'app' ? app : lib);
 
 export const frontendPieces: Record<string, Piece<FrontendCtx>> = {
   data: {
-    description: 'lib/<plural>.ts (API types and fetchers) and lib/<plural>-table.ts (table config)',
+    description: 'API types, fetchers and table config: lib/<plural>.ts and lib/<plural>-table.ts, or a lib\'s types.ts, server.ts and <plural>-table.ts',
     deps: [],
-    marker: (n, app) => dataFiles(n, app).lib,
+    marker: (n, ctx) => dataFiles(n, ctx.target).lib,
     generate(ctx) {
       const { p } = ctx.names;
       if (!ctx.changes.exists(contractFile(ctx.names)))
         ctx.changes.warn(
           `The contract ${contractFile(ctx.names)} doesn't exist: the pages won't compile until you run "dafne g backend-resource ${p.kebab}" (or "dafne g contract ${p.kebab}").`,
         );
-      const files = dataFiles(ctx.names, ctx.app);
-      create(ctx, files.lib, 'lib.ts');
-      create(ctx, files.table, 'lib-table.ts');
+      const files = dataFiles(ctx.names, ctx.target);
+      if (ctx.target.kind === 'app') {
+        create(ctx, files.lib, 'lib.ts');
+        create(ctx, files.table, 'lib-table.ts');
+        return;
+      }
+      // The lib: its package, exports and texts, wired into the app.
+      wireResourceLib(ctx.changes, ctx.names, ctx.target);
+      create(ctx, files.types!, 'types.ts');
+      create(ctx, files.lib, 'server.ts');
+      create(ctx, files.table, 'table.ts');
+      create(ctx, files.appTable!, 'app/table.ts');
     },
   },
   actions: {
     description: 'Server actions (save, delete), form schema and the delete confirmation (<singular>-dialogs.tsx)',
     deps: ['data'],
-    marker: (n, app) => `${routeDir(n, app)}/actions.ts`,
+    marker: (n, ctx) => actionFiles(n, ctx.target).actions,
     generate(ctx) {
-      const dir = routeDir(ctx.names, ctx.app);
-      create(ctx, `${dir}/actions.ts`, 'actions.ts');
-      create(ctx, `${dir}/schema.ts`, 'schema.ts');
+      const files = actionFiles(ctx.names, ctx.target);
+      create(ctx, files.actions, 'actions.ts');
+      create(ctx, formFiles(ctx.names, ctx.target).schema, 'schema.ts');
       // Confirmation dialogs, shared by the list's and the detail page's menus.
-      create(ctx, `${dir}/${ctx.names.s.kebab}-dialogs.tsx`, 'dialogs.tsx');
+      create(ctx, files.dialogs, pick(ctx, 'dialogs.tsx', 'components/dialogs.tsx'));
     },
   },
   list: {
     description: 'List page and <plural>-table.tsx (table, columns, row actions)',
     deps: ['data', 'actions'],
-    marker: (n, app) => listFiles(n, app).page,
+    marker: (n, ctx) => listFiles(n, ctx.target).page,
     generate(ctx) {
       const { s } = ctx.names;
-      const dir = routeDir(ctx.names, ctx.app);
-      const files = listFiles(ctx.names, ctx.app);
-      create(ctx, files.page, 'page.tsx');
-      create(ctx, files.columns, 'table.tsx');
-      create(ctx, `${dir}/${s.kebab}-table-actions.tsx`, 'table-actions.tsx');
-      warnReports(ctx.changes, syncList(ctx.changes, ctx.names, ctx.app));
+      const files = listFiles(ctx.names, ctx.target);
+      const components = files.columns.slice(0, files.columns.lastIndexOf('/'));
+      create(ctx, files.page, pick(ctx, 'page.tsx', 'app/page.tsx'));
+      create(ctx, files.columns, pick(ctx, 'table.tsx', 'components/table.tsx'));
+      create(ctx, `${components}/${s.kebab}-table-actions.tsx`, pick(ctx, 'table-actions.tsx', 'components/table-actions.tsx'));
+      warnReports(ctx.changes, syncList(ctx.changes, ctx.names, ctx.target));
     },
   },
   detail: {
     description: 'Detail page ([id]), its loader and the <singular>-detail component',
     deps: ['data', 'actions'],
-    marker: (n, app) => detailFiles(n, app).page,
+    marker: (n, ctx) => detailFiles(n, ctx.target).page,
     generate(ctx) {
       const { s } = ctx.names;
-      const dir = routeDir(ctx.names, ctx.app);
-      const files = detailFiles(ctx.names, ctx.app);
-      create(ctx, files.component, 'detail.tsx');
-      create(ctx, `${dir}/${s.kebab}-detail-actions.tsx`, 'detail-actions.tsx');
-      create(ctx, files.page, 'detail-page.tsx');
-      create(ctx, `${dir}/[id]/load-${s.kebab}.ts`, 'load.ts');
-      warnReports(ctx.changes, syncDetailPage(ctx.changes, ctx.names, ctx.app));
+      const files = detailFiles(ctx.names, ctx.target);
+      const components = files.component.slice(0, files.component.lastIndexOf('/'));
+      const dir = routeDir(ctx.names, ctx.target);
+      create(ctx, files.component, pick(ctx, 'detail.tsx', 'components/detail.tsx'));
+      create(ctx, `${components}/${s.kebab}-detail-actions.tsx`, pick(ctx, 'detail-actions.tsx', 'components/detail-actions.tsx'));
+      create(ctx, files.page, pick(ctx, 'detail-page.tsx', 'app/detail-page.tsx'));
+      create(ctx, `${dir}/[id]/load-${s.kebab}.ts`, pick(ctx, 'load.ts', 'app/load.ts'));
+      warnReports(ctx.changes, syncDetailPage(ctx.changes, ctx.names, ctx.target));
     },
   },
   form: {
     description: 'Create/edit form with the new and [id]/edit pages',
     deps: ['data', 'actions', 'detail'],
-    marker: (n, app) => formFiles(n, app).form,
+    marker: (n, ctx) => formFiles(n, ctx.target).form,
     generate(ctx) {
-      const dir = routeDir(ctx.names, ctx.app);
-      create(ctx, formFiles(ctx.names, ctx.app).form, 'form.tsx');
-      create(ctx, `${dir}/new/page.tsx`, 'new-page.tsx');
-      create(ctx, `${dir}/[id]/edit/page.tsx`, 'edit-page.tsx');
-      warnReports(ctx.changes, syncForm(ctx.changes, ctx.names, ctx.app));
+      const dir = routeDir(ctx.names, ctx.target);
+      create(ctx, formFiles(ctx.names, ctx.target).form, pick(ctx, 'form.tsx', 'components/form.tsx'));
+      create(ctx, `${dir}/new/page.tsx`, pick(ctx, 'new-page.tsx', 'app/new-page.tsx'));
+      create(ctx, `${dir}/[id]/edit/page.tsx`, pick(ctx, 'edit-page.tsx', 'app/edit-page.tsx'));
+      warnReports(ctx.changes, syncForm(ctx.changes, ctx.names, ctx.target));
     },
   },
   nav: {
-    description: 'Sidebar link in lib/navigation.ts',
+    description: 'Sidebar link in lib/navigation.ts (always in the app)',
     deps: [],
     marker: () => undefined,
     generate(ctx) {

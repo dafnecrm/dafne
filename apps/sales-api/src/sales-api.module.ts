@@ -12,7 +12,8 @@ import { ActivitiesModule } from '@dafne/backend-activities';
 import { GeoModule } from '@dafne/backend-geo';
 import { ProductsModule } from '@dafne/backend-products';
 import { SessionModule } from '@dafne/backend-session';
-import { OrdersModule } from '@dafne/backend-orders';
+import { SalesOrdersModule } from '@dafne/backend-sales-orders';
+import { SalesOrderTypesModule } from '@dafne/backend-sales-order-types';
 
 @Module({
   imports: [
@@ -40,7 +41,8 @@ import { OrdersModule } from '@dafne/backend-orders';
     ProductsModule,
     // The users of the sales app (app_access: sales), signed in on apps/auth.
     SessionModule.forRoot({ app: 'sales' }),
-    OrdersModule,
+    SalesOrdersModule,
+    SalesOrderTypesModule,
   ],
   controllers: [ApiController],
   providers: [

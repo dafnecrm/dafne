@@ -7,15 +7,17 @@
     "tagline": "Un viaggio purrfetto",
     "home": "Home",
     "dashboard": "Dashboard",
-    "sales": "Sales",
+    "sales": "Vendite",
     "customers": "Clienti",
     "activities": "Attività",
     "products": "Prodotti",
     "admin": "Amministrazione",
+    "access": "Accessi",
     "users": "Utenti",
     "account": "Account",
-    "orders": "Orders",
-    "crm": "CRM"
+    "orders": "Ordini di vendita",
+    "crm": "CRM",
+    "salesOrderTypes": "Sales order types"
   },
   "breadcrumb": {
     "new": "Nuovo",
@@ -131,82 +133,6 @@
     "serverError": "Qualcosa è andato storto",
     "hasErrors": "Il modulo contiene errori!",
     "pickDate": "Scegli una data"
-  },
-  "products": {
-    "title": "Prodotti",
-    "singular": "Prodotto",
-    "new": "Nuovo prodotto",
-    "all": "Tutti i prodotti",
-    "noun": "prodotti",
-    "create": "Crea prodotto",
-    "editMeta": "Modifica prodotto",
-    "newDescription": "Solo il nome è obbligatorio.",
-    "editDescription": "Il salvataggio sostituisce i dati del prodotto.",
-    "empty": {
-      "title": "Nessun prodotto trovato",
-      "filtered": "Nessun prodotto dove {filter}.",
-      "none": "Aggiungi il primo prodotto per iniziare."
-    },
-    "deleteDescription": "Il prodotto non sarà più elencato né modificabile.",
-    "notFound": "Questo prodotto non esiste più.",
-    "sections": {
-      "details": "Dati"
-    },
-    "fields": {
-      "name": "Nome",
-      "price": "Prezzo",
-      "description": "Descrizione",
-      "createdAt": "Aggiunto",
-      "id": "ID prodotto"
-    }
-  },
-  "activities": {
-    "title": "Attività",
-    "singular": "Attività",
-    "new": "Nuova attività",
-    "all": "Tutte le attività",
-    "noun": "attività",
-    "create": "Crea attività",
-    "editMeta": "Modifica attività",
-    "newDescription": "Solo il nome è obbligatorio.",
-    "editDescription": "Il salvataggio sostituisce i dati dell'attività.",
-    "empty": {
-      "title": "Nessuna attività trovata",
-      "filtered": "Nessuna attività dove {filter}.",
-      "none": "Aggiungi la prima attività per iniziare."
-    },
-    "deleteDescription": "L'attività non sarà più elencata né modificabile.",
-    "notFound": "Questa attività non esiste più.",
-    "reopen": "Riapri",
-    "reopenTitle": "Riaprire {name}?",
-    "reopenDescription": "L'attività tornerà aperta e modificabile.",
-    "close": "Chiudi",
-    "closeTitle": "Chiudere {name}?",
-    "closeDescription": "L'attività non sarà più modificabile.",
-    "sections": {
-      "details": "Dati"
-    },
-    "fields": {
-      "name": "Nome",
-      "type": "Tipo",
-      "status": "Stato",
-      "dueDate": "Scadenza",
-      "notes": "Note",
-      "completedAt": "Completata il",
-      "completedBy": "Completata da",
-      "createdAt": "Aggiunta",
-      "id": "ID attività"
-    },
-    "type": {
-      "call": "Chiamata",
-      "email": "Email",
-      "meeting": "Riunione",
-      "task": "Compito"
-    },
-    "status": {
-      "open": "Aperta",
-      "closed": "Chiusa"
-    }
   },
   "users": {
     "title": "Utenti",
@@ -336,33 +262,6 @@
       "signInForNewLink": "Accedi con email e password e ti invieremo un nuovo link di verifica.",
       "signIn": "Accedi",
       "backToSignIn": "Torna all'accesso"
-    }
-  },
-  "orders": {
-    "title": "Orders",
-    "singular": "Order",
-    "new": "New order",
-    "all": "All orders",
-    "noun": "orders",
-    "create": "Create order",
-    "editMeta": "Edit order",
-    "newDescription": "Only the name is required.",
-    "editDescription": "Saving replaces the order's details.",
-    "empty": {
-      "title": "No orders found",
-      "filtered": "No order where {filter}.",
-      "none": "Add your first order to get started."
-    },
-    "deleteDescription": "The order will no longer be listed or editable.",
-    "notFound": "This order no longer exists.",
-    "sections": {
-      "details": "Details"
-    },
-    "fields": {
-      "createdAt": "Added",
-      "id": "Order ID",
-      "notes": "Notes",
-      "customer": "Cliente"
     }
   }
 }

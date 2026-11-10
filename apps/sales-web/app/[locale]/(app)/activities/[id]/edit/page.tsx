@@ -10,8 +10,8 @@ import {
 } from "@dafne/frontend-ui/components/page-content";
 import { BreadcrumbLabel } from "@/components/page-breadcrumb";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
-import { ActivityForm } from "../../activity-form";
 import { loadActivity } from "../load-activity";
+import { ActivityForm } from "@dafne/frontend-activities/components/activity-form";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("activities");

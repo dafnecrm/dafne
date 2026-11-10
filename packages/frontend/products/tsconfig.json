@@ -1,0 +1,36 @@
+{
+  // Source-only package: Next compiles it (transpilePackages).
+  // Relative imports end in .ts, as in @dafne/contracts.
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "out-tsc",
+    "tsBuildInfoFile": "out-tsc/tsconfig.tsbuildinfo",
+    "lib": ["ES2023", "DOM"],
+    // next/* and other packages resolve through their package exports.
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "types": ["vitest/globals"]
+  },
+  "include": [
+    "src"
+  ],
+  "references": [
+    {
+      "path": "../ui"
+    },
+    {
+      "path": "../forms"
+    },
+    {
+      "path": "../data-table"
+    },
+    {
+      "path": "../api"
+    },
+    {
+      "path": "../../contracts"
+    }
+  ]
+}

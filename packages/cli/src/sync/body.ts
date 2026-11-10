@@ -18,6 +18,8 @@ export type FormKind =
   | 'datetime'
   /** A reference to another record: its id (requiredId/optionalId), sent as text. */
   | 'id'
+  /** A uuid (requiredUuid/optionalUuid), e.g. a key to a record with a uuid id. */
+  | 'uuid'
   | 'unsupported';
 
 export interface FormField {
@@ -91,6 +93,8 @@ function classify(key: string, raw: string, table?: TableInfo): FormField {
   if (zod.startsWith('optionalDate(')) return { ...base, kind: dateKind, optional: true };
   if (zod.startsWith('requiredId(')) return { ...base, kind: 'id', optional: /^requiredId\([^)]*\)\)?\.optional\(/.test(zod) };
   if (zod.startsWith('optionalId(')) return { ...base, kind: 'id', optional: true };
+  if (zod.startsWith('requiredUuid(')) return { ...base, kind: 'uuid', optional: /^requiredUuid\([^)]*\)\)?\.optional\(/.test(zod) };
+  if (zod.startsWith('optionalUuid(')) return { ...base, kind: 'uuid', optional: true };
   const enumConst = /^z\.enum\((\w+)/.exec(zod)?.[1];
   if (enumConst) return { ...base, kind: 'enum', optional: nullable, enumConst };
   if (zod.startsWith('z.boolean(')) return { ...base, kind: 'boolean', optional: nullable };

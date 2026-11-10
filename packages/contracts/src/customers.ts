@@ -24,32 +24,26 @@ export const FISCAL_CODE_PATTERN =
 export const VAT_NUMBER_PATTERN = /^(IT)?[0-9]{11}$/;
 
 /** Values of customer address type. */
-export const CUSTOMER_ADDRESS_TYPES = [
-  'residence',
-  'domicile',
-  'head_office',
-  'shipping',
-  'billing',
-] as const;
+export const CUSTOMER_ADDRESS_TYPES = ['residence', 'domicile', 'head_office', 'shipping', 'billing'] as const;
 export type CustomerAddressType = (typeof CUSTOMER_ADDRESS_TYPES)[number];
 
 export const customerAddressBodySchema = z.strictObject({
   type: z.enum(CUSTOMER_ADDRESS_TYPES, {
-    error: msg('customerAddresses.type.required'),
-  }),
+      error: msg('customerAddresses.type.required'),
+    }),
   street: requiredText(255, msg('customerAddresses.street.required')),
   city: requiredText(100, msg('customerAddresses.city.required')),
   postalCode: optionalText(z.string().max(20)),
   /** State, province or region. */
-  region: optionalText(z.string().max(100)),
+    region: optionalText(z.string().max(100)),
   /** ISO 3166-1 alpha-2 code of one of the countries, e.g. "IT". */
-  countryCode: z
-    .string({ error: msg('customerAddresses.countryCode.required') })
-    .trim()
-    .toUpperCase()
-    .regex(/^[A-Z]{2}$/, {
-      error: msg('customerAddresses.countryCode.required'),
-    }),
+    countryCode: z
+      .string({ error: msg('customerAddresses.countryCode.required') })
+      .trim()
+      .toUpperCase()
+      .regex(/^[A-Z]{2}$/, {
+        error: msg('customerAddresses.countryCode.required'),
+      }),
 });
 
 /** Values of customer type: a natural person or a company. */
@@ -66,47 +60,47 @@ export const customerBodySchema = z
     name: requiredText(255, msg('customers.name.required')),
     birthDate: optionalDate(msg('common.date.invalid')),
     /** Persons only: the Italian codice fiscale, saved in upper case. */
-    fiscalCode: optionalText(
-      z
-        .string()
-        .toUpperCase()
-        .regex(FISCAL_CODE_PATTERN, {
-          error: msg('customers.fiscalCode.invalid'),
-        }),
-    ),
+        fiscalCode: optionalText(
+          z
+            .string()
+            .toUpperCase()
+            .regex(FISCAL_CODE_PATTERN, {
+              error: msg('customers.fiscalCode.invalid'),
+            }),
+        ),
     /** Companies only: the Italian partita IVA, with or without "IT". */
-    vatNumber: optionalText(
-      z
-        .string()
-        .toUpperCase()
-        .regex(VAT_NUMBER_PATTERN, {
-          error: msg('customers.vatNumber.invalid'),
-        }),
-    ),
+        vatNumber: optionalText(
+          z
+            .string()
+            .toUpperCase()
+            .regex(VAT_NUMBER_PATTERN, {
+              error: msg('customers.vatNumber.invalid'),
+            }),
+        ),
     /** Unique among customers, deleted ones included. */
-    email: requiredText(255, msg('customers.email.required')).pipe(
-      z.email({ error: msg('common.email.invalid') }),
-    ),
+        email: requiredText(255, msg('customers.email.required')).pipe(
+          z.email({ error: msg('common.email.invalid') }),
+        ),
     phone: optionalText(
-      z
-        .string()
-        .regex(PHONE_PATTERN, { error: msg('customers.phone.invalid') }),
-    ),
+          z
+            .string()
+            .regex(PHONE_PATTERN, { error: msg('customers.phone.invalid') }),
+        ),
     /** In display order; at most one address of each type. */
-    addresses: z
-      .array(customerAddressBodySchema)
-      .max(20)
-      .default([])
-      .superRefine((addresses, ctx) =>
-        addresses.forEach((address, i) => {
-          if (addresses.findIndex((a) => a.type === address.type) < i)
-            ctx.addIssue({
-              code: 'custom',
-              path: [i, 'type'],
-              message: msg('customers.addresses.typeTaken'),
-            });
-        }),
-      ),
+        addresses: z
+          .array(customerAddressBodySchema)
+          .max(20)
+          .default([])
+          .superRefine((addresses, ctx) =>
+            addresses.forEach((address, i) => {
+              if (addresses.findIndex((a) => a.type === address.type) < i)
+                ctx.addIssue({
+                  code: 'custom',
+                  path: [i, 'type'],
+                  message: msg('customers.addresses.typeTaken'),
+                });
+            }),
+          ),
   })
   .transform((body) =>
     // Each type keeps only its own fields: the other type's are cleared.
@@ -122,17 +116,7 @@ export type CustomerBody = z.output<typeof customerBodySchema>;
 export type CustomerAddressBody = CustomerBody['addresses'][number];
 
 /** Customer fields the list can be sorted by. */
-export const CUSTOMER_SORT_FIELDS = [
-  'type',
-  'name',
-  'birthDate',
-  'fiscalCode',
-  'vatNumber',
-  'email',
-  'phone',
-  'createdAt',
-  'updatedAt',
-] as const;
+export const CUSTOMER_SORT_FIELDS = ['id', 'type', 'name', 'email', 'phone', 'createdAt', 'updatedAt'] as const;
 export type CustomerSortField = (typeof CUSTOMER_SORT_FIELDS)[number];
 
 /**
@@ -140,34 +124,24 @@ export type CustomerSortField = (typeof CUSTOMER_SORT_FIELDS)[number];
  * own. Filters combine with AND and match text the field contains
  * (the id matches exactly).
  */
-export const CUSTOMER_FILTER_FIELDS = [
-  'id',
-  'type',
-  'name',
-  'fiscalCode',
-  'vatNumber',
-  'email',
-  'phone',
-] as const;
+export const CUSTOMER_FILTER_FIELDS = ['id', 'type', 'name', 'email', 'phone'] as const;
 export type CustomerFilterField = (typeof CUSTOMER_FILTER_FIELDS)[number];
 
 /** Query string of GET /customers. Deleted customers are never listed. */
 export const listCustomersQuerySchema = z.strictObject({
   ...pageQuery,
   id: z
-    .string()
-    .regex(/^\s*\d{0,9}\s*$/)
-    .optional(),
+      .string()
+      .regex(/^\s*\d{0,9}\s*$/)
+      .optional(),
   type: z.enum(CUSTOMER_TYPES).optional(),
   name: z.string().max(255).optional(),
-  fiscalCode: z.string().max(16).optional(),
-  vatNumber: z.string().max(13).optional(),
   email: z.string().max(255).optional(),
   phone: z.string().max(32).optional(),
   /** Defaults to name. */
-  sortBy: z.enum(CUSTOMER_SORT_FIELDS).optional(),
+    sortBy: z.enum(CUSTOMER_SORT_FIELDS).optional(),
   /** Defaults to asc. */
-  sortDirection: z.enum(SORT_DIRECTIONS).optional(),
+    sortDirection: z.enum(SORT_DIRECTIONS).optional(),
 });
 export type ListCustomersQuery = z.output<typeof listCustomersQuerySchema>;
 
@@ -178,9 +152,6 @@ export interface ListedCustomer {
   id: number;
   type: CustomerType;
   name: string;
-  birthDate: Date | null;
-  fiscalCode: string | null;
-  vatNumber: string | null;
   email: string;
   phone: string | null;
   createdAt: Date;
@@ -202,7 +173,7 @@ export interface CustomerAddress {
   city: string;
   postalCode: string | null;
   /** State, province or region. */
-  region: string | null;
+    region: string | null;
   countryCode: string;
   country: CustomerAddressCountry;
 }
@@ -221,9 +192,12 @@ export interface CustomerUser {
 /** Response of GET /customers/:id, POST /customers and PUT /customers/:id. */
 export interface CustomerDetail extends ListedCustomer {
   /** In display order. */
-  addresses: CustomerAddress[];
+    addresses: CustomerAddress[];
   createdBy: CustomerUser | null;
   updatedBy: CustomerUser | null;
+  birthDate: Date | null;
+  fiscalCode: string | null;
+  vatNumber: string | null;
   /** Always null: deleted customers aren't returned. */
-  deletedAt: Date | null;
+    deletedAt: Date | null;
 }

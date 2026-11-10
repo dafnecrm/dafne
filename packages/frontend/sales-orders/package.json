@@ -1,0 +1,54 @@
+{
+  "name": "@dafne/frontend-sales-orders",
+  "version": "0.0.1",
+  "description": "Sales orders for any frontend app: table config, pages' components and texts",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./actions": "./src/actions.ts",
+    "./schema": "./src/schema.ts",
+    "./server": "./src/server.ts",
+    "./components/*": "./src/components/*.tsx",
+    "./sales-order-types": "./src/sales-order-types/index.ts",
+    "./sales-order-types/actions": "./src/sales-order-types/actions.ts",
+    "./sales-order-types/schema": "./src/sales-order-types/schema.ts",
+    "./sales-order-types/server": "./src/sales-order-types/server.ts",
+    "./sales-order-types/components/*": "./src/sales-order-types/components/*.tsx"
+  },
+  "scripts": {
+    "lint": "eslint src",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@dafne/contracts": "workspace:*",
+    "@dafne/frontend-api": "workspace:*",
+    "@dafne/frontend-customers": "workspace:*",
+    "@dafne/frontend-products": "workspace:*",
+    "@dafne/frontend-data-table": "workspace:*",
+    "@dafne/frontend-forms": "workspace:*",
+    "@dafne/frontend-ui": "workspace:*",
+    "@tanstack/react-form-nextjs": "catalog:",
+    "lucide-react": "catalog:"
+  },
+  "peerDependencies": {
+    "next": "catalog:",
+    "next-intl": "catalog:",
+    "react": "catalog:"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "eslint": "catalog:",
+    "next": "catalog:",
+    "next-intl": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "nx": {
+    "tags": [
+      "scope:frontend"
+    ]
+  }
+}

@@ -14,7 +14,7 @@ const notDeleted = isNull(<%= s.camel %>.deletedAt);
 
 describe('<%= p.pascal %>Service', () => {
   let service: <%= p.pascal %>Service;
-  const rows = [{ id: 1 }];
+  const rows = [{ id: <%= id.sample %> }];
   // Chainable stand-in for db.select().from().where().orderBy().limit().offset()
   const select = {
     from: vi.fn(),
@@ -35,7 +35,7 @@ describe('<%= p.pascal %>Service', () => {
     delete: vi.fn(),
     query: { <%= s.camel %>: { findFirst } },
   };
-  const found = { id: 1 };
+  const found = { id: <%= id.sample %> };
 
   beforeEach(async () => {
     vi.resetAllMocks();
@@ -48,7 +48,7 @@ describe('<%= p.pascal %>Service', () => {
     db.$count.mockResolvedValue(42);
     db.insert.mockReturnValue(insert);
     insert.values.mockReturnValue(insert);
-    insert.returning.mockResolvedValue([{ id: 1 }]);
+    insert.returning.mockResolvedValue([{ id: <%= id.sample %> }]);
     db.update.mockReturnValue(update);
     update.set.mockReturnValue(update);
     update.where.mockResolvedValue({ rowCount: 1 });
@@ -101,10 +101,10 @@ describe('<%= p.pascal %>Service', () => {
 
   describe('get<%= s.pascal %>', () => {
     it('returns <%= s.a %> that is not deleted, with its users', async () => {
-      await expect(service.get<%= s.pascal %>(1)).resolves.toBe(found);
+      await expect(service.get<%= s.pascal %>(<%= id.sample %>)).resolves.toBe(found);
 
       const options = findFirst.mock.calls[0][0];
-      expect(options.where).toEqual({ id: 1, deletedAt: { isNull: true } });
+      expect(options.where).toEqual({ id: <%= id.sample %>, deletedAt: { isNull: true } });
       expect(options.with.createdBy.columns).toEqual({ id: true, name: true });
       expect(options.with.updatedBy.columns).toEqual({ id: true, name: true });
     });
@@ -112,7 +112,7 @@ describe('<%= p.pascal %>Service', () => {
     it('throws 404 when the <%= s.lower %> does not exist or is deleted', async () => {
       findFirst.mockResolvedValue(undefined);
 
-      await expect(service.get<%= s.pascal %>(999)).rejects.toBeInstanceOf(
+      await expect(service.get<%= s.pascal %>(<%= id.missing %>)).rejects.toBeInstanceOf(
         NotFoundException,
       );
     });
@@ -130,19 +130,19 @@ describe('<%= p.pascal %>Service', () => {
         updatedById: 'u1',
       });
       // The id the database gave it.
-      expect(findFirst.mock.calls[0][0].where.id).toBe(1);
+      expect(findFirst.mock.calls[0][0].where.id).toBe(<%= id.sample %>);
     });
   });
 
   describe('update<%= s.pascal %>', () => {
     it('updates the <%= s.lower %>', async () => {
-      await service.update<%= s.pascal %>(1, body({}), 'u2');
+      await service.update<%= s.pascal %>(<%= id.sample %>, body({}), 'u2');
 
       expect(update.set.mock.calls[0][0]).toMatchObject({
         updatedById: 'u2',
       });
       expect(update.where).toHaveBeenCalledWith(
-        and(eq(<%= s.camel %>.id, 1), notDeleted),
+        and(eq(<%= s.camel %>.id, <%= id.sample %>), notDeleted),
       );
     });
 
@@ -150,20 +150,20 @@ describe('<%= p.pascal %>Service', () => {
       update.where.mockResolvedValue({ rowCount: 0 });
 
       await expect(
-        service.update<%= s.pascal %>(999, body({}), 'u2'),
+        service.update<%= s.pascal %>(<%= id.missing %>, body({}), 'u2'),
       ).rejects.toBeInstanceOf(NotFoundException);
     });
   });
 
   describe('delete<%= s.pascal %>', () => {
     it('sets deletedAt instead of deleting the row', async () => {
-      await service.delete<%= s.pascal %>(1, 'u3');
+      await service.delete<%= s.pascal %>(<%= id.sample %>, 'u3');
 
       const values = update.set.mock.calls[0][0];
       expect(values.deletedAt).toBeInstanceOf(Date);
       expect(values.updatedById).toBe('u3');
       expect(update.where).toHaveBeenCalledWith(
-        and(eq(<%= s.camel %>.id, 1), notDeleted),
+        and(eq(<%= s.camel %>.id, <%= id.sample %>), notDeleted),
       );
       expect(db.delete).not.toHaveBeenCalled();
     });
@@ -171,7 +171,7 @@ describe('<%= p.pascal %>Service', () => {
     it('throws 404 when the <%= s.lower %> is missing or already deleted', async () => {
       update.where.mockResolvedValue({ rowCount: 0 });
 
-      await expect(service.delete<%= s.pascal %>(1, 'u3')).rejects.toBeInstanceOf(
+      await expect(service.delete<%= s.pascal %>(<%= id.sample %>, 'u3')).rejects.toBeInstanceOf(
         NotFoundException,
       );
     });
