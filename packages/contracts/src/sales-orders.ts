@@ -22,7 +22,7 @@ export type SalesOrderItemBodyInput = z.input<typeof salesOrderItemBodySchema>;
 export type SalesOrderItemBody = z.output<typeof salesOrderItemBodySchema>;
 
 /** Values of sales order status. */
-export const SALES_ORDER_STATUSES = ['draft', 'completed', 'canceled', 'rejected'] as const;
+export const SALES_ORDER_STATUSES = ['draft', 'open', 'completed', 'cancelled', 'rejected'] as const;
 export type SalesOrderStatus = (typeof SALES_ORDER_STATUSES)[number];
 
 /**
