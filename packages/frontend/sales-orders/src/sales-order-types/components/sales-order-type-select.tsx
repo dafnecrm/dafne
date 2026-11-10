@@ -52,7 +52,8 @@ export function SalesOrderTypeSelect({
   className?: string;
   onBlur?: () => void;
   "aria-invalid"?: boolean;
-  "aria-label": string,
+  /** For a picker with no visible label, e.g. a table filter. */
+  "aria-label"?: string;
 }) {
   const t = useTranslations("salesOrders.salesOrderTypes");
   const [query, setQuery] = useState("");
