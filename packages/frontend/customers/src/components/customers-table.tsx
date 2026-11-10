@@ -18,6 +18,7 @@ import {
   EmptyTitle,
 } from "@dafne/frontend-ui/components/empty";
 import { LocalDate } from "@dafne/frontend-ui/components/local-date";
+import { PlainDate } from "@dafne/frontend-ui/components/plain-date";
 import { CUSTOMER_TYPE_OPTIONS } from "../customer-type-options.ts";
 import type { CustomersTableConfig } from "../customers-table.ts";
 import type { ListedCustomer } from "../types.ts";
@@ -109,7 +110,7 @@ function useCustomerColumns(path: string) {
         header: t("birthDate"),
         cell: (info) => {
           const value = info.getValue();
-          return value ? <LocalDate value={value} format="date" /> : "—";
+          return value ? <PlainDate value={value} format="date" /> : "—";
         },
       }),
       col.accessor("fiscalCode", {
@@ -127,6 +128,7 @@ function useCustomerColumns(path: string) {
           <LocalDate
             value={info.getValue()}
             className="text-muted-foreground"
+            format="dateTime"
           />
         ),
       }),

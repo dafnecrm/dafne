@@ -26,6 +26,7 @@ const SEARCH_LIMIT = 20;
  */
 export function ProductSelect({
   value,
+  option,
   onValueChange,
   onProductChange,
   id,
@@ -37,6 +38,8 @@ export function ProductSelect({
   "aria-invalid": ariaInvalid,
 }: {
   value: number | null;
+  /** The value\'s product, when the caller has it: no lookup to name it. */
+  option?: ProductOption | null;
   onValueChange: (id: number | null) => void;
   onProductChange?: (product: ProductOption | null) => void;
   id?: string;
@@ -51,10 +54,13 @@ export function ProductSelect({
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<ProductOption[]>([]);
   const [searching, setSearching] = useState(true);
-  const [chosen, setChosen] = useState<ProductOption | null>(null);
+  const [chosen, setChosen] = useState<ProductOption | null>(option ?? null);
+  // No search until the list is first opened: most visits never open it.
+  const [opened, setOpened] = useState(false);
 
   // Search when the text changes; only the latest search lands.
   useEffect(() => {
+    if (!opened) return;
     let current = true;
     const timer = setTimeout(
       () =>
@@ -68,7 +74,7 @@ export function ProductSelect({
       current = false;
       clearTimeout(timer);
     };
-  }, [query]);
+  }, [query, opened]);
 
   // A value set from outside (e.g. editing an order): load its name.
   useEffect(() => {
@@ -90,6 +96,7 @@ export function ProductSelect({
       items={results}
       // The backend already filtered them.
       filter={null}
+      onOpenChange={(open) => open && setOpened(true)}
       value={selected}
       onValueChange={(product: ProductOption | null) => {
         setChosen(product);

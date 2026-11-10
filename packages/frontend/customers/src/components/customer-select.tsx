@@ -30,6 +30,7 @@ const SEARCH_LIMIT = 20;
  */
 export function CustomerSelect({
   value,
+  option,
   onValueChange,
   id,
   name,
@@ -40,6 +41,8 @@ export function CustomerSelect({
   "aria-invalid": ariaInvalid,
 }: {
   value: string;
+  /** The value\'s customer, when the caller has it: no lookup to name it. */
+  option?: CustomerOption | null;
   onValueChange: (id: string) => void;
   id?: string;
   name?: string;
@@ -53,10 +56,13 @@ export function CustomerSelect({
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<CustomerOption[]>([]);
   const [searching, setSearching] = useState(true);
-  const [chosen, setChosen] = useState<CustomerOption | null>(null);
+  const [chosen, setChosen] = useState<CustomerOption | null>(option ?? null);
+  // No search until the list is first opened: most visits never open it.
+  const [opened, setOpened] = useState(false);
 
   // Search when the text changes; only the latest search lands.
   useEffect(() => {
+    if (!opened) return;
     let current = true;
     const timer = setTimeout(
       () =>
@@ -70,7 +76,7 @@ export function CustomerSelect({
       current = false;
       clearTimeout(timer);
     };
-  }, [query]);
+  }, [query, opened]);
 
   // A value set from outside (e.g. editing an order): load its name.
   useEffect(() => {
@@ -92,6 +98,7 @@ export function CustomerSelect({
       items={results}
       // The backend already filtered them.
       filter={null}
+      onOpenChange={(open) => open && setOpened(true)}
       value={selected}
       onValueChange={(customer: CustomerOption | null) => {
         setChosen(customer);

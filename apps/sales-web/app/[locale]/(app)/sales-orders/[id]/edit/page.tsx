@@ -11,7 +11,6 @@ import {
 } from "@dafne/frontend-ui/components/page-content";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { SalesOrderForm } from "@dafne/frontend-sales-orders/components/sales-order-form";
-import { listSalesOrderTypeIds } from "@dafne/frontend-sales-orders/server";
 import { salesOrdersTable } from "@/lib/sales-orders-table";
 import { loadSalesOrder } from "../load-sales-order";
 
@@ -33,10 +32,7 @@ export default function EditSalesOrderPage({
 async function EditSalesOrder({
   params,
 }: Pick<PageProps<"/[locale]/sales-orders/[id]/edit">, "params">) {
-  const [salesOrder, types] = await Promise.all([
-    loadSalesOrder((await params).id),
-    listSalesOrderTypeIds(),
-  ]);
+  const salesOrder = await loadSalesOrder((await params).id);
   const t = await getTranslations();
 
   return (
@@ -59,7 +55,6 @@ async function EditSalesOrder({
         <SalesOrderForm
           salesOrder={salesOrder}
           path={salesOrdersTable.path}
-          types={types}
         />
       </PageContentBody>
     </PageContent>

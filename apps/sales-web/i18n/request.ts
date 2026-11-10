@@ -8,6 +8,7 @@ import { routing } from "./routing";
 import { ACTIVITIES_MESSAGES } from "@dafne/frontend-activities";
 import { PRODUCTS_MESSAGES } from "@dafne/frontend-products";
 import { SALES_ORDERS_MESSAGES } from "@dafne/frontend-sales-orders";
+import { SALES_ORDER_TYPES_MESSAGES } from "@dafne/frontend-sales-orders/sales-order-types";
 
 /**
  * The locale of the current render. Server Components read the [locale]
@@ -44,6 +45,7 @@ export default getRequestConfig(async ({ locale, requestLocale }) => {
       salesOrders: SALES_ORDERS_MESSAGES[resolved],
       // Address search and country texts, shipped by @dafne/frontend-geo.
       geo: GEO_MESSAGES[resolved],
+      salesOrderTypes: SALES_ORDER_TYPES_MESSAGES[resolved],
     },
   };
 });

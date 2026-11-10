@@ -158,7 +158,7 @@ describe('SalesOrdersService', () => {
   describe('createSalesOrder', () => {
     it('inserts the sales order with its creator', async () => {
       await expect(
-        service.createSalesOrder(body({ customerId: 1, type: 'Type' }), 'u1'),
+        service.createSalesOrder(body({ customerId: 1, typeId: 'T1' }), 'u1'),
       ).resolves.toBe(found);
 
       const [row] = insert.values.mock.calls[0];
@@ -172,7 +172,7 @@ describe('SalesOrdersService', () => {
 
   describe('updateSalesOrder', () => {
     it('updates the sales order', async () => {
-      await service.updateSalesOrder(1, body({ customerId: 1, type: 'Type' }), 'u2');
+      await service.updateSalesOrder(1, body({ customerId: 1, typeId: 'T1' }), 'u2');
 
       expect(update.set.mock.calls[0][0]).toMatchObject({
         updatedById: 'u2',
@@ -186,7 +186,7 @@ describe('SalesOrdersService', () => {
       update.where.mockResolvedValue({ rowCount: 0 });
 
       await expect(
-        service.updateSalesOrder(999, body({ customerId: 1, type: 'Type' }), 'u2'),
+        service.updateSalesOrder(999, body({ customerId: 1, typeId: 'T1' }), 'u2'),
       ).rejects.toBeInstanceOf(NotFoundException);
     });
   });

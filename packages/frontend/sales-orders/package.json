@@ -9,7 +9,12 @@
     "./actions": "./src/actions.ts",
     "./schema": "./src/schema.ts",
     "./server": "./src/server.ts",
-    "./components/*": "./src/components/*.tsx"
+    "./components/*": "./src/components/*.tsx",
+    "./sales-order-types": "./src/sales-order-types/index.ts",
+    "./sales-order-types/actions": "./src/sales-order-types/actions.ts",
+    "./sales-order-types/schema": "./src/sales-order-types/schema.ts",
+    "./sales-order-types/server": "./src/sales-order-types/server.ts",
+    "./sales-order-types/components/*": "./src/sales-order-types/components/*.tsx"
   },
   "scripts": {
     "lint": "eslint src",

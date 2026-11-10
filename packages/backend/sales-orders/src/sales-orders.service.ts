@@ -1,6 +1,6 @@
 import { schema, type Database } from '@dafne/backend-database';
 import { InjectDrizzle } from '@nestjs/drizzle';
-import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { and, asc, desc, eq, isNull, ilike, type Column, type SQL } from 'drizzle-orm';
 import {
   SALES_ORDER_FILTER_FIELDS,
@@ -19,7 +19,7 @@ type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0];
 
 export const DEFAULT_PAGE_SIZE = 20;
 
-const { salesOrder, salesOrderItem } = schema;
+const { salesOrder, salesOrderItem, customer, salesOrderType } = schema;
 
 /** Escapes LIKE wildcards so the value is matched literally. */
 const escapeLike = (value: string) => value.replace(/[\\%_]/g, '\\$&');
@@ -31,7 +31,7 @@ const escapeLike = (value: string) => value.replace(/[\\%_]/g, '\\$&');
 const EXACT_FILTERS: Partial<Record<SalesOrderFilterField, (value: string) => number | string>> = {
   id: Number,
   customerId: Number,
-  type: String,
+  typeId: String,
 };
 
 /** Sales orders that haven't been deleted. */
@@ -42,15 +42,6 @@ const userSummary = { columns: { id: true, name: true } } as const;
 
 /** Only the customer's ID and name, for "customer". */
 const customerSummary = { columns: { id: true, name: true } } as const;
-
-const salesOrderItemSummary = {
-  columns: { quantity: true, position: true },
-  with: {
-    product: {
-      columns: { id: true, name: true },
-    },
-  },
-} as const;
 
 /**
  * Turns the Postgres errors a body can cause (drizzle wraps them as the
@@ -75,7 +66,7 @@ function rethrowConstraint(error: unknown): never {
 export class SalesOrdersService {
   logger = new Logger(SalesOrdersService.name);
 
-  constructor(@InjectDrizzle() private readonly db: Database) {}
+  constructor(@InjectDrizzle() private readonly db: Database) { }
 
   /**
    * Lists sales orders that aren't deleted, paged and sorted, filtered by
@@ -99,11 +90,21 @@ export class SalesOrdersService {
         .select({
           id: salesOrder.id,
           customerId: salesOrder.customerId,
-          type: salesOrder.type,
+          typeId: salesOrder.typeId,
           createdAt: salesOrder.createdAt,
           updatedAt: salesOrder.updatedAt,
+          customer: {
+            id: customer.id,
+            name: customer.name,
+          },
+          type: {
+            id: salesOrderType.id,
+            description: salesOrderType.description,
+          }
         })
         .from(salesOrder)
+        .innerJoin(customer, eq(customer.id, salesOrder.customerId))
+        .innerJoin(salesOrderType, eq(salesOrderType.id, salesOrder.typeId))
         .where(where)
         .orderBy(direction(salesOrder[sortBy]), asc(salesOrder.id))
         .limit(limit)
@@ -126,23 +127,19 @@ export class SalesOrdersService {
         createdBy: userSummary,
         updatedBy: userSummary,
         customer: customerSummary,
+        type: { columns: { id: true, description: true } },
         items: {
-          columns: { quantity: true, position: true, productId: true },
+          columns: { orderId: false, quantity: true, position: true, productId: true },
           with: {
-            product: {
-              columns: { id: true, name: true },
-            },
+            product: { columns: { id: true, name: true } },
           },
-        } as const,
+        },
       },
     });
 
     if (!found) throw new NotFoundException(msg('salesOrders.notFound'));
 
-    return {
-      ...found,
-      items: found.items?.map((item) => ({ ...item, product: item.product[0] })) ?? [],
-    };
+    return found;
   }
 
   /**
@@ -155,9 +152,8 @@ export class SalesOrdersService {
       columns: { orderId: false },
       with: { product: { columns: { id: true, name: true } } },
     });
-    const product = found?.product[0];
-    if (!found || !product) throw new NotFoundException(msg('salesOrders.items.notFound'));
-    return { ...found, product };
+    if (!found) throw new NotFoundException(msg('salesOrders.items.notFound'));
+    return found;
   }
 
   /** Creates a sales order; `userId` is the creator. */
@@ -173,7 +169,7 @@ export class SalesOrdersService {
           .values({
             notes: body.notes,
             customerId: body.customerId,
-            type: body.type,
+            typeId: body.typeId,
             createdAt: now,
             updatedAt: now,
             createdById: userId,
@@ -200,7 +196,7 @@ export class SalesOrdersService {
         .set({
           notes: body.notes,
           customerId: body.customerId,
-          type: body.type,
+          typeId: body.typeId,
           updatedById: userId,
           // The time of this change.
           updatedAt: new Date(),

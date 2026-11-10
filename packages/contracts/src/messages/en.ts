@@ -74,7 +74,8 @@ export const en = {
       },
       quantity: { required: 'Enter the quantity' },
     },
-    type: { required: 'Enter the type' }
+    type: { required: 'Enter the type' },
+    typeId: { required: 'Enter the type id' }
   },
   salesOrderTypes: { 
     notFound: 'Sales order type not found',

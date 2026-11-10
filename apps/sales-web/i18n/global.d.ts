@@ -6,6 +6,7 @@ import type { ProductsMessages } from "@dafne/frontend-products";
 import type { SalesOrdersMessages } from "@dafne/frontend-sales-orders";
 import type en from "../messages/en.json";
 import type { routing } from "./routing";
+import type { SalesOrderTypesMessages } from "@dafne/frontend-sales-orders/sales-order-types";
 
 /**
  * Typed messages: t("customers.title") only compiles if the key exists in
@@ -24,6 +25,7 @@ declare module "next-intl" {
       activities: ActivitiesMessages;
       products: ProductsMessages;
       salesOrders: SalesOrdersMessages;
+      salesOrderTypes: SalesOrderTypesMessages;
     };
   }
 }

@@ -17,10 +17,13 @@ export function ProductSelectField({
   className,
   controlClassName,
   orientation,
+  option,
   onProductChange,
 }: BaseFieldProps & {
   placeholder?: string
   disabled?: boolean
+  /** The value's product, when known (see the select). */
+  option?: ProductOption | null
   onProductChange?: (product: ProductOption | null) => void
 }) {
   const field = useFieldContext<number | null>()
@@ -37,6 +40,7 @@ export function ProductSelectField({
         id={field.name}
         name={field.name}
         value={field.state.value}
+        option={option}
         onValueChange={field.handleChange}
         onProductChange={onProductChange}
         onBlur={field.handleBlur}

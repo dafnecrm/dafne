@@ -15,7 +15,8 @@
     "users": "Users",
     "account": "Account",
     "orders": "Sales orders",
-    "crm": "CRM"
+    "crm": "CRM",
+    "salesOrderTypes": "Sales order types"
   },
   "breadcrumb": {
     "new": "New",

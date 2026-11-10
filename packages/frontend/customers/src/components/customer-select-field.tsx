@@ -4,6 +4,7 @@ import { useFieldContext, useErrorText, type BaseFieldProps } from '@dafne/front
 import { Field, FieldError, FieldLabel } from '@dafne/frontend-ui/components/field'
 import { CustomerSelect } from './customer-select.tsx'
 import { cn } from '@dafne/frontend-ui/lib/utils'
+import type { CustomerOption } from '../actions.ts'
 
 /**
  * A customer, picked by typing part of their name (see CustomerSelect).
@@ -16,9 +17,12 @@ export function CustomerSelectField({
   className,
   controlClassName,
   orientation,
+  option,
 }: BaseFieldProps & {
   placeholder?: string
   disabled?: boolean
+  /** The value's customer, when known (see the select). */
+  option?: CustomerOption | null
 }) {
   const field = useFieldContext<string>()
   const errorText = useErrorText()
@@ -34,6 +38,7 @@ export function CustomerSelectField({
         id={field.name}
         name={field.name}
         value={field.state.value}
+        option={option}
         onValueChange={field.handleChange}
         onBlur={field.handleBlur}
         placeholder={placeholder}

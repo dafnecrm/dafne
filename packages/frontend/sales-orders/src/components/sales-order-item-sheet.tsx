@@ -36,12 +36,15 @@ type OnSave = (
 export function SalesOrderItemSheet({
   open,
   item,
+  product,
   takenPositions = [],
   onOpenChange,
   onSave,
 }: {
   open: boolean;
   item?: SalesOrderItemFormValues | null;
+  /** The item's product, so the picker can name it without a lookup. */
+  product?: ProductOption;
   /** The positions of the order's other items: this one can't reuse them. */
   takenPositions?: (number | null)[];
   onOpenChange: (open: boolean) => void;
@@ -58,6 +61,7 @@ export function SalesOrderItemSheet({
         {/* The content unmounts when the sheet closes, so each opening starts from `item`. */}
         <ItemForm
           item={item ?? undefined}
+          product={product}
           takenPositions={takenPositions}
           onSave={(value, product) => {
             onSave(value, product);
@@ -72,16 +76,18 @@ export function SalesOrderItemSheet({
 /** The item's fields: blank for a new item, `item`'s for an edit. */
 function ItemForm({
   item,
+  product: itemProduct,
   takenPositions,
   onSave,
 }: {
   item?: SalesOrderItemFormValues;
+  product?: ProductOption;
   takenPositions: (number | null)[];
   onSave: OnSave;
 }) {
   const t = useTranslations();
   // The product last picked in the combobox, so the order's table can show its name.
-  const [product, setProduct] = useState<ProductOption>();
+  const [product, setProduct] = useState(itemProduct);
   const form = useAppForm({
     defaultValues: item ?? salesOrderItem(),
     validationLogic: revalidateLogic(),
@@ -121,6 +127,7 @@ function ItemForm({
             {(field) => (
               <field.ProductSelectField
                 label={t("salesOrders.items.fields.productId")}
+                option={itemProduct}
                 onProductChange={(picked) => setProduct(picked ?? undefined)}
               />
             )}

@@ -27,7 +27,7 @@ export const salesOrder = salesSchema.table(
     customerId: integer('customer_id')
       .notNull()
       .references(() => customer.id, { onDelete: 'restrict' }),
-    type: varchar({ length: 5 })
+    typeId: varchar({ length: 5 })
       .notNull()
       .references(() => salesOrderType.id, { onDelete: 'restrict' }),
     createdAt: timestamp('created_at', { precision: 3, withTimezone: true })
@@ -78,7 +78,7 @@ export const salesOrderItem = salesSchema.table(
 );
 
 export const salesOrderRelations = defineRelationsPart(
-  { user, salesOrder, customer, salesOrderItem },
+  { user, salesOrder, customer, salesOrderItem, salesOrderType },
   (r) => ({
     salesOrder: {
       createdBy: r.one.user({
@@ -101,6 +101,12 @@ export const salesOrderRelations = defineRelationsPart(
         from: r.salesOrder.id,
         to: r.salesOrderItem.orderId,
       }),
+      type: r.one.salesOrderType({
+        from: r.salesOrder.typeId,
+        to: r.salesOrderType.id,
+        optional: false,
+        alias: 'salesOrderType',
+      }),
     },
     customer: {
       salesOrders: r.many.salesOrder({
@@ -118,12 +124,15 @@ export const salesOrderItemRelations = defineRelationsPart(
     salesOrderItem: {
       salesOrder: r.one.salesOrder({
         from: r.salesOrderItem.orderId,
-        to: r.salesOrder.id
+        to: r.salesOrder.id,
+        optional: false,
       }),
-      product: r.many.product({
+      // One product per item (productId is NOT NULL).
+      product: r.one.product({
         from: r.salesOrderItem.productId,
-        to: r.product.id
-      })
+        to: r.product.id,
+        optional: false,
+      }),
     },
   }),
 );

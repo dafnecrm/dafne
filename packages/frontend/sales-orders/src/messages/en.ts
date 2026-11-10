@@ -52,6 +52,11 @@ export const en = {
       save: "Save",
     },
   },
+  salesOrderTypes: {
+    placeholder: 'Choose a sales order type...',
+    loading: 'Loading sales order types...',
+    none: 'No sales order type found'
+  }
 };
 
 /** The shape every language must have: same keys, any text. */

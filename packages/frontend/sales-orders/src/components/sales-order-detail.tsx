@@ -6,6 +6,8 @@ import {
   UserPlusIcon,
   LinkIcon,
   TextIcon,
+  ContactIcon,
+  BoxesLinkedIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import CopyButton from "@dafne/frontend-ui/components/copy-button";
@@ -34,7 +36,10 @@ export function SalesOrderDetails({
   return (
     <>
       <DetailSection title={t("salesOrders.sections.details")}>
-        <Detail icon={LinkIcon} label={t("salesOrders.fields.customer")}>
+        <Detail icon={BoxesLinkedIcon} label={t("salesOrders.fields.type")}>
+          {salesOrder.type.description}
+        </Detail>
+        <Detail icon={ContactIcon} label={t("salesOrders.fields.customer")}>
           <Link
             href={`${customersPath}/${encodeURIComponent(salesOrder.customer.id)}`}
             className="hover:underline"
@@ -52,12 +57,6 @@ export function SalesOrderDetails({
             "—"
           )}
         </Detail>
-        <Detail icon={LinkIcon} label={t("salesOrders.fields.customerId")}>
-          <code className="font-mono text-xs">{salesOrder.customerId}</code>
-        </Detail>
-        <Detail icon={TextIcon} label={t("salesOrders.fields.type")}>
-          {salesOrder.type}
-        </Detail>
       </DetailSection>
       <DetailSection
         title={t("salesOrders.sections.items")}
@@ -73,7 +72,7 @@ export function SalesOrderDetails({
         <Detail icon={FingerprintIcon} label={t("salesOrders.fields.id")}>
           <div className="flex items-center gap-2">
             <code className="truncate font-mono text-xs">{salesOrder.id}</code>
-            <CopyButton variant="ghost" value={String(salesOrder.id)} />
+            {/* <CopyButton variant="ghost" value={String(salesOrder.id)} /> */}
           </div>
         </Detail>
         <Detail icon={CalendarPlusIcon} label={t("common.record.created")}>

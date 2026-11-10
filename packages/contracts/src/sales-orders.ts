@@ -28,7 +28,7 @@ export type SalesOrderItemBody = z.output<typeof salesOrderItemBodySchema>;
 export const salesOrderBodySchema = z.strictObject({
   notes: optionalText(z.string().max(65535)),
   customerId: requiredId(msg('salesOrders.customerId.required')),
-  type: requiredText(5, msg('salesOrders.type.required')),
+  typeId: requiredText(5, msg('salesOrders.typeId.required')),
   // Positions are the items' key (with the order): two equal ones can't be saved.
   items: z
     .array(salesOrderItemBodySchema)
@@ -55,7 +55,7 @@ export type SalesOrderItemSortField = (typeof SALES_ORDER_ITEM_SORT_FIELDS)[numb
  * its own. Filters combine with AND and match text the field contains
  * (the id matches exactly).
  */
-export const SALES_ORDER_FILTER_FIELDS = ['id', 'customerId', 'type'] as const;
+export const SALES_ORDER_FILTER_FIELDS = ['id', 'customerId', 'typeId'] as const;
 export type SalesOrderFilterField = (typeof SALES_ORDER_FILTER_FIELDS)[number];
 
 /** Query string of GET /sales-orders. Deleted sales orders are never listed. */
@@ -66,7 +66,7 @@ export const listSalesOrdersQuerySchema = z.strictObject({
     .regex(/^\s*\d{0,9}\s*$/)
     .optional(),
   customerId: z.string().regex(/^\s*\d{0,9}\s*$/).optional(),
-  type: z.string().max(5).optional(),
+  typeId: z.string().max(5).optional(),
   /** Defaults to createdAt. */
   sortBy: z.enum(SALES_ORDER_SORT_FIELDS).optional(),
   /** Defaults to asc. */
@@ -80,7 +80,9 @@ export type ListSalesOrdersQuery = z.output<typeof listSalesOrdersQuerySchema>;
 export interface ListedSalesOrder {
   id: number;
   customerId: number;
-  type: string;
+  customer: SalesOrderCustomer,
+  typeId: string;
+  type: SalesOrderTypeSummary,
   createdAt: Date;
   updatedAt: Date;
 }
@@ -106,6 +108,12 @@ export interface SalesOrderCustomer {
   name: string;
 }
 
+/** A sales order's type (its code and description). */
+export interface SalesOrderTypeSummary {
+  id: string;
+  description: string;
+}
+
 /** Response of GET /sales-orders/:id, POST /sales-orders and PUT /sales-orders/:id. */
 
 export interface SalesOrderDetailItem {
@@ -120,6 +128,7 @@ export interface SalesOrderDetailItem {
 export interface SalesOrderDetail extends ListedSalesOrder {
   notes: string | null;
   customer: SalesOrderCustomer;
+  type: SalesOrderTypeSummary;
   items: SalesOrderDetailItem[];
   createdBy: SalesOrderUser | null;
   updatedBy: SalesOrderUser | null;

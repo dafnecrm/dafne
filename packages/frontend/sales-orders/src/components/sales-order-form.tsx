@@ -31,12 +31,9 @@ import type { ProductOption } from "@dafne/frontend-products/actions";
 export function SalesOrderForm({
   salesOrder,
   path,
-  types,
 }: {
   salesOrder?: SalesOrderDetail;
   path: string;
-  /** The sales order types' ids, the options of the type select. */
-  types: string[];
 }) {
   const t = useTranslations();
   const form = useAppForm({
@@ -113,18 +110,16 @@ export function SalesOrderForm({
                   {(field) => (
                     <field.CustomerSelectField
                       label={t("salesOrders.fields.customer")}
+                      option={salesOrder?.customer}
                     />
                   )}
                 </form.AppField>
 
-                <form.AppField name="type">
+                <form.AppField name="typeId">
                   {(field) => (
-                    <field.SelectField
+                    <field.SalesOrderTypeSelectField
                       label={t("salesOrders.fields.type")}
-                      options={types.map((type) => ({
-                        value: type,
-                        label: type,
-                      }))}
+                      option={salesOrder?.type}
                     />
                   )}
                 </form.AppField>
@@ -190,6 +185,14 @@ export function SalesOrderForm({
                       salesOrderItemSheet.index === null
                         ? null
                         : items.state.value[salesOrderItemSheet.index]
+                    }
+                    product={
+                      salesOrderItemSheet.index === null
+                        ? undefined
+                        : productOf(
+                            items.state.value[salesOrderItemSheet.index]
+                              .productId,
+                          )
                     }
                     onOpenChange={(open) =>
                       setSalesOrderItemSheet((item) => ({ ...item, open }))

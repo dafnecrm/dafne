@@ -50,4 +50,9 @@ export const it: SalesOrdersMessages = {
       save: "Salva",
     },
   },
+  salesOrderTypes: {
+    placeholder: 'Scegli un tipo ordiner...',
+    loading: 'Sto caricando i tipi ordine...',
+    none: 'Nessun tipo ordine trovato',
+  }
 };

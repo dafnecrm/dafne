@@ -12,11 +12,12 @@ import type { SalesOrdersMessageKey } from "./messages/index.ts";
 export const SALES_ORDERS_DEFAULT_SORT = { id: "createdAt", desc: false };
 
 /** A sales orders table's config: its path is always set (detail links use it). */
-export type SalesOrdersTableConfig = DataTableConfig & { path: string };
+export type SalesOrdersTableConfig = DataTableConfig & { path: string, customersPath: string };
 
 export interface SalesOrdersTableOptions {
   /** Path of the app's sales orders list page, e.g. "/sales-orders". */
   path: string;
+  customersPath: string;
 }
 
 /**
@@ -29,6 +30,7 @@ export interface SalesOrdersTableOptions {
  */
 export function defineSalesOrdersTable({
   path,
+  customersPath
 }: SalesOrdersTableOptions): SalesOrdersTableConfig {
   const config = defineDataTable({
     path,
@@ -46,10 +48,10 @@ export function defineSalesOrdersTable({
         label: "salesOrders.fields.customerId" satisfies SalesOrdersMessageKey,
       },
       {
-        field: "type" satisfies SalesOrderFilterField,
+        field: "typeId" satisfies SalesOrderFilterField,
         label: "salesOrders.fields.type" satisfies SalesOrdersMessageKey,
       },
     ],
   });
-  return { ...config, path };
+  return { ...config, path, customersPath };
 }

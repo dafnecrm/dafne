@@ -35,7 +35,7 @@ const col = createDataTableColumnHelper<ListedSalesOrder>();
  * Translated per language; memoized, so the table sees the same columns on
  * every render. Ids link to `<path>/<id>`, the detail page.
  */
-function useSalesOrderColumns(path: string) {
+function useSalesOrderColumns({ path, customersPath }: { path: string, customersPath: string }) {
   const t = useTranslations();
   return useMemo(
     () =>
@@ -50,10 +50,21 @@ function useSalesOrderColumns(path: string) {
               {row.original.id}
             </Link>
           ),
+          meta: {
+            className: 'w-30'
+          }
         }),
-        col.accessor("type", {
-          header: t("salesOrders.fields.type"),
+        col.accessor("customer", {
+          header: t("salesOrders.fields.customer"),
           enableSorting: false,
+          cell: ({ row }) => (
+            <Link
+              href={`${customersPath}/${encodeURIComponent(row.original.customer.id)}`}
+              className="font-medium underline-offset-4 hover:underline"
+            >
+              {row.original.customer.name}
+            </Link>
+          )
         }),
         col.accessor("createdAt", {
           header: t("salesOrders.fields.createdAt"),
@@ -62,6 +73,7 @@ function useSalesOrderColumns(path: string) {
             <LocalDate
               value={info.getValue()}
               className="text-muted-foreground"
+              format="dateTime"
             />
           ),
         }),
@@ -89,7 +101,10 @@ export function SalesOrdersTable({
 }) {
   const t = useTranslations();
   const describeFilters = useDescribeFilters();
-  const columns = useSalesOrderColumns(config.path);
+  const columns = useSalesOrderColumns({
+    path: config.path,
+    customersPath: config.customersPath
+  });
   // Stable per path, so the table sees the same function on every render.
   const salesOrderActions = useCallback(
     (salesOrder: ListedSalesOrder) => (
@@ -117,8 +132,8 @@ export function SalesOrdersTable({
             <EmptyDescription>
               {Object.keys(params.filters).length
                 ? t("salesOrders.empty.filtered", {
-                    filter: describeFilters(params.filters, config.filters),
-                  })
+                  filter: describeFilters(params.filters, config.filters),
+                })
                 : t("salesOrders.empty.none")}
             </EmptyDescription>
           </EmptyHeader>

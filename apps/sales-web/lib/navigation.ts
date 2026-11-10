@@ -3,11 +3,11 @@ import {
   ContactIcon,
   HouseIcon,
   UserIcon,
-  UsersIcon,
-  type LucideIcon,
+  UsersIcon, type LucideIcon,
   ListClockIcon,
   GroceriesIcon,
   PackageIcon,
+  BoxesLinkedIcon
 } from "lucide-react";
 
 /**
@@ -65,7 +65,10 @@ export const NAV_SECTIONS: NavSection[] = [
     title: "admin",
     href: ".",
     adminOnly: true,
-    items: [{ title: "users", href: "/admin/users", icon: UsersIcon }],
+    items: [
+      { title: "salesOrderTypes", href: "/admin/sales-order-types", icon: BoxesLinkedIcon },
+      { title: "users", href: "/admin/users", icon: UsersIcon },
+    ],
   },
 ];
 

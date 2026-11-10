@@ -45,15 +45,6 @@ export async function listSalesOrders({
   return res.json();
 }
 
-/** The sales order types' ids (GET /sales-order-types), for the form's type select. */
-export async function listSalesOrderTypeIds(): Promise<string[]> {
-  const res = await backendFetch(
-    "/sales-order-types?limit=100&sortBy=id&sortDirection=asc",
-  );
-  const { salesOrderTypes } = (await res.json()) as SalesOrderTypesList;
-  return salesOrderTypes.map((type) => type.id);
-}
-
 /**
  * Calls the backend's GET /sales-orders/:id/items/:position. Throws a
  * BackendError with status 404 when the item or its sales order doesn't

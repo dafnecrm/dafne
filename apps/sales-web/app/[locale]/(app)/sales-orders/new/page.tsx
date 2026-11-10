@@ -11,7 +11,6 @@ import {
 } from "@dafne/frontend-ui/components/page-content";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { SalesOrderForm } from "@dafne/frontend-sales-orders/components/sales-order-form";
-import { listSalesOrderTypeIds } from "@dafne/frontend-sales-orders/server";
 import { salesOrdersTable } from "@/lib/sales-orders-table";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -41,6 +40,5 @@ export default function NewSalesOrderPage() {
 
 /** Loads the sales order types (the type select's options), then the form. */
 async function NewSalesOrderForm() {
-  const types = await listSalesOrderTypeIds();
-  return <SalesOrderForm path={salesOrdersTable.path} types={types} />;
+  return <SalesOrderForm path={salesOrdersTable.path} />;
 }
