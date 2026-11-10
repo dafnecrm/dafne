@@ -89,6 +89,7 @@ export class SalesOrdersService {
       db
         .select({
           id: salesOrder.id,
+          status: salesOrder.status,
           customerId: salesOrder.customerId,
           typeId: salesOrder.typeId,
           createdAt: salesOrder.createdAt,

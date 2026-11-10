@@ -31,7 +31,9 @@ export const en = {
     customer: "Customer",
     type: "Type",
     items: "Items",
-    customerId: "Customer id",
+    status: 'Status',
+    customerId: 'Customer id',
+    typeId: 'Type id'
   },
   items: {
     add: "Add item",
@@ -56,7 +58,8 @@ export const en = {
     placeholder: 'Choose a sales order type...',
     loading: 'Loading sales order types...',
     none: 'No sales order type found'
-  }
+  },
+  status: { draft: 'Draft', completed: 'Completed', canceled: 'Canceled', rejected: 'Rejected' }
 };
 
 /** The shape every language must have: same keys, any text. */

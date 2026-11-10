@@ -296,8 +296,10 @@ export function syncColumns(
     };
     const present = array.getElements().map(keyOf).filter(Boolean) as string[];
     const listed = new Set(info.fields.filter((f) => f.listed).map((f) => f.key));
+    // customer: CustomerSummary isn't a field the CLI writes a column for, but it's still listed.
+    const kept = new Set([...listed, ...info.listedSkipped]);
     for (const key of present) {
-      if (listed.has(key)) continue;
+      if (kept.has(key)) continue;
       if (!prune) {
         report.stale.push(`column ${key}`);
         continue;

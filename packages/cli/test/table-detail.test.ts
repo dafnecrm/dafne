@@ -113,6 +113,24 @@ describe('syncColumns', () => {
     expect(content).not.toContain('t("activities.fields.');
   });
 
+  it('keeps, with prune, a column of a listed member it has no kind for (an object)', () => {
+    const table = renderBackend('table.ts', names);
+    const tableInfo = readTable('activities.ts', table, names);
+    const contract = syncContract('activities.ts', renderBackend('contract.ts', names), names, tableInfo).content.replace(
+      /export interface ListedActivity \{/,
+      'export interface ListedActivity {\n  customer: { id: number; name: string };',
+    );
+    const withCustomer = readResponse('activities.ts', contract, names, tableInfo);
+    expect(withCustomer.listedSkipped).toContain('customer');
+    const source = syncColumns('c.tsx', render('frontend/table.tsx', view), names, withCustomer).content.replace(
+      'col.accessor("createdAt"',
+      'col.accessor("customer", { cell: ({ row }) => row.original.customer.name }),\n        col.accessor("createdAt"',
+    );
+    const { content, report } = syncColumns('c.tsx', source, names, withCustomer, { prune: true });
+    expect(content).toContain('col.accessor("customer"');
+    expect(report.removed).toEqual([]);
+  });
+
   it('is idempotent', () => {
     const once = syncColumns('c.tsx', render('frontend/table.tsx', view), names, info()).content;
     expect(syncColumns('c.tsx', once, names, info()).report.added).toEqual([]);

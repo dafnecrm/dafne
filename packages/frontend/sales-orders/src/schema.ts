@@ -43,7 +43,7 @@ export function salesOrderFormOpts(salesOrder?: SalesOrderDetail) {
     defaultValues: {
       notes: salesOrder?.notes ?? "",
       customerId: salesOrder ? String(salesOrder.customerId) : "",
-      typeId: salesOrder?.typeId ?? "",
+      typeId: String(salesOrder?.typeId) ?? "",
       items:
         salesOrder?.items.map((item) => ({
           position: item.position,

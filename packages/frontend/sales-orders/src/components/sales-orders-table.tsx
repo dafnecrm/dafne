@@ -20,12 +20,16 @@ import {
   EmptyTitle,
 } from "@dafne/frontend-ui/components/empty";
 import type { TableParams } from "@dafne/frontend-data-table";
-import type { SalesOrdersTableConfig } from "../sales-orders-table.ts";
+import {
+  type SalesOrdersTableConfig,
+  SALES_ORDER_STATUS_OPTIONS,
+} from "../sales-orders-table.ts";
 import type { ListedSalesOrder } from "../types.ts";
 import { SalesOrderTableActions } from "./sales-order-table-actions.tsx";
 import Link from "next/link";
 import { Button } from "@dafne/frontend-ui/components/button";
 import { SalesOrderTypeSelect } from "../sales-order-types/components/sales-order-type-select.tsx";
+import { useOptionLabel } from "@dafne/frontend-ui/hooks/use-option-labels";
 
 /*
  * Columns of the sales orders table. Column ids double as the backend's
@@ -38,8 +42,15 @@ const col = createDataTableColumnHelper<ListedSalesOrder>();
  * Translated per language; memoized, so the table sees the same columns on
  * every render. Ids link to `<path>/<id>`, the detail page.
  */
-function useSalesOrderColumns({ path, customersPath }: { path: string, customersPath: string }) {
+function useSalesOrderColumns({
+  path,
+  customersPath,
+}: {
+  path: string;
+  customersPath: string;
+}) {
   const t = useTranslations();
+  const optionLabel = useOptionLabel();
   return useMemo(
     () =>
       col.columns([
@@ -54,13 +65,18 @@ function useSalesOrderColumns({ path, customersPath }: { path: string, customers
             </Link>
           ),
           meta: {
-            className: 'w-30'
-          }
+            className: "w-30",
+          },
         }),
         col.accessor("type", {
           header: t("salesOrders.fields.type"),
           enableSorting: false,
           cell: ({ row }) => row.original.type.description,
+        }),
+        col.accessor("status", {
+          header: t("salesOrders.fields.status"),
+          cell: (info) =>
+            optionLabel(SALES_ORDER_STATUS_OPTIONS, info.getValue()),
         }),
         col.accessor("customer", {
           header: t("salesOrders.fields.customer"),
@@ -72,7 +88,7 @@ function useSalesOrderColumns({ path, customersPath }: { path: string, customers
             >
               {row.original.customer.name}
             </Link>
-          )
+          ),
         }),
         col.accessor("createdAt", {
           header: t("salesOrders.fields.createdAt"),
@@ -135,7 +151,7 @@ export function SalesOrdersTable({
   const describeFilters = useDescribeFilters();
   const columns = useSalesOrderColumns({
     path: config.path,
-    customersPath: config.customersPath
+    customersPath: config.customersPath,
   });
   // Stable per path, so the table sees the same function on every render.
   const salesOrderActions = useCallback(
@@ -165,8 +181,8 @@ export function SalesOrdersTable({
             <EmptyDescription>
               {Object.keys(params.filters).length
                 ? t("salesOrders.empty.filtered", {
-                  filter: describeFilters(params.filters, config.filters),
-                })
+                    filter: describeFilters(params.filters, config.filters),
+                  })
                 : t("salesOrders.empty.none")}
             </EmptyDescription>
           </EmptyHeader>

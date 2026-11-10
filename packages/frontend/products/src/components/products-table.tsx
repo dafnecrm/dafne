@@ -73,6 +73,7 @@ function useProductColumns(path: string) {
             <LocalDate
               value={info.getValue()}
               className="text-muted-foreground"
+              format="dateTime"
             />
           ),
         }),

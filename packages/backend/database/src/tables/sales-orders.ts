@@ -22,6 +22,12 @@ export const salesOrder = salesSchema.table(
   'sales_order',
   {
     id: serial('id').primaryKey(),
+    /** @api readonly */
+    status: text('status', {
+      enum: ['draft', 'completed', 'canceled', 'rejected'],
+    })
+      .default('draft')
+      .notNull(),
     /** @api detail @form editor */
     notes: text('notes'),
     customerId: integer('customer_id')

@@ -72,7 +72,8 @@ export const it: ContractMessages = {
       quantity: { required: 'Inserisci la quantità' },
     },
     type: { required: 'Inserisci il tipo' },
-    typeId: { required: 'Enter the type id' }
+    typeId: { required: 'Enter the type id' },
+    status: { required: 'Scegli lo stato' }
   },
   salesOrderTypes: { 
     notFound: 'Tipo ordine non trovato',

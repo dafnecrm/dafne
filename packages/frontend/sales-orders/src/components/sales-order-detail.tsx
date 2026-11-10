@@ -4,19 +4,21 @@ import {
   HistoryIcon,
   UserPenIcon,
   UserPlusIcon,
-  LinkIcon,
   TextIcon,
   ContactIcon,
   BoxesLinkedIcon,
+  TagIcon,
+  LinkIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import CopyButton from "@dafne/frontend-ui/components/copy-button";
 import { Detail, DetailSection } from "@dafne/frontend-ui/components/detail";
 import { LocalDate } from "@dafne/frontend-ui/components/local-date";
 import type { SalesOrderDetail } from "../types.ts";
 import { TextEditorContent } from "@dafne/frontend-ui/components/text-editor";
 import Link from "next/link";
 import { SalesOrderItemTable } from "./sales-order-items-table.tsx";
+import { SALES_ORDER_STATUS_OPTIONS } from "../sales-orders-table.ts";
+import { useOptionLabel } from "@dafne/frontend-ui/hooks/use-option-labels";
 
 /**
  * The details of a sales order: its fields, then who created and updated it.
@@ -33,6 +35,7 @@ export function SalesOrderDetails({
   customersPath: string;
 }) {
   const t = useTranslations();
+  const optionLabel = useOptionLabel();
   return (
     <>
       <DetailSection title={t("salesOrders.sections.details")}>
@@ -56,6 +59,15 @@ export function SalesOrderDetails({
           ) : (
             "—"
           )}
+        </Detail>
+        <Detail icon={TagIcon} label={t("salesOrders.fields.status")}>
+          {optionLabel(SALES_ORDER_STATUS_OPTIONS, salesOrder.status)}
+        </Detail>
+        <Detail icon={LinkIcon} label={t("salesOrders.fields.customerId")}>
+          <code className="font-mono text-xs">{salesOrder.customerId}</code>
+        </Detail>
+        <Detail icon={LinkIcon} label={t("salesOrders.fields.typeId")}>
+          <code className="font-mono text-xs">{salesOrder.typeId}</code>
         </Detail>
       </DetailSection>
       <DetailSection

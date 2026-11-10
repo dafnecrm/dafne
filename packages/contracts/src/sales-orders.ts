@@ -21,6 +21,10 @@ export const salesOrderItemBodySchema = z.strictObject({
 export type SalesOrderItemBodyInput = z.input<typeof salesOrderItemBodySchema>;
 export type SalesOrderItemBody = z.output<typeof salesOrderItemBodySchema>;
 
+/** Values of sales order status. */
+export const SALES_ORDER_STATUSES = ['draft', 'completed', 'canceled', 'rejected'] as const;
+export type SalesOrderStatus = (typeof SALES_ORDER_STATUSES)[number];
+
 /**
  * Body of POST /sales-orders and PUT /sales-orders/:id. PUT replaces the
  * whole sales order: omitted optional fields are cleared.
@@ -44,7 +48,7 @@ export type SalesOrderBodyInput = z.input<typeof salesOrderBodySchema>;
 export type SalesOrderBody = z.output<typeof salesOrderBodySchema>;
 
 /** Sales order fields the list can be sorted by. */
-export const SALES_ORDER_SORT_FIELDS = ['id', 'createdAt', 'updatedAt'] as const;
+export const SALES_ORDER_SORT_FIELDS = ['id', 'status', 'createdAt', 'updatedAt'] as const;
 export type SalesOrderSortField = (typeof SALES_ORDER_SORT_FIELDS)[number];
 
 export const SALES_ORDER_ITEM_SORT_FIELDS = ['position', 'createdAt', 'updatedAt'] as const;
@@ -55,7 +59,7 @@ export type SalesOrderItemSortField = (typeof SALES_ORDER_ITEM_SORT_FIELDS)[numb
  * its own. Filters combine with AND and match text the field contains
  * (the id matches exactly).
  */
-export const SALES_ORDER_FILTER_FIELDS = ['id', 'customerId', 'typeId'] as const;
+export const SALES_ORDER_FILTER_FIELDS = ['id', 'status', 'customerId', 'typeId'] as const;
 export type SalesOrderFilterField = (typeof SALES_ORDER_FILTER_FIELDS)[number];
 
 /** Query string of GET /sales-orders. Deleted sales orders are never listed. */
@@ -65,6 +69,7 @@ export const listSalesOrdersQuerySchema = z.strictObject({
     .string()
     .regex(/^\s*\d{0,9}\s*$/)
     .optional(),
+  status: z.enum(SALES_ORDER_STATUSES).optional(),
   customerId: z.string().regex(/^\s*\d{0,9}\s*$/).optional(),
   typeId: z.string().max(5).optional(),
   /** Defaults to createdAt. */
@@ -79,9 +84,8 @@ export type ListSalesOrdersQuery = z.output<typeof listSalesOrdersQuerySchema>;
 /** A sales order in GET /sales-orders. */
 export interface ListedSalesOrder {
   id: number;
-  customerId: number;
+  status: SalesOrderStatus;
   customer: SalesOrderCustomer,
-  typeId: string;
   type: SalesOrderTypeSummary,
   createdAt: Date;
   updatedAt: Date;
@@ -134,6 +138,8 @@ export interface SalesOrderDetail extends ListedSalesOrder {
   updatedBy: SalesOrderUser | null;
   /** Always null: deleted sales orders aren't returned. */
   deletedAt: Date | null;
+  customerId: number;
+  typeId: string;
 }
 
 /** The sales order items */

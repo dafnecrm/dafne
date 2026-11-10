@@ -1,0 +1,1 @@
+ALTER TABLE "sales"."sales_order" ADD COLUMN "status" text DEFAULT 'draft' NOT NULL;

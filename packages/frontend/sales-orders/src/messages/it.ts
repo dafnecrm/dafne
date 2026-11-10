@@ -29,7 +29,9 @@ export const it: SalesOrdersMessages = {
     customer: "Cliente",
     type: "Tipo",
     items: "Items",
+    status: "Status",
     customerId: "Customer id",
+    typeId: "Type id"
   },
   items: {
     add: "Aggiungi riga",
@@ -54,5 +56,6 @@ export const it: SalesOrdersMessages = {
     placeholder: 'Scegli un tipo ordiner...',
     loading: 'Sto caricando i tipi ordine...',
     none: 'Nessun tipo ordine trovato',
-  }
+  },
+  status: { draft: "Draft", completed: "Completed", canceled: "Canceled", rejected: "Rejected" }
 };

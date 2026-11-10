@@ -29,13 +29,15 @@ export interface ResponseInfo {
   fields: ResponseField[];
   /** Members skipped: relations, arrays, objects… */
   skipped: string[];
+  /** The skipped members of Listed<S>: still in the list (a column may show them). */
+  listedSkipped: string[];
   sortFields: string[];
   filterFields: string[];
 }
 
 export function readResponse(path: string, contract: string, names: ResourceNames, table?: TableInfo): ResponseInfo {
   const { s } = names;
-  const info: ResponseInfo = { fields: [], skipped: [], sortFields: [], filterFields: [] };
+  const info: ResponseInfo = { fields: [], skipped: [], listedSkipped: [], sortFields: [], filterFields: [] };
   editSource(path, contract, (file) => {
     const enums = new Map<string, { constant: string; values: string[] }>();
     for (const alias of file.getTypeAliases()) {
@@ -73,6 +75,7 @@ export function readResponse(path: string, contract: string, names: ResourceName
         else if (enums.has(base)) kind = 'enum';
         if (!kind) {
           info.skipped.push(key);
+          if (listed) info.listedSkipped.push(key);
           continue;
         }
         // customerId → "Customer".
