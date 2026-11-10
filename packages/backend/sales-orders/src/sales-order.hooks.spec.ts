@@ -11,12 +11,12 @@ describe('sales order hooks', () => {
   it('logs the transition before it runs', () => {
     const log = vi.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
     new SalesOrderLogPreHook().run(context);
-    expect(log).toHaveBeenCalledWith('Sales order 7: draft → open starting (user u1)');
+    expect(log).toHaveBeenCalledWith('Sales order 7: draft → open starting (user u1) - pre hook');
   });
 
   it('logs the transition once done', () => {
     const log = vi.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
     new SalesOrderLogPostHook().run(context);
-    expect(log).toHaveBeenCalledWith('Sales order 7: draft → open done');
+    expect(log).toHaveBeenCalledWith('Sales order 7: draft → open done - post hook');
   });
 });

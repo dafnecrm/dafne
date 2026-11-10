@@ -74,6 +74,7 @@ export const it: ContractMessages = {
         notFound: 'Scegli un prodotto esistente'
       },
       quantity: { required: 'Inserisci la quantità' },
+      enterAtLeastOneItem: 'Inserisci almeno un articolo',
     },
     type: { required: 'Inserisci il tipo' },
     typeId: { required: 'Enter the type id' },

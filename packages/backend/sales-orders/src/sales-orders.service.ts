@@ -166,7 +166,7 @@ export class SalesOrdersService {
   }
 
   /** Creates a sales order; `userId` is the creator. */
-  async createSalesOrder(body: SalesOrderBody, userId: string): Promise<SalesOrderDetail> {
+  async createSalesOrder(body: SalesOrderBody, user: SessionUser): Promise<SalesOrderDetail> {
     // One instant for both: createdAt and updatedAt start equal.
     const now = new Date();
 
@@ -182,12 +182,12 @@ export class SalesOrdersService {
             typeId: body.typeId,
             createdAt: now,
             updatedAt: now,
-            createdById: userId,
-            updatedById: userId,
+            createdById: user.id,
+            updatedById: user.id,
           })
           .returning({ id: salesOrder.id });
 
-        if (body.status) await this.stateMachine.transition(id, body.status, { tx });
+        if (body.status) await this.stateMachine.transition(id, body.status, { tx, user });
         return id;
       })
       .catch(rethrowConstraint);
@@ -200,7 +200,7 @@ export class SalesOrdersService {
    * Replaces a sales order's fields; `userId` is the editor. Throws 404
    * if the sales order doesn't exist or is deleted.
    */
-  async updateSalesOrder(id: number, body: SalesOrderBody, userId: string): Promise<SalesOrderDetail> {
+  async updateSalesOrder(id: number, body: SalesOrderBody, user: SessionUser): Promise<SalesOrderDetail> {
     await this.db.transaction(async (tx) => {
       const result = await tx
         .update(salesOrder)
@@ -208,7 +208,7 @@ export class SalesOrdersService {
           notes: body.notes,
           customerId: body.customerId,
           typeId: body.typeId,
-          updatedById: userId,
+          updatedById: user.id,
           // The time of this change.
           updatedAt: new Date(),
         })
@@ -220,7 +220,7 @@ export class SalesOrdersService {
       await this.insertSalesOrderItems(tx, id, body.items);
       
       // After the items: the guards see the order as saved.
-      if (body.status) await this.stateMachine.transition(id, body.status, { tx });
+      if (body.status) await this.stateMachine.transition(id, body.status, { tx, user });
     });
 
     return this.getSalesOrder(id);

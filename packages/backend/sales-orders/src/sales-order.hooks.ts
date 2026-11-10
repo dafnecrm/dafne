@@ -1,5 +1,5 @@
-import type { TransitionContext, TransitionHook } from '@dafne/backend-fsm';
-import type { SalesOrderStatus } from '@dafne/contracts';
+import type { TransitionContext, TransitionHook, TransitionHookResult } from '@dafne/backend-fsm';
+import { msg, type SalesOrderStatus } from '@dafne/contracts';
 import { Injectable, Logger } from '@nestjs/common';
 
 type Context = TransitionContext<SalesOrderStatus, number>;
@@ -9,8 +9,8 @@ type Context = TransitionContext<SalesOrderStatus, number>;
 export class SalesOrderLogPreHook implements TransitionHook<SalesOrderStatus, number> {
   private readonly logger = new Logger(SalesOrderLogPreHook.name);
 
-  run({ id, from, to, user }: Context): void {
-    this.logger.log(`Sales order ${id}: ${from} → ${to} starting (user ${user?.id ?? '-'})`);
+  run({ id, from, to, user }: Context): TransitionHookResult {
+    this.logger.log(`Sales order ${id}: ${from} → ${to} starting (user ${user?.id ?? '-'}) - pre hook`);
   }
 }
 
@@ -20,6 +20,6 @@ export class SalesOrderLogPostHook implements TransitionHook<SalesOrderStatus, n
   private readonly logger = new Logger(SalesOrderLogPostHook.name);
 
   run({ id, from, to }: Context): void {
-    this.logger.log(`Sales order ${id}: ${from} → ${to} done`);
+    this.logger.log(`Sales order ${id}: ${from} → ${to} done - post hook`);
   }
 }

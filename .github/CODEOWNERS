@@ -12,7 +12,6 @@
 # Shared by the backend and the frontend: both owners.
 /packages/contracts/ @lula
 /packages/cli/       @lula
-/packages/cli-old/   @lula
 
 # Monorepo setup and CI.
 /.github/            @lula

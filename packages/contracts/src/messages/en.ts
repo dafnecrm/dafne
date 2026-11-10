@@ -77,6 +77,7 @@ export const en = {
         notFound: 'Choose a product from the list'
       },
       quantity: { required: 'Enter the quantity' },
+      enterAtLeastOneItem: 'Enter at least one item',
     },
     type: { required: 'Enter the type' },
     typeId: { required: 'Enter the type id' },

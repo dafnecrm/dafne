@@ -11,8 +11,6 @@ export const SALES_ORDER_STATES: StatesConfig<SalesOrderStatus, number> = {
   draft: {
     open: {
       guards: [SalesOrderHasItemsGuard],
-    },
-    cancelled: {
       pre: [SalesOrderLogPreHook],
       post: [SalesOrderLogPostHook],
     },

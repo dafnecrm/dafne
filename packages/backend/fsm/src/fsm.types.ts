@@ -20,16 +20,34 @@ export interface TransitionContext<S extends string = string, Id = unknown> {
 }
 
 /**
- * Checked before anything else: false (or a throw) stops the transition,
- * with nothing written. False becomes a 403.
+ * What a guard answers: true lets the transition go on; false stops it with
+ * the generic `fsm.transitionForbidden` message; a string stops it with that
+ * message key instead (e.g. `msg('salesOrders.items.enterAtLeastOneItem')`).
+ */
+export type TransitionGuardResult = boolean | string;
+
+/**
+ * Checked before anything else: false, a message (or a throw) stops the
+ * transition, with nothing written. False and a message become a 403; throw
+ * to answer with another error.
  */
 export interface TransitionGuard<S extends string = string, Id = unknown> {
-  canTransition(context: TransitionContext<S, Id>): boolean | Promise<boolean>;
+  canTransition(context: TransitionContext<S, Id>): TransitionGuardResult | Promise<TransitionGuardResult>;
 }
 
-/** Runs before (pre) or after (post) the transition: a throw is a failure. */
+/**
+ * What a hook answers: nothing lets the transition go on; a string stops it
+ * with that message key (e.g. `msg('salesOrders.items.enterAtLeastOneItem')`).
+ */
+export type TransitionHookResult = void | string;
+
+/**
+ * Runs before (pre) or after (post) the transition. A message (or a throw)
+ * is a failure and rolls everything back: a message becomes a 403; throw to
+ * answer with another error.
+ */
 export interface TransitionHook<S extends string = string, Id = unknown> {
-  run(context: TransitionContext<S, Id>): void | Promise<void>;
+  run(context: TransitionContext<S, Id>): TransitionHookResult | Promise<TransitionHookResult>;
 }
 
 /** The aspects of one passage from a status to another, each run in order. */

@@ -35,7 +35,8 @@ export class StateMachine<S extends string = string, Id = unknown> {
   /**
    * Moves the record `id` to `to`, in one transaction: guards, pre hooks,
    * the transition, post hooks. Throws 400 if `to` doesn't follow the
-   * record's status, 403 if a guard says no, or whatever an aspect throws;
+   * record's status, 403 if a guard says no or a hook returns a message (with the
+   * message they give), or whatever an aspect throws;
    * any failure rolls everything back. Does nothing if the record is
    * already in `to`.
    */
@@ -55,11 +56,19 @@ export class StateMachine<S extends string = string, Id = unknown> {
     const context: TransitionContext<S, Id> = { id, from, to, tx, user };
 
     for (const guard of this.instances<TransitionGuard<S, Id>>(config.guards)) {
-      if (!(await guard.canTransition(context))) throw new ForbiddenException(msg('fsm.transitionForbidden'));
+      const result = await guard.canTransition(context);
+      if (result === true) continue;
+      throw new ForbiddenException(typeof result === 'string' && result ? result : msg('fsm.transitionForbidden'));
     }
-    for (const hook of this.instances<TransitionHook<S, Id>>(config.pre)) await hook.run(context);
+    for (const hook of this.instances<TransitionHook<S, Id>>(config.pre)) await this.runHook(hook, context);
     await this.stateTransition.execute(context);
-    for (const hook of this.instances<TransitionHook<S, Id>>(config.post)) await hook.run(context);
+    for (const hook of this.instances<TransitionHook<S, Id>>(config.post)) await this.runHook(hook, context);
+  }
+
+  /** Runs a hook: a message it returns fails the transition with it. */
+  private async runHook(hook: TransitionHook<S, Id>, context: TransitionContext<S, Id>) {
+    const message = await hook.run(context);
+    if (typeof message === 'string' && message) throw new ForbiddenException(message);
   }
 
   private instances<T>(classes: Type<T>[] = []): T[] {

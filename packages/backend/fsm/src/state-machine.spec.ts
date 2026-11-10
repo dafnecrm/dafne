@@ -1,19 +1,19 @@
 import type { Database } from '@dafne/backend-database';
 import { BadRequestException, ForbiddenException, type Type } from '@nestjs/common';
-import type { Transaction, TransitionContext, TransitionGuard, TransitionHook } from './fsm.types.js';
+import type { Transaction, TransitionContext, TransitionGuard, TransitionGuardResult, TransitionHook, TransitionHookResult } from './fsm.types.js';
 import { StateMachine } from './state-machine.js';
 import { StateTransition } from './state-transition.js';
 
 type Status = 'draft' | 'open' | 'done';
 
 class Guard implements TransitionGuard<Status, number> {
-  canTransition = vi.fn<(context: TransitionContext<Status, number>) => boolean | Promise<boolean>>();
+  canTransition = vi.fn<(context: TransitionContext<Status, number>) => TransitionGuardResult | Promise<TransitionGuardResult>>();
 }
 class Pre implements TransitionHook<Status, number> {
-  run = vi.fn<(context: TransitionContext<Status, number>) => Promise<void>>();
+  run = vi.fn<(context: TransitionContext<Status, number>) => Promise<TransitionHookResult>>();
 }
 class Post implements TransitionHook<Status, number> {
-  run = vi.fn<(context: TransitionContext<Status, number>) => Promise<void>>();
+  run = vi.fn<(context: TransitionContext<Status, number>) => Promise<TransitionHookResult>>();
 }
 class Transition extends StateTransition<Status, number> {
   currentStatus = vi.fn<(id: number, tx: Transaction) => Promise<Status>>();
@@ -89,6 +89,20 @@ describe('StateMachine', () => {
     expect(transition.execute).not.toHaveBeenCalled();
   });
 
+  it('stops with the generic message when a guard says false', async () => {
+    guard.canTransition.mockResolvedValue(false);
+    await expect(machine.transition(1, 'open')).rejects.toThrow('fsm.transitionForbidden');
+  });
+
+  it("stops with the guard's message when it gives one", async () => {
+    guard.canTransition.mockResolvedValue('salesOrders.items.enterAtLeastOneItem');
+    const error = await machine.transition(1, 'open').catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(ForbiddenException);
+    expect((error as ForbiddenException).message).toBe('salesOrders.items.enterAtLeastOneItem');
+    expect(pre.run).not.toHaveBeenCalled();
+    expect(transition.execute).not.toHaveBeenCalled();
+  });
+
   it('does not run the transition when a pre hook fails', async () => {
     pre.run.mockRejectedValue(new Error('pre'));
     await expect(machine.transition(1, 'open')).rejects.toThrow('pre');
@@ -102,6 +116,20 @@ describe('StateMachine', () => {
     expect(transition.execute).toHaveBeenCalled();
     // The error came out of the transaction's callback: drizzle rolls back.
     await expect(db.transaction.mock.results[0].value).rejects.toThrow('post');
+  });
+
+  it("stops before the transition with a pre hook's message", async () => {
+    pre.run.mockResolvedValue('fsm.transitionForbidden');
+    await expect(machine.transition(1, 'open')).rejects.toThrow(ForbiddenException);
+    expect(transition.execute).not.toHaveBeenCalled();
+    expect(post.run).not.toHaveBeenCalled();
+  });
+
+  it("rolls back with a post hook's message", async () => {
+    post.run.mockResolvedValue('salesOrders.items.enterAtLeastOneItem');
+    await expect(machine.transition(1, 'open')).rejects.toThrow('salesOrders.items.enterAtLeastOneItem');
+    expect(transition.execute).toHaveBeenCalled();
+    await expect(db.transaction.mock.results[0].value).rejects.toThrow(ForbiddenException);
   });
 
   it("runs in the caller's transaction when given one", async () => {

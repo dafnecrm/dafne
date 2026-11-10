@@ -14,7 +14,6 @@
     "affected": "nx affected -t lint typecheck test build",
     "graph": "nx graph",
     "dafne": "node packages/cli/src/index.ts",
-    "dafne-old": "pnpm --filter @dafne/cli-old dev",
     "boundaries": "node tools/check-boundaries.mjs"
   },
   "devDependencies": {

@@ -57,7 +57,7 @@ export class SalesOrdersController {
     @Body(new ZodValidationPipe(salesOrderBodySchema)) body: SalesOrderBody,
     @Session() session: UserSession,
   ): Promise<SalesOrderDetail> {
-    return this.salesOrdersService.createSalesOrder(body, session.user.id);
+    return this.salesOrdersService.createSalesOrder(body, session.user);
   }
 
   @Put(':id')
@@ -66,7 +66,7 @@ export class SalesOrdersController {
     @Body(new ZodValidationPipe(salesOrderBodySchema)) body: SalesOrderBody,
     @Session() session: UserSession,
   ): Promise<SalesOrderDetail> {
-    return this.salesOrdersService.updateSalesOrder(id, body, session.user.id);
+    return this.salesOrdersService.updateSalesOrder(id, body, session.user);
   }
 
   /** Moves the sales order to another status (see SALES_ORDER_STATES). */
