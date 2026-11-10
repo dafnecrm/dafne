@@ -81,10 +81,11 @@ export function defineDataTable({
   Partial<
     Pick<DataTableConfig, "pageSizes" | "defaultPageSize" | "filters">
   >): DataTableConfig {
-  if (!pageSizes.includes(defaultPageSize))
+  if (!pageSizes.includes(defaultPageSize)) {
     throw new Error(
       `${config.path}: default page size ${defaultPageSize} is not in pageSizes`,
     );
+  }
   return { ...config, pageSizes, defaultPageSize, filters };
 }
 
@@ -148,7 +149,9 @@ export function tableHref(
    * A table can be used with client pagination and sorting, 
    * so it has no path to build a URL.
   */
-  if (!config.path) return "#";
+  if (!config.path) {
+    return "#";
+  }
 
   const query = new URLSearchParams(cleanFilters(filters));
   const { defaultSort } = config;
@@ -156,8 +159,12 @@ export function tableHref(
     query.set("sort", sort.id);
     query.set("dir", sort.desc ? "desc" : "asc");
   }
-  if (pageSize !== config.defaultPageSize) query.set("limit", String(pageSize));
-  if (page > 1) query.set("page", String(page));
+  if (pageSize !== config.defaultPageSize) {
+    query.set("limit", String(pageSize));
+  }
+  if (page > 1) {
+    query.set("page", String(page));
+  }
   const qs = query.toString();
   return qs ? `${config.path}?${qs}` : config.path;
 }

@@ -46,6 +46,9 @@
     },
     {
       "path": "../../packages/backend/sales-order-types"
+    },
+    {
+      "path": "../../packages/backend/fsm"
     }
   ]
 }

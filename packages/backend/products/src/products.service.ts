@@ -62,7 +62,9 @@ export class ProductsService {
     const { db } = this;
     const filters = PRODUCT_FILTER_FIELDS.flatMap((field) => {
       const value = query[field]?.trim();
-      if (!value) return [];
+      if (!value) {
+        return [];
+      }
       const exact = EXACT_FILTERS[field];
       // As a plain Column: eq can't type a union of columns against number | string.
       return [
@@ -104,7 +106,9 @@ export class ProductsService {
       columns: { createdById: false, updatedById: false },
       with: { createdBy: userSummary, updatedBy: userSummary },
     });
-    if (!found) throw new NotFoundException(msg('products.notFound'));
+    if (!found) {
+      throw new NotFoundException(msg('products.notFound'));
+    }
     return found;
   }
 
@@ -150,8 +154,9 @@ export class ProductsService {
         updatedAt: new Date(),
       })
       .where(and(eq(product.id, id), notDeleted));
-    if (result.rowCount === 0)
+    if (result.rowCount === 0) {
       throw new NotFoundException(msg('products.notFound'));
+    }
     return this.getProduct(id);
   }
 
@@ -165,7 +170,8 @@ export class ProductsService {
       .update(product)
       .set({ deletedAt: now, updatedAt: now, updatedById: userId })
       .where(and(eq(product.id, id), notDeleted));
-    if (result.rowCount === 0)
+    if (result.rowCount === 0) {
       throw new NotFoundException(msg('products.notFound'));
+    }
   }
 }

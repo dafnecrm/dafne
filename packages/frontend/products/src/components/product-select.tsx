@@ -60,7 +60,9 @@ export function ProductSelect({
 
   // Search when the text changes; only the latest search lands.
   useEffect(() => {
-    if (!opened) return;
+    if (!opened) {
+      return;
+    }
     let current = true;
     const timer = setTimeout(
       () =>
@@ -78,7 +80,9 @@ export function ProductSelect({
 
   // A value set from outside (e.g. editing an order): load its name.
   useEffect(() => {
-    if (value == null || chosen?.id === value) return;
+    if (value == null || chosen?.id === value) {
+      return;
+    }
     let current = true;
     getProductOption(String(value)).then(
       (product) => current && setChosen(product),

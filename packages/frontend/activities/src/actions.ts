@@ -17,10 +17,16 @@ export interface ActionError {
 
 /** The error to show; the backend's own message is already translated. */
 async function errorMessage(error: unknown) {
-  if (!(error instanceof BackendError)) throw error;
+  if (!(error instanceof BackendError)) {
+    throw error;
+  }
   const t = await getTranslations();
-  if (error.status === 401) return t("common.errors.sessionExpired");
-  if (error.status === 404) return t("activities.notFound");
+  if (error.status === 401) {
+    return t("common.errors.sessionExpired");
+  }
+  if (error.status === 404) {
+    return t("activities.notFound");
+  }
   return error.message || t("common.errors.generic");
 }
 
@@ -33,8 +39,9 @@ export async function saveActivity(
   values: ActivityFormValues,
 ): Promise<ActionError> {
   const parsed = activitySchema.safeParse(values);
-  if (!parsed.success)
+  if (!parsed.success) {
     return { error: (await getTranslations())("common.errors.invalid") };
+  }
 
   let savedId: number;
   try {

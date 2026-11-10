@@ -29,6 +29,6 @@ export const it: ProductsMessages = {
     price: "Prezzo",
     description: "Descrizione",
     createdAt: "Aggiunto",
-    id: "ID prodotto",
+    id: "ID",
   },
 };

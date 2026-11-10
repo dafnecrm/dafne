@@ -166,13 +166,19 @@ export function syncChildService(
   const insertMap = (file: SourceFile) => {
     for (const call of file.getDescendantsOfKind(SyntaxKind.CallExpression)) {
       const callee = call.getExpression();
-      if (!Node.isPropertyAccessExpression(callee) || callee.getName() !== 'values') continue;
+      if (!Node.isPropertyAccessExpression(callee) || callee.getName() !== 'values') {
+        continue;
+      }
       const target = callee.getExpression();
-      if (!Node.isCallExpression(target) || target.getArguments()[0]?.getText() !== child.variable) continue;
+      if (!Node.isCallExpression(target) || target.getArguments()[0]?.getText() !== child.variable) {
+        continue;
+      }
       const arrow = call.getArguments()[0]?.getFirstDescendantByKind(SyntaxKind.ArrowFunction);
       const item = arrow?.getParameters()[0]?.getName();
       const object = arrow?.getBody().asKind(SyntaxKind.ParenthesizedExpression)?.getExpression().asKind(SyntaxKind.ObjectLiteralExpression);
-      if (item && object) return { item, object };
+      if (item && object) {
+        return { item, object };
+      }
     }
     return undefined;
   };
@@ -207,7 +213,9 @@ export function syncChildService(
         ]
       : []),
   ];
-  if (!item) report.warnings.push(`${path}: no .insert(${child.variable}).values(list.map(...)); update the ${relation} insert by hand.`);
+  if (!item) {
+    report.warnings.push(`${path}: no .insert(${child.variable}).values(list.map(...)); update the ${relation} insert by hand.`);
+  }
   source = applySections(path, source, sections, report, '', isColumn);
   return { content: source, report };
 }
@@ -223,10 +231,14 @@ const OLD_FILTER =
  * match exactly (`needed`) is a warning.
  */
 function addExactFilters(path: string, source: string, { s, p }: ResourceNames, record: string, report: ServiceReport, needed: boolean): string {
-  if (/\bEXACT_FILTERS\b/.test(source)) return source;
+  if (/\bEXACT_FILTERS\b/.test(source)) {
+    return source;
+  }
   const old = OLD_FILTER.exec(source);
   if (!old) {
-    if (needed) report.warnings.push(`${path}: list${p.pascal} has no EXACT_FILTERS: match the keys to other records with eq by hand.`);
+    if (needed) {
+      report.warnings.push(`${path}: list${p.pascal} has no EXACT_FILTERS: match the keys to other records with eq by hand.`);
+    }
     return source;
   }
   const [, , indent, table, idValue] = old;
@@ -291,20 +303,26 @@ function applySections(path: string, source: string, sections: Section[], report
           removedOne = true;
         }
       });
-      if (!found || !removedOne) break;
+      if (!found || !removedOne) {
+        break;
+      }
     }
     if (!found) {
-      if (!section.optional) report.warnings.push(`${path}: no ${section.label} in ${owner}${section.method}; update it by hand.`);
+      if (!section.optional) {
+        report.warnings.push(`${path}: no ${section.label} in ${owner}${section.method}; update it by hand.`);
+      }
       continue;
     }
-    if (isColumn)
+    if (isColumn) {
       source = editSource(path, source, (file) => {
         for (const prop of locate(file)!.getProperties()) {
           const key = keyOf(prop);
-          if (key !== undefined && section.owns(key, valueOf(prop)) && !isColumn.has(key))
+          if (key !== undefined && section.owns(key, valueOf(prop)) && !isColumn.has(key)) {
             report.warnings.push(`${path}: ${owner}${section.method} ${section.label}: ${key} isn't a column of the table: kept. Remove it if the column was dropped or renamed.`);
+          }
         }
       });
+    }
 
     source = editSource(path, source, (file) => {
       for (const [index, want] of section.wanted.entries()) {
@@ -312,20 +330,25 @@ function applySections(path: string, source: string, sections: Section[], report
         const props = object.getProperties();
         const present = props.map(keyOf);
         // A key already set to something else (e.g. a computed value) is left alone.
-        if (present.includes(want.key)) continue;
+        if (present.includes(want.key)) {
+          continue;
+        }
         // After the wanted key before it, else before the one after it, else
         // first (no field there yet: they go before createdAt, updatedById…).
         const before = section.wanted.slice(0, index).map((w) => w.key).reverse().find((k) => present.includes(k));
         const after = section.wanted.slice(index + 1).map((w) => w.key).find((k) => present.includes(k));
         const at = before !== undefined ? present.indexOf(before) + 1 : after !== undefined ? present.indexOf(after) : 0;
-        if (at >= props.length) appendToList(file, object, props, want.text);
-        else if (at === 0) {
+        if (at >= props.length) {
+          appendToList(file, object, props, want.text);
+        } else if (at === 0) {
           const first = props[0];
           const text = file.getFullText();
           const multiline = text.slice(object.getStart(), first.getStart()).includes('\n');
           const indent = /^[ \t]*/.exec(text.slice(text.lastIndexOf('\n', first.getStart() - 1) + 1))![0];
           file.insertText(first.getStart(), multiline ? `${want.text},\n${indent}` : `${want.text}, `);
-        } else insertListElement(file, props, at, want.text);
+        } else {
+          insertListElement(file, props, at, want.text);
+        }
         report.added.push(`${section.method} ${section.label}: ${want.key}`);
       }
     });

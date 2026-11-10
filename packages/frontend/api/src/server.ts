@@ -34,7 +34,9 @@ export function authFetch(path: string, init: RequestInit = {}) {
 async function fetchFrom(baseUrl: string, path: string, init: RequestInit) {
   const requestHeaders = new Headers(init.headers);
   const cookie = (await headers()).get("cookie");
-  if (cookie) requestHeaders.set("cookie", cookie);
+  if (cookie) {
+    requestHeaders.set("cookie", cookie);
+  }
   requestHeaders.set("origin", APP_URL);
   // The backend answers errors in this language.
   requestHeaders.set("accept-language", await getLocale());

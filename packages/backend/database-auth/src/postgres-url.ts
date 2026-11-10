@@ -4,9 +4,10 @@
  * later with "received invalid response".
  */
 export function postgresUrl(url: string, name = 'DATABASE_URL'): string {
-  if (!/^postgres(ql)?:\/\//.test(url))
+  if (!/^postgres(ql)?:\/\//.test(url)) {
     throw new Error(
       `${name} must be a Postgres URL (postgres://user:pass@host:5432/dafne), not ${url.split(':')[0]}://…`,
     );
+  }
   return url;
 }

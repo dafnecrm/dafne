@@ -1,4 +1,4 @@
-import { salesOrderBodySchema, listSalesOrdersQuerySchema } from './sales-orders.ts';
+import { salesOrderBodySchema, listSalesOrdersQuerySchema, salesOrderStatusBodySchema } from './sales-orders.ts';
 
 /** Paths of the fields that failed, e.g. ['name']. */
 function failedFields(body: unknown) {
@@ -27,8 +27,9 @@ describe('salesOrderBodySchema', () => {
 
   it('takes the customer id as a number or as text, and nothing else', () => {
     expect(salesOrderBodySchema.parse({ customerId: 7, typeId: 'T1' }).customerId).toBe(7);
-    for (const customerId of ['', 'abc', '1.5', '0', -1])
+    for (const customerId of ['', 'abc', '1.5', '0', -1]) {
       expect(failedFields({ customerId, typeId: 'T1' })).toEqual(['customerId']);
+    }
   });
   it('rejects unknown properties such as deletedAt', () => {
     expect(
@@ -55,5 +56,14 @@ describe('listSalesOrdersQuerySchema', () => {
       limit: '500',
     });
     expect(result.success).toBe(false);
+  });
+});
+
+describe('salesOrderStatusBodySchema', () => {
+  it('takes a known status, and nothing else', () => {
+    expect(salesOrderStatusBodySchema.parse({ status: 'open' })).toEqual({ status: 'open' });
+    for (const body of [{}, { status: 'confirmed' }, { status: 'open', notes: 'x' }]) {
+      expect(salesOrderStatusBodySchema.safeParse(body).success).toBe(false);
+    }
   });
 });

@@ -15,6 +15,8 @@ import type { UserSession } from '@dafne/backend-session';
 import { IdPipe, ZodValidationPipe } from '@dafne/backend-common';
 import {
   salesOrderBodySchema,
+  salesOrderStatusBodySchema,
+  type SalesOrderStatusBody,
   listSalesOrdersQuerySchema,
   type SalesOrderBody,
   type SalesOrderDetail,
@@ -55,7 +57,7 @@ export class SalesOrdersController {
     @Body(new ZodValidationPipe(salesOrderBodySchema)) body: SalesOrderBody,
     @Session() session: UserSession,
   ): Promise<SalesOrderDetail> {
-    return this.salesOrdersService.createSalesOrder(body, session.user.id);
+    return this.salesOrdersService.createSalesOrder(body, session.user);
   }
 
   @Put(':id')
@@ -64,7 +66,18 @@ export class SalesOrdersController {
     @Body(new ZodValidationPipe(salesOrderBodySchema)) body: SalesOrderBody,
     @Session() session: UserSession,
   ): Promise<SalesOrderDetail> {
-    return this.salesOrdersService.updateSalesOrder(id, body, session.user.id);
+    return this.salesOrdersService.updateSalesOrder(id, body, session.user);
+  }
+
+  /** Moves the sales order to another status (see SALES_ORDER_STATES). */
+  @Post(':id/status')
+  @HttpCode(HttpStatus.OK)
+  changeSalesOrderStatus(
+    @Param('id', IdPipe) id: number,
+    @Body(new ZodValidationPipe(salesOrderStatusBodySchema)) body: SalesOrderStatusBody,
+    @Session() session: UserSession,
+  ): Promise<SalesOrderDetail> {
+    return this.salesOrdersService.changeSalesOrderStatus(id, body.status, session.user);
   }
 
   /** Logical delete. */

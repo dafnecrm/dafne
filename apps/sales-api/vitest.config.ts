@@ -6,8 +6,8 @@ export default defineConfig({
   // needs decorators and their type metadata (emitDecoratorMetadata).
   plugins: [swc.vite({ module: { type: 'es6' } })],
   test: {
+    name: '@dafne/sales-api',
     globals: true,
-    root: './',
     include: ['src/**/*.spec.ts'],
   },
 });

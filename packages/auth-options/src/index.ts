@@ -40,7 +40,9 @@ const AVATAR_MAX_LENGTH = 60_000;
 const AVATAR_DATA_URL = /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/;
 
 function assertValidImage(image: unknown) {
-  if (image === undefined || image === null) return;
+  if (image === undefined || image === null) {
+    return;
+  }
   if (
     typeof image !== 'string' ||
     image.length > AVATAR_MAX_LENGTH ||

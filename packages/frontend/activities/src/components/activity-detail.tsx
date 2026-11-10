@@ -50,7 +50,7 @@ export function ActivityDetails({ activity }: { activity: ActivityDetail }) {
         </Detail>
         <Detail icon={LinkIcon} label={t("activities.fields.completedBy")}>
           {activity.completedById ? (
-            <code className="font-mono text-xs">{activity.completedById}</code>
+            <code className="font-sans text-xs">{activity.completedById}</code>
           ) : (
             "—"
           )}
@@ -73,7 +73,7 @@ export function ActivityDetails({ activity }: { activity: ActivityDetail }) {
       <DetailSection title={t("common.record.title")}>
         <Detail icon={FingerprintIcon} label={t("activities.fields.id")}>
           <div className="flex items-center gap-2">
-            <code className="truncate font-mono text-xs">{activity.id}</code>
+            <code className="truncate font-sans text-xs">{activity.id}</code>
             <CopyButton variant="ghost" value={String(activity.id)} />
           </div>
         </Detail>

@@ -15,7 +15,9 @@ import { parseArgs } from 'node:util';
 import { createDatabase } from './create.ts';
 
 const ENV_FILE = join(import.meta.dirname, '..', '.env');
-if (existsSync(ENV_FILE)) process.loadEnvFile(ENV_FILE);
+if (existsSync(ENV_FILE)) {
+  process.loadEnvFile(ENV_FILE);
+}
 
 const { values } = parseArgs({
   options: {

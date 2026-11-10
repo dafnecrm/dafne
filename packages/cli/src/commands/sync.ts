@@ -44,17 +44,25 @@ function frontendResources(changes: Changes, app: string): { name: string; where
       .filter((file) => /^[a-z0-9-]+(-table)?\.ts$/.test(file))
       .map((file) => file.replace(/(-table)?\.ts$/, '')),
   );
-  for (const lib of frontendLibs(changes))
+  for (const lib of frontendLibs(changes)) {
     for (const entry of changes.list(`${frontendLib(lib)}/src`)) {
       const table = /^([a-z0-9-]+)-table\.ts$/.exec(entry)?.[1];
-      if (table) candidates.add(table);
-      else if (!changes.exists(`${frontendLib(lib)}/src/${entry}`)) candidates.add(entry);
+      if (table) {
+        candidates.add(table);
+      } else if (!changes.exists(`${frontendLib(lib)}/src/${entry}`)) {
+        candidates.add(entry);
+      }
     }
+  }
   return [...candidates].sort().flatMap((name) => {
     const names = resourceNames(name);
-    if (names.p.kebab !== name || !changes.exists(contractFile(names))) return [];
+    if (names.p.kebab !== name || !changes.exists(contractFile(names))) {
+      return [];
+    }
     const target = findFrontendTarget(changes, names, app);
-    if (!target || !changes.exists(dataFiles(names, target).table)) return [];
+    if (!target || !changes.exists(dataFiles(names, target).table)) {
+      return [];
+    }
     return [{ name, where: target.kind === 'app' ? frontendApp(app) : frontendLib(target.lib) }];
   });
 }
@@ -94,22 +102,36 @@ Same as: nx g @dafne/cli:contract-sync <resource> ...`,
     )
     .action(async (resourceArg: string | undefined, options: ContractSyncOptions) => {
       const root = findWorkspaceRoot();
-      if (interactive(options)) p.intro('dafne sync contract');
+      if (interactive(options)) {
+        p.intro('dafne sync contract');
+      }
       let resource = resourceArg;
       if (!resource && !options.all) {
-        if (!interactive(options)) throw new Error('Missing argument: the resource (e.g. orders), or --all.');
+        if (!interactive(options)) {
+          throw new Error('Missing argument: the resource (e.g. orders), or --all.');
+        }
         const choices = syncableContracts(new Changes(new FsTree(root, false)));
-        if (!choices.length) throw new Error('No table has a contract to sync.');
+        if (!choices.length) {
+          throw new Error('No table has a contract to sync.');
+        }
         resource = cancelled<string>(
           await p.select<string>({ message: 'Contract', options: choices.map((value) => ({ value, label: value })) }),
         );
       }
 
       const args = ['g', '@dafne/cli:contract-sync', ...(resource ? [resource] : []), '--no-interactive'];
-      if (options.all) args.push('--all');
-      if (options.service === false) args.push('--no-service');
-      if (options.dryRun) args.push('--dry-run');
-      if (interactive(options)) p.log.step(`nx ${args.join(' ')}`);
+      if (options.all) {
+        args.push('--all');
+      }
+      if (options.service === false) {
+        args.push('--no-service');
+      }
+      if (options.dryRun) {
+        args.push('--dry-run');
+      }
+      if (interactive(options)) {
+        p.log.step(`nx ${args.join(' ')}`);
+      }
       process.exitCode = await runNx(root, args);
     });
 
@@ -142,12 +164,18 @@ Same as: nx g @dafne/cli:frontend-resource-sync <resource> ...`,
     .action(async (resourceArg: string | undefined, options: FrontendSyncOptions) => {
       const root = findWorkspaceRoot();
       const app = options.app ?? DEFAULT_FRONTEND_APP;
-      if (interactive(options)) p.intro('dafne sync frontend-resource');
+      if (interactive(options)) {
+        p.intro('dafne sync frontend-resource');
+      }
       let resource = resourceArg;
       if (!resource) {
-        if (!interactive(options)) throw new Error('Missing argument: the resource (e.g. orders).');
+        if (!interactive(options)) {
+          throw new Error('Missing argument: the resource (e.g. orders).');
+        }
         const choices = frontendResources(new Changes(new FsTree(root, false)), app);
-        if (!choices.length) throw new Error(`${frontendApp(app)} has no resource pages to sync.`);
+        if (!choices.length) {
+          throw new Error(`${frontendApp(app)} has no resource pages to sync.`);
+        }
         resource = cancelled<string>(
           await p.select<string>({
             message: 'Resource',
@@ -157,11 +185,21 @@ Same as: nx g @dafne/cli:frontend-resource-sync <resource> ...`,
       }
 
       const args = ['g', '@dafne/cli:frontend-resource-sync', resource, '--no-interactive'];
-      if (options.app) args.push(`--app=${options.app}`);
-      if (options.lib) args.push(`--lib=${libName(options.lib)}`);
-      if (options.keep) args.push('--keep');
-      if (options.dryRun) args.push('--dry-run');
-      if (interactive(options)) p.log.step(`nx ${args.join(' ')}`);
+      if (options.app) {
+        args.push(`--app=${options.app}`);
+      }
+      if (options.lib) {
+        args.push(`--lib=${libName(options.lib)}`);
+      }
+      if (options.keep) {
+        args.push('--keep');
+      }
+      if (options.dryRun) {
+        args.push('--dry-run');
+      }
+      if (interactive(options)) {
+        p.log.step(`nx ${args.join(' ')}`);
+      }
       process.exitCode = await runNx(root, args);
     });
 

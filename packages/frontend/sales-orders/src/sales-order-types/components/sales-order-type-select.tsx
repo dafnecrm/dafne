@@ -65,7 +65,9 @@ export function SalesOrderTypeSelect({
 
   // Search when the text changes; only the latest search lands.
   useEffect(() => {
-    if (!opened) return;
+    if (!opened) {
+      return;
+    }
     let current = true;
     const timer = setTimeout(
       () =>
@@ -83,7 +85,9 @@ export function SalesOrderTypeSelect({
 
   // A value set from outside (e.g. editing an order): load its name.
   useEffect(() => {
-    if (!value || String(chosen?.id) === value) return;
+    if (!value || String(chosen?.id) === value) {
+      return;
+    }
     let current = true;
     getSalesOrderTypeOption(value).then(
       (type) => current && setChosen(type),

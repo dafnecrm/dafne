@@ -93,7 +93,9 @@ function NavSidebar({
       Link: linkComponent,
       // On mobile the sidebar floats over the page: close it after a click.
       closeOnMobile: () => {
-        if (isMobile) setOpenMobile(false)
+        if (isMobile) {
+          setOpenMobile(false)
+        }
       },
     }),
     [linkComponent, isMobile, setOpenMobile]
@@ -171,8 +173,12 @@ function NavSidebarChildren({ item, depth, activeUrl }: NodeProps<NavGroup<NavNo
 
 /** The item's icon; in the rail, its first letter when it has none. */
 function NavSidebarIcon({ item, rail }: { item: NavNode; rail: boolean }) {
-  if (item.icon) return <item.icon />
-  if (!rail) return null
+  if (item.icon) {
+    return <item.icon />
+  }
+  if (!rail) {
+    return null
+  }
   return (
     <span
       aria-hidden
@@ -235,7 +241,9 @@ function NavSidebarGroup({
   const [heldActive, setHeldActive] = React.useState(holdsActive)
   if (holdsActive !== heldActive) {
     setHeldActive(holdsActive)
-    if (holdsActive) setOpen(true)
+    if (holdsActive) {
+      setOpen(true)
+    }
   }
 
   const label = (

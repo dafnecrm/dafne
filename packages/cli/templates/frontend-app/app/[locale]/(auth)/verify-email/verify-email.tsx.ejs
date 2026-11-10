@@ -28,7 +28,9 @@ export function VerifyEmail() {
   const error = params.get("error");
   const email = params.get("email");
 
-  if (error) return <LinkFailed expired={error === "TOKEN_EXPIRED"} />;
+  if (error) {
+    return <LinkFailed expired={error === "TOKEN_EXPIRED"} />;
+  }
   return <CheckInbox email={email} />;
 }
 
@@ -38,7 +40,9 @@ function CheckInbox({ email }: { email: string | null }) {
   const authErrorMessage = useAuthErrorMessage();
 
   async function resendEmail() {
-    if (!email) return;
+    if (!email) {
+      return;
+    }
     setResend({ status: "sending" });
     const { error } = await authClient.sendVerificationEmail({
       email,

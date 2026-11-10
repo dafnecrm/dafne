@@ -12,8 +12,9 @@ describe('requiredUuid', () => {
   });
 
   it('rejects a blank value, a number and text that is not a uuid', () => {
-    for (const value of ['', '  ', 42, 'abc', UUID.slice(1), undefined, null])
+    for (const value of ['', '  ', 42, 'abc', UUID.slice(1), undefined, null]) {
       expect(schema.safeParse(value).success).toBe(false);
+    }
   });
 });
 
@@ -21,7 +22,9 @@ describe('optionalUuid', () => {
   const schema = optionalUuid(error);
 
   it('turns blank, null and missing into null', () => {
-    for (const value of ['', '  ', null, undefined]) expect(schema.parse(value)).toBeNull();
+    for (const value of ['', '  ', null, undefined]) {
+      expect(schema.parse(value)).toBeNull();
+    }
   });
 
   it('takes a uuid and rejects anything else', () => {

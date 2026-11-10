@@ -42,6 +42,10 @@ The CLI has shortcuts for the same commands: `pnpm dafne test`,
 
 - `production` is every file except specs, e2e specs, `test/` and the
   vitest configs.
+- Each project's `test` runs its own `vitest.config.ts` (with a `name`,
+  its package's). The root `vitest.config.ts` lists them all as Vitest
+  `projects` only for the VS Code Vitest extension, so it runs one
+  process and running a folder runs every test in it.
 - `pnpm-workspace.yaml` is a global input: changing the catalog invalidates
   every cache.
 - `dev` and `start` are continuous and never cached; migration targets

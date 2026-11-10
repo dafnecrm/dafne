@@ -30,7 +30,9 @@ export async function listActivities({
     limit: String(limit),
     offset: String(offset),
   });
-  for (const [field, value] of Object.entries(filters)) query.set(field, value);
+  for (const [field, value] of Object.entries(filters)) {
+    query.set(field, value);
+  }
   query.set("sortBy", sort.id);
   query.set("sortDirection", sort.desc ? "desc" : "asc");
   const res = await backendFetch(`/activities?${query}`);

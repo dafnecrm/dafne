@@ -29,9 +29,12 @@ export async function syncOne(
   const tablePath = tableFile(names);
   const contractPath = contractFile(names);
   const table = changes.read(tablePath);
-  if (table === undefined) throw new Error(`${tablePath} not found.`);
-  if (!changes.exists(contractPath))
+  if (table === undefined) {
+    throw new Error(`${tablePath} not found.`);
+  }
+  if (!changes.exists(contractPath)) {
     throw new Error(`${contractPath} not found: create it with "dafne g contract ${names.p.kebab}".`);
+  }
 
   const info = readTable(tablePath, table, names);
   addForeignRelations(changes, tablePath, info);
@@ -49,14 +52,19 @@ export async function syncOne(
   }
   // Compare formatted, so a rewrite that changes only the layout is no change.
   const formatted = await formatSource(join(changes.root, contractPath), content, source);
-  if (formatted !== source) changes.update(contractPath, () => formatted);
+  if (formatted !== source) {
+    changes.update(contractPath, () => formatted);
+  }
   if (formatted.includes('optionalDate(')) {
     const common = `${CONTRACTS_SRC}/common.ts`;
     changes.update(common, (text) => {
-      if (/export const optionalDate\b/.test(text)) return text;
+      if (/export const optionalDate\b/.test(text)) {
+        return text;
+      }
       // Its error is a message key.
-      if (!text.includes('ContractMessageKey'))
+      if (!text.includes('ContractMessageKey')) {
         text = text.replace(/^(import [^\n]*\n)/, `$1${MESSAGE_KEY_IMPORT}\n`);
+      }
       return text.replace(/\n*$/, '\n') + OPTIONAL_DATE_HELPER;
     });
   }
@@ -115,14 +123,19 @@ export async function syncOne(
 function addForeignRelations(changes: Changes, tablePath: string, info: TableInfo) {
   for (const file of changes.list(TABLES)) {
     const path = `${TABLES}/${file}`;
-    if (!file.endsWith('.ts') || path === tablePath) continue;
+    if (!file.endsWith('.ts') || path === tablePath) {
+      continue;
+    }
     const source = changes.read(path);
-    if (source === undefined || !source.includes('defineRelationsPart')) continue;
-    for (const [name, target] of Object.entries(foreignRelations(path, source, info.variable)))
+    if (source === undefined || !source.includes('defineRelationsPart')) {
+      continue;
+    }
+    for (const [name, target] of Object.entries(foreignRelations(path, source, info.variable))) {
       if (!info.relations.includes(name)) {
         info.relations.push(name);
         info.relationTargets[name] = target;
       }
+    }
   }
 }
 
@@ -140,9 +153,13 @@ interface ChildTable {
  */
 function childTables(tablePath: string, table: string, parent: TableInfo, contract: string): ChildTable[] {
   return tablesIn(tablePath, table).flatMap((variable) => {
-    if (variable === parent.variable) return [];
+    if (variable === parent.variable) {
+      return [];
+    }
     const relation = Object.entries(parent.relationTargets).find(([, target]) => target === variable)?.[0];
-    if (!relation) return [];
+    if (!relation) {
+      return [];
+    }
     const names = resourceNames(variable);
     const hasParts =
       new RegExp(`\\b${names.s.camel}BodySchema\\b`).test(contract) || new RegExp(`\\binterface ${names.s.pascal}\\b`).test(contract);
@@ -151,5 +168,7 @@ function childTables(tablePath: string, table: string, parent: TableInfo, contra
 }
 
 function mergeReport(into: SyncReport, from: SyncReport) {
-  for (const key of ['added', 'removed', 'unknown', 'required', 'warnings'] as const) into[key].push(...from[key]);
+  for (const key of ['added', 'removed', 'unknown', 'required', 'warnings'] as const) {
+    into[key].push(...from[key]);
+  }
 }

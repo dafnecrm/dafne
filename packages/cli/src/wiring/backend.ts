@@ -30,7 +30,9 @@ const JSON_FORMAT = { formattingOptions: { insertSpaces: true, tabSize: 2, eol: 
 export function ensureReference(changes: Changes, tsconfig: string, ref: string) {
   changes.update(tsconfig, (source) => {
     const refs = (parse(source) as { references?: { path: string }[] }).references ?? [];
-    if (refs.some((r) => r.path.replace(/\/$/, '') === ref)) return source;
+    if (refs.some((r) => r.path.replace(/\/$/, '') === ref)) {
+      return source;
+    }
     return applyEdits(
       source,
       modify(source, ['references', refs.length], { path: ref }, { ...JSON_FORMAT, isArrayInsertion: true }),
@@ -42,7 +44,9 @@ export function ensureReference(changes: Changes, tsconfig: string, ref: string)
 export function ensureDependency(changes: Changes, file: string, name: string, version: string) {
   changes.update(file, (source) => {
     const pkg = JSON.parse(source) as { dependencies?: Record<string, string> };
-    if (pkg.dependencies?.[name]) return source;
+    if (pkg.dependencies?.[name]) {
+      return source;
+    }
     pkg.dependencies = Object.fromEntries(
       Object.entries({ ...pkg.dependencies, [name]: version }).sort(([a], [b]) => a.localeCompare(b)),
     );
@@ -65,11 +69,14 @@ export function wireLib(changes: Changes, { p }: ResourceNames, app = DEFAULT_AP
   // the app's node_modules: the app lists them too.
   const libJson = changes.read(`${backendLib(p.kebab)}/package.json`);
   const libDeps = libJson ? ((JSON.parse(libJson) as { dependencies?: Record<string, string> }).dependencies ?? {}) : {};
-  for (const [dep, version] of Object.entries(libDeps))
+  for (const [dep, version] of Object.entries(libDeps)) {
     ensureDependency(changes, `${dir}/package.json`, dep, version);
-  for (const tsconfig of ['tsconfig.json', 'tsconfig.build.json'])
-    if (changes.exists(`${dir}/${tsconfig}`))
+  }
+  for (const tsconfig of ['tsconfig.json', 'tsconfig.build.json']) {
+    if (changes.exists(`${dir}/${tsconfig}`)) {
       ensureReference(changes, `${dir}/${tsconfig}`, `../../${backendLib(p.kebab)}`);
+    }
+  }
   ensureReference(changes, 'tsconfig.json', `./${backendLib(p.kebab)}`);
 
   const moduleClass = `${p.pascal}Module`;
@@ -99,14 +106,16 @@ export function wireIntoLib(
       ensureNamedImport(file, fileImport, className);
       const options = () => decoratorObject(file, 'Module');
       const lists = kind === 'controller' ? ['controllers'] : ['providers', 'exports'];
-      for (const list of lists)
+      for (const list of lists) {
         ensureArrayElement(file, arrayProperty(file, options, list), className);
+      }
     }),
   );
 
   // The controller stays private to the lib, like in the existing ones.
-  if (kind === 'service')
+  if (kind === 'service') {
     changes.update(`${src}/index.ts`, (source) => ensureExportStar(source, fileImport));
+  }
 }
 
 /** Exports the contract file from the contracts package (with .ts, see its index). */
@@ -122,8 +131,9 @@ export function wireTable(changes: Changes, { s, p }: ResourceNames) {
   changes.update(DB_SCHEMA, (source) =>
     editSource(DB_SCHEMA, source, (file) => {
       const module = `./tables/${p.kebab}.js`;
-      if (!file.getImportDeclaration((d) => d.getModuleSpecifierValue() === module))
+      if (!file.getImportDeclaration((d) => d.getModuleSpecifierValue() === module)) {
         insertImportLine(file, `* as ${namespace}`, module);
+      }
 
       if (!file.getVariableDeclaration(tables)) {
         // After the last `const { xRelations, ...xTables } = x;`.
@@ -134,16 +144,21 @@ export function wireTable(changes: Changes, { s, p }: ResourceNames) {
           );
         const last = destructures[destructures.length - 1];
         const line = `const { ${relations}, ...${tables} } = ${namespace};`;
-        if (!last) throw new Error(`No "const { xRelations, ...xTables } = x;" found in ${DB_SCHEMA}.`);
+        if (!last) {
+          throw new Error(`No "const { xRelations, ...xTables } = x;" found in ${DB_SCHEMA}.`);
+        }
         file.insertText(last.getEnd(), `\n${line}`);
       }
 
       ensureSpread(file, variableObject(file, 'schema'), tables);
       const merged = mergeRelationsCall(file);
       if (merged) {
-        if (!merged.getArguments().some((a) => a.getText() === relations))
+        if (!merged.getArguments().some((a) => a.getText() === relations)) {
           appendToList(file, merged, merged.getArguments(), relations);
-      } else ensureSpread(file, variableObject(file, 'relations'), relations);
+        }
+      } else {
+        ensureSpread(file, variableObject(file, 'relations'), relations);
+      }
     }),
   );
 }
@@ -164,15 +179,19 @@ function mergeRelationsCall(file: SourceFile) {
  * add relations to another part's table (see merge-relations.ts).
  */
 export function ensureMergedRelations(changes: Changes) {
-  if (!changes.exists(MERGE_RELATIONS))
+  if (!changes.exists(MERGE_RELATIONS)) {
     changes.create(MERGE_RELATIONS, render('backend/merge-relations.ts', {}));
+  }
   changes.update(DB_SCHEMA, (source) =>
     editSource(DB_SCHEMA, source, (file) => {
-      if (mergeRelationsCall(file)) return;
+      if (mergeRelationsCall(file)) {
+        return;
+      }
       const object = variableObject(file, 'relations');
       const parts = object.getProperties().map((p) => {
-        if (!Node.isSpreadAssignment(p))
+        if (!Node.isSpreadAssignment(p)) {
           throw new Error(`${DB_SCHEMA}: "relations" has a property that isn't a spread (${p.getText()}); merge it by hand.`);
+        }
         return p.getExpression().getText();
       });
       const indent = '  ';
@@ -180,8 +199,9 @@ export function ensureMergedRelations(changes: Changes) {
         [object.getStart(), object.getEnd()],
         `mergeRelations(\n${parts.map((p) => `${indent}${p},`).join('\n')}\n)`,
       );
-      if (!file.getImportDeclaration((d) => d.getModuleSpecifierValue() === './merge-relations.js'))
+      if (!file.getImportDeclaration((d) => d.getModuleSpecifierValue() === './merge-relations.js')) {
         insertImportLine(file, '{ mergeRelations }', './merge-relations.js');
+      }
     }),
   );
 }
@@ -189,14 +209,17 @@ export function ensureMergedRelations(changes: Changes) {
 /** Adds `export * from 'specifier';` after the other exports, unless present. */
 function ensureExportStar(source: string, specifier: string) {
   const line = `export * from '${specifier}';`;
-  if (source.includes(`'${specifier}'`) || source.includes(`"${specifier}"`)) return source;
+  if (source.includes(`'${specifier}'`) || source.includes(`"${specifier}"`)) {
+    return source;
+  }
   const lines = source.replace(/\n*$/, '').split('\n');
   let at = lines.length;
-  for (let i = lines.length - 1; i >= 0; i--)
+  for (let i = lines.length - 1; i >= 0; i--) {
     if (lines[i].startsWith('export * from')) {
       at = i + 1;
       break;
     }
+  }
   lines.splice(at, 0, line);
   return `${lines.join('\n')}\n`;
 }

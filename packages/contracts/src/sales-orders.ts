@@ -22,7 +22,7 @@ export type SalesOrderItemBodyInput = z.input<typeof salesOrderItemBodySchema>;
 export type SalesOrderItemBody = z.output<typeof salesOrderItemBodySchema>;
 
 /** Values of sales order status. */
-export const SALES_ORDER_STATUSES = ['draft', 'completed', 'canceled', 'rejected'] as const;
+export const SALES_ORDER_STATUSES = ['draft', 'open', 'completed', 'cancelled', 'rejected'] as const;
 export type SalesOrderStatus = (typeof SALES_ORDER_STATUSES)[number];
 
 /**
@@ -30,6 +30,7 @@ export type SalesOrderStatus = (typeof SALES_ORDER_STATUSES)[number];
  * whole sales order: omitted optional fields are cleared.
  */
 export const salesOrderBodySchema = z.strictObject({
+  status: z.enum(SALES_ORDER_STATUSES, { error: msg('salesOrders.status.required') }).optional(),
   notes: optionalText(z.string().max(65535)),
   customerId: requiredId(msg('salesOrders.customerId.required')),
   typeId: requiredText(5, msg('salesOrders.typeId.required')),
@@ -41,6 +42,12 @@ export const salesOrderBodySchema = z.strictObject({
       error: msg('salesOrders.items.position.duplicate'),
     }),
 });
+
+/** Body of POST /sales-orders/:id/status: the status to move the order to. */
+export const salesOrderStatusBodySchema = z.strictObject({
+  status: z.enum(SALES_ORDER_STATUSES, { error: msg('salesOrders.status.required') }),
+});
+export type SalesOrderStatusBody = z.output<typeof salesOrderStatusBodySchema>;
 
 /** What a client sends: blank optional fields may be "", null or missing. */
 export type SalesOrderBodyInput = z.input<typeof salesOrderBodySchema>;
@@ -85,6 +92,8 @@ export type ListSalesOrdersQuery = z.output<typeof listSalesOrdersQuerySchema>;
 export interface ListedSalesOrder {
   id: number;
   status: SalesOrderStatus;
+  customerId: number;
+  typeId: string;
   customer: SalesOrderCustomer,
   type: SalesOrderTypeSummary,
   createdAt: Date;

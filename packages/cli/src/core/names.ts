@@ -42,7 +42,9 @@ export function words(input: string): string[] {
 const capitalize = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
 
 export function casings(parts: string[]): Casings {
-  if (!parts.length) throw new Error('The name is empty.');
+  if (!parts.length) {
+    throw new Error('The name is empty.');
+  }
   const lower = parts.join(' ');
   const a = `${/^[aeiou]/.test(lower) ? 'an' : 'a'} ${lower}`;
   return {
@@ -61,16 +63,20 @@ export function casings(parts: string[]): Casings {
 /** Names of a resource from its singular or plural name (only the last word is inflected). */
 export function resourceNames(input: string): ResourceNames {
   const parts = words(input);
-  if (!parts.length) throw new Error(`"${input}" is not a valid name.`);
-  if (!/^[a-z]/.test(parts[0]))
+  if (!parts.length) {
+    throw new Error(`"${input}" is not a valid name.`);
+  }
+  if (!/^[a-z]/.test(parts[0])) {
     throw new Error(`"${input}" must start with a letter.`);
+  }
   const last = parts[parts.length - 1];
   const singular = pluralize.singular(last);
   const plural = pluralize.plural(singular);
-  if (singular === plural)
+  if (singular === plural) {
     throw new Error(
       `"${input}" has the same singular and plural; pick a name whose plural differs (the generated names would clash).`,
     );
+  }
   return {
     s: casings([...parts.slice(0, -1), singular]),
     p: casings([...parts.slice(0, -1), plural]),

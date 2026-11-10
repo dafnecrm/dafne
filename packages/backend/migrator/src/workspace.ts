@@ -25,8 +25,9 @@ export function findWorkspaceRoot(from = process.cwd()): string {
   let dir = resolve(from);
   while (!existsSync(join(dir, 'pnpm-workspace.yaml'))) {
     const parent = dirname(dir);
-    if (parent === dir)
+    if (parent === dir) {
       throw new Error(`No pnpm-workspace.yaml above ${from}.`);
+    }
     dir = parent;
   }
   return dir;
@@ -40,26 +41,35 @@ export function databasePackages(root: string): DatabasePackage[] {
   const found: DatabasePackage[] = [];
   for (const folder of PACKAGE_FOLDERS) {
     const base = join(root, folder);
-    if (!existsSync(base)) continue;
+    if (!existsSync(base)) {
+      continue;
+    }
     for (const entry of readdirSync(base, { withFileTypes: true })) {
-      if (!entry.isDirectory()) continue;
+      if (!entry.isDirectory()) {
+        continue;
+      }
       const dir = join(base, entry.name);
       const file = join(dir, 'package.json');
-      if (!existsSync(file)) continue;
+      if (!existsSync(file)) {
+        continue;
+      }
       const pkg = JSON.parse(readFileSync(file, 'utf8')) as {
         name: string;
         dafne?: { schema?: string };
       };
       const schema = pkg.dafne?.schema;
-      if (!schema) continue;
+      if (!schema) {
+        continue;
+      }
       if (
         !SCHEMA_NAME.test(schema) ||
         RESERVED.has(schema) ||
         schema.startsWith('pg_')
-      )
+      ) {
         throw new Error(
           `${pkg.name}: "${schema}" isn't a valid schema name (lowercase, not public or pg_*).`,
         );
+      }
       found.push({
         name: pkg.name,
         dir,
@@ -71,10 +81,11 @@ export function databasePackages(root: string): DatabasePackage[] {
   const seen = new Map<string, string>();
   for (const { name, schema } of found) {
     const other = seen.get(schema);
-    if (other)
+    if (other) {
       throw new Error(
         `Schema ${schema} is owned by both ${other} and ${name}.`,
       );
+    }
     seen.set(schema, name);
   }
   return found.sort((a, b) => a.schema.localeCompare(b.schema));

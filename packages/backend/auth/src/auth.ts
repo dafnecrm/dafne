@@ -80,7 +80,9 @@ export function createAuth(db: AuthDatabase, options: CreateAuthOptions) {
           after: async (user) => {
             const role = (user as { role?: string | null }).role === 'admin' ? 'admin' : 'user';
             const apps = options.defaultApps ?? [];
-            if (!apps.length) return;
+            if (!apps.length) {
+              return;
+            }
             await db
               .insert(appAccess)
               .values(apps.map((app) => ({ id: crypto.randomUUID(), userId: user.id, app, role })))
@@ -99,7 +101,9 @@ export function createAuth(db: AuthDatabase, options: CreateAuthOptions) {
         // In the language of the browser that signed up or signed in.
         const email =
           VERIFY_EMAIL[localeFrom(request?.headers.get('accept-language') ?? undefined)];
-        if (!resend) throw new Error('RESEND_API_KEY is not set');
+        if (!resend) {
+          throw new Error('RESEND_API_KEY is not set');
+        }
         // Not awaited, so response time doesn't reveal whether the email exists.
         console.log("Sending email verification to " + user.email)
         void resend.emails
@@ -110,7 +114,9 @@ export function createAuth(db: AuthDatabase, options: CreateAuthOptions) {
             html: email.html(url),
           })
           .then(({ error }) => {
-            if (error) console.error('Verification email failed:', error);
+            if (error) {
+              console.error('Verification email failed:', error);
+            }
           });
       },
     },

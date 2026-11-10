@@ -2,12 +2,14 @@ import { formOptions } from "@tanstack/react-form-nextjs";
 import {
   salesOrderBodySchema,
   salesOrderItemBodySchema,
+  type SalesOrderStatus,
   type SalesOrderBody,
   type SalesOrderItem,
   type SalesOrderItemBody,
 } from "@dafne/contracts";
 import { formSchema } from "@dafne/frontend-forms";
 import type { SalesOrderDetail } from "./types.ts";
+import { type SalesOrdersMessageKey } from "./messages/index.ts";
 
 /**
  * Form values: every field is text, "" when blank, except the item's
@@ -24,10 +26,11 @@ export type SalesOrderItemFormValues = Record<
 };
 
 export type SalesOrderFormValues = Record<
-  Exclude<keyof SalesOrderBody, "items">,
+  Exclude<keyof SalesOrderBody, "items" | "status">,
   string
 > & {
   items: SalesOrderItemFormValues[];
+  status: SalesOrderStatus;
 };
 
 /**
@@ -36,6 +39,14 @@ export type SalesOrderFormValues = Record<
  */
 export const salesOrderSchema =
   formSchema<SalesOrderFormValues>()(salesOrderBodySchema);
+
+export const STATUS_OPTIONS = [
+  { value: "draft", label: "salesOrders.status.draft" },
+  { value: "open", label: "salesOrders.status.open" },
+  { value: "completed", label: "salesOrders.status.completed" },
+  { value: "cancelled", label: "salesOrders.status.cancelled" },
+  { value: "rejected", label: "salesOrders.status.rejected" },
+] satisfies { value: SalesOrderStatus; label: SalesOrdersMessageKey }[];
 
 /** Form values for a new sales order, or for editing `salesOrder`. */
 export function salesOrderFormOpts(salesOrder?: SalesOrderDetail) {
@@ -50,6 +61,7 @@ export function salesOrderFormOpts(salesOrder?: SalesOrderDetail) {
           productId: item.productId,
           quantity: item.quantity,
         })) ?? [],
+      status: salesOrder?.status ?? "draft",
     } satisfies SalesOrderFormValues as SalesOrderFormValues,
   });
 }

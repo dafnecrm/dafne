@@ -121,7 +121,8 @@ describe('backend-resource', () => {
     // Set on create only.
     expect(service).not.toMatch(/\.set\(\{[^}]*id: body\.id/);
     expect(service).toContain(".catch(rethrowTakenId)");
-    expect(service).toContain("constraint === 'voucher_pkey'");
+    expect(service).toContain('const rethrowTakenId = rethrowPostgresError([');
+    expect(service).toContain("constraint: 'voucher_pkey'");
     expect(read('packages/contracts/src/messages/en.ts')).toMatch(/id: \{[^}]*taken: 'This id is already in use'/);
     expect(read('packages/backend/vouchers/src/vouchers.controller.ts')).toContain("@Param('id', new TextIdPipe(12)) id: string");
   });
@@ -168,8 +169,9 @@ describe('backend-app', () => {
     expect(main).toContain("migrations: join(import.meta.dirname, 'migrations'),");
     expect(read('apps/worker/rspack.config.js')).toContain('migrationCopyPatterns(import.meta.dirname)');
     expect(read('apps/worker/package.json')).toContain('"@dafne/backend-migrator": "workspace:*"');
-    for (const tsconfig of ['tsconfig.json', 'tsconfig.build.json'])
+    for (const tsconfig of ['tsconfig.json', 'tsconfig.build.json']) {
       expect(read(`apps/worker/${tsconfig}`)).toContain('../../packages/backend/migrator');
+    }
     expect(read('apps/worker/src/worker.controller.ts')).toContain('export class WorkerController');
     expect(read('tsconfig.json')).toContain('./apps/worker');
   });

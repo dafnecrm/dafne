@@ -65,7 +65,9 @@ export function CustomerForm({
         value,
         path,
       );
-      if (result?.error) setServerError(formApi, result.error);
+      if (result?.error) {
+        setServerError(formApi, result.error);
+      }
     },
   });
   // The page stays mounted (hidden) after leaving it: start fresh next time.

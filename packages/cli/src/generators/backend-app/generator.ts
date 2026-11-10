@@ -36,12 +36,15 @@ const FILES: Record<string, (app: string) => string> = {
 export default async function backendAppGenerator(tree: Tree, options: BackendAppSchema) {
   return runGenerator(tree, options, (changes) => {
     const parts = words(options.name);
-    if (!parts.length || !/^[a-z]/.test(parts[0])) throw new Error(`"${options.name}" must start with a letter.`);
+    if (!parts.length || !/^[a-z]/.test(parts[0])) {
+      throw new Error(`"${options.name}" must start with a letter.`);
+    }
     const a = casings(parts);
     const dir = backendApp(a.kebab);
     const data = { a, port: options.port ?? 3001 };
-    for (const [template, path] of Object.entries(FILES))
+    for (const [template, path] of Object.entries(FILES)) {
       changes.create(`${dir}/${path(a.kebab)}`, render(`app/${template}`, data));
+    }
     changes.create(appModule(a.kebab), render('app/src/module.ts', data));
     ensureReference(changes, 'tsconfig.json', `./${dir}`);
     return {

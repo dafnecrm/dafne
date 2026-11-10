@@ -29,9 +29,13 @@ export interface AddOptions {
 }
 
 const int = (value: string | undefined, flag: string) => {
-  if (value === undefined) return undefined;
+  if (value === undefined) {
+    return undefined;
+  }
   const n = Number(value);
-  if (!Number.isInteger(n) || n <= 0) throw new Error(`${flag} must be a positive whole number.`);
+  if (!Number.isInteger(n) || n <= 0) {
+    throw new Error(`${flag} must be a positive whole number.`);
+  }
   return n;
 };
 
@@ -62,9 +66,14 @@ export function toSpec(name: string, type: FieldType, options: AddOptions): Fiel
     onDelete: options.onDelete,
     inverse: options.inverse,
   };
-  if (spec.editor && spec.type !== 'text') throw new Error('--editor is only for text fields.');
-  for (const tag of spec.api)
-    if (!(API_TAGS as readonly string[]).includes(tag)) throw new Error(`Unknown @api tag "${tag}": use ${API_TAGS.join(', ')}.`);
+  if (spec.editor && spec.type !== 'text') {
+    throw new Error('--editor is only for text fields.');
+  }
+  for (const tag of spec.api) {
+    if (!(API_TAGS as readonly string[]).includes(tag)) {
+      throw new Error(`Unknown @api tag "${tag}": use ${API_TAGS.join(', ')}.`);
+    }
+  }
   return spec;
 }
 
@@ -81,9 +90,12 @@ export const FIELD_SPEC_HELP = `name:type[:option…], options: ${SPEC_FLAGS.joi
  */
 export function parseFieldSpec(text: string): FieldSpec {
   const [name, type, ...rest] = text.split(':').map((part) => part.trim());
-  if (!name || !type) throw new Error(`--field "${text}": use ${FIELD_SPEC_HELP}.`);
-  if (!(FIELD_TYPES as readonly string[]).includes(type))
+  if (!name || !type) {
+    throw new Error(`--field "${text}": use ${FIELD_SPEC_HELP}.`);
+  }
+  if (!(FIELD_TYPES as readonly string[]).includes(type)) {
     throw new Error(`--field "${text}": "${type}" isn't a type; use ${FIELD_TYPES.join(', ')}.`);
+  }
   const options: AddOptions = {};
   for (const option of rest) {
     const [key, ...valueParts] = option.split('=');
@@ -92,8 +104,9 @@ export function parseFieldSpec(text: string): FieldSpec {
       options[key as (typeof SPEC_FLAGS)[number]] = true;
       continue;
     }
-    if (!(SPEC_VALUES as readonly string[]).includes(key) || !valueParts.length)
+    if (!(SPEC_VALUES as readonly string[]).includes(key) || !valueParts.length) {
       throw new Error(`--field "${text}": unknown option "${option}"; use ${FIELD_SPEC_HELP}.`);
+    }
     const listValue = value.replace(/\|/g, ',');
     switch (key) {
       case 'values':
@@ -101,11 +114,15 @@ export function parseFieldSpec(text: string): FieldSpec {
         options[key] = listValue;
         break;
       case 'relation':
-        if (!(RELATIONS as readonly string[]).includes(value)) throw new Error(`--field "${text}": relation must be ${RELATIONS.join(', ')}.`);
+        if (!(RELATIONS as readonly string[]).includes(value)) {
+          throw new Error(`--field "${text}": relation must be ${RELATIONS.join(', ')}.`);
+        }
         options.relation = value as RelationKind;
         break;
       case 'on-delete':
-        if (!(ON_DELETE as readonly string[]).includes(value)) throw new Error(`--field "${text}": on-delete must be ${ON_DELETE.join(', ')}.`);
+        if (!(ON_DELETE as readonly string[]).includes(value)) {
+          throw new Error(`--field "${text}": on-delete must be ${ON_DELETE.join(', ')}.`);
+        }
         options.onDelete = value as OnDelete;
         break;
       case 'inverse':
@@ -115,17 +132,27 @@ export function parseFieldSpec(text: string): FieldSpec {
         options[key as 'length' | 'default' | 'precision' | 'scale' | 'to'] = value;
     }
   }
-  if (type === 'enum' && !options.values) throw new Error(`--field "${text}": an enum needs values=a|b.`);
-  if (type === 'ref' && !options.to) throw new Error(`--field "${text}": a ref needs to=<resource>.`);
+  if (type === 'enum' && !options.values) {
+    throw new Error(`--field "${text}": an enum needs values=a|b.`);
+  }
+  if (type === 'ref' && !options.to) {
+    throw new Error(`--field "${text}": a ref needs to=<resource>.`);
+  }
   return toSpec(name, type as FieldType, options);
 }
 
 /** The `name:type[:option…]` text of a field: the inverse of parseFieldSpec. */
 export function formatFieldSpec(spec: FieldSpec): string {
   const parts = [spec.name, spec.type];
-  for (const flag of ['required', 'unique', 'index', 'editor'] as const) if (spec[flag]) parts.push(flag);
+  for (const flag of ['required', 'unique', 'index', 'editor'] as const) {
+    if (spec[flag]) {
+      parts.push(flag);
+    }
+  }
   const value = (key: string, v: string | number | undefined) => {
-    if (v !== undefined && v !== '') parts.push(`${key}=${v}`);
+    if (v !== undefined && v !== '') {
+      parts.push(`${key}=${v}`);
+    }
   };
   value('length', spec.length);
   value('values', spec.values?.join('|'));
@@ -137,7 +164,9 @@ export function formatFieldSpec(spec: FieldSpec): string {
     value('to', spec.to);
     value('relation', spec.relation);
     value('on-delete', spec.onDelete);
-    if (spec.inverse !== undefined) value('inverse', spec.inverse === false ? '-' : spec.inverse);
+    if (spec.inverse !== undefined) {
+      value('inverse', spec.inverse === false ? '-' : spec.inverse);
+    }
   }
   return parts.join(':');
 }

@@ -34,7 +34,7 @@ export function mergeRelations<
   const T extends readonly TablesRelationalConfig[],
 >(...parts: T): MergeAll<T> {
   const merged: TablesRelationalConfig = {};
-  for (const part of parts)
+  for (const part of parts) {
     for (const [name, config] of Object.entries(part)) {
       const previous = merged[name];
       merged[name] = previous
@@ -44,5 +44,6 @@ export function mergeRelations<
           }
         : config;
     }
+  }
   return merged as MergeAll<T>;
 }

@@ -94,10 +94,14 @@ export class GeoService {
   }: GeoSearchQuery): Promise<GeoSearchResult> {
     const key = `geo:search:${limit}:${q.trim().toLowerCase()}`;
     const cached = await this.fromCache<GeoPlace[]>(key);
-    if (cached) return { places: cached };
+    if (cached) {
+      return { places: cached };
+    }
 
     const params = new URLSearchParams({ q, limit: String(limit * OVERFETCH) });
-    for (const key of OSM_KEYS) params.append('osm_tag', key);
+    for (const key of OSM_KEYS) {
+      params.append('osm_tag', key);
+    }
     const url = `${this.baseUrl}/api/?${params}`;
     let features: PhotonFeature[];
     try {
@@ -105,7 +109,9 @@ export class GeoService {
         headers: { 'User-Agent': 'dafne-crm' },
         signal: AbortSignal.timeout(TIMEOUT_MS),
       });
-      if (!res.ok) throw new Error(`Photon answered ${res.status}`);
+      if (!res.ok) {
+        throw new Error(`Photon answered ${res.status}`);
+      }
       features =
         ((await res.json()) as { features?: PhotonFeature[] }).features ?? [];
     } catch (error) {
@@ -129,7 +135,9 @@ export class GeoService {
   async listCountries(): Promise<CountriesList> {
     const key = 'geo:countries';
     const cached = await this.fromCache<ListedCountry[]>(key);
-    if (cached) return { countries: cached };
+    if (cached) {
+      return { countries: cached };
+    }
 
     const countries = await this.db
       .select({ code: country.code, name: country.name })
@@ -158,8 +166,12 @@ export class GeoService {
 
 /** A road, an area or a house number; not a bus stop or a non-administrative boundary. */
 function isAddress({ properties: p }: PhotonFeature) {
-  if (p.osm_key === 'highway') return ROAD.test(p.osm_value ?? '');
-  if (p.osm_key === 'boundary') return p.osm_value === 'administrative';
+  if (p.osm_key === 'highway') {
+    return ROAD.test(p.osm_value ?? '');
+  }
+  if (p.osm_key === 'boundary') {
+    return p.osm_value === 'administrative';
+  }
   return p.osm_key === 'place';
 }
 
@@ -173,11 +185,14 @@ function unique(places: GeoPlace[]) {
   const ids = new Set<string>();
   const byLabel = new Map<string, GeoPlace>();
   for (const place of places) {
-    if (ids.has(place.id)) continue;
+    if (ids.has(place.id)) {
+      continue;
+    }
     ids.add(place.id);
     const seen = byLabel.get(place.label);
-    if (!seen || (place.kind === 'street' && seen.kind !== 'street'))
+    if (!seen || (place.kind === 'street' && seen.kind !== 'street')) {
       byLabel.set(place.label, place);
+    }
   }
   return [...byLabel.values()];
 }

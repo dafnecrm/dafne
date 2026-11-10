@@ -45,9 +45,13 @@ export function readBody(path: string, contract: string, names: ResourceNames, t
     const body = file
       .getVariableDeclaration(`${names.s.camel}BodySchema`)
       ?.getFirstDescendantByKind(SyntaxKind.ObjectLiteralExpression);
-    if (!body) throw new Error(`${path}: no ${names.s.camel}BodySchema = z.strictObject({...}).`);
+    if (!body) {
+      throw new Error(`${path}: no ${names.s.camel}BodySchema = z.strictObject({...}).`);
+    }
     for (const prop of body.getProperties()) {
-      if (!Node.isPropertyAssignment(prop)) continue;
+      if (!Node.isPropertyAssignment(prop)) {
+        continue;
+      }
       const key = prop.getName();
       const zod = prop.getInitializerOrThrow().getText();
       const field = classify(key, zod, table);
@@ -58,7 +62,9 @@ export function readBody(path: string, contract: string, names: ResourceNames, t
           .getTypeAliases()
           .find((t) => t.getTypeNode()?.getText().replace(/\s/g, '') === `(typeof${field.enumConst})[number]`);
         field.enumType = alias?.getName();
-        if (!field.values?.length || !field.enumType) field.kind = 'unsupported';
+        if (!field.values?.length || !field.enumType) {
+          field.kind = 'unsupported';
+        }
       }
       fields.push(field);
     }
@@ -83,27 +89,61 @@ function classify(key: string, raw: string, table?: TableInfo): FormField {
     ? column.kind !== 'text' ? 'text' : column.formInput === 'editor' ? 'editor' : 'textarea'
     : /\b65535\b/.test(zod) ? 'textarea' : 'text';
 
-  if (/^z\.(array|object|strictObject|record|unknown|any)\(/.test(zod)) return { ...base, kind: 'unsupported', optional: true };
+  if (/^z\.(array|object|strictObject|record|unknown|any)\(/.test(zod)) {
+    return { ...base, kind: 'unsupported', optional: true };
+  }
   if (zod.startsWith('optionalText(')) {
-    if (/z\.iso\.datetime\(/.test(zod)) return { ...base, kind: 'datetime', optional: true };
-    if (/z\.iso\.date\(/.test(zod)) return { ...base, kind: 'date', optional: true };
+    if (/z\.iso\.datetime\(/.test(zod)) {
+      return { ...base, kind: 'datetime', optional: true };
+    }
+    if (/z\.iso\.date\(/.test(zod)) {
+      return { ...base, kind: 'date', optional: true };
+    }
     return { ...base, kind: /z\.email\(/.test(zod) ? 'email' : textKind, optional: true };
   }
-  if (zod.startsWith('requiredText(')) return { ...base, kind: /z\.email\(/.test(zod) ? 'email' : textKind, optional: false };
-  if (zod.startsWith('optionalDate(')) return { ...base, kind: dateKind, optional: true };
-  if (zod.startsWith('requiredId(')) return { ...base, kind: 'id', optional: /^requiredId\([^)]*\)\)?\.optional\(/.test(zod) };
-  if (zod.startsWith('optionalId(')) return { ...base, kind: 'id', optional: true };
-  if (zod.startsWith('requiredUuid(')) return { ...base, kind: 'uuid', optional: /^requiredUuid\([^)]*\)\)?\.optional\(/.test(zod) };
-  if (zod.startsWith('optionalUuid(')) return { ...base, kind: 'uuid', optional: true };
+  if (zod.startsWith('requiredText(')) {
+    return { ...base, kind: /z\.email\(/.test(zod) ? 'email' : textKind, optional: false };
+  }
+  if (zod.startsWith('optionalDate(')) {
+    return { ...base, kind: dateKind, optional: true };
+  }
+  if (zod.startsWith('requiredId(')) {
+    return { ...base, kind: 'id', optional: /^requiredId\([^)]*\)\)?\.optional\(/.test(zod) };
+  }
+  if (zod.startsWith('optionalId(')) {
+    return { ...base, kind: 'id', optional: true };
+  }
+  if (zod.startsWith('requiredUuid(')) {
+    return { ...base, kind: 'uuid', optional: /^requiredUuid\([^)]*\)\)?\.optional\(/.test(zod) };
+  }
+  if (zod.startsWith('optionalUuid(')) {
+    return { ...base, kind: 'uuid', optional: true };
+  }
   const enumConst = /^z\.enum\((\w+)/.exec(zod)?.[1];
-  if (enumConst) return { ...base, kind: 'enum', optional: nullable, enumConst };
-  if (zod.startsWith('z.boolean(')) return { ...base, kind: 'boolean', optional: nullable };
-  if (/^z\.(coerce\.)?number\(/.test(zod)) return { ...base, kind: 'number', optional: nullable };
-  if (zod.startsWith('z.coerce.date(') || zod.startsWith('z.date(')) return { ...base, kind: dateKind, optional: nullable };
-  if (zod.startsWith('z.iso.datetime(')) return { ...base, kind: 'datetime', optional: nullable };
-  if (zod.startsWith('z.iso.date(')) return { ...base, kind: 'date', optional: nullable };
-  if (/^z\.string\(\)\.regex\(\/\^-\?\\d/.test(zod)) return { ...base, kind: 'decimal', optional: nullable };
-  if (zod.startsWith('z.string(') || zod.startsWith('z.email(')) return { ...base, kind: zod.startsWith('z.email(') ? 'email' : textKind, optional: nullable };
+  if (enumConst) {
+    return { ...base, kind: 'enum', optional: nullable, enumConst };
+  }
+  if (zod.startsWith('z.boolean(')) {
+    return { ...base, kind: 'boolean', optional: nullable };
+  }
+  if (/^z\.(coerce\.)?number\(/.test(zod)) {
+    return { ...base, kind: 'number', optional: nullable };
+  }
+  if (zod.startsWith('z.coerce.date(') || zod.startsWith('z.date(')) {
+    return { ...base, kind: dateKind, optional: nullable };
+  }
+  if (zod.startsWith('z.iso.datetime(')) {
+    return { ...base, kind: 'datetime', optional: nullable };
+  }
+  if (zod.startsWith('z.iso.date(')) {
+    return { ...base, kind: 'date', optional: nullable };
+  }
+  if (/^z\.string\(\)\.regex\(\/\^-\?\\d/.test(zod)) {
+    return { ...base, kind: 'decimal', optional: nullable };
+  }
+  if (zod.startsWith('z.string(') || zod.startsWith('z.email(')) {
+    return { ...base, kind: zod.startsWith('z.email(') ? 'email' : textKind, optional: nullable };
+  }
   return { ...base, kind: 'unsupported', optional: true };
 }
 

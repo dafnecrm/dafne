@@ -17,10 +17,16 @@ export interface ActionError {
 }
 
 async function errorMessage(error: unknown) {
-  if (!(error instanceof BackendError)) throw error;
+  if (!(error instanceof BackendError)) {
+    throw error;
+  }
   const t = await getTranslations();
-  if (error.status === 401) return t("common.errors.sessionExpired");
-  if (error.status === 403) return t("users.adminsOnly");
+  if (error.status === 401) {
+    return t("common.errors.sessionExpired");
+  }
+  if (error.status === 403) {
+    return t("users.adminsOnly");
+  }
   // 409 (email taken) and 400 carry a message meant for the user, translated by the backend.
   return error.message || t("common.errors.generic");
 }
@@ -32,8 +38,9 @@ async function errorMessage(error: unknown) {
  */
 export async function createUser(values: UserFormValues): Promise<ActionError> {
   const parsed = userSchema.safeParse(values);
-  if (!parsed.success)
+  if (!parsed.success) {
     return { error: (await getTranslations())("common.errors.invalid") };
+  }
 
   let id: string;
   try {

@@ -104,7 +104,9 @@ export function columnBuilder(spec: FieldSpec, sqlName: string): { code: string;
       code = `timestamp(${name}, { precision: 3, withTimezone: true })`;
       break;
     case 'enum':
-      if (!spec.values?.length) throw new Error('An enum needs --values, e.g. --values email,phone.');
+      if (!spec.values?.length) {
+        throw new Error('An enum needs --values, e.g. --values email,phone.');
+      }
       // A text column typed by its values (no Postgres enum type: adding a
       // value would need its own migration step).
       builder = 'text';
@@ -123,26 +125,41 @@ export function columnBuilder(spec: FieldSpec, sqlName: string): { code: string;
 /** .notNull(), .default(...), .unique() */
 export function modifiers(spec: FieldSpec): string {
   let code = '';
-  if (spec.required) code += '.notNull()';
-  if (spec.default !== undefined) code += defaultCall(spec);
-  if (spec.unique) code += '.unique()';
+  if (spec.required) {
+    code += '.notNull()';
+  }
+  if (spec.default !== undefined) {
+    code += defaultCall(spec);
+  }
+  if (spec.unique) {
+    code += '.unique()';
+  }
   return code;
 }
 
 function defaultCall(spec: FieldSpec): string {
   const value = spec.default!;
-  if ((spec.type === 'datetime' || spec.type === 'date') && value === 'now') return '.defaultNow()';
+  if ((spec.type === 'datetime' || spec.type === 'date') && value === 'now') {
+    return '.defaultNow()';
+  }
   if (['int', 'bigint', 'float'].includes(spec.type)) {
-    if (!/^-?\d+(\.\d+)?$/.test(value)) throw new Error(`--default "${value}" isn't a number.`);
+    if (!/^-?\d+(\.\d+)?$/.test(value)) {
+      throw new Error(`--default "${value}" isn't a number.`);
+    }
     return `.default(${value})`;
   }
   if (spec.type === 'boolean') {
-    if (value !== 'true' && value !== 'false') throw new Error('--default must be true or false.');
+    if (value !== 'true' && value !== 'false') {
+      throw new Error('--default must be true or false.');
+    }
     return `.default(${value})`;
   }
-  if (spec.type === 'enum' && !spec.values?.includes(value))
+  if (spec.type === 'enum' && !spec.values?.includes(value)) {
     throw new Error(`--default "${value}" isn't one of the --values.`);
-  if (spec.type === 'json') return `.default(${value})`;
+  }
+  if (spec.type === 'json') {
+    return `.default(${value})`;
+  }
   return `.default('${value.replace(/'/g, "\\'")}')`;
 }
 

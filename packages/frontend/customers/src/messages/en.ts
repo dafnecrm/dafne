@@ -34,7 +34,7 @@ export const en = {
     email: "Email",
     phone: "Phone",
     createdAt: "Added",
-    id: "Customer ID",
+    id: "ID",
   },
   type: {
     person: "Person",

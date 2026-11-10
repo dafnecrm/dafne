@@ -19,10 +19,16 @@ export interface ActionError {
 
 /** The error to show; the backend's own message is already translated. */
 async function errorMessage(error: unknown) {
-  if (!(error instanceof BackendError)) throw error;
+  if (!(error instanceof BackendError)) {
+    throw error;
+  }
   const t = await getTranslations();
-  if (error.status === 401) return t("common.errors.sessionExpired");
-  if (error.status === 404) return t("customers.notFound");
+  if (error.status === 401) {
+    return t("common.errors.sessionExpired");
+  }
+  if (error.status === 404) {
+    return t("customers.notFound");
+  }
   return error.message || t("common.errors.generic");
 }
 
@@ -52,10 +58,13 @@ export async function saveCustomer(
   path: string,
 ): Promise<ActionError> {
   // Any POST can call this: only redirect within the app.
-  if (!/^\/[\w/-]*$/.test(path)) throw new Error(`Invalid path: ${path}`);
+  if (!/^\/[\w/-]*$/.test(path)) {
+    throw new Error(`Invalid path: ${path}`);
+  }
   const parsed = customerSchema.safeParse(values);
-  if (!parsed.success)
+  if (!parsed.success) {
     return { error: (await getTranslations())("common.errors.invalid") };
+  }
 
   let savedId: number;
   try {
@@ -112,7 +121,9 @@ export async function getCustomerOption(
     const { name } = await getCustomer(id);
     return { id: Number(id), name };
   } catch (error) {
-    if (error instanceof BackendError && error.status === 404) return null;
+    if (error instanceof BackendError && error.status === 404) {
+      return null;
+    }
     throw error;
   }
 }

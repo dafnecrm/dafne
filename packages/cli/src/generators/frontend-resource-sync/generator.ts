@@ -32,16 +32,26 @@ export default async function frontendResourceSyncGenerator(tree: Tree, options:
     const { reports, skipped, leftovers } = syncResourcePages(changes, names, target, { prune: !options.keep });
 
     warnReports(changes, reports);
-    if (skipped.length) changes.warn(`${names.p.kebab}: no ${skipped.join(', ')} page; skipped.`);
-    for (const leftover of leftovers) changes.warn(`${leftover}: not in the contract any more: fix it by hand.`);
+    if (skipped.length) {
+      changes.warn(`${names.p.kebab}: no ${skipped.join(', ')} page; skipped.`);
+    }
+    for (const leftover of leftovers) {
+      changes.warn(`${leftover}: not in the contract any more: fix it by hand.`);
+    }
     syncMessages(changes, { app });
     const prunedKeys = pruneFrontendMessages(changes, app);
 
     for (const [path, report] of reports) {
-      for (const item of report.added) logger.info(`+ ${path}: ${item}`);
-      for (const item of report.removed ?? []) logger.info(`- ${path}: ${item}`);
+      for (const item of report.added) {
+        logger.info(`+ ${path}: ${item}`);
+      }
+      for (const item of report.removed ?? []) {
+        logger.info(`- ${path}: ${item}`);
+      }
     }
-    if (prunedKeys.length) logger.info(`- messages: ${prunedKeys.join(', ')}`);
+    if (prunedKeys.length) {
+      logger.info(`- messages: ${prunedKeys.join(', ')}`);
+    }
 
     return {
       next: [

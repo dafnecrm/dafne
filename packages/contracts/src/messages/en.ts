@@ -52,6 +52,17 @@ export const en = {
     lastname: { required: 'Enter the last name' },
     email: { taken: 'A user with this email already exists' },
   },
+  database: {
+    duplicate: 'A record with these data already exists',
+    missingReference: 'A record this one points to does not exist',
+    stillReferenced: 'Other records still use this one',
+    required: 'A required value is missing',
+    invalid: 'A value is not valid',
+  },
+  fsm: {
+    transitionNotAllowed: "The status can't be changed to this one",
+    transitionForbidden: "The status can't be changed now",
+  },
   geo: {
     q: { required: 'Enter what to search' },
     unavailable: 'Address search is unavailable. Try again later.',
@@ -73,9 +84,13 @@ export const en = {
         notFound: 'Choose a product from the list'
       },
       quantity: { required: 'Enter the quantity' },
+      enterAtLeastOneItem: 'Enter at least one item',
     },
     type: { required: 'Enter the type' },
-    typeId: { required: 'Enter the type id' },
+    typeId: {
+      required: 'Enter the type id',
+      notFound: 'Choose a type from the list',
+    },
     status: { required: 'Choose the status' }
   },
   salesOrderTypes: { 

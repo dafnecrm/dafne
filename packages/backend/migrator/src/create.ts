@@ -18,18 +18,21 @@ export interface DatabaseTarget {
 
 export function databaseTarget(url: string): DatabaseTarget {
   const parsed = new URL(url);
-  if (!/^postgres(ql)?:$/.test(parsed.protocol))
+  if (!/^postgres(ql)?:$/.test(parsed.protocol)) {
     throw new Error(`${parsed.protocol} isn't a Postgres URL.`);
+  }
   const database = decodeURIComponent(parsed.pathname.slice(1));
   const role = decodeURIComponent(parsed.username);
-  if (!database)
+  if (!database) {
     throw new Error(
       'MIGRATIONS_DATABASE_URL names no database (…:5432/dafne).',
     );
-  if (!role)
+  }
+  if (!role) {
     throw new Error(
       'MIGRATIONS_DATABASE_URL names no user (postgres://dafne:…@…).',
     );
+  }
   return {
     database,
     role,
@@ -85,7 +88,9 @@ export async function createDatabase({
       );
       result.role = 'created';
       log(`Role ${role} created.`);
-    } else log(`Role ${role} exists: left as it is (password included).`);
+    } else {
+      log(`Role ${role} exists: left as it is (password included).`);
+    }
 
     const { rows } = await client.query<{
       encoding: string;
@@ -110,14 +115,17 @@ export async function createDatabase({
       );
     } else {
       log(`Database ${database} exists: left as it is.`);
-      if (existing.encoding !== 'UTF8')
+      if (existing.encoding !== 'UTF8') {
         log(`  warning: its encoding is ${existing.encoding}, not UTF8.`);
-      if (existing.provider !== 'i')
+      }
+      if (existing.provider !== 'i') {
         log(
           "  warning: its collation isn't ICU (lists may sort uppercase first).",
         );
-      if (existing.owner !== role)
+      }
+      if (existing.owner !== role) {
         log(`  warning: it's owned by ${existing.owner}, not ${role}.`);
+      }
     }
     return result;
   } finally {

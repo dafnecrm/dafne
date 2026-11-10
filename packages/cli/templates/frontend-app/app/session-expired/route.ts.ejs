@@ -15,6 +15,8 @@ export async function GET(request: NextRequest) {
   }
 
   const res = NextResponse.redirect(new URL("/sign-in", request.url));
-  for (const name of SESSION_COOKIES) res.cookies.delete(name);
+  for (const name of SESSION_COOKIES) {
+    res.cookies.delete(name);
+  }
   return res;
 }

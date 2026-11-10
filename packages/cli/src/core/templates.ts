@@ -8,9 +8,13 @@ function templatesDir() {
   let dir = dirname(fileURLToPath(import.meta.url));
   for (;;) {
     const candidate = join(dir, 'templates');
-    if (existsSync(candidate)) return candidate;
+    if (existsSync(candidate)) {
+      return candidate;
+    }
     const parent = dirname(dir);
-    if (parent === dir) throw new Error('The CLI templates folder is missing.');
+    if (parent === dir) {
+      throw new Error('The CLI templates folder is missing.');
+    }
     dir = parent;
   }
 }

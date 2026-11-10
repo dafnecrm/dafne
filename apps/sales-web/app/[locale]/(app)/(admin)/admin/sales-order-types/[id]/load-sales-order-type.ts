@@ -9,7 +9,9 @@ export async function loadSalesOrderType(id: string) {
   try {
     return await getSalesOrderType(id);
   } catch (error) {
-    if (error instanceof BackendError && error.status === 404) notFound();
+    if (error instanceof BackendError && error.status === 404) {
+      notFound();
+    }
     throw error;
   }
 }

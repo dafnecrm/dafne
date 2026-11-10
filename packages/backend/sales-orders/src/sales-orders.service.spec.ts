@@ -1,10 +1,13 @@
+import type { SessionUser } from '@dafne/backend-session';
 import { schema } from '@dafne/backend-database';
 import { getDrizzleToken } from '@nestjs/drizzle';
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { and, asc, desc, eq, isNull } from 'drizzle-orm';
 import { salesOrderBodySchema, type SalesOrderBodyInput } from '@dafne/contracts';
+import { getStateMachineToken } from '@dafne/backend-fsm';
 import { SalesOrdersService } from './sales-orders.service.js';
+import { SALES_ORDER_STATE_MACHINE } from './sales-order.states.js';
 
 /** A body as the validation pipe hands it to the service. */
 const body = (input: SalesOrderBodyInput) => salesOrderBodySchema.parse(input);
@@ -44,6 +47,7 @@ describe('SalesOrdersService', () => {
     },
   };
   const found = { id: 1, name: 'Acme' };
+  const stateMachine = { transition: vi.fn() };
 
   beforeEach(async () => {
     vi.resetAllMocks();
@@ -67,7 +71,11 @@ describe('SalesOrdersService', () => {
     findFirst.mockResolvedValue(found);
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [SalesOrdersService, { provide: getDrizzleToken(), useValue: db }],
+      providers: [
+        SalesOrdersService,
+        { provide: getDrizzleToken(), useValue: db },
+        { provide: getStateMachineToken(SALES_ORDER_STATE_MACHINE), useValue: stateMachine },
+      ],
     }).compile();
 
     service = module.get(SalesOrdersService);
@@ -161,9 +169,10 @@ describe('SalesOrdersService', () => {
   });
 
   describe('createSalesOrder', () => {
+    const u1 = { id: 'u1' } as SessionUser;
     it('inserts the sales order with its creator', async () => {
       await expect(
-        service.createSalesOrder(body({ customerId: 1, typeId: 'T1' }), 'u1'),
+        service.createSalesOrder(body({ customerId: 1, typeId: 'T1' }), u1),
       ).resolves.toBe(found);
 
       const [row] = insert.values.mock.calls[0];
@@ -172,12 +181,21 @@ describe('SalesOrdersService', () => {
         updatedById: 'u1',
       });
       expect(findFirst.mock.calls[0][0].where.id).toBe(1);
+      expect(stateMachine.transition).not.toHaveBeenCalled();
+    });
+
+    it('inserts it in draft and moves it to the status through the state machine', async () => {
+      await service.createSalesOrder(body({ customerId: 1, typeId: 'T1', status: 'open' }), u1);
+
+      expect(insert.values.mock.calls[0][0]).not.toHaveProperty('status');
+      expect(stateMachine.transition).toHaveBeenCalledWith(1, 'open', { tx: db, user: u1 });
     });
   });
 
   describe('updateSalesOrder', () => {
+    const u2 = { id: 'u2' } as SessionUser;
     it('updates the sales order', async () => {
-      await service.updateSalesOrder(1, body({ customerId: 1, typeId: 'T1' }), 'u2');
+      await service.updateSalesOrder(1, body({ customerId: 1, typeId: 'T1' }), u2);
 
       expect(update.set.mock.calls[0][0]).toMatchObject({
         updatedById: 'u2',
@@ -187,11 +205,18 @@ describe('SalesOrdersService', () => {
       );
     });
 
+    it('changes the status through the state machine, after the items', async () => {
+      await service.updateSalesOrder(1, body({ customerId: 1, typeId: 'T1', status: 'open' }), u2);
+
+      expect(update.set.mock.calls[0][0]).not.toHaveProperty('status');
+      expect(stateMachine.transition).toHaveBeenCalledWith(1, 'open', { tx: db, user: u2 });
+    });
+
     it('throws 404 when the sales order is missing', async () => {
       update.where.mockResolvedValue({ rowCount: 0 });
 
       await expect(
-        service.updateSalesOrder(999, body({ customerId: 1, typeId: 'T1' }), 'u2'),
+        service.updateSalesOrder(999, body({ customerId: 1, typeId: 'T1' }), u2),
       ).rejects.toBeInstanceOf(NotFoundException);
     });
   });
@@ -215,6 +240,21 @@ describe('SalesOrdersService', () => {
       await expect(service.deleteSalesOrder(1, 'u3')).rejects.toBeInstanceOf(
         NotFoundException,
       );
+    });
+  });
+
+  describe('changeSalesOrderStatus', () => {
+    it('moves the order through its state machine, then returns it', async () => {
+      const user = { id: 'u1' } as never;
+      stateMachine.transition.mockResolvedValue(undefined);
+      await expect(service.changeSalesOrderStatus(1, 'open', user)).resolves.toBe(found);
+      expect(stateMachine.transition).toHaveBeenCalledWith(1, 'open', { user });
+    });
+
+    it('passes on the state machine errors', async () => {
+      stateMachine.transition.mockRejectedValue(new NotFoundException());
+      await expect(service.changeSalesOrderStatus(1, 'open', {} as never)).rejects.toThrow(NotFoundException);
+      expect(findFirst).not.toHaveBeenCalled();
     });
   });
 });

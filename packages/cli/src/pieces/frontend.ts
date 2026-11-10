@@ -61,10 +61,11 @@ export const frontendPieces: Record<string, Piece<FrontendCtx>> = {
     marker: (n, ctx) => dataFiles(n, ctx.target).lib,
     generate(ctx) {
       const { p } = ctx.names;
-      if (!ctx.changes.exists(contractFile(ctx.names)))
+      if (!ctx.changes.exists(contractFile(ctx.names))) {
         ctx.changes.warn(
           `The contract ${contractFile(ctx.names)} doesn't exist: the pages won't compile until you run "dafne g backend-resource ${p.kebab}" (or "dafne g contract ${p.kebab}").`,
         );
+      }
       const files = dataFiles(ctx.names, ctx.target);
       if (ctx.target.kind === 'app') {
         create(ctx, files.lib, 'lib.ts');

@@ -26,7 +26,7 @@ export const en = {
   },
   fields: {
     createdAt: "Added",
-    id: "Order ID",
+    id: "ID",
     notes: "Notes",
     customer: "Customer",
     type: "Type",
@@ -59,7 +59,7 @@ export const en = {
     loading: 'Loading sales order types...',
     none: 'No sales order type found'
   },
-  status: { draft: 'Draft', completed: 'Completed', canceled: 'Canceled', rejected: 'Rejected' }
+  status: { draft: 'Draft', open: 'Open', completed: 'Completed', cancelled: 'Cancelled', rejected: 'Rejected' }
 };
 
 /** The shape every language must have: same keys, any text. */

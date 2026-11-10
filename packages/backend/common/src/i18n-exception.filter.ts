@@ -24,8 +24,9 @@ export class I18nExceptionFilter
   implements ExceptionFilter
 {
   catch(exception: unknown, host: ArgumentsHost) {
-    if (!(exception instanceof HttpException) || host.getType() !== 'http')
+    if (!(exception instanceof HttpException) || host.getType() !== 'http') {
       return super.catch(exception, host);
+    }
 
     const request = host.switchToHttp().getRequest<Request>();
     const locale = localeFrom(request.headers['accept-language']);
@@ -39,9 +40,13 @@ export class I18nExceptionFilter
       const result = exception.schema.safeParse(exception.input, {
         error: zodErrorMap(locale),
       });
-      if (!result.success) message = issueMessages(result.error);
+      if (!result.success) {
+        message = issueMessages(result.error);
+      }
     }
-    if (message === undefined) return super.catch(exception, host);
+    if (message === undefined) {
+      return super.catch(exception, host);
+    }
 
     const translated = Array.isArray(message)
       ? message.map((m) => translate(m, locale))

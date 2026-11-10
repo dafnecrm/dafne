@@ -38,9 +38,14 @@ export default async function contractSyncGenerator(tree: Tree, options: Contrac
     let resources: string[];
     if (options.all) {
       resources = syncableContracts(changes);
-      if (!resources.length) throw new Error('No table has a contract to sync.');
-    } else if (options.name) resources = [resourceNames(options.name).p.kebab];
-    else throw new Error('Missing argument: the resource (e.g. orders), or --all.');
+      if (!resources.length) {
+        throw new Error('No table has a contract to sync.');
+      }
+    } else if (options.name) {
+      resources = [resourceNames(options.name).p.kebab];
+    } else {
+      throw new Error('Missing argument: the resource (e.g. orders), or --all.');
+    }
 
     const required: string[] = [];
     const synced: string[] = [];
@@ -52,23 +57,36 @@ export default async function contractSyncGenerator(tree: Tree, options: Contrac
       } catch (error) {
         // With --all, a contract the sync can't read (e.g. no body schema) is
         // skipped, with what the sync already changed for it.
-        if (!options.all) throw error;
+        if (!options.all) {
+          throw error;
+        }
         undo();
         changes.warn(`${resource}: skipped: ${(error as Error).message}`);
         continue;
       }
       synced.push(resource);
-      for (const warning of report.warnings) changes.warn(warning);
-      for (const key of report.unknown)
+      for (const warning of report.warnings) {
+        changes.warn(warning);
+      }
+      for (const key of report.unknown) {
         changes.warn(`contract ${resource}: ${key} isn't a column of the table: kept. Remove it if the column was dropped.`);
-      for (const item of report.added) logger.info(`+ ${resource}: ${item}`);
-      for (const item of report.removed) logger.info(`- ${resource}: ${item}`);
+      }
+      for (const item of report.added) {
+        logger.info(`+ ${resource}: ${item}`);
+      }
+      for (const item of report.removed) {
+        logger.info(`- ${resource}: ${item}`);
+      }
       required.push(...report.required.map((key) => `${resource}.${key}`));
     }
     syncMessages(changes);
-    if (required.length) changes.warn(`New required body fields: ${required.join(', ')}: the forms and tests must send them.`);
+    if (required.length) {
+      changes.warn(`New required body fields: ${required.join(', ')}: the forms and tests must send them.`);
+    }
 
-    if (!synced.length) return { next: [] };
+    if (!synced.length) {
+      return { next: [] };
+    }
     return {
       next: [
         `pnpm dafne test ${synced.map((r) => `@dafne/backend-${r}`).join(' ')} @dafne/contracts`,

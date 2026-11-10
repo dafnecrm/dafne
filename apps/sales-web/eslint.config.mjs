@@ -1,13 +1,15 @@
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
-import { boundaries } from "../../packages/frontend/eslint.config.mjs";
+import { boundaries, codeStyle } from "../../packages/frontend/eslint.config.mjs";
 
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
   // Imports only frontend and shared packages (tools/boundaries.mjs).
   boundaries,
+  // Braces on every if/else body.
+  codeStyle,
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

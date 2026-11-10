@@ -106,7 +106,7 @@ export function CustomerDetails({
       <DetailSection title={t("common.record.title")} defaultOpen={false}>
         <Detail icon={FingerprintIcon} label={t("customers.fields.id")}>
           <div className="flex items-center gap-2">
-            <code className="truncate font-mono text-xs">{customer.id}</code>
+            <code className="truncate font-sans text-xs">{customer.id}</code>
             <CopyButton variant="ghost" value={String(customer.id)} />
           </div>
         </Detail>

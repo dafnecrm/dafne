@@ -39,8 +39,11 @@ function applyTheme(theme: Theme) {
 
 export function setTheme(theme: Theme) {
   try {
-    if (theme === "system") localStorage.removeItem(STORAGE_KEY);
-    else localStorage.setItem(STORAGE_KEY, theme);
+    if (theme === "system") {
+      localStorage.removeItem(STORAGE_KEY);
+    } else {
+      localStorage.setItem(STORAGE_KEY, theme);
+    }
   } catch {
     // storage blocked: the theme still applies for this page
   }
@@ -52,12 +55,16 @@ function subscribe(onChange: () => void) {
   const media = matchMedia(DARK_QUERY);
   // "System" follows the OS setting while the page is open.
   const onSystemChange = () => {
-    if (readTheme() === "system") applyTheme("system");
+    if (readTheme() === "system") {
+      applyTheme("system");
+    }
     onChange();
   };
   // Another tab changed the theme.
   const onStorage = (event: StorageEvent) => {
-    if (event.key !== STORAGE_KEY) return;
+    if (event.key !== STORAGE_KEY) {
+      return;
+    }
     applyTheme(readTheme());
     onChange();
   };

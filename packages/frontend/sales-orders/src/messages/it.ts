@@ -24,7 +24,7 @@ export const it: SalesOrdersMessages = {
   },
   fields: {
     createdAt: "Aggiunto",
-    id: "ID Ordine",
+    id: "ID",
     notes: "Note",
     customer: "Cliente",
     type: "Tipo",
@@ -57,5 +57,5 @@ export const it: SalesOrdersMessages = {
     loading: 'Sto caricando i tipi ordine...',
     none: 'Nessun tipo ordine trovato',
   },
-  status: { draft: "Draft", completed: "Completed", canceled: "Canceled", rejected: "Rejected" }
+  status: { draft: "Draft", open: "Open", completed: "Completed", cancelled: "Cancelled", rejected: "Rejected" }
 };

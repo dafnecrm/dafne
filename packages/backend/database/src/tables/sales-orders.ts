@@ -22,9 +22,8 @@ export const salesOrder = salesSchema.table(
   'sales_order',
   {
     id: serial('id').primaryKey(),
-    /** @api readonly */
     status: text('status', {
-      enum: ['draft', 'completed', 'canceled', 'rejected'],
+      enum: ['draft', 'open', 'completed', 'cancelled', 'rejected'],
     })
       .default('draft')
       .notNull(),

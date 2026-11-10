@@ -23,8 +23,14 @@ export type AuthErrorKey =
  */
 export function authErrorKey(error: AuthError): AuthErrorKey | null {
   const key = AUTH_ERROR_CODES[error.code as keyof typeof AUTH_ERROR_CODES];
-  if (key) return `auth.errors.${key}`;
-  if (error.status === 401) return "auth.errors.invalidCredentials";
-  if (error.status === 429) return "auth.errors.tooManyAttempts";
+  if (key) {
+    return `auth.errors.${key}`;
+  }
+  if (error.status === 401) {
+    return "auth.errors.invalidCredentials";
+  }
+  if (error.status === 429) {
+    return "auth.errors.tooManyAttempts";
+  }
   return null;
 }

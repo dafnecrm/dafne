@@ -106,8 +106,11 @@ function ConfirmDialog({
         return;
       }
       onClose();
-      if (then === "list") router.replace("/activities");
-      else router.refresh();
+      if (then === "list") {
+        router.replace("/activities");
+      } else {
+        router.refresh();
+      }
     });
 
   return (

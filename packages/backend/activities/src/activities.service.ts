@@ -67,7 +67,9 @@ export class ActivitiesService {
     const { db } = this;
     const filters = ACTIVITY_FILTER_FIELDS.flatMap((field) => {
       const value = query[field]?.trim();
-      if (!value) return [];
+      if (!value) {
+        return [];
+      }
       const exact = EXACT_FILTERS[field];
       // As a plain Column: eq can't type a union of columns against number | string.
       return [
@@ -116,7 +118,9 @@ export class ActivitiesService {
         updatedBy: userSummary,
       },
     });
-    if (!found) throw new NotFoundException(msg('activities.notFound'));
+    if (!found) {
+      throw new NotFoundException(msg('activities.notFound'));
+    }
     return found;
   }
 
@@ -164,8 +168,9 @@ export class ActivitiesService {
         updatedAt: new Date(),
       })
       .where(and(eq(activity.id, id), notDeleted, notClosed));
-    if (result.rowCount === 0)
+    if (result.rowCount === 0) {
       throw new NotFoundException(msg('activities.notFound'));
+    }
     return this.getActivity(id);
   }
 
@@ -179,8 +184,9 @@ export class ActivitiesService {
       .update(activity)
       .set({ deletedAt: now, updatedAt: now, updatedById: userId })
       .where(and(eq(activity.id, id), notDeleted));
-    if (result.rowCount === 0)
+    if (result.rowCount === 0) {
       throw new NotFoundException(msg('activities.notFound'));
+    }
   }
 
   /** Completes an activity */
@@ -190,8 +196,9 @@ export class ActivitiesService {
       .update(activity)
       .set({ status: 'closed', completedAt: now, completedById: userId })
       .where(and(eq(activity.id, id), notDeleted, notClosed));
-    if (result.rowCount === 0)
+    if (result.rowCount === 0) {
       throw new NotFoundException(msg('activities.notOpen'));
+    }
   }
 
   /**
@@ -205,7 +212,8 @@ export class ActivitiesService {
       .where(
         and(eq(activity.id, id), notDeleted, eq(activity.status, 'closed')),
       );
-    if (result.rowCount === 0)
+    if (result.rowCount === 0) {
       throw new NotFoundException(msg('activities.notClosed'));
+    }
   }
 }

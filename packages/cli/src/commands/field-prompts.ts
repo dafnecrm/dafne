@@ -27,7 +27,9 @@ const RELATION_HINTS: Record<RelationKind, string> = {
 };
 
 async function pick(message: string, values: string[], hints: Record<string, string> = {}): Promise<string> {
-  if (!values.length) throw new Error(`Nothing to choose for "${message}".`);
+  if (!values.length) {
+    throw new Error(`Nothing to choose for "${message}".`);
+  }
   return cancelled<string>(
     await p.select<string>({
       message,
@@ -44,7 +46,9 @@ async function ask(message: string, options: { placeholder?: string; initial?: s
       initialValue: options.initial,
       validate: (input) => {
         const v = input?.trim() ?? '';
-        if (!v) return options.optional ? undefined : 'Required';
+        if (!v) {
+          return options.optional ? undefined : 'Required';
+        }
         return options.validate?.(v);
       },
     }),
@@ -69,7 +73,9 @@ async function askAdd(
   const can = interactive(options);
   const wizard = can && (always || !args.resource || !args.name || !args.type);
   const need = (what: string) => {
-    if (!can) throw new Error(`Missing argument: ${what}.`);
+    if (!can) {
+      throw new Error(`Missing argument: ${what}.`);
+    }
   };
 
   let { resource, name, type } = args;
@@ -82,8 +88,9 @@ async function askAdd(
     name = (await ask('Field name', { placeholder: 'dueDate (for a ref: the relation, e.g. customer)' }))!;
   }
   if (type) {
-    if (!(FIELD_TYPES as readonly string[]).includes(type))
+    if (!(FIELD_TYPES as readonly string[]).includes(type)) {
       throw new Error(`"${type}" isn't a type: use ${FIELD_TYPES.join(', ')}.`);
+    }
   } else {
     need(`the type (${FIELD_TYPES.join(', ')})`);
     type = await pick('Type', [...FIELD_TYPES], { ref: 'foreign key and relation' });
@@ -91,23 +98,31 @@ async function askAdd(
 
   // Settings each type can't do without.
   if (type === 'enum' && !options.values) {
-    if (!can) throw new Error('An enum needs --values, e.g. --values email,phone.');
+    if (!can) {
+      throw new Error('An enum needs --values, e.g. --values email,phone.');
+    }
     options.values = await ask('Values (comma-separated)', { placeholder: 'email,phone' });
   }
   if (type === 'ref') {
     if (!options.to) {
-      if (!can) throw new Error('A ref needs --to <resource>.');
+      if (!can) {
+        throw new Error('A ref needs --to <resource>.');
+      }
       options.to = await pick('Related table', listRefTargets(changes));
     }
-    if (!options.relation && can)
+    if (!options.relation && can) {
       options.relation = (await pick('Relation', [...RELATIONS], RELATION_HINTS)) as RelationKind;
+    }
   }
 
-  if (!wizard) return { resource, name, type: type as FieldType };
+  if (!wizard) {
+    return { resource, name, type: type as FieldType };
+  }
 
   // Type details, with the defaults as initial values.
-  if (type === 'string' && options.length === undefined)
+  if (type === 'string' && options.length === undefined) {
     options.length = await ask('Max length', { initial: '255', validate: positiveInt });
+  }
   if (type === 'decimal') {
     options.precision ??= await ask('Digits (precision)', { initial: '10', validate: positiveInt });
     options.scale ??= await ask('Digits after the point (scale)', { initial: '2', validate: (v) => (/^\d+$/.test(v) ? undefined : 'A whole number') });
@@ -155,7 +170,7 @@ async function askAdd(
     );
   }
 
-  if (type === 'text' && options.editor === undefined)
+  if (type === 'text' && options.editor === undefined) {
     options.editor =
       cancelled<string>(
         await p.select<string>({
@@ -167,6 +182,7 @@ async function askAdd(
           ],
         }),
       ) === 'editor';
+  }
 
   if (options.api === undefined) {
     const tags = cancelled<string[]>(
@@ -199,7 +215,9 @@ export async function askNewFields(changes: Changes, resource: string): Promise<
       optional: true,
       placeholder: 'dueDate (for a ref: the relation, e.g. customer)',
     });
-    if (!name) return specs;
+    if (!name) {
+      return specs;
+    }
     if (specs.some((spec) => spec.name === name) || name === 'id') {
       p.log.warn(`"${name}" is already a field.`);
       continue;

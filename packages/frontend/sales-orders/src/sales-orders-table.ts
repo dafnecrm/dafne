@@ -12,8 +12,9 @@ import type { SalesOrdersMessageKey } from "./messages/index.ts";
 /** Labels (message keys) of the status values. */
 export const SALES_ORDER_STATUS_OPTIONS = [
   { value: "draft", label: "salesOrders.status.draft" },
+  { value: "open", label: "salesOrders.status.open" },
   { value: "completed", label: "salesOrders.status.completed" },
-  { value: "canceled", label: "salesOrders.status.canceled" },
+  { value: "cancelled", label: "salesOrders.status.cancelled" },
   { value: "rejected", label: "salesOrders.status.rejected" },
 ] satisfies { value: SalesOrderStatus; label: SalesOrdersMessageKey }[];
 

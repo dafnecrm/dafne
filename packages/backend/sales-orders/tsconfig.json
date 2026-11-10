@@ -12,13 +12,16 @@
       "path": "../../contracts"
     },
     {
+      "path": "../session"
+    },
+    {
+      "path": "../fsm"
+    },
+    {
       "path": "../database"
     },
     {
       "path": "../common"
-    },
-    {
-      "path": "../session"
     }
   ]
 }

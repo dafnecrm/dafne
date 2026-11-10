@@ -14,7 +14,9 @@ const program = new Command('dafne')
   .addCommand(removeCommand())
   .addCommand(syncCommand())
   .addCommand(dbCommand());
-for (const command of taskCommands()) program.addCommand(command);
+for (const command of taskCommands()) {
+  program.addCommand(command);
+}
 
 try {
   await program.parseAsync();

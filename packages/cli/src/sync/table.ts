@@ -116,11 +116,13 @@ export function readTable(path: string, source: string, { s }: ResourceNames): T
   editSource(path, source, (file) => {
     const declaration = file.getVariableDeclaration(s.camel);
     const call = declaration?.getInitializerIfKind(SyntaxKind.CallExpression);
-    if (!call || !isTableCall(call.getExpression().getText()))
+    if (!call || !isTableCall(call.getExpression().getText())) {
       throw new Error(`No "export const ${s.camel} = salesSchema.table(...)" found in ${path}.`);
+    }
     const columnsArg = call.getArguments()[1];
-    if (!columnsArg || !Node.isObjectLiteralExpression(columnsArg))
+    if (!columnsArg || !Node.isObjectLiteralExpression(columnsArg)) {
       throw new Error(`The columns of ${s.camel} in ${path} aren't an object literal.`);
+    }
 
     const warnings: string[] = [];
     const columns: Column[] = [];
@@ -148,13 +150,18 @@ function readColumn(key: string, init: Node, warnings: string[], path: string): 
   let args: Node[] = [];
   let node: Node = init;
   for (;;) {
-    if (!Node.isCallExpression(node)) break;
+    if (!Node.isCallExpression(node)) {
+      break;
+    }
     const callee = node.getExpression();
     if (Node.isPropertyAccessExpression(callee)) {
       methods.push(callee.getName());
-      if (callee.getName() === 'default') defaultValue = node.getArguments()[0]?.getText();
-      if (callee.getName() === 'references')
+      if (callee.getName() === 'default') {
+        defaultValue = node.getArguments()[0]?.getText();
+      }
+      if (callee.getName() === 'references') {
         referencesTable = /^\(\)\s*=>\s*(\w+)\.\w+$/.exec(node.getArguments()[0]?.getText() ?? '')?.[1];
+      }
       node = callee.getExpression();
     } else {
       builder = callee.getText();
@@ -177,41 +184,51 @@ function readColumn(key: string, init: Node, warnings: string[], path: string): 
     referencesTable,
     tags: new Set(),
   };
-  if (column.kind === 'unknown')
+  if (column.kind === 'unknown') {
     warnings.push(`${path}: "${key}" uses ${builder || 'an unknown builder'}, which the CLI doesn't map; it's left out of the contract.`);
+  }
 
   for (const arg of args) {
-    if (Node.isArrayLiteralExpression(arg))
+    if (Node.isArrayLiteralExpression(arg)) {
       column.enumValues = arg
         .getElements()
         .filter(Node.isStringLiteral)
         .map((e) => e.getLiteralValue());
-    if (Node.isObjectLiteralExpression(arg)) readConfig(column, arg, warnings, path);
+    }
+    if (Node.isObjectLiteralExpression(arg)) {
+      readConfig(column, arg, warnings, path);
+    }
   }
   if (column.kind === 'enum' && !column.enumValues?.length) {
     warnings.push(`${path}: "${key}" is an enum without literal values; it's left out of the contract.`);
     column.kind = 'unknown';
   }
-  if (builder === 'bigint' && !column.stringMode) column.kind = 'int';
-  if (column.kind === 'string' && column.length === undefined && builder === 'varchar')
+  if (builder === 'bigint' && !column.stringMode) {
+    column.kind = 'int';
+  }
+  if (column.kind === 'string' && column.length === undefined && builder === 'varchar') {
     warnings.push(`${path}: "${key}" has no length; the contract uses 255.`);
+  }
   return column;
 }
 
 function readConfig(column: Column, config: ObjectLiteralExpression, warnings: string[], path: string) {
   for (const prop of config.getProperties()) {
-    if (!Node.isPropertyAssignment(prop)) continue;
+    if (!Node.isPropertyAssignment(prop)) {
+      continue;
+    }
     const name = prop.getName();
     const value = prop.getInitializer();
-    if (name === 'length' && value && Node.isNumericLiteral(value))
+    if (name === 'length' && value && Node.isNumericLiteral(value)) {
       column.length = value.getLiteralValue();
-    else if (name === 'mode' && value && Node.isStringLiteral(value))
+    } else if (name === 'mode' && value && Node.isStringLiteral(value)) {
       column.stringMode = value.getLiteralValue() === 'string';
-    else if (name === 'enum' && value && Node.isArrayLiteralExpression(value)) {
+    } else if (name === 'enum' && value && Node.isArrayLiteralExpression(value)) {
       column.kind = 'enum';
       column.enumValues = value.getElements().filter(Node.isStringLiteral).map((e) => e.getLiteralValue());
-    } else if (!['precision', 'scale', 'withTimezone'].includes(name))
+    } else if (!['precision', 'scale', 'withTimezone'].includes(name)) {
       warnings.push(`${path}: "${column.key}" has an unknown option "${name}"${name === 'lenght' ? ' (did you mean "length"?)' : ''}.`);
+    }
   }
 }
 
@@ -225,23 +242,32 @@ function readTags(prop: Node, warnings: string[], path: string): Set<ApiTag> {
   const tags = new Set<ApiTag>();
   const comments = leadingComments(prop);
   // Up to the next tag, so `@api detail @form editor` works.
-  for (const match of comments.matchAll(/@api\b([^\n*@]*)/g))
+  for (const match of comments.matchAll(/@api\b([^\n*@]*)/g)) {
     for (const word of match[1].trim().split(/[\s,]+/).filter(Boolean)) {
-      if ((API_TAGS as readonly string[]).includes(word)) tags.add(word as ApiTag);
-      else warnings.push(`${path}: unknown tag "@api ${word}"; use ${API_TAGS.join(', ')}.`);
+      if ((API_TAGS as readonly string[]).includes(word)) {
+        tags.add(word as ApiTag);
+      } else {
+        warnings.push(`${path}: unknown tag "@api ${word}"; use ${API_TAGS.join(', ')}.`);
+      }
     }
+  }
   return tags;
 }
 
 function readFormInput(prop: Node, column: Column, warnings: string[], path: string): FormInput | undefined {
   let input: FormInput | undefined;
-  for (const match of leadingComments(prop).matchAll(/@form\b([^\n*@]*)/g))
+  for (const match of leadingComments(prop).matchAll(/@form\b([^\n*@]*)/g)) {
     for (const word of match[1].trim().split(/[\s,]+/).filter(Boolean)) {
-      if ((FORM_INPUTS as readonly string[]).includes(word)) input = word as FormInput;
-      else warnings.push(`${path}: unknown tag "@form ${word}"; use ${FORM_INPUTS.join(', ')}.`);
+      if ((FORM_INPUTS as readonly string[]).includes(word)) {
+        input = word as FormInput;
+      } else {
+        warnings.push(`${path}: unknown tag "@form ${word}"; use ${FORM_INPUTS.join(', ')}.`);
+      }
     }
-  if (input && column.kind !== 'text')
+  }
+  if (input && column.kind !== 'text') {
     warnings.push(`${path}: "@form ${input}" on "${column.key}" is ignored: it's only for text columns.`);
+  }
   return input;
 }
 
@@ -254,10 +280,12 @@ function readRelations(file: import('ts-morph').SourceFile, table: string): Reco
 }
 
 function relationsOf(part: Node | undefined, table: string): Record<string, string> {
-  if (!part) return {};
+  if (!part) {
+    return {};
+  }
   for (const prop of part.getDescendantsOfKind(SyntaxKind.PropertyAssignment)) {
     const init = prop.getInitializer();
-    if (prop.getName() === table && init && Node.isObjectLiteralExpression(init))
+    if (prop.getName() === table && init && Node.isObjectLiteralExpression(init)) {
       return Object.fromEntries(
         init.getProperties().flatMap((p) =>
           Node.isPropertyAssignment(p)
@@ -265,6 +293,7 @@ function relationsOf(part: Node | undefined, table: string): Record<string, stri
             : [],
         ),
       );
+    }
   }
   return {};
 }
@@ -278,8 +307,9 @@ export function foreignRelations(path: string, source: string, table: string): R
   editSource(path, source, (file) => {
     for (const declaration of file.getVariableDeclarations()) {
       const call = declaration.getInitializerIfKind(SyntaxKind.CallExpression);
-      if (call?.getExpression().getText() === 'defineRelationsPart')
+      if (call?.getExpression().getText() === 'defineRelationsPart') {
         found = { ...found, ...relationsOf(call, table) };
+      }
     }
   });
   return found;
@@ -291,7 +321,9 @@ export function tablesIn(path: string, source: string): string[] {
   editSource(path, source, (file) => {
     for (const declaration of file.getVariableDeclarations()) {
       const call = declaration.getInitializerIfKind(SyntaxKind.CallExpression);
-      if (call && isTableCall(call.getExpression().getText())) names.push(declaration.getName());
+      if (call && isTableCall(call.getExpression().getText())) {
+        names.push(declaration.getName());
+      }
     }
   });
   return names;

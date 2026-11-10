@@ -56,7 +56,9 @@ export function PlaceSearch({
       }
       setLoading(true);
       const result = await searchPlaces(query);
-      if (!current) return;
+      if (!current) {
+        return;
+      }
       setPlaces(result.places);
       setError(result.error);
       setLoading(false);
@@ -84,7 +86,9 @@ export function PlaceSearch({
       inputValue={query}
       onInputValueChange={(value) => setQuery(value)}
       onValueChange={(place: GeoPlace | null) => {
-        if (!place) return;
+        if (!place) {
+          return;
+        }
         onSelect(place);
         setQuery("");
         setPlaces([]);

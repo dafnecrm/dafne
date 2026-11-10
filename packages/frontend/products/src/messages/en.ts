@@ -30,7 +30,7 @@ export const en = {
     price: "Price",
     description: "Description",
     createdAt: "Added",
-    id: "Product ID",
+    id: "ID",
   },
 };
 

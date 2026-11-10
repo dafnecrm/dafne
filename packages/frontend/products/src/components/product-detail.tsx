@@ -36,7 +36,7 @@ export function ProductDetails({ product }: { product: ProductDetail }) {
       <DetailSection title={t("common.record.title")}>
         <Detail icon={FingerprintIcon} label={t("products.fields.id")}>
           <div className="flex items-center gap-2">
-            <code className="truncate font-mono text-xs">{product.id}</code>
+            <code className="truncate font-sans text-xs">{product.id}</code>
             <CopyButton variant="ghost" value={String(product.id)} />
           </div>
         </Detail>

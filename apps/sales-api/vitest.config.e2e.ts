@@ -6,8 +6,8 @@ export default defineConfig({
   // needs decorators and their type metadata (emitDecoratorMetadata).
   plugins: [swc.vite({ module: { type: 'es6' } })],
   test: {
+    name: '2e',
     globals: true,
-    root: './',
     include: ['test/**/*.e2e-spec.ts'],
   },
 });

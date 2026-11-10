@@ -13,7 +13,11 @@ import {
   msg,
   SalesOrderItemBody,
 } from '@dafne/contracts';
-import { PostgresErrorCode } from '@dafne/backend-common';
+import { PostgresErrorCode, rethrowPostgresError } from '@dafne/backend-common';
+import { InjectStateMachine, StateMachine } from '@dafne/backend-fsm';
+import type { SessionUser } from '@dafne/backend-session';
+import type { SalesOrderStatus } from '@dafne/contracts';
+import { SALES_ORDER_STATE_MACHINE } from './sales-order.states.js';
 
 type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0];
 
@@ -44,29 +48,36 @@ const userSummary = { columns: { id: true, name: true } } as const;
 const customerSummary = { columns: { id: true, name: true } } as const;
 
 /**
- * Turns the Postgres errors a body can cause (drizzle wraps them as the
- * cause) into client errors: a taken email (409), an address country that
- * isn't in the countries table (400). Rethrows anything else.
+ * Turns the Postgres errors a body can cause into client errors (400): a
+ * customer, a type or an item's product that doesn't exist.
  */
-function rethrowConstraint(error: unknown): never {
-  const cause = error instanceof Error && error.cause ? error.cause : error;
-  const { code, constraint } = cause instanceof Error ? (cause as { code?: unknown; constraint?: unknown }) : {};
-  const name = typeof constraint === 'string' ? constraint : '';
-  if (code === PostgresErrorCode.FOREIGN_KEY_VIOLATION) {
-    if (name.includes('customer_id')) {
-      throw new BadRequestException([`addresses: ${msg('salesOrders.customerId.notFound')}`]);
-    } else if (name.includes('product_id')) {
-      throw new BadRequestException([`items: ${msg('salesOrders.items.productId.notFound')}`]);
-    }
-  }
-  throw error;
-}
+const rethrowConstraint = rethrowPostgresError([
+  {
+    code: PostgresErrorCode.FOREIGN_KEY_VIOLATION,
+    constraint: 'sales_order_type_sales_order_type_id_fkey',
+    error: () => new BadRequestException([`typeId: ${msg('salesOrders.typeId.notFound')}`]),
+  },
+  {
+    code: PostgresErrorCode.FOREIGN_KEY_VIOLATION,
+    constraint: /customer_id/,
+    error: () => new BadRequestException([`customerId: ${msg('salesOrders.customerId.notFound')}`]),
+  },
+  {
+    code: PostgresErrorCode.FOREIGN_KEY_VIOLATION,
+    constraint: /product_id/,
+    error: () => new BadRequestException([`items: ${msg('salesOrders.items.productId.notFound')}`]),
+  },
+]);
 
 @Injectable()
 export class SalesOrdersService {
   logger = new Logger(SalesOrdersService.name);
 
-  constructor(@InjectDrizzle() private readonly db: Database) { }
+  constructor(
+    @InjectDrizzle() private readonly db: Database,
+    @InjectStateMachine(SALES_ORDER_STATE_MACHINE)
+    private readonly stateMachine: StateMachine<SalesOrderStatus, number>,
+  ) { }
 
   /**
    * Lists sales orders that aren't deleted, paged and sorted, filtered by
@@ -77,7 +88,9 @@ export class SalesOrdersService {
     const { db } = this;
     const filters = SALES_ORDER_FILTER_FIELDS.flatMap((field) => {
       const value = query[field]?.trim();
-      if (!value) return [];
+      if (!value) {
+        return [];
+      }
       const exact = EXACT_FILTERS[field];
       // As a plain Column: eq can't type a union of columns against number | string.
       return [exact ? eq(salesOrder[field] as Column, exact(value)) : ilike(salesOrder[field], `%${escapeLike(value)}%`)];
@@ -138,7 +151,9 @@ export class SalesOrdersService {
       },
     });
 
-    if (!found) throw new NotFoundException(msg('salesOrders.notFound'));
+    if (!found) {
+      throw new NotFoundException(msg('salesOrders.notFound'));
+    }
 
     return found;
   }
@@ -153,19 +168,22 @@ export class SalesOrdersService {
       columns: { orderId: false },
       with: { product: { columns: { id: true, name: true } } },
     });
-    if (!found) throw new NotFoundException(msg('salesOrders.items.notFound'));
+    if (!found) {
+      throw new NotFoundException(msg('salesOrders.items.notFound'));
+    }
     return found;
   }
 
   /** Creates a sales order; `userId` is the creator. */
-  async createSalesOrder(body: SalesOrderBody, userId: string): Promise<SalesOrderDetail> {
+  async createSalesOrder(body: SalesOrderBody, user: SessionUser): Promise<SalesOrderDetail> {
     // One instant for both: createdAt and updatedAt start equal.
     const now = new Date();
 
     this.logger.log("CREATING", JSON.stringify(body))
     const id = await this.db
       .transaction(async (tx) => {
-        const [{ id }] = await this.db
+        // Born in draft: another status goes through the state machine.
+        const [{ id }] = await tx
           .insert(salesOrder)
           .values({
             notes: body.notes,
@@ -173,11 +191,14 @@ export class SalesOrdersService {
             typeId: body.typeId,
             createdAt: now,
             updatedAt: now,
-            createdById: userId,
-            updatedById: userId,
+            createdById: user.id,
+            updatedById: user.id,
           })
           .returning({ id: salesOrder.id });
 
+        if (body.status) {
+          await this.stateMachine.transition(id, body.status, { tx, user });
+        }
         return id;
       })
       .catch(rethrowConstraint);
@@ -190,7 +211,7 @@ export class SalesOrdersService {
    * Replaces a sales order's fields; `userId` is the editor. Throws 404
    * if the sales order doesn't exist or is deleted.
    */
-  async updateSalesOrder(id: number, body: SalesOrderBody, userId: string): Promise<SalesOrderDetail> {
+  async updateSalesOrder(id: number, body: SalesOrderBody, user: SessionUser): Promise<SalesOrderDetail> {
     await this.db.transaction(async (tx) => {
       const result = await tx
         .update(salesOrder)
@@ -198,17 +219,24 @@ export class SalesOrdersService {
           notes: body.notes,
           customerId: body.customerId,
           typeId: body.typeId,
-          updatedById: userId,
+          updatedById: user.id,
           // The time of this change.
           updatedAt: new Date(),
         })
         .where(and(eq(salesOrder.id, id), notDeleted));
 
-      if (result.rowCount === 0) throw new NotFoundException(msg('salesOrders.notFound'));
+      if (result.rowCount === 0) {
+        throw new NotFoundException(msg('salesOrders.notFound'));
+      }
 
       await tx.delete(salesOrderItem).where(eq(salesOrderItem.orderId, id));
       await this.insertSalesOrderItems(tx, id, body.items);
-    });
+      
+      // After the items: the guards see the order as saved.
+      if (body.status) {
+        await this.stateMachine.transition(id, body.status, { tx, user });
+      }
+    }).catch(rethrowConstraint);
 
     return this.getSalesOrder(id);
   }
@@ -223,11 +251,25 @@ export class SalesOrdersService {
       .update(salesOrder)
       .set({ deletedAt: now, updatedAt: now, updatedById: userId })
       .where(and(eq(salesOrder.id, id), notDeleted));
-    if (result.rowCount === 0) throw new NotFoundException(msg('salesOrders.notFound'));
+    if (result.rowCount === 0) {
+      throw new NotFoundException(msg('salesOrders.notFound'));
+    }
+  }
+
+  /**
+   * Moves a sales order to `status` through its state machine; `user` is
+   * the editor. Throws 404 if it doesn't exist or is deleted, 400 if the
+   * status can't follow the current one, 403 if a guard says no.
+   */
+  async changeSalesOrderStatus(id: number, status: SalesOrderStatus, user: SessionUser): Promise<SalesOrderDetail> {
+    await this.stateMachine.transition(id, status, { user });
+    return this.getSalesOrder(id);
   }
 
   async insertSalesOrderItems(tx: Transaction, salesOrderId: number, items: SalesOrderItemBody[]) {
-    if (!items.length) return;
+    if (!items.length) {
+      return;
+    }
     await tx.insert(schema.salesOrderItem).values(
       items.map((item) => ({
         orderId: salesOrderId,

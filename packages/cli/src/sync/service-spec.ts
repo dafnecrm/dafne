@@ -109,10 +109,14 @@ function syncSpecSamples(
   const expected = (file: SourceFile, index: number): ObjectLiteralExpression | undefined => {
     const call = calls(file)[index];
     const expectCall = call?.getParentIfKind(SyntaxKind.CallExpression);
-    if (!expectCall || expectCall.getExpression().getText() !== 'expect') return undefined;
+    if (!expectCall || expectCall.getExpression().getText() !== 'expect') {
+      return undefined;
+    }
     const toEqual = expectCall.getParentIfKind(SyntaxKind.PropertyAccessExpression)?.getParentIfKind(SyntaxKind.CallExpression);
     const name = toEqual?.getExpression().asKind(SyntaxKind.PropertyAccessExpression)?.getName();
-    if (name !== 'toEqual' && name !== 'toStrictEqual') return undefined;
+    if (name !== 'toEqual' && name !== 'toStrictEqual') {
+      return undefined;
+    }
     return toEqual!.getArguments()[0]?.asKind(SyntaxKind.ObjectLiteralExpression);
   };
   const keyOf = (p: Node) => (Node.isPropertyAssignment(p) || Node.isShorthandPropertyAssignment(p) ? p.getName() : undefined);
@@ -121,7 +125,9 @@ function syncSpecSamples(
   for (;;) {
     let removed = false;
     source = editSource(path, source, (file) => {
-      if (!isHelper(file)) return;
+      if (!isHelper(file)) {
+        return;
+      }
       for (const object of samples(file)) {
         const stale = object.getProperties().find((p) => {
           const key = keyOf(p);
@@ -135,42 +141,61 @@ function syncSpecSamples(
         }
       }
     });
-    if (!removed) break;
+    if (!removed) {
+      break;
+    }
   }
 
   // Additions: the n-th sample, field by field.
   source = editSource(path, source, (file) => {
-    if (!isHelper(file)) return;
+    if (!isHelper(file)) {
+      return;
+    }
     const count = samples(file).length;
-    for (let i = 0; i < count; i++)
+    for (let i = 0; i < count; i++) {
       for (const field of needed) {
         const object = samples(file)[i];
-        if (object.getProperties().some((p) => keyOf(p) === field.key || Node.isSpreadAssignment(p))) continue;
+        if (object.getProperties().some((p) => keyOf(p) === field.key || Node.isSpreadAssignment(p))) {
+          continue;
+        }
         appendToList(file, object, object.getProperties(), `${field.key}: ${sample(field)}`);
-        if (!report.added.includes(field.key)) report.added.push(field.key);
+        if (!report.added.includes(field.key)) {
+          report.added.push(field.key);
+        }
         // What parse returns for it, when the test compares the whole result.
         const result = expected(file, i);
         const value = parsed(field);
-        if (result && value !== undefined && !result.getProperties().some((p) => keyOf(p) === field.key))
+        if (result && value !== undefined && !result.getProperties().some((p) => keyOf(p) === field.key)) {
           appendToList(file, result, result.getProperties(), `${field.key}: ${value}`);
+        }
       }
+    }
   });
 
   // Optional fields missing from a sample come out of parse as null: a
   // compared result must have them (toEqual tells null from missing).
   const nullable = fields.filter((f) => f.kind !== 'unsupported' && f.optional && !f.contractDefault);
   source = editSource(path, source, (file) => {
-    if (!isHelper(file)) return;
+    if (!isHelper(file)) {
+      return;
+    }
     const count = samples(file).length;
-    for (let i = 0; i < count; i++)
+    for (let i = 0; i < count; i++) {
       for (const field of nullable) {
         const object = samples(file)[i];
-        if (object.getProperties().some((p) => keyOf(p) === field.key || Node.isSpreadAssignment(p))) continue;
+        if (object.getProperties().some((p) => keyOf(p) === field.key || Node.isSpreadAssignment(p))) {
+          continue;
+        }
         const result = expected(file, i);
-        if (!result || result.getProperties().some((p) => keyOf(p) === field.key || Node.isSpreadAssignment(p))) continue;
+        if (!result || result.getProperties().some((p) => keyOf(p) === field.key || Node.isSpreadAssignment(p))) {
+          continue;
+        }
         appendToList(file, result, result.getProperties(), `${field.key}: null`);
-        if (!report.added.includes(`${field.key} (null in the expected result)`)) report.added.push(`${field.key} (null in the expected result)`);
+        if (!report.added.includes(`${field.key} (null in the expected result)`)) {
+          report.added.push(`${field.key} (null in the expected result)`);
+        }
       }
+    }
   });
   return { content: source, report };
 }

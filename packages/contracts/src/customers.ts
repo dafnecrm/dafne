@@ -93,12 +93,13 @@ export const customerBodySchema = z
           .default([])
           .superRefine((addresses, ctx) =>
             addresses.forEach((address, i) => {
-              if (addresses.findIndex((a) => a.type === address.type) < i)
+              if (addresses.findIndex((a) => a.type === address.type) < i) {
                 ctx.addIssue({
                   code: 'custom',
                   path: [i, 'type'],
                   message: msg('customers.addresses.typeTaken'),
                 });
+              }
             }),
           ),
   })

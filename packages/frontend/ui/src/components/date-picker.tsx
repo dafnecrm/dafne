@@ -67,7 +67,9 @@ function DatePicker({
       open={open}
       onOpenChange={(next) => {
         setOpen(next)
-        if (!next) onBlur?.()
+        if (!next) {
+          onBlur?.()
+        }
       }}
     >
       <PopoverTrigger

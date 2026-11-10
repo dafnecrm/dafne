@@ -15,8 +15,9 @@ import { migrate } from './apply.ts';
 import { databasePackages, findWorkspaceRoot } from './workspace.ts';
 
 const ENV_FILE = join(import.meta.dirname, '..', '.env');
-if (!process.env.MIGRATIONS_DATABASE_URL && existsSync(ENV_FILE))
+if (!process.env.MIGRATIONS_DATABASE_URL && existsSync(ENV_FILE)) {
   process.loadEnvFile(ENV_FILE);
+}
 
 const url = process.env.MIGRATIONS_DATABASE_URL;
 if (!url && process.argv.includes('--optional')) {
