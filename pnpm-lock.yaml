@@ -1225,9 +1225,6 @@ importers:
       '@dafne/contracts':
         specifier: workspace:*
         version: link:../../contracts
-      '@nestjs/cache-manager':
-        specifier: 'catalog:'
-        version: 12.0.2(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/core@12.3.2)(cache-manager@7.2.9)(keyv@6.1.0)(rxjs@7.8.2)
       '@nestjs/common':
         specifier: 'catalog:'
         version: 12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0)

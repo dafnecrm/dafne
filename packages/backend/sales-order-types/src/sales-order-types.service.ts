@@ -4,10 +4,8 @@ import {
 } from '@dafne/backend-common';
 import { schema, type Database } from '@dafne/backend-database';
 import { InjectDrizzle } from '@nestjs/drizzle';
-import { CACHE_MANAGER, type Cache } from '@nestjs/cache-manager';
 import {
   ConflictException,
-  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -65,10 +63,7 @@ const userSummary = { columns: { id: true, name: true } } as const;
 
 @Injectable()
 export class SalesOrderTypesService {
-  constructor(
-    @InjectDrizzle() private readonly db: Database,
-    @Inject(CACHE_MANAGER) private readonly cache: Cache,
-  ) {}
+  constructor(@InjectDrizzle() private readonly db: Database) {}
 
   /**
    * Lists sales order types that aren't deleted, paged and sorted, filtered by

@@ -17,7 +17,6 @@
     "@dafne/contracts": "workspace:*",
     "@nestjs/common": "catalog:",
     "@nestjs/drizzle": "catalog:",
-    "@nestjs/cache-manager": "catalog:",
     "drizzle-orm": "catalog:"
   },
   "devDependencies": {
