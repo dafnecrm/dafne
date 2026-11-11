@@ -23,8 +23,9 @@ export function PasswordField({ label, ...props }: Omit<TextFieldProps, 'type'>)
     <TextField
       label={label}
       type={showPassword ? 'text' : 'password'}
-      addons={showPasswordAddon}
       {...props}
-    />
+    >
+      {showPasswordAddon}
+    </TextField>
   )
 }

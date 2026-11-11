@@ -30,5 +30,8 @@ export const it: SalesOrderTypesMessages = {
   inactiveAlert: {
     title: "Il tipo ordine è disattivato. ",
     description: "Non può essere utilizzato negli ordini di vendita."
-  }
+  },
+  placeholder: 'Scegli un tipo ordine...',
+  loading: 'Sto caricando i tipi ordine...',
+  none: 'Nessun tipo ordine trovato',
 };

@@ -6,6 +6,7 @@ import React from 'react'
 import { useFieldContext } from '../form-context.ts'
 import type { BaseFieldProps, OwnProps } from './base.ts'
 import { useErrorText } from './error-text.ts'
+import { InputGroup, InputGroupTextarea } from '@dafne/frontend-ui/components/input-group'
 
 /** A multi-line text input; the field's value is a string ("" when blank). */
 export function TextareaField({
@@ -13,6 +14,7 @@ export function TextareaField({
   className,
   controlClassName,
   orientation,
+  children,
   ...props
 }: BaseFieldProps & Omit<React.ComponentProps<typeof Textarea>, OwnProps>) {
   const field = useFieldContext<string>()
@@ -27,16 +29,19 @@ export function TextareaField({
       <FieldLabel htmlFor={field.name} className={'text-nowrap'}>
         {label}
       </FieldLabel>
-      <Textarea
-        id={field.name}
-        className={controlClassName}
-        name={field.name}
-        value={field.state.value ?? ''}
-        aria-invalid={!field.state.meta.isValid}
-        onBlur={field.handleBlur}
-        onChange={(e) => field.handleChange(e.target.value)}
-        {...props}
-      />
+      <InputGroup>
+        <InputGroupTextarea
+          id={field.name}
+          className={controlClassName}
+          name={field.name}
+          value={field.state.value ?? ''}
+          aria-invalid={!field.state.meta.isValid}
+          onBlur={field.handleBlur}
+          onChange={(e) => field.handleChange(e.target.value)}
+          {...props}
+        />
+        {children}
+      </InputGroup>
       <FieldError>
         {field.state.meta.errors.length > 0 &&
           [...new Set(errorText(field.state.meta.errors))].map(

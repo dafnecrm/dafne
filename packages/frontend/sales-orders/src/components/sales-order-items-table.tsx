@@ -5,18 +5,14 @@ import {
   createDataTableColumnHelper,
   DataTable,
 } from "@dafne/frontend-data-table/table";
-import { Button } from "@dafne/frontend-ui/components/button";
 import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
+  Empty, EmptyContent, EmptyDescription,
   EmptyHeader,
   EmptyMedia,
-  EmptyTitle,
+  EmptyTitle
 } from "@dafne/frontend-ui/components/empty";
 import { MapPinIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import Link from "next/link";
 import { type ReactNode, useMemo } from "react";
 
 /**
@@ -55,21 +51,16 @@ function useSalesOrderItemColumns() {
 }
 
 /**
- * A sales order's items. With none, links to the edit page
- * (`<path>/<id>/edit`, `path` being the app's sales orders list).
+ * A sales order's items.
  */
 export function SalesOrderItemTable({
-  salesOrderId,
   items,
-  path,
   rowActions,
-  editButton,
+  emptyContent,
 }: {
-  salesOrderId: number;
   items: SalesOrderItemRow[];
-  path: string;
   rowActions?: (row: SalesOrderItemRow, index: number) => ReactNode;
-  editButton?: ReactNode;
+  emptyContent?: ReactNode;
 }) {
   const t = useTranslations();
   const columns = useSalesOrderItemColumns();
@@ -86,8 +77,6 @@ export function SalesOrderItemTable({
     sortable: ["position"],
     pageSizes: [5],
   });
-
-  const editHref = `${path}/${encodeURIComponent(salesOrderId)}/edit`;
 
   return (
     <DataTable
@@ -110,11 +99,9 @@ export function SalesOrderItemTable({
               {t("salesOrders.items.noneDetail")}{" "}
             </EmptyDescription>
           </EmptyHeader>
-          <EmptyContent>
-            {editButton ?? <Button variant="outline" size="sm">
-                <Link href={editHref}>{t("salesOrders.items.addOne")}</Link>
-              </Button>}
-          </EmptyContent>
+          {emptyContent && <EmptyContent>
+            {emptyContent}
+          </EmptyContent>}
         </Empty>
       }
     />

@@ -37,7 +37,6 @@ import { Badge } from "@dafne/frontend-ui/components/badge";
  * Columns of the sales orders table. Column ids double as the backend's
  * sort fields, so they must match `sortable` in ../sales-orders-table.ts.
  */
-
 const col = createDataTableColumnHelper<ListedSalesOrder>();
 
 /**

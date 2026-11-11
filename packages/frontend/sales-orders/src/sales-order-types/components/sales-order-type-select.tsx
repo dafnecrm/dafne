@@ -14,6 +14,8 @@ import {
   getSalesOrderTypeOption,
   searchSalesOrderTypes, type SalesOrderTypeOption
 } from "../actions.ts";
+import { InputGroupAddon } from "@dafne/frontend-ui/components/input-group";
+import { BoxesLinkedIcon } from "lucide-react";
 
 /** Wait after the last keystroke before searching, so typing isn't a request per key. */
 const SEARCH_DELAY_MS = 250;
@@ -54,7 +56,7 @@ export function SalesOrderTypeSelect({
   /** For a picker with no visible label, e.g. a table filter. */
   "aria-label"?: string;
 }) {
-  const t = useTranslations("salesOrders.salesOrderTypes");
+  const t = useTranslations("salesOrderTypes");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SalesOrderTypeOption[]>([]);
   const [searching, setSearching] = useState(true);
@@ -130,7 +132,11 @@ export function SalesOrderTypeSelect({
         aria-label={ariaLabel}
         showClear
         onBlur={onBlur}
-      />
+      >
+        <InputGroupAddon>
+          <BoxesLinkedIcon />
+        </InputGroupAddon>
+      </ComboboxInput>
       <ComboboxContent>
         <ComboboxEmpty>
           {searching ? t("loading") : t("none")}

@@ -42,7 +42,6 @@ export const it: SalesOrdersMessages = {
     loadError: "Impossibile caricare la riga. Riprova.",
     none: "Nessun item creato.",
     noneDetail: "Nessun item è stato ancora creato.",
-    addOne: "Aggiungi un nuovo item.",
     positionTaken: "Un'altra riga ha già questa posizione",
     fields: {
       position: "Posizione",
@@ -51,11 +50,6 @@ export const it: SalesOrdersMessages = {
       add: "Aggiungi",
       save: "Salva",
     },
-  },
-  salesOrderTypes: {
-    placeholder: 'Scegli un tipo ordiner...',
-    loading: 'Sto caricando i tipi ordine...',
-    none: 'Nessun tipo ordine trovato',
   },
   status: { draft: "Draft", open: "Open", completed: "Completed", cancelled: "Cancelled", rejected: "Rejected" }
 };

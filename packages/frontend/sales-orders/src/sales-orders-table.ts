@@ -19,7 +19,7 @@ export const SALES_ORDER_STATUS_OPTIONS = [
 ] satisfies { value: SalesOrderStatus; label: SalesOrdersMessageKey }[];
 
 /** Sort of the list without `?sort=`. */
-export const SALES_ORDERS_DEFAULT_SORT = { id: "createdAt", desc: false };
+export const SALES_ORDERS_DEFAULT_SORT = { id: "id", desc: true };
 
 /** A sales orders table's config: its path is always set (detail links use it). */
 export type SalesOrdersTableConfig = DataTableConfig & {

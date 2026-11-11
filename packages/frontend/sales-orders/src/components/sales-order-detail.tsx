@@ -7,8 +7,7 @@ import {
   TextIcon,
   ContactIcon,
   BoxesLinkedIcon,
-  TagIcon,
-  LinkIcon,
+  TagIcon
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Detail, DetailSection } from "@dafne/frontend-ui/components/detail";
@@ -19,6 +18,7 @@ import Link from "next/link";
 import { SalesOrderItemTable } from "./sales-order-items-table.tsx";
 import { SALES_ORDER_STATUS_OPTIONS } from "../sales-orders-table.ts";
 import { useOptionLabel } from "@dafne/frontend-ui/hooks/use-option-labels";
+import CopyButton from "@dafne/frontend-ui/components/copy-button";
 
 /** @dafne-ignore: customerId, typeId */
 
@@ -28,19 +28,16 @@ import { useOptionLabel } from "@dafne/frontend-ui/hooks/use-option-labels";
  */
 export function SalesOrderDetails({
   salesOrder,
-  path,
   customersPath,
 }: {
   salesOrder: SalesOrderDetail;
-  /** The app's sales orders list, e.g. "/sales-orders". */
-  path: string;
   customersPath: string;
 }) {
   const t = useTranslations();
   const optionLabel = useOptionLabel();
   return (
     <>
-      <DetailSection title={t("salesOrders.sections.details")}>
+      <DetailSection title={t("salesOrders.sections.details")} groupVariant="grid">
         <Detail icon={BoxesLinkedIcon} label={t("salesOrders.fields.type")}>
           {salesOrder.type.description}
         </Detail>
@@ -70,17 +67,13 @@ export function SalesOrderDetails({
         title={t("salesOrders.sections.items")}
         groupClassName="flex"
       >
-        <SalesOrderItemTable
-          salesOrderId={salesOrder.id}
-          items={salesOrder.items}
-          path={path}
-        />
+        <SalesOrderItemTable items={salesOrder.items} />
       </DetailSection>
-      <DetailSection title={t("common.record.title")} defaultOpen={false}>
-        <Detail icon={FingerprintIcon} label={t("salesOrders.fields.id")}>
+      <DetailSection title={t("common.record.title")} defaultOpen={false} groupVariant="grid">
+        <Detail icon={FingerprintIcon} label={t("salesOrders.fields.id")} className="col-span-2">
           <div className="flex items-center gap-2">
             <code className="truncate font-sans text-xs">{salesOrder.id}</code>
-            {/* <CopyButton variant="ghost" value={String(salesOrder.id)} /> */}
+            <CopyButton variant="ghost" size="xs" value={String(salesOrder.id)} />
           </div>
         </Detail>
         <Detail icon={CalendarPlusIcon} label={t("common.record.created")}>

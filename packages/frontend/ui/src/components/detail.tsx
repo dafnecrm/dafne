@@ -6,7 +6,7 @@ import {
   Item,
   ItemActions,
   ItemContent,
-  ItemDescription, ItemGroup,
+  ItemDescription,
   ItemMedia,
   ItemSeparator,
   ItemTitle
@@ -45,9 +45,23 @@ const detailSectionVariants = cva("", {
   },
 });
 
-/** The details' grid: one column on phones, up to four on wide screens. */
-const DETAIL_GRID =
-  "grid grid-cols-1 gap-x-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
+/**
+ * The details' list layout. Not ItemGroup: its size-based gaps
+ * (`has-data-[size=sm]:gap-2.5`, and every Detail is sm) would win over
+ * these.
+ */
+const detailGroupVariants = cva("w-full gap-6", {
+  variants: {
+    groupVariant: {
+      default: "flex flex-col",
+      horizontal: "flex flex-row",
+      grid: "grid grid-cols-1 md:grid-cols-2",
+    },
+  },
+  defaultVariants: {
+    groupVariant: "default",
+  },
+});
 
 /**
  * A titled item group of details. Pass Detail elements directly (not in
@@ -61,13 +75,15 @@ const DETAIL_GRID =
  * With a title, the section collapses: clicking the title hides the
  * details (open at first, unless `defaultOpen={false}`).
  *
- * Variants: `default` frames the details like a Card; `plain` has no
- * frame and no padding around the details.
+ * Variants: 
+ * - `default` frames the details like a Card; 
+ * - `plain` has no frame and no padding around the details;
  */
 export function DetailSection({
   title,
   actions,
   variant,
+  groupVariant,
   separator,
   className,
   groupClassName,
@@ -81,16 +97,17 @@ export function DetailSection({
   actions?: ReactNode;
   /** Draws a line between details. */
   separator?: boolean;
-  /** Extra classes for the section, e.g. a grid placement. */
+  /** Extra classes for the section card. */
   className?: string;
-  /** Extra classes for the item group, merged with the grid. */
+  /** Extra classes for the item group. */
   groupClassName?: string;
   /** Whether the details show at first; the title toggles them. */
   defaultOpen?: boolean;
   /** Wheter the details section is collapsible. */
   isCollapsible?: boolean,
   children: ReactNode;
-} & VariantProps<typeof detailSectionVariants>) {
+} & VariantProps<typeof detailSectionVariants>
+  & VariantProps<typeof detailGroupVariants>) {
   return (
     <Collapsible
       // Without a title there is nothing to click: it stays open.
@@ -109,7 +126,7 @@ export function DetailSection({
           {title && (
             <CardTitle>
               <h2>
-                <CollapsibleTrigger className={cn("group/trigger -ml-1 flex items-center gap-1 rounded-md px-1 text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50", isCollapsible && "cursor-pointer")}>
+                <CollapsibleTrigger className={cn("group/trigger -ml-2 flex items-center gap-1 rounded-md px-1 text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50", isCollapsible && "cursor-pointer")}>
                   {isCollapsible && <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-data-panel-open/trigger:rotate-90" />}
                   {title}
                 </CollapsibleTrigger>
@@ -122,10 +139,11 @@ export function DetailSection({
       <CollapsibleContent
         render={<CardContent className={cn(variant === "plain" && "px-0")} />}
       >
-        <ItemGroup
-          // Details read the variant from here (see Detail).
-          data-variant={variant}
-          className={cn(DETAIL_GRID, groupClassName)}
+        <div
+          role="list"
+          data-slot="item-group"
+          data-variant={groupVariant}
+          className={cn(detailGroupVariants({ groupVariant }), groupClassName)}
         >
           {Children.toArray(children).map((child, index) => (
             <Fragment key={index}>
@@ -133,7 +151,7 @@ export function DetailSection({
               {child}
             </Fragment>
           ))}
-        </ItemGroup>
+        </div>
       </CollapsibleContent>
     </Collapsible>
   );

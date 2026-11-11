@@ -15,6 +15,8 @@ import {
   searchCustomers,
   type CustomerOption,
 } from "../actions.ts";
+import { InputGroupAddon } from "@dafne/frontend-ui/components/input-group";
+import { SquareUserIcon } from "lucide-react";
 
 /** Wait after the last keystroke before searching, so typing isn't a request per key. */
 const SEARCH_DELAY_MS = 250;
@@ -91,7 +93,7 @@ export function CustomerSelect({
     let current = true;
     getCustomerOption(value).then(
       (customer) => current && setChosen(customer),
-      () => {},
+      () => { },
     );
     return () => {
       current = false;
@@ -131,7 +133,11 @@ export function CustomerSelect({
         aria-label={ariaLabel}
         showClear
         onBlur={onBlur}
-      />
+      >
+        <InputGroupAddon>
+          <SquareUserIcon />
+        </InputGroupAddon>
+      </ComboboxInput>
       <ComboboxContent>
         <ComboboxEmpty>
           {searching ? t("loadingCustomers") : t("noCustomers")}
