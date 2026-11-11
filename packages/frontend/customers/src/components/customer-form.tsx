@@ -70,21 +70,6 @@ export function CustomerForm({
     ? `${path}/${encodeURIComponent(customer.id)}`
     : path;
 
-  function CreateAddressButton() {
-    return <Button
-      variant="outline"
-      onClick={() =>
-        setAddressSheet({
-          open: true,
-          index: null,
-        })
-      }
-    >
-      <PlusIcon />
-      {t("customers.addresses.add")}
-    </Button>
-  }
-
   return (
     <form
       noValidate
@@ -212,7 +197,18 @@ export function CustomerForm({
           <DetailSection
             title={t("customers.sections.addresses")}
             groupClassName="flex"
-            actions={<CreateAddressButton />}>
+            actions={<Button
+              variant="outline"
+              onClick={() =>
+                setAddressSheet({
+                  open: true,
+                  index: null,
+                })
+              }
+            >
+              <PlusIcon />
+              {t("customers.addresses.add")}
+            </Button>}>
             <form.AppField name="addresses">
               {(addresses) => <>
                 <CustomerAddressTable

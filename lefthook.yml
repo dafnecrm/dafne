@@ -3,5 +3,5 @@
 pre-push:
   jobs:
     # Only the projects changed since main, and their dependents.
-    - name: typecheck and test
-      run: pnpm nx affected -t typecheck test --base=origin/main --head=HEAD
+    - name: typecheck and test and lint
+      run: pnpm nx affected -t typecheck test lint --base=origin/main --head=HEAD
