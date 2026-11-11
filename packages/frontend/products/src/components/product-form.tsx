@@ -4,7 +4,6 @@ import { useTranslations } from "next-intl";
 import { revalidateLogic } from "@tanstack/react-form-nextjs";
 import Link from "next/link";
 import { Button } from "@dafne/frontend-ui/components/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@dafne/frontend-ui/components/card";
 import { FieldGroup } from "@dafne/frontend-ui/components/field";
 import { setServerError, useAppForm } from "@dafne/frontend-forms/client";
 import { useResetOnLeave } from "@dafne/frontend-forms/client";
@@ -12,6 +11,8 @@ import { saveProduct } from "../actions.ts";
 import { productFormOpts, productSchema } from "../schema.ts";
 import type { ProductDetail } from "../types.ts";
 import { InputGroupAddon } from "@dafne/frontend-ui/components/input-group";
+import { EuroIcon, TextIcon } from "lucide-react";
+import { DetailSection } from "@dafne/frontend-ui/components/detail";
 
 /**
  * Creates a product, or edits `product`. Saving opens the product's page
@@ -55,48 +56,44 @@ export function ProductForm({
       <form.AppForm>
         <FieldGroup>
           <form.FormErrors />
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                <h2>{t("products.sections.details")}</h2>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                <form.AppField name="name">
-                  {(field) => (
-                    <field.TextField
-                      label={t("products.fields.name")}
-                      autoComplete="off"
-                      autoFocus
-                    />
-                  )}
-                </form.AppField>
-                <form.AppField name="price">
-                  {(field) => (
-                    <field.TextField
-                      label={t("products.fields.price")}
-                      inputMode="decimal"
-                      autoComplete="off"
-                      addons={[
-                        <InputGroupAddon key="currency" align="inline-start">
-                          €
-                        </InputGroupAddon>,
-                      ]}
-                    />
-                  )}
-                </form.AppField>
-                <form.AppField name="description">
-                  {(field) => (
-                    <field.TextEditorField
-                      label={t("products.fields.description")}
-                      className="col-span-2"
-                    />
-                  )}
-                </form.AppField>
-              </div>
-            </CardContent>
-          </Card>
+
+          <DetailSection title={t("products.sections.details")} groupVariant="grid">
+            <form.AppField name="name">
+              {(field) => (
+                <field.TextField
+                  label={t("products.fields.name")}
+                  autoComplete="off"
+                  autoFocus
+                >
+                  <InputGroupAddon>
+                    <TextIcon />
+                  </InputGroupAddon>
+                </field.TextField>
+              )}
+            </form.AppField>
+            <form.AppField name="price">
+              {(field) => (
+                <field.TextField
+                  label={t("products.fields.price")}
+                  inputMode="decimal"
+                  autoComplete="off"
+                >
+                  <InputGroupAddon>
+                    <EuroIcon />
+                  </InputGroupAddon>
+                </field.TextField>
+              )}
+            </form.AppField>
+
+            <form.AppField name="description">
+              {(field) => (
+                <field.TextEditorField
+                  label={t("products.fields.description")}
+                  className="col-span-2"
+                />
+              )}
+            </form.AppField>
+          </DetailSection>
 
           <div className="flex justify-end gap-2">
             <Button

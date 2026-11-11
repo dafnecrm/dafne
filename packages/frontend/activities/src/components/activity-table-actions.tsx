@@ -35,7 +35,7 @@ export function ActivityTableActions({
 
   const [deleting, setDeleting] = useState(false);
   const t = useTranslations("common");
-  const href = `/${path}/${encodeURIComponent(activity.id)}`;
+  const href = `${path}/${encodeURIComponent(activity.id)}`;
 
   return (
     <>

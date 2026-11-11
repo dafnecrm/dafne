@@ -7,9 +7,7 @@ import {
   TagIcon,
   UserPenIcon,
   UserPlusIcon,
-  CalendarClockIcon,
-  LinkIcon,
-  TextIcon,
+  CalendarClockIcon, TextIcon, UserCheck2Icon
 } from "lucide-react";
 import CopyButton from "@dafne/frontend-ui/components/copy-button";
 import { Detail, DetailSection } from "@dafne/frontend-ui/components/detail";
@@ -28,10 +26,27 @@ export function ActivityDetails({ activity }: { activity: ActivityDetail }) {
   const StatusIcon = ACTIVITY_STATUS_ICONS[activity.status];
   return (
     <>
-      <DetailSection title={t("activities.sections.details")}>
+      <DetailSection title={t("activities.sections.details")} groupVariant="grid">
+        <Detail icon={TextIcon} label={t("activities.fields.name")}>
+          {activity.name}
+        </Detail>
         <Detail icon={TagIcon} label={t("activities.fields.type")}>
           {optionLabel(ACTIVITY_TYPE_OPTIONS, activity.type)}
         </Detail>
+        <Detail icon={TagIcon} label={t("activities.fields.status")}>
+          <span className="inline-flex items-center gap-1.5">
+            <StatusIcon className="size-4 text-muted-foreground" />
+            {optionLabel(ACTIVITY_STATUS_OPTIONS, activity.status)}
+          </span>
+        </Detail>
+        <Detail icon={CalendarClockIcon} label={t("activities.fields.dueDate")}>
+          {activity.dueDate ? (
+            <LocalDate value={activity.dueDate} format="dateTime" />
+          ) : (
+            "—"
+          )}
+        </Detail>
+
         <Detail
           icon={CalendarClockIcon}
           label={t("activities.fields.completedAt")}
@@ -42,13 +57,7 @@ export function ActivityDetails({ activity }: { activity: ActivityDetail }) {
             "—"
           )}
         </Detail>
-        <Detail icon={TagIcon} label={t("activities.fields.status")}>
-          <span className="inline-flex items-center gap-1.5">
-            <StatusIcon className="size-4 text-muted-foreground" />
-            {optionLabel(ACTIVITY_STATUS_OPTIONS, activity.status)}
-          </span>
-        </Detail>
-        <Detail icon={LinkIcon} label={t("activities.fields.completedBy")}>
+        <Detail icon={UserCheck2Icon} label={t("activities.fields.completedBy")}>
           {activity.completedById ? (
             <code className="font-sans text-xs">{activity.completedById}</code>
           ) : (
@@ -58,13 +67,6 @@ export function ActivityDetails({ activity }: { activity: ActivityDetail }) {
         <Detail icon={TextIcon} label={t("activities.fields.notes")} wide>
           {activity.notes ? (
             <TextEditorContent html={activity.notes} className="font-normal" />
-          ) : (
-            "—"
-          )}
-        </Detail>
-        <Detail icon={CalendarClockIcon} label={t("activities.fields.dueDate")}>
-          {activity.dueDate ? (
-            <LocalDate value={activity.dueDate} format="dateTime" />
           ) : (
             "—"
           )}

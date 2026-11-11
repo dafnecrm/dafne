@@ -3,7 +3,7 @@
 import * as React from "react"
 import { useTranslations } from "next-intl"
 import { cn } from "cn"
-import { CalendarIcon } from "lucide-react"
+import { CalendarIcon, LucideIcon } from "lucide-react"
 
 import { Button } from "@dafne/frontend-ui/components/button"
 import { Calendar } from "@dafne/frontend-ui/components/calendar"
@@ -30,6 +30,8 @@ type DatePickerProps = {
   disabledDays?: CalendarProps["disabled"]
   /** "dropdown" shows month/year selects, handy for far dates (e.g. birth dates). */
   captionLayout?: CalendarProps["captionLayout"]
+  /** Custom icon. */
+  icon?: LucideIcon
   startMonth?: Date
   endMonth?: Date
   id?: string
@@ -55,13 +57,15 @@ function DatePicker({
   startMonth,
   endMonth,
   className,
+  icon,
   onBlur,
   ...buttonProps
 }: DatePickerProps) {
   const [open, setOpen] = React.useState(false)
   const locale = useDateLocale()
   const t = useTranslations("form")
-
+  const Icon = icon ?? undefined;
+  
   return (
     <Popover
       open={open}
@@ -87,7 +91,7 @@ function DatePicker({
           />
         }
       >
-        <CalendarIcon />
+        {Icon ? <Icon /> : <CalendarIcon />}
         {value ? formatDate(value, format, { locale }) : <span>{placeholder ?? t("pickDate")}</span>}
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
