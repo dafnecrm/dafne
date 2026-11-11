@@ -90,7 +90,10 @@ export const en = {
       required: 'Enter the sales order type',
       notFound: 'Choose a type from the list',
     },
-    status: { required: 'Choose the status' }
+    status: { required: 'Choose the status' },
+    customer: {
+      noShippingAddress: 'Customer has no shipping address'
+    }
   },
   salesOrderTypes: { 
     notFound: 'Sales order type not found',

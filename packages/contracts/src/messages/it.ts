@@ -87,7 +87,10 @@ export const it: ContractMessages = {
       required: 'Inserisci il tipo ordine',
       notFound: 'Scegli un tipo ordine dall\'elenco',
     },
-    status: { required: 'Scegli lo stato' }
+    status: { required: 'Scegli lo stato' },
+    customer: {
+      noShippingAddress: 'Il cliente non ha indirizzo di spedizione'
+    }
   },
   salesOrderTypes: { 
     notFound: 'Tipo ordine non trovato',
