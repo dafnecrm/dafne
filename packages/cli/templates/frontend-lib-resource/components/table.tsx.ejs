@@ -44,7 +44,7 @@ function use<%= s.pascal %>Columns(path: string) {
     header: t("<%= p.camel %>.fields.createdAt"),
     meta: { className: "text-right" },
     cell: (info) => (
-      <LocalDate value={info.getValue()} className="text-muted-foreground" />
+      <LocalDate value={info.getValue()} className="text-muted-foreground tabular-nums font-medium" />
     ),
   }),
       ]),
