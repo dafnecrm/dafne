@@ -7,7 +7,7 @@ import { enumOptionsName, ignoredKeys, type ResponseField, type ResponseInfo } f
 
 /*
  * `sync frontend detail`: a <Detail> for each response field the detail page
- * doesn't show, in its "Details" section (created before "Record" if
+ * doesn't show, in its "Details" section (a grid, created before "Record" if
  * missing). A field counts as shown when the page reads `<record>.<field>`
  * anywhere. Nothing that's there changes, unless `prune`: then the <Detail>s
  * that read a field the contract dropped go too. Labels are message keys
@@ -165,7 +165,7 @@ export function syncDetail(
           continue;
         }
         const indent = indentAt(file, anchor.getStart());
-        const section = `<DetailSection title={t("${names.p.camel}.sections.details")}>\n  ${code.replace(/\n/g, '\n  ')}\n</DetailSection>`;
+        const section = `<DetailSection title={t("${names.p.camel}.sections.details")} groupVariant="grid">\n  ${code.replace(/\n/g, '\n  ')}\n</DetailSection>`;
         file.insertText(anchor.getStart(), `${section.replace(/\n/g, `\n${indent}`)}\n${indent}`);
       }
       for (const [module, name] of imports) {

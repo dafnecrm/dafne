@@ -152,6 +152,7 @@ describe('syncDetail', () => {
 
   it('adds a Details section before Record with the missing fields', () => {
     const { content } = syncDetail('p.tsx', render('frontend/detail.tsx', view), names, info());
+    expect(content).toContain('<DetailSection title={t("activities.sections.details")} groupVariant="grid">');
     expect(content.indexOf('title={t("activities.sections.details")}')).toBeLessThan(content.indexOf('title={t("common.record.title")}'));
     expect(content).toMatch(/<Detail icon=\{TagIcon\} label=\{t\("activities.fields.type"\)\}>\s*\{optionLabel\(ACTIVITY_TYPE_OPTIONS, activity\.type\)\}/);
     expect(content).toContain('  const t = useTranslations();\n  const optionLabel = useOptionLabel();\n');
@@ -167,8 +168,8 @@ describe('syncDetail', () => {
 
   it('adds to an existing Details section and skips fields the page reads', () => {
     const source = render('frontend/detail.tsx', view).replace(
-      '<DetailSection title={t("common.record.title")}>',
-      '<DetailSection title={t("activities.sections.details")}>\n          <p>{activity.type}</p>\n        </DetailSection>\n        <DetailSection title={t("common.record.title")}>',
+      '<DetailSection title={t("common.record.title")} defaultOpen={false}>',
+      '<DetailSection title={t("activities.sections.details")} groupVariant="grid">\n          <p>{activity.type}</p>\n        </DetailSection>\n        <DetailSection title={t("common.record.title")} defaultOpen={false}>',
     );
     const { content } = syncDetail('p.tsx', source, names, info());
     expect(content.match(/sections\.details/g)).toHaveLength(1);

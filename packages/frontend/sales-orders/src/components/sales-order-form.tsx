@@ -122,7 +122,7 @@ export function SalesOrderForm({
               {(field) => (
                 <field.TextEditorField
                   label={t("salesOrders.fields.notes")}
-                  className="col-span-2"
+                  className="col-span-full"
                 />
               )}
             </form.AppField>

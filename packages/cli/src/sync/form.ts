@@ -252,36 +252,65 @@ function freshDefaults(file: SourceFile, singular: string) {
 /** The translated options of an enum field, made at the top of the form. */
 const optionsVar = (f: FormField) => `${casings(words(f.key)).camel}Options`;
 
-/** The JSX of a new field; `ns` is the resource's messages (`invoices`). */
-function fieldJsx(f: FormField, ns: string): string {
-  const label = `{t("${ns}.fields.${f.key}")}`;
-  const component = (() => {
+/** The icon in the input's addon (text, select and number inputs). */
+const ADDON_ICONS: Partial<Record<FormField['kind'], string>> = {
+  enum: 'TagIcon',
+  number: 'HashIcon',
+  decimal: 'HashIcon',
+  id: 'LinkIcon',
+  email: 'MailIcon',
+};
+
+/**
+ * The JSX of a new field, and the lucide icon it uses; `ns` is the
+ * resource's messages (`invoices`).
+ */
+function fieldJsx(f: FormField, ns: string): { code: string; icon?: string } {
+  const label = `label={t("${ns}.fields.${f.key}")}`;
+  // An input with its icon in an addon, e.g. <field.TextField …><InputGroupAddon>…
+  const withAddon = (component: string, props: string[], icon: string) => ({
+    code: `<${component}\n  ${[label, ...props].join('\n  ')}\n>\n  <InputGroupAddon>\n    <${icon} />\n  </InputGroupAddon>\n</${component}>`,
+    icon,
+  });
+  const plain = (component: string, props: string[] = []): { code: string; icon?: string } => ({ code: `<${component} ${[label, ...props].join(' ')} />` });
+  const field = (() => {
+    const icon = ADDON_ICONS[f.kind] ?? 'TextIcon';
     switch (f.kind) {
       case 'enum':
-        return `<field.SelectField label=${label} options={${optionsVar(f)}} />`;
+        return withAddon('field.SelectField', [`options={${optionsVar(f)}}`], icon);
       case 'boolean':
-        return `<field.CheckboxField label=${label} />`;
+        return plain('field.CheckboxField');
       case 'number':
-        return `<field.NumberField label=${label} />`;
+        return withAddon('field.NumberField', [], icon);
       case 'decimal':
-        return `<field.TextField label=${label} inputMode="decimal" autoComplete="off" />`;
+        return withAddon('field.TextField', ['inputMode="decimal"', 'autoComplete="off"'], icon);
       case 'id':
-        return `<field.TextField label=${label} inputMode="numeric" autoComplete="off" />`;
+        return withAddon('field.TextField', ['inputMode="numeric"', 'autoComplete="off"'], icon);
       case 'email':
-        return `<field.TextField label=${label} type="email" autoComplete="off" />`;
+        return withAddon('field.TextField', ['type="email"', 'autoComplete="off"'], icon);
       case 'date':
-        return `<field.DatePickerField label=${label} />`;
+        return plain('field.DatePickerField');
       case 'datetime':
-        return `<field.DateTimePickerField label=${label} />`;
+        return { code: `<field.DateTimePickerField ${label} icon={CalendarClockIcon} />`, icon: 'CalendarClockIcon' };
+      // Long text: the whole row of the section's grid.
       case 'textarea':
-        return `<field.TextareaField label=${label} />`;
+        return plain('field.TextareaField', ['className="col-span-full"']);
       case 'editor':
-        return `<field.TextEditorField label=${label} />`;
+        return plain('field.TextEditorField', ['className="col-span-full"']);
       default:
-        return `<field.TextField label=${label} autoComplete="off" />`;
+        return withAddon('field.TextField', ['autoComplete="off"'], icon);
     }
   })();
-  return `<form.AppField name="${f.key}">\n  {(field) => ${component}}\n</form.AppField>`;
+  const body = field.code.includes('\n') ? `(\n    ${field.code.replace(/\n/g, '\n    ')}\n  )` : field.code;
+  return { code: `<form.AppField name="${f.key}">\n  {(field) => ${body}}\n</form.AppField>`, icon: field.icon };
+}
+
+/** The section the fields go in: "Details" (`<plural>.sections.details`), else the first. */
+function fieldsSection(file: SourceFile) {
+  const sections = file
+    .getDescendantsOfKind(SyntaxKind.JsxElement)
+    .filter((e) => e.getOpeningElement().getTagNameNode().getText() === 'DetailSection');
+  return sections.find((e) => /\.sections\.details"/.test(e.getOpeningElement().getAttribute('title')?.getText() ?? '')) ?? sections[0];
 }
 
 /**
@@ -341,22 +370,34 @@ export function syncFormComponent(
       const last = topLevel[topLevel.length - 1];
       const text = file.getFullText();
       const indentOf = (pos: number) => /^[ \t]*/.exec(text.slice(text.lastIndexOf('\n', pos - 1) + 1))![0];
+      const { code, icon } = fieldJsx(f, names.p.camel);
       if (last) {
         const indent = indentOf(last.getStart());
-        file.insertText(last.getEnd(), `\n${indent}${fieldJsx(f, names.p.camel).replace(/\n/g, `\n${indent}`)}`);
+        file.insertText(last.getEnd(), `\n${indent}${code.replace(/\n/g, `\n${indent}`)}`);
       } else {
-        // A form with no field yet: into the fields' grid (the first <div className="grid …">).
-        const grid = file
-          .getDescendantsOfKind(SyntaxKind.JsxElement)
-          .find((e) => e.getOpeningElement().getTagNameNode().getText() === 'div' && /^"grid\b/.test(e.getOpeningElement().getAttribute('className')?.getText().replace(/^className=/, '') ?? ''));
-        if (!grid) {
+        // A form with no field yet: last in its "Details" section, or in an
+        // older form's grid (the first <div className="grid …">).
+        const container =
+          fieldsSection(file) ??
+          file
+            .getDescendantsOfKind(SyntaxKind.JsxElement)
+            .find((e) => e.getOpeningElement().getTagNameNode().getText() === 'div' && /^"grid\b/.test(e.getOpeningElement().getAttribute('className')?.getText().replace(/^className=/, '') ?? ''));
+        if (!container) {
           report.warnings.push(`${path}: no <form.AppField> to put ${f.key} next to; add it by hand.`);
           continue;
         }
-        const indent = indentOf(grid.getStart());
-        const closing = grid.getClosingElement();
-        const jsx = fieldJsx(f, names.p.camel).replace(/\n/g, `\n${indent}  `);
-        file.insertText(closing.getStart(), `\n${indent}  ${jsx}\n${indent}`);
+        const indent = indentOf(container.getStart());
+        const closing = container.getClosingElement();
+        // After what's there (e.g. the template's comment), on lines of its own.
+        const before = text.slice(0, closing.getStart()).replace(/[ \t]*$/, '');
+        const start = before.length;
+        file.replaceText([start, closing.getStart()], `${before.endsWith('\n') ? '' : '\n'}${indent}  ${code.replace(/\n/g, `\n${indent}  `)}\n${indent}`);
+      }
+      if (icon) {
+        ensureNamedImport(file, 'lucide-react', icon);
+      }
+      if (code.includes('<InputGroupAddon>')) {
+        ensureNamedImport(file, '@dafne/frontend-ui/components/input-group', 'InputGroupAddon');
       }
       if (f.kind === 'enum') {
         ensureNamedImport(file, refs.schema, optionsName(f));

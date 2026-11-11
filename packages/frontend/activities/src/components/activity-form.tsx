@@ -91,7 +91,7 @@ export function ActivityForm({ activity }: { activity?: ActivityDetail }) {
               {(field) => (
                 <field.TextEditorField
                   label={t("activities.fields.notes")}
-                  className="col-span-2"
+                  className="col-span-full"
                 />
               )}
             </form.AppField>

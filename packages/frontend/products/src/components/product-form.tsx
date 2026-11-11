@@ -89,7 +89,7 @@ export function ProductForm({
               {(field) => (
                 <field.TextEditorField
                   label={t("products.fields.description")}
-                  className="col-span-2"
+                  className="col-span-full"
                 />
               )}
             </form.AppField>
