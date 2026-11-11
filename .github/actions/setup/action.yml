@@ -19,7 +19,7 @@ runs:
     - uses: pnpm/action-setup@v6
 
     # No "cache:" here: it would save a store from every PR and fill the
-    # Actions cache. Only main saves it (ci.yml, graph job).
+    # Actions cache. Only main saves it (ci.yml, affected job).
     - uses: actions/setup-node@v4
       with:
         node-version: 26

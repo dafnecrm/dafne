@@ -10,35 +10,28 @@ required to merge.
 ## What CI runs
 
 `.github/workflows/ci.yml`, on every pull request and push to `main`, in
-jobs that run in parallel:
+one job, `affected` (the required check):
 
-| Job        | What it runs                                                                                          |
-| ---------- | ----------------------------------------------------------------------------------------------------- |
-| `changes`  | which scopes the changed files touch (no install)                                                     |
-| `graph`    | `pnpm nx sync:check` (project references) and `pnpm boundaries` ([project boundaries](boundaries.md)) |
-| `backend`  | `nx affected -t lint typecheck test build` over `scope:backend` and `scope:shared` projects            |
-| `frontend` | the same over `scope:frontend` projects                                                               |
-| `tooling`  | the same over `scope:tooling` projects (the CLI)                                                      |
-| `affected` | the required check: passes when every job above passed or was skipped                                  |
+1. `pnpm nx sync:check` (project references in line with the
+   `package.json` dependencies);
+2. `pnpm boundaries` ([project boundaries](boundaries.md));
+3. `nx affected -t lint typecheck test build`, with `--parallel=4`.
 
-- Each job installs with `pnpm install --frozen-lockfile`, so the lockfile
+- The job installs with `pnpm install --frozen-lockfile`, so the lockfile
   must match the `package.json` files.
-- `changes` picks the scopes from the paths: `apps/sales-api`, `apps/auth`,
-  `packages/backend` → backend; `apps/sales-web`, `packages/frontend` →
-  frontend; `packages/cli` → tooling. Anything else (contracts,
-  auth-options, lockfile, root config, `tools/`, `.github/`) runs every
-  scope. A scope with no changes doesn't start.
-- Inside a scope, `nx affected` runs only the projects touched by the PR
-  and those that depend on them. It compares with the PR's base, or with
-  `main`'s last green commit (`nrwl/nx-set-shas`).
+- `nx affected` runs only the projects touched by the PR and those that
+  depend on them, from the project graph: a new app or lib needs no change
+  to the workflow. It compares with the PR's base, or with `main`'s last
+  green commit (`nrwl/nx-set-shas`).
 - A new push to the same PR cancels the run still going.
 - **A PR that changes only documentation** (`*.md`, `docs/`) skips the
   checks: the `affected` job still runs and passes, since `main` requires
   it.
-- **One cache only**: the pnpm store, saved by the `graph` job on `main`
+- **One cache only**: the pnpm store, saved by the `affected` job on `main`
   (one per lockfile, older ones deleted); PRs only restore it. No Nx cache
   in CI, and no `cache:` on `setup-node` (it would save a ~300 MB store
-  from every PR and fill the 10 GB Actions cache). The shared setup is
+  from every PR, fill the 10 GB Actions cache and get `main`'s store
+  evicted, so installs would miss it). The shared setup is
   `.github/actions/setup`.
 
 Run the same locally before pushing:
