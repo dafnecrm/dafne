@@ -74,7 +74,7 @@ export function ActivityDetails({ activity }: { activity: ActivityDetail }) {
         <Detail icon={FingerprintIcon} label={t("activities.fields.id")}>
           <div className="flex items-center gap-2">
             <code className="truncate font-sans text-xs">{activity.id}</code>
-            <CopyButton variant="ghost" value={String(activity.id)} />
+            <CopyButton variant="ghost" size="xs" value={String(activity.id)} />
           </div>
         </Detail>
         <Detail icon={CalendarPlusIcon} label={t("common.record.created")}>

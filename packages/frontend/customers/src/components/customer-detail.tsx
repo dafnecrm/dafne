@@ -107,7 +107,7 @@ export function CustomerDetails({
         <Detail icon={FingerprintIcon} label={t("customers.fields.id")}>
           <div className="flex items-center gap-2">
             <code className="truncate font-sans text-xs">{customer.id}</code>
-            <CopyButton variant="ghost" value={String(customer.id)} />
+            <CopyButton variant="ghost" size="xs" value={String(customer.id)} />
           </div>
         </Detail>
         <Detail icon={CalendarPlusIcon} label={t("common.record.created")}>
