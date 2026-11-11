@@ -5,6 +5,7 @@ import {
   NumberField,
   PasswordField,
   SelectField,
+  SwitchField,
   TextareaField,
   TextEditorField,
   TextField,
@@ -24,6 +25,7 @@ export const FIELD_COMPONENTS = {
   DateTimePickerField,
   CheckboxField,
   SelectField,
+  SwitchField,
 };
 
 /** The form-level components, for `createFormHook({ formComponents })`. */

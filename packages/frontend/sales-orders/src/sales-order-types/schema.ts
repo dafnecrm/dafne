@@ -7,7 +7,12 @@ import { formSchema } from "@dafne/frontend-forms";
 import type { SalesOrderTypeDetail } from "./types.ts";
 
 /** Form values: every field is text, "" when blank. Keys follow the contract. */
-export type SalesOrderTypeFormValues = Record<keyof SalesOrderTypeBody, string>;
+export type SalesOrderTypeFormValues = Record<
+  Exclude<keyof SalesOrderTypeBody, "active">,
+  string
+> & {
+  active: boolean;
+};
 
 /**
  * The form validates with the backend's own schema (same rules and
@@ -23,6 +28,7 @@ export function salesOrderTypeFormOpts(salesOrderType?: SalesOrderTypeDetail) {
     defaultValues: {
       id: salesOrderType?.id ?? "",
       description: salesOrderType?.description ?? "",
+      active: salesOrderType?.active ?? true,
     } satisfies SalesOrderTypeFormValues as SalesOrderTypeFormValues,
   });
 }

@@ -5,12 +5,15 @@ import {
   UserPenIcon,
   UserPlusIcon,
   TextIcon,
+  ToggleLeftIcon,
+  CircleAlertIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import CopyButton from "@dafne/frontend-ui/components/copy-button";
 import { Detail, DetailSection } from "@dafne/frontend-ui/components/detail";
 import { LocalDate } from "@dafne/frontend-ui/components/local-date";
 import type { SalesOrderTypeDetail } from "../types.ts";
+import { Alert, AlertDescription, AlertTitle } from "@dafne/frontend-ui/components/alert";
 
 /** The details of a sales order type: its fields, then who created and updated it. */
 export function SalesOrderTypeDetails({
@@ -21,9 +24,22 @@ export function SalesOrderTypeDetails({
   const t = useTranslations();
   return (
     <>
+      {!salesOrderType.active && <Alert>
+        <CircleAlertIcon />
+        <AlertTitle>{t('salesOrderTypes.inactiveAlert.title')}</AlertTitle>
+        <AlertDescription>{t('salesOrderTypes.inactiveAlert.description')}</AlertDescription>
+      </Alert>}
       <DetailSection title={t("salesOrderTypes.sections.details")}>
         <Detail icon={TextIcon} label={t("salesOrderTypes.fields.description")}>
           {salesOrderType.description}
+        </Detail>
+        <Detail
+          icon={ToggleLeftIcon}
+          label={t("salesOrderTypes.fields.active")}
+        >
+          {salesOrderType.active === null
+            ? "—"
+            : t(salesOrderType.active ? "common.yes" : "common.no")}
         </Detail>
       </DetailSection>
       <DetailSection title={t("common.record.title")}>
@@ -32,7 +48,7 @@ export function SalesOrderTypeDetails({
             <code className="truncate font-sans text-xs">
               {salesOrderType.id}
             </code>
-            <CopyButton variant="ghost" value={String(salesOrderType.id)} />
+            <CopyButton variant="ghost" size="xs" value={String(salesOrderType.id)} />
           </div>
         </Detail>
         <Detail icon={CalendarPlusIcon} label={t("common.record.created")}>

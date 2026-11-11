@@ -26,7 +26,13 @@ export const en = {
     createdAt: "Added",
     id: "Sales order type ID",
     description: "Description",
+    active: "Active",
+    inactive: "Inactive",
   },
+  inactiveAlert: {
+    title: "Sales order type is inactive.",
+    description: "It cannot be used in sales orders."
+  }
 };
 
 /** The shape every language must have: same keys, any text. */

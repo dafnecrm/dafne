@@ -12,6 +12,7 @@ import { msg } from './messages/index.ts';
 export const salesOrderTypeBodySchema = z.strictObject({
   id: requiredText(5, msg('salesOrderTypes.id.required')),
   description: requiredText(255, msg('salesOrderTypes.description.required')),
+  active: z.boolean().nullish().transform((value) => value ?? null),
 });
 
 /** What a client sends: blank optional fields may be "", null or missing. */
@@ -20,7 +21,7 @@ export type SalesOrderTypeBodyInput = z.input<typeof salesOrderTypeBodySchema>;
 export type SalesOrderTypeBody = z.output<typeof salesOrderTypeBodySchema>;
 
 /** Sales order type fields the list can be sorted by. */
-export const SALES_ORDER_TYPE_SORT_FIELDS = ['id', 'description', 'createdAt', 'updatedAt'] as const;
+export const SALES_ORDER_TYPE_SORT_FIELDS = ['id', 'description', 'active', 'createdAt', 'updatedAt'] as const;
 export type SalesOrderTypeSortField =
   (typeof SALES_ORDER_TYPE_SORT_FIELDS)[number];
 
@@ -29,7 +30,7 @@ export type SalesOrderTypeSortField =
  * its own. Filters combine with AND and match text the field contains
  * (the id matches exactly).
  */
-export const SALES_ORDER_TYPE_FILTER_FIELDS = ['id', 'description'] as const;
+export const SALES_ORDER_TYPE_FILTER_FIELDS = ['id', 'description', 'active'] as const;
 export type SalesOrderTypeFilterField =
   (typeof SALES_ORDER_TYPE_FILTER_FIELDS)[number];
 
@@ -38,6 +39,9 @@ export const listSalesOrderTypesQuerySchema = z.strictObject({
   ...pageQuery,
   id: z.string().max(5).optional(),
   description: z.string().max(255).optional(),
+  active: z.enum(['true', 'false']).optional(),
+  /** Free text: sales order types whose id or description contains it. */
+  search: z.string().max(255).optional(),
   /** Defaults to createdAt. */
     sortBy: z.enum(SALES_ORDER_TYPE_SORT_FIELDS).optional(),
   /** Defaults to asc. */
@@ -53,6 +57,7 @@ export type ListSalesOrderTypesQuery = z.output<
 export interface ListedSalesOrderType {
   id: string;
   description: string;
+  active: boolean | null;
   createdAt: Date;
   updatedAt: Date;
 }

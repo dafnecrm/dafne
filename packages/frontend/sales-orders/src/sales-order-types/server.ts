@@ -26,11 +26,14 @@ export async function listSalesOrderTypes({
   limit,
   offset,
   filters = {},
+  search,
   sort = SALES_ORDER_TYPES_DEFAULT_SORT,
 }: {
   limit: number;
   offset: number;
   filters?: TableFilters;
+  /** Text the id or the description contains. */
+  search?: string;
   sort?: TableSort;
 }): Promise<SalesOrderTypesList> {
   const query = new URLSearchParams({
@@ -40,8 +43,12 @@ export async function listSalesOrderTypes({
   for (const [field, value] of Object.entries(filters)) {
     query.set(field, value);
   }
+  if (search) {
+    query.set("search", search);
+  }
   query.set("sortBy", sort.id);
   query.set("sortDirection", sort.desc ? "desc" : "asc");
   const res = await backendFetch(`/sales-order-types?${query}`);
   return res.json();
 }
+

@@ -1,0 +1,1 @@
+ALTER TABLE "sales"."sales_order_type" ADD COLUMN "active" boolean DEFAULT true;

@@ -2,7 +2,7 @@ import { schema } from '@dafne/backend-database';
 import { getDrizzleToken } from '@nestjs/drizzle';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { and, asc, desc, eq, isNull } from 'drizzle-orm';
+import { and, asc, desc, eq, ilike, isNull, or } from 'drizzle-orm';
 import {
   salesOrderTypeBodySchema,
   type SalesOrderTypeBodyInput,
@@ -100,6 +100,23 @@ describe('SalesOrderTypesService', () => {
       );
       expect(select.limit).toHaveBeenCalledWith(5);
       expect(select.offset).toHaveBeenCalledWith(10);
+    });
+
+    it('searches the id or the description, with the other filters', async () => {
+      await service.listSalesOrderTypes({ active: 'true', search: ' 5%_ ' });
+
+      const where = select.where.mock.calls[0][0];
+      const pattern = '%5\\%\\_%';
+      expect(where).toEqual(
+        and(
+          notDeleted,
+          eq(salesOrderType.active, true),
+          or(
+            ilike(salesOrderType.id, pattern),
+            ilike(salesOrderType.description, pattern),
+          ),
+        ),
+      );
     });
   });
 

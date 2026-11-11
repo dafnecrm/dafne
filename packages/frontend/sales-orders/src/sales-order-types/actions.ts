@@ -118,24 +118,24 @@ export async function getSalesOrderTypeOption(
 
 
 /**
- * The sales order types whose name contains `name` (all when blank), sorted by
- * name: the first `limit`, for a picker that searches as the user types
- * (SalesOrderTypeSelect). Server actions, since backendFetch only runs on the
- * server.
+ * The active sales order types whose id or description contains `search`
+ * (all when blank): the first `limit`, for a picker that searches as the
+ * user types (SalesOrderTypeSelect). Server actions, since backendFetch only
+ * runs on the server.
  */
 export async function searchSalesOrderTypes({
-  description,
+  search = "",
   limit = 20,
 }: {
-  description: string;
+  search?: string;
   limit?: number;
-}): Promise<SalesOrderTypeOption[]> {
-  const query = description.trim();
+} = {}): Promise<SalesOrderTypeOption[]> {
   const list = await listSalesOrderTypes({
     // The backend allows up to 100.
     limit: Math.min(Math.max(limit, 1), 100),
     offset: 0,
-    filters: query ? { description: query } : {},
+    filters: { active: "true" },
+    search: search.trim() || undefined,
   });
   return list.salesOrderTypes.map(({ id, description }) => ({ id, description }));
 }

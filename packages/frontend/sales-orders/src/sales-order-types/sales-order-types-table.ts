@@ -37,6 +37,7 @@ export function defineSalesOrderTypesTable({
     sortable: [
       "id",
       "description",
+      "active",
       "createdAt",
       "updatedAt",
     ] satisfies SalesOrderTypeSortField[],
@@ -51,6 +52,15 @@ export function defineSalesOrderTypesTable({
         field: "description" satisfies SalesOrderTypeFilterField,
         label:
           "salesOrderTypes.fields.description" satisfies SalesOrderTypesMessageKey,
+      },
+      {
+        field: "active" satisfies SalesOrderTypeFilterField,
+        label:
+          "salesOrderTypes.fields.active" satisfies SalesOrderTypesMessageKey,
+        options: [
+          { value: "true", label: "common.yes" },
+          { value: "false", label: "common.no" },
+        ],
       },
     ],
   });
