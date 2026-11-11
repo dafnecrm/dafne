@@ -15,53 +15,137 @@ permissions:
   actions: read
 
 jobs:
-  affected:
+  # Which scopes the changed files touch, without installing anything.
+  changes:
     runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.groups.outputs.code }}
+      groups: ${{ steps.groups.outputs.groups }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # backend: apps/sales-api, apps/auth, packages/backend
+      # frontend: apps/sales-web, packages/frontend
+      # tooling: packages/cli
+      # Anything else (contracts, auth-options, lockfile, root config, tools,
+      # .github) runs every scope. Only documentation (*.md, docs/) runs none.
+      - id: groups
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          backend=false; frontend=false; tooling=false
+          if ! files=$(git diff --name-only "$BASE" HEAD); then
+            backend=true; frontend=true; tooling=true
+          else
+            while read -r f; do
+              case "$f" in
+                "" | *.md | docs/*) ;;
+                apps/sales-api/* | apps/auth/* | packages/backend/*) backend=true ;;
+                apps/sales-web/* | packages/frontend/*) frontend=true ;;
+                packages/cli/*) tooling=true ;;
+                *) backend=true; frontend=true; tooling=true ;;
+              esac
+            done <<< "$files"
+          fi
+          groups=()
+          if [ "$backend" = true ]; then groups+=('"backend"'); fi
+          if [ "$frontend" = true ]; then groups+=('"frontend"'); fi
+          if [ "$tooling" = true ]; then groups+=('"tooling"'); fi
+          json="[$(IFS=,; echo "${groups[*]}")]"
+          echo "Scopes to check: $json"
+          echo "groups=$json" >> "$GITHUB_OUTPUT"
+          if [ "$json" = "[]" ]; then
+            echo "code=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "code=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  # The whole project graph: references and boundaries. On main it also
+  # saves the pnpm store, the only cache this repo keeps.
+  graph:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: setup
+        uses: ./.github/actions/setup
+
+      # Project references in line with the package.json dependencies (nx sync).
+      - run: pnpm nx sync:check
+
+      # Who may depend on whom (tools/boundaries.mjs): the frontend never on the backend.
+      - run: pnpm boundaries
+
+      - if: github.event_name == 'push' && steps.setup.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ steps.setup.outputs.store-path }}
+          key: ${{ steps.setup.outputs.cache-key }}
+
+      # Keeps one store: deletes those of older lockfiles (and the old
+      # setup-node "node-cache-" entries).
+      - if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          KEY: ${{ steps.setup.outputs.cache-key }}
+        run: |
+          for prefix in pnpm-store- node-cache-; do
+            gh cache list --key "$prefix" --limit 100 --json id,key \
+              --jq ".[] | select(.key != \"$KEY\") | .id" |
+              while read -r id; do
+                gh cache delete "$id"
+              done
+          done
+
+  # lint, typecheck, test and build of the affected projects, one runner per
+  # scope (nx.tags), in parallel. Shared packages run with the backend.
+  group:
+    needs: changes
+    if: needs.changes.outputs.groups != '[]'
+    runs-on: ubuntu-latest
+    name: ${{ matrix.group }}
+    strategy:
+      fail-fast: false
+      matrix:
+        group: ${{ fromJSON(needs.changes.outputs.groups) }}
     steps:
       - uses: actions/checkout@v4
         with:
           # nx affected compares with the base commit, so it needs the history.
           fetch-depth: 0
 
-      # Only documentation changed (*.md, docs/): the job passes without
-      # running the rest, so the required "affected" check still turns green.
-      - id: changes
-        env:
-          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
-        run: |
-          if ! files=$(git diff --name-only "$BASE" HEAD); then
-            echo "code=true" >> "$GITHUB_OUTPUT"
-          elif echo "$files" | grep -qvE '(\.md$|^docs/)'; then
-            echo "code=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "Only documentation changed: skipping the checks."
-            echo "code=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      # Version from "packageManager" in package.json.
-      - uses: pnpm/action-setup@v6
-        if: steps.changes.outputs.code == 'true'
-
-      - uses: actions/setup-node@v4
-        if: steps.changes.outputs.code == 'true'
-        with:
-          node-version: 26
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
-        if: steps.changes.outputs.code == 'true'
+      - uses: ./.github/actions/setup
 
       # Sets NX_BASE / NX_HEAD: the PR's base, or main's last green commit.
       - uses: nrwl/nx-set-shas@v4
-        if: steps.changes.outputs.code == 'true'
 
-      # Project references in line with the package.json dependencies (nx sync).
-      - run: pnpm nx sync:check
-        if: steps.changes.outputs.code == 'true'
+      - env:
+          GROUP: ${{ matrix.group }}
+        run: |
+          case "$GROUP" in
+            backend) exclude='*,!tag:scope:backend,!tag:scope:shared' ;;
+            frontend) exclude='*,!tag:scope:frontend' ;;
+            tooling) exclude='*,!tag:scope:tooling' ;;
+          esac
+          pnpm nx affected -t lint typecheck test build --exclude="$exclude" --outputStyle=static --parallel=4
 
-      # Who may depend on whom (tools/boundaries.mjs): the frontend never on the backend.
-      - run: pnpm boundaries
-        if: steps.changes.outputs.code == 'true'
-
-      - run: pnpm nx affected -t lint typecheck test build --outputStyle=static --parallel=4
-        if: steps.changes.outputs.code == 'true'
+  # The check main requires: green when every job above passed or was skipped
+  # (a documentation-only PR skips them all).
+  affected:
+    needs: [changes, graph, group]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: |
+          echo "A CI job failed or was cancelled."
+          exit 1
+      - run: echo "All checks passed."

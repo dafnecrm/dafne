@@ -1,0 +1,42 @@
+name: Setup
+description: pnpm, Node and the workspace's dependencies, restoring the pnpm store saved by main.
+
+outputs:
+  cache-key:
+    description: Key of the pnpm store for this lockfile.
+    value: ${{ steps.store.outputs.key }}
+  cache-hit:
+    description: "'true' when the store for this exact lockfile was restored."
+    value: ${{ steps.restore.outputs.cache-hit }}
+  store-path:
+    description: Path of the pnpm store.
+    value: ${{ steps.store.outputs.path }}
+
+runs:
+  using: composite
+  steps:
+    # Version from "packageManager" in package.json.
+    - uses: pnpm/action-setup@v6
+
+    # No "cache:" here: it would save a store from every PR and fill the
+    # Actions cache. Only main saves it (ci.yml, graph job).
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 26
+
+    - id: store
+      shell: bash
+      run: |
+        echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+        echo "key=pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}" >> "$GITHUB_OUTPUT"
+
+    # Restore only: falls back to main's store of an older lockfile.
+    - id: restore
+      uses: actions/cache/restore@v4
+      with:
+        path: ${{ steps.store.outputs.path }}
+        key: ${{ steps.store.outputs.key }}
+        restore-keys: pnpm-store-${{ runner.os }}-
+
+    - shell: bash
+      run: pnpm install --frozen-lockfile
