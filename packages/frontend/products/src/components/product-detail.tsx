@@ -33,7 +33,7 @@ export function ProductDetails({ product }: { product: ProductDetail }) {
           )}
         </Detail>
       </DetailSection>
-      <DetailSection title={t("common.record.title")}>
+      <DetailSection title={t("common.record.title")} defaultOpen={false}>
         <Detail icon={FingerprintIcon} label={t("products.fields.id")}>
           <div className="flex items-center gap-2">
             <code className="truncate font-sans text-xs">{product.id}</code>

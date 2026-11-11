@@ -338,7 +338,7 @@ function TextEditorContent({
   return (
     <div
       data-slot="text-editor-content"
-      className={cn('text-editor-content', className)}
+      className={cn('text-editor-content min-h-20', className)}
       dangerouslySetInnerHTML={{ __html: clean }}
     />
   )

@@ -20,6 +20,8 @@ import { SalesOrderItemTable } from "./sales-order-items-table.tsx";
 import { SALES_ORDER_STATUS_OPTIONS } from "../sales-orders-table.ts";
 import { useOptionLabel } from "@dafne/frontend-ui/hooks/use-option-labels";
 
+/** @dafne-ignore: customerId, typeId */
+
 /**
  * The details of a sales order: its fields, then who created and updated it.
  * The customer links to `<customersPath>/<id>`, the app's customer page.
@@ -50,6 +52,9 @@ export function SalesOrderDetails({
             {salesOrder.customer.name}
           </Link>
         </Detail>
+        <Detail icon={TagIcon} label={t("salesOrders.fields.status")}>
+          {optionLabel(SALES_ORDER_STATUS_OPTIONS, salesOrder.status)}
+        </Detail>
         <Detail icon={TextIcon} label={t("salesOrders.fields.notes")} wide>
           {salesOrder.notes ? (
             <TextEditorContent
@@ -59,15 +64,6 @@ export function SalesOrderDetails({
           ) : (
             "—"
           )}
-        </Detail>
-        <Detail icon={TagIcon} label={t("salesOrders.fields.status")}>
-          {optionLabel(SALES_ORDER_STATUS_OPTIONS, salesOrder.status)}
-        </Detail>
-        <Detail icon={LinkIcon} label={t("salesOrders.fields.customerId")}>
-          <code className="font-sans text-xs">{salesOrder.customerId}</code>
-        </Detail>
-        <Detail icon={LinkIcon} label={t("salesOrders.fields.typeId")}>
-          <code className="font-sans text-xs">{salesOrder.typeId}</code>
         </Detail>
       </DetailSection>
       <DetailSection
@@ -80,7 +76,7 @@ export function SalesOrderDetails({
           path={path}
         />
       </DetailSection>
-      <DetailSection title={t("common.record.title")}>
+      <DetailSection title={t("common.record.title")} defaultOpen={false}>
         <Detail icon={FingerprintIcon} label={t("salesOrders.fields.id")}>
           <div className="flex items-center gap-2">
             <code className="truncate font-sans text-xs">{salesOrder.id}</code>
