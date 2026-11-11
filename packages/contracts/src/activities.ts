@@ -57,9 +57,9 @@ export const listActivitiesQuerySchema = z.strictObject({
   type: z.enum(ACTIVITY_TYPES).optional(),
   status: z.enum(ACTIVITY_STATUSES).optional(),
   completedById: z.string().max(36).optional(),
-  /** Defaults to name. */
+  /** Defaults to id. */
     sortBy: z.enum(ACTIVITY_SORT_FIELDS).optional(),
-  /** Defaults to asc. */
+  /** Defaults to desc. */
     sortDirection: z.enum(SORT_DIRECTIONS).optional(),
 });
 export type ListActivitiesQuery = z.output<typeof listActivitiesQuerySchema>;

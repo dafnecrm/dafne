@@ -484,13 +484,13 @@ describe('remove-backend-db-column', () => {
     expect(table).toContain("number: varchar('number'");
     const contract = read('packages/contracts/src/invoices.ts');
     expect(contract).not.toMatch(/\bname: requiredText|INVOICE_STATUSES|InvoiceStatus|status/);
-    expect(contract).toContain('/** Defaults to createdAt. */');
+    expect(contract).toContain('/** Defaults to id. */');
     const service = read('packages/backend/invoices/src/invoices.service.ts');
-    expect(service).toContain("sortBy = 'createdAt'");
+    expect(service).toContain("sortBy = 'id'");
     expect(service).not.toMatch(/body\.name|invoice\.name/);
     // The specs follow: the default order, the filter test, the expected rows and failures.
     const serviceSpec = read('packages/backend/invoices/src/invoices.service.spec.ts');
-    expect(serviceSpec).toContain('asc(invoice.createdAt)');
+    expect(serviceSpec).toContain('desc(invoice.id)');
     expect(serviceSpec).not.toMatch(/invoice\.name\b|body\(\{ name/);
     const contractSpec = read('packages/contracts/src/invoices.spec.ts');
     expect(contractSpec).not.toMatch(/rejects a blank name|name: /);

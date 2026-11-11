@@ -141,9 +141,9 @@ export const listCustomersQuerySchema = z.strictObject({
   phone: z.string().max(32).optional(),
   /** Free text: customers whose id is it or whose name contains it. */
   search: z.string().max(255).optional(),
-  /** Defaults to name. */
+  /** Defaults to id. */
     sortBy: z.enum(CUSTOMER_SORT_FIELDS).optional(),
-  /** Defaults to asc. */
+  /** Defaults to desc. */
     sortDirection: z.enum(SORT_DIRECTIONS).optional(),
 });
 export type ListCustomersQuery = z.output<typeof listCustomersQuerySchema>;

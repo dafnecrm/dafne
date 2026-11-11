@@ -57,8 +57,8 @@ export class <%= p.pascal %>Service {
     const {
       limit = <%= p.constant %>_DEFAULT_PAGE_SIZE,
       offset = 0,
-      sortBy = 'createdAt',
-      sortDirection = 'asc',
+      sortBy = 'id',
+      sortDirection = 'desc',
     } = query;
     const { db } = this;
     const filters = <%= s.constant %>_FILTER_FIELDS.flatMap((field) => {

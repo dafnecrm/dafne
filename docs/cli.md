@@ -349,7 +349,7 @@ with its contract: the form with the body, the list and the detail with the
 responses. Fields the contract gained are added; those it dropped are
 removed (inputs, defaults, columns, sort and filter fields, `<Detail>`s, enum
 labels and the imports and message keys only they used), and a default sort
-on a dropped field moves to `createdAt`. Where the pages still read a
+on a dropped field moves to `id`. Where the pages still read a
 dropped field (the title in `[id]/page.tsx`, the breadcrumb, the dialogs,
 the row actions), the record's label takes its place,
 `${t("orders.singular")} ${order.id}` ("Order 12"), and the field leaves

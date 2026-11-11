@@ -46,9 +46,9 @@ export const listProductsQuerySchema = z.strictObject({
       .regex(/^\s*\d{0,9}\s*$/)
       .optional(),
   name: z.string().max(255).optional(),
-  /** Defaults to name. */
+  /** Defaults to id. */
     sortBy: z.enum(PRODUCT_SORT_FIELDS).optional(),
-  /** Defaults to asc. */
+  /** Defaults to desc. */
     sortDirection: z.enum(SORT_DIRECTIONS).optional(),
 });
 export type ListProductsQuery = z.output<typeof listProductsQuerySchema>;

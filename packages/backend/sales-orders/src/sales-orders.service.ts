@@ -84,7 +84,7 @@ export class SalesOrdersService {
    * every field given (AND, each matching text the field contains).
    */
   async listSalesOrders(query: ListSalesOrdersQuery = {}): Promise<SalesOrdersList> {
-    const { limit = SALES_ORDERS_DEFAULT_PAGE_SIZE, offset = 0, sortBy = 'createdAt', sortDirection = 'asc' } = query;
+    const { limit = SALES_ORDERS_DEFAULT_PAGE_SIZE, offset = 0, sortBy = 'id', sortDirection = 'desc' } = query;
     const { db } = this;
     const filters = SALES_ORDER_FILTER_FIELDS.flatMap((field) => {
       const value = query[field]?.trim();

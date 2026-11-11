@@ -65,7 +65,7 @@ describe('<%= p.pascal %>Service', () => {
   });
 
   describe('list<%= p.pascal %>', () => {
-    it('lists <%= p.lower %> that are not deleted, oldest first', async () => {
+    it('lists <%= p.lower %> that are not deleted, newest first', async () => {
       await expect(service.list<%= p.pascal %>()).resolves.toEqual({
         <%= p.camel %>: rows,
         total: 42,
@@ -77,7 +77,7 @@ describe('<%= p.pascal %>Service', () => {
       expect(select.where).toHaveBeenCalledWith(where);
       expect(db.$count).toHaveBeenCalledWith(<%= s.camel %>, where);
       expect(select.orderBy).toHaveBeenCalledWith(
-        asc(<%= s.camel %>.createdAt),
+        desc(<%= s.camel %>.id),
         asc(<%= s.camel %>.id),
       );
     });
