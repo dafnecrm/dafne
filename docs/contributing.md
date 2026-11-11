@@ -47,6 +47,11 @@ Run the same locally before pushing:
 pnpm nx sync:check && pnpm boundaries && pnpm affected
 ```
 
+A **pre-push hook** ([lefthook](https://lefthook.dev), `lefthook.yml`)
+runs `nx affected -t typecheck test` against `origin/main` on every
+`git push`, and stops the push when one fails. `pnpm install` installs it.
+`git push --no-verify` skips it; CI stays the check `main` requires.
+
 ## Code owners
 
 `.github/CODEOWNERS` assigns the reviewers of each folder (apps, backend
