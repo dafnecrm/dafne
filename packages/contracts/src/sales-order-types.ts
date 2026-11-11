@@ -42,8 +42,8 @@ export const listSalesOrderTypesQuerySchema = z.strictObject({
   active: z.enum(['true', 'false']).optional(),
   /** Free text: sales order types whose id or description contains it. */
   search: z.string().max(255).optional(),
-  /** Defaults to createdAt. */
-    sortBy: z.enum(SALES_ORDER_TYPE_SORT_FIELDS).optional(),
+  /** Defaults to id. */
+  sortBy: z.enum(SALES_ORDER_TYPE_SORT_FIELDS).optional(),
   /** Defaults to asc. */
     sortDirection: z.enum(SORT_DIRECTIONS).optional(),
 });

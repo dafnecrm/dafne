@@ -5,7 +5,8 @@ import {
   pageQuery,
   requiredId,
   requiredInt,
-  requiredNumber
+  requiredNumber,
+  requiredText,
 } from './common.ts';
 import { msg } from './messages/index.ts';
 
@@ -32,7 +33,7 @@ export const salesOrderBodySchema = z.strictObject({
   status: z.enum(SALES_ORDER_STATUSES, { error: msg('salesOrders.status.required') }).optional(),
   notes: optionalText(z.string().max(65535)),
   customerId: requiredId(msg('salesOrders.customerId.required')),
-  typeId: requiredId(msg('salesOrders.typeId.required')),
+  typeId: requiredText(5, msg('salesOrders.typeId.required')),
   // Positions are the items' key (with the order): two equal ones can't be saved.
   items: z
     .array(salesOrderItemBodySchema)

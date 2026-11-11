@@ -69,7 +69,7 @@ describe('SalesOrderTypesService', () => {
   });
 
   describe('listSalesOrderTypes', () => {
-    it('lists sales order types that are not deleted, oldest first', async () => {
+    it('lists sales order types that are not deleted, by id', async () => {
       await expect(service.listSalesOrderTypes()).resolves.toEqual({
         salesOrderTypes: rows,
         total: 42,
@@ -81,7 +81,7 @@ describe('SalesOrderTypesService', () => {
       expect(select.where).toHaveBeenCalledWith(where);
       expect(db.$count).toHaveBeenCalledWith(salesOrderType, where);
       expect(select.orderBy).toHaveBeenCalledWith(
-        asc(salesOrderType.createdAt),
+        asc(salesOrderType.id),
         asc(salesOrderType.id),
       );
     });
