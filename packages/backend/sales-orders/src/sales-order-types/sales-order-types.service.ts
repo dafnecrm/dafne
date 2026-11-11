@@ -29,7 +29,7 @@ import {
   msg,
 } from '@dafne/contracts';
 
-export const DEFAULT_PAGE_SIZE = 20;
+export const SALES_ORDER_TYPES_DEFAULT_PAGE_SIZE = 20;
 
 const { salesOrderType } = schema;
 
@@ -73,7 +73,7 @@ export class SalesOrderTypesService {
     query: ListSalesOrderTypesQuery = {},
   ): Promise<SalesOrderTypesList> {
     const {
-      limit = DEFAULT_PAGE_SIZE,
+      limit = SALES_ORDER_TYPES_DEFAULT_PAGE_SIZE,
       offset = 0,
       sortBy = 'createdAt',
       sortDirection = 'asc',

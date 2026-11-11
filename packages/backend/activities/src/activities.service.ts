@@ -22,7 +22,7 @@ import {
   msg,
 } from '@dafne/contracts';
 
-export const DEFAULT_PAGE_SIZE = 20;
+export const ACTIVITIES_DEFAULT_PAGE_SIZE = 20;
 
 const { activity } = schema;
 
@@ -59,7 +59,7 @@ export class ActivitiesService {
     query: ListActivitiesQuery = {},
   ): Promise<ActivitiesList> {
     const {
-      limit = DEFAULT_PAGE_SIZE,
+      limit = ACTIVITIES_DEFAULT_PAGE_SIZE,
       offset = 0,
       sortBy = 'name',
       sortDirection = 'asc',

@@ -21,7 +21,7 @@ import { SALES_ORDER_STATE_MACHINE } from './sales-order.states.js';
 
 type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0];
 
-export const DEFAULT_PAGE_SIZE = 20;
+export const SALES_ORDERS_DEFAULT_PAGE_SIZE = 20;
 
 const { salesOrder, salesOrderItem, customer, salesOrderType } = schema;
 
@@ -84,7 +84,7 @@ export class SalesOrdersService {
    * every field given (AND, each matching text the field contains).
    */
   async listSalesOrders(query: ListSalesOrdersQuery = {}): Promise<SalesOrdersList> {
-    const { limit = DEFAULT_PAGE_SIZE, offset = 0, sortBy = 'createdAt', sortDirection = 'asc' } = query;
+    const { limit = SALES_ORDERS_DEFAULT_PAGE_SIZE, offset = 0, sortBy = 'createdAt', sortDirection = 'asc' } = query;
     const { db } = this;
     const filters = SALES_ORDER_FILTER_FIELDS.flatMap((field) => {
       const value = query[field]?.trim();

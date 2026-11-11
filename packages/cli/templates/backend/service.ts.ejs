@@ -15,7 +15,7 @@ import {
   msg,
 } from '@dafne/contracts';
 
-export const DEFAULT_PAGE_SIZE = 20;
+export const <%= p.constant %>_DEFAULT_PAGE_SIZE = 20;
 
 const { <%= s.camel %> } = schema;
 
@@ -55,7 +55,7 @@ export class <%= p.pascal %>Service {
    */
   async list<%= p.pascal %>(query: List<%= p.pascal %>Query = {}): Promise<<%= p.pascal %>List> {
     const {
-      limit = DEFAULT_PAGE_SIZE,
+      limit = <%= p.constant %>_DEFAULT_PAGE_SIZE,
       offset = 0,
       sortBy = 'createdAt',
       sortDirection = 'asc',

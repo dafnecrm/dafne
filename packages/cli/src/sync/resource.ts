@@ -3,7 +3,7 @@ import type { Changes } from '../core/changes.ts';
 import { formatSource } from '../core/format.ts';
 import { resourceNames, type ResourceNames } from '../core/names.ts';
 import { backendLib, CONTRACTS_SRC } from '../core/workspace.ts';
-import { contractFile } from '../pieces/backend.ts';
+import { contractFile, serviceFile } from '../pieces/backend.ts';
 import { readBody } from './body.ts';
 import { childRoles, MESSAGE_KEY_IMPORT, OPTIONAL_DATE_HELPER, syncChildContract, syncContract, type SyncReport } from './contract.ts';
 import { syncChildService, syncService } from './service.ts';
@@ -81,7 +81,7 @@ export async function syncOne(
   const leftBody = new Set([...dropped, ...[...bodyBefore].filter((k) => !bodyNow.some((f) => f.key === k))]);
 
   // The service's queries: list select, detail columns, insert and update.
-  const servicePath = `${backendLib(names.p.kebab)}/src/${names.p.kebab}.service.ts`;
+  const servicePath = serviceFile(changes, names);
   const serviceSource = service ? changes.read(servicePath) : undefined;
   if (serviceSource !== undefined) {
     const result = syncService(servicePath, serviceSource, names, info, dropped);

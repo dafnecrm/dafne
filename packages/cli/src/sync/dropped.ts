@@ -1,8 +1,7 @@
 import { Node, type PropertyAssignment, type SourceFile, SyntaxKind } from 'ts-morph';
 import type { Changes } from '../core/changes.ts';
 import { casings, words, type ResourceNames } from '../core/names.ts';
-import { backendLib } from '../core/workspace.ts';
-import { contractFile, tableFile } from '../pieces/backend.ts';
+import { contractFile, tableFile, serviceFile } from '../pieces/backend.ts';
 import { editSource, removeListElement } from '../wiring/ast.ts';
 import { readResponse } from './response.ts';
 import { readTable } from './table.ts';
@@ -84,7 +83,7 @@ export function syncDropped(changes: Changes, names: ResourceNames, dropped: str
     );
   }
 
-  const servicePath = `${backendLib(names.p.kebab)}/src/${names.p.kebab}.service.ts`;
+  const servicePath = serviceFile(changes, names);
   if (changes.exists(servicePath)) {
     // `sortBy = 'name',` in the list method.
     let defaultDropped = false;

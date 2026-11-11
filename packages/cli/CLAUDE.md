@@ -15,7 +15,10 @@ erasable syntax (no enums, namespaces or constructor parameter properties;
 - `generators.json`: the Nx generators (`nx g @dafne/cli:<name>`), each in
   `src/generators/<name>/` with `generator.ts` (default export) and
   `schema.json`:
-  - `backend-resource`: contract, table, lib, service, controller; then the
+  - `backend-resource`: contract, table, lib, service, controller (in a
+    lib of its own, or with `lib` in `packages/backend/<lib>/src/<plural>`
+    of an existing one: `Ctx.lib`, `resourceSrc`; `serviceFile` finds the
+    service either way for the syncs); then the
     `fields` (`name:type[:option…]`) go into the table and the contract,
     service and specs are synced with them.
   - `backend-lib`: an empty lib, named as given (not pluralized).
@@ -56,8 +59,8 @@ erasable syntax (no enums, namespaces or constructor parameter properties;
   `src/generators/run.ts` (`runGenerator`) wraps them: change set, Prettier,
   warnings, and the next steps printed after Nx writes the files.
 - `src/index.ts`, `src/commands/`: the `dafne` command (commander, clack).
-  `generate.ts` asks for what's missing (for a backend resource, the
-  fields, with the questions in `field-prompts.ts`) and runs `nx g`: its
+  `generate.ts` asks for what's missing (for a backend resource, a new
+  lib or an existing one, the id, the fields, with the questions in `field-prompts.ts`) and runs `nx g`: its
   kinds are the generators' names, and it rejects options a kind doesn't
   take. `remove.ts` (`dafne remove backend-db-column`: asks for the table
   and the columns, runs the generator, then `db generate` unless

@@ -6,9 +6,9 @@ import { findFrontendTarget, frontendLibs, libName } from '../core/frontend-targ
 import { DEFAULT_ID_LENGTH, ID_TYPES, idSpec, type IdSpec, type IdType } from '../core/id.ts';
 import { resourceNames } from '../core/names.ts';
 import { findWorkspaceRoot, runNx } from '../core/nx.ts';
-import { DEFAULT_APP, DEFAULT_FRONTEND_APP, frontendApp, frontendLib } from '../core/workspace.ts';
+import { backendLib, DEFAULT_APP, DEFAULT_FRONTEND_APP, frontendApp, frontendLib } from '../core/workspace.ts';
 import { FIELD_SPEC_HELP, formatFieldSpec, parseFieldSpec } from '../fields/parse.ts';
-import { tableFile } from '../pieces/backend.ts';
+import { backendLibs, tableFile } from '../pieces/backend.ts';
 import { askNewFields, cancelled, interactive } from './field-prompts.ts';
 
 /*
@@ -38,7 +38,7 @@ const RESOURCE_KINDS: Kind[] = ['backend-resource', 'contract', 'frontend-resour
 /** Kinds with an --app: a backend app, or a frontend one. */
 const BACKEND_APP_KINDS: Kind[] = ['backend-resource', 'backend-lib'];
 const FRONTEND_APP_KINDS: Kind[] = ['frontend-resource', 'frontend-list', 'frontend-detail', 'frontend-form', 'frontend-actions', 'frontend-data', 'frontend-nav', 'frontend-lib'];
-/** Kinds that go into the app or into a frontend lib (--lib). */
+/** Kinds that go into the app or into a frontend lib (--lib); backend-resource takes --lib too, a backend lib. */
 const LIB_KINDS: Kind[] = ['frontend-resource', 'frontend-list', 'frontend-detail', 'frontend-form', 'frontend-actions', 'frontend-data'];
 /** Kinds with --icon, and with --section/--admin. */
 const ICON_KINDS: Kind[] = ['frontend-resource', 'frontend-list', 'frontend-nav'];
@@ -227,6 +227,34 @@ async function frontendLibOf(root: string, kind: Kind, name: string, options: Ge
   return libName(lib);
 }
 
+/**
+ * The backend lib a new resource's module goes into (undefined: a lib of its
+ * own): --lib, or asked (unless -y, or the resource exists already).
+ */
+async function backendLibOf(root: string, name: string, options: GenerateOptions): Promise<string | undefined> {
+  if (options.lib) {
+    return libName(options.lib);
+  }
+  const changes = new Changes(new FsTree(root, false));
+  const names = resourceNames(name);
+  if (!interactive(options) || changes.exists(tableFile(names))) {
+    return undefined;
+  }
+  const choice = cancelled<string>(
+    await p.select<string>({
+      message: 'Where should the module go?',
+      initialValue: NEW_LIB,
+      options: [
+        { value: NEW_LIB, label: 'a new lib', hint: backendLib(names.p.kebab) },
+        ...backendLibs(changes)
+          .filter((lib) => lib !== names.p.kebab)
+          .map((lib) => ({ value: lib, label: lib, hint: `${backendLib(lib)}/src/${names.p.kebab}` })),
+      ],
+    }),
+  );
+  return choice === NEW_LIB ? undefined : choice;
+}
+
 export function generateCommand() {
   return new Command('generate')
     .alias('g')
@@ -239,7 +267,7 @@ export function generateCommand() {
     )
     .option(
       '--lib <name>',
-      'frontend-resource and its parts but nav: the frontend lib (packages/frontend/<name>, created if missing) for the data, actions, components and texts; the pages stay in the app (default: where the resource is, else asked, else the app)',
+      'frontend-resource and its parts but nav: the frontend lib (packages/frontend/<name>, created if missing) for the data, actions, components and texts; the pages stay in the app (default: where the resource is, else asked, else the app). backend-resource: an existing backend lib for the module (packages/backend/<name>/src/<plural>; default: asked, else a new lib)',
     )
     .option('--field <spec>', `backend-resource: a field of the new table, repeatable: ${FIELD_SPEC_HELP}`, (value: string, previous: string[] = []) => [
       ...previous,
@@ -263,6 +291,7 @@ Examples:
     --field status:enum:values=draft|sent|paid:default=draft --field customer:ref:to=customers
   dafne g backend-resource payment --id-type uuid
   dafne g backend-resource voucher --id-type varchar --id-length 12
+  dafne g backend-resource sales-order-type --lib sales-orders   # in packages/backend/sales-orders/src/sales-order-types
   dafne g frontend-resource invoice --icon ReceiptIcon
   dafne g frontend-resource invoice --lib invoices   # in packages/frontend/invoices
   dafne g frontend-detail invoice          # one part (and the parts it needs), where the resource is
@@ -290,7 +319,7 @@ Same as: nx g @dafne/cli:<kind> <name> ...`,
       only('--id-type', ['backend-resource'], options.idType);
       only('--id-length', ['backend-resource'], options.idLength);
       only('--app', [...BACKEND_APP_KINDS, ...FRONTEND_APP_KINDS], options.app);
-      only('--lib', LIB_KINDS, options.lib);
+      only('--lib', [...LIB_KINDS, 'backend-resource'], options.lib);
       only('--port', ['backend-app', 'frontend-app'], options.port);
       only('--backend-url', ['frontend-app'], options.backendUrl);
       only('--icon', ICON_KINDS, options.icon);
@@ -299,6 +328,10 @@ Same as: nx g @dafne/cli:<kind> <name> ...`,
 
       const args = ['g', `@dafne/cli:${kind}`, name, '--no-interactive'];
       if (kind === 'backend-resource') {
+        const backend = await backendLibOf(root, name, options);
+        if (backend) {
+          args.push(`--lib=${backend}`);
+        }
         const id = await resourceId(root, name, options);
         if (id.type !== 'serial') {
           args.push(`--idType=${id.type}`);

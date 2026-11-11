@@ -21,7 +21,7 @@ import {
   msg,
 } from '@dafne/contracts';
 
-export const DEFAULT_PAGE_SIZE = 20;
+export const PRODUCTS_DEFAULT_PAGE_SIZE = 20;
 
 const { product } = schema;
 
@@ -54,7 +54,7 @@ export class ProductsService {
    */
   async listProducts(query: ListProductsQuery = {}): Promise<ProductsList> {
     const {
-      limit = DEFAULT_PAGE_SIZE,
+      limit = PRODUCTS_DEFAULT_PAGE_SIZE,
       offset = 0,
       sortBy = 'name',
       sortDirection = 'asc',

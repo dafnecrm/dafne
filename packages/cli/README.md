@@ -11,6 +11,7 @@ are asked interactively; `-y` fails instead.
 
 ```sh
 dafne g backend-resource invoice         # contract + table + lib with service and controller
+dafne g backend-resource invoice-line --lib invoices   # the module in packages/backend/invoices/src/invoice-lines
 dafne g backend-lib reports              # empty Nest lib: @dafne/backend-reports
 dafne g backend-lib jobs --app worker    # wire the lib into another app (default: sales-api)
 dafne g backend-app worker --port 3002   # NestJS app in apps/worker
@@ -25,7 +26,8 @@ dafne g frontend-lib charts              # @dafne/frontend-charts, used by apps/
 The kind is the generator's name. Options: `--dry-run`, `--force`
 (overwrite), `-y`; `--app` picks the app to generate into (a backend app
 for `backend-*`, a frontend one for `frontend-*`); `--lib` puts a frontend
-resource in a frontend lib (asked when left out); `--icon`, `--section`,
+resource in a frontend lib, and a backend resource's module in an existing
+backend lib (both asked when left out); `--icon`, `--section`,
 `--admin` set the sidebar link of a frontend resource.
 
 `g backend-resource` asks for the fields of the new table (an empty name ends the
