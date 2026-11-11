@@ -40,44 +40,50 @@ export function ensureReference(changes: Changes, tsconfig: string, ref: string)
   });
 }
 
-/** Adds a dependency to a package.json, keeping them sorted, unless it's there. */
-export function ensureDependency(changes: Changes, file: string, name: string, version: string) {
+/** Adds a dependency to a package.json (or a dev one), keeping them sorted, unless it's there. */
+export function ensureDependency(
+  changes: Changes,
+  file: string,
+  name: string,
+  version: string,
+  field: 'dependencies' | 'devDependencies' = 'dependencies',
+) {
   changes.update(file, (source) => {
-    const pkg = JSON.parse(source) as { dependencies?: Record<string, string> };
-    if (pkg.dependencies?.[name]) {
+    const pkg = JSON.parse(source) as Record<string, Record<string, string> | undefined>;
+    if (pkg[field]?.[name]) {
       return source;
     }
-    pkg.dependencies = Object.fromEntries(
-      Object.entries({ ...pkg.dependencies, [name]: version }).sort(([a], [b]) => a.localeCompare(b)),
+    pkg[field] = Object.fromEntries(
+      Object.entries({ ...pkg[field], [name]: version }).sort(([a], [b]) => a.localeCompare(b)),
     );
     return JSON.stringify(pkg, null, 2) + '\n';
   });
 }
 
 /**
- * Registers a lib (a workspace package) in a backend app: its dependency,
- * the TypeScript project references (the app's tsconfig and
- * tsconfig.build, and the root's, as `nx sync` would write them) and the
- * import in the app's root module. The new package still needs
- * `pnpm install` to be linked.
+ * Registers a resource's module in a backend app: the dependency on its lib
+ * (`lib`, default the resource's own), the TypeScript project references
+ * (the app's tsconfig and tsconfig.build, and the root's, as `nx sync`
+ * would write them) and the import in the app's root module. A new
+ * package still needs `pnpm install` to be linked.
  */
-export function wireLib(changes: Changes, { p }: ResourceNames, app = DEFAULT_APP) {
-  const name = backendPackage(p.kebab);
+export function wireLib(changes: Changes, { p }: ResourceNames, app = DEFAULT_APP, lib = p.kebab) {
+  const name = backendPackage(lib);
   const dir = backendApp(app);
   ensureDependency(changes, `${dir}/package.json`, name, 'workspace:*');
   // rspack bundles the lib's sources, but its npm packages are loaded from
   // the app's node_modules: the app lists them too.
-  const libJson = changes.read(`${backendLib(p.kebab)}/package.json`);
+  const libJson = changes.read(`${backendLib(lib)}/package.json`);
   const libDeps = libJson ? ((JSON.parse(libJson) as { dependencies?: Record<string, string> }).dependencies ?? {}) : {};
   for (const [dep, version] of Object.entries(libDeps)) {
     ensureDependency(changes, `${dir}/package.json`, dep, version);
   }
   for (const tsconfig of ['tsconfig.json', 'tsconfig.build.json']) {
     if (changes.exists(`${dir}/${tsconfig}`)) {
-      ensureReference(changes, `${dir}/${tsconfig}`, `../../${backendLib(p.kebab)}`);
+      ensureReference(changes, `${dir}/${tsconfig}`, `../../${backendLib(lib)}`);
     }
   }
-  ensureReference(changes, 'tsconfig.json', `./${backendLib(p.kebab)}`);
+  ensureReference(changes, 'tsconfig.json', `./${backendLib(lib)}`);
 
   const moduleClass = `${p.pascal}Module`;
   const modulePath = appModule(app);
@@ -90,14 +96,20 @@ export function wireLib(changes: Changes, { p }: ResourceNames, app = DEFAULT_AP
   );
 }
 
-/** Adds a controller or service to the lib's @Module and (services) to its index. */
+/**
+ * Adds a controller or service to the resource's @Module and (services) to
+ * its lib's index. In another lib (`lib`), the module sits in src/<plural>.
+ */
 export function wireIntoLib(
   changes: Changes,
   { p }: ResourceNames,
   kind: 'controller' | 'service',
+  lib = p.kebab,
 ) {
-  const src = `${backendLib(p.kebab)}/src`;
-  const modulePath = `${src}/${p.kebab}.module.ts`;
+  const nested = lib !== p.kebab;
+  const src = `${backendLib(lib)}/src`;
+  const dir = nested ? `${src}/${p.kebab}` : src;
+  const modulePath = `${dir}/${p.kebab}.module.ts`;
   const className = `${p.pascal}${kind === 'controller' ? 'Controller' : 'Service'}`;
   const fileImport = `./${p.kebab}.${kind}.js`;
 
@@ -114,8 +126,14 @@ export function wireIntoLib(
 
   // The controller stays private to the lib, like in the existing ones.
   if (kind === 'service') {
-    changes.update(`${src}/index.ts`, (source) => ensureExportStar(source, fileImport));
+    const specifier = nested ? `./${p.kebab}/${p.kebab}.service.js` : fileImport;
+    changes.update(`${src}/index.ts`, (source) => ensureExportStar(source, specifier));
   }
+}
+
+/** Exports a module in src/<plural> of another lib from that lib's index. */
+export function exportNestedModule(changes: Changes, { p }: ResourceNames, lib: string) {
+  changes.update(`${backendLib(lib)}/src/index.ts`, (source) => ensureExportStar(source, `./${p.kebab}/${p.kebab}.module.js`));
 }
 
 /** Exports the contract file from the contracts package (with .ts, see its index). */

@@ -134,6 +134,48 @@ describe('backend-resource', () => {
     expect(contract).toContain("VOUCHER_FILTER_FIELDS = ['id', 'code']");
   });
 
+  it('puts the module in a folder of an existing lib (lib)', async () => {
+    await generate(backendResourceGenerator, { name: 'invoice' });
+    const changes = await generate(backendResourceGenerator, { name: 'invoice-line', lib: 'invoices', fields: ['name:string:required'] });
+    const dir = 'packages/backend/invoices/src/invoice-lines';
+    expect(changes).toEqual(
+      expect.arrayContaining([
+        `CREATE ${dir}/invoice-lines.module.ts`,
+        `CREATE ${dir}/invoice-lines.service.ts`,
+        `CREATE ${dir}/invoice-lines.service.spec.ts`,
+        `CREATE ${dir}/invoice-lines.controller.ts`,
+      ]),
+    );
+    expect(changes).not.toContain('CREATE packages/backend/invoice-lines/package.json');
+    const index = read('packages/backend/invoices/src/index.ts');
+    expect(index).toContain("export * from './invoice-lines/invoice-lines.module.js';");
+    expect(index).toContain("export * from './invoice-lines/invoice-lines.service.js';");
+    // Each service names its page size: no clash in the lib's index.
+    expect(read(`${dir}/invoice-lines.service.ts`)).toContain('export const INVOICE_LINES_DEFAULT_PAGE_SIZE = 20;');
+    const module = read(`${dir}/invoice-lines.module.ts`);
+    expect(module).toContain('controllers: [InvoiceLinesController]');
+    expect(module).toContain('providers: [InvoiceLinesService]');
+    expect(read(`${dir}/invoice-lines.service.ts`)).toContain('name: body.name');
+    const app = read('apps/sales-api/src/sales-api.module.ts');
+    expect(app).toMatch(/import \{[^}]*\bInvoiceLinesModule\b[^}]*\} from '@dafne\/backend-invoices'/);
+    expect(app).toMatch(/imports: \[[\s\S]*InvoiceLinesModule/);
+    expect(read('apps/sales-api/package.json')).not.toContain('@dafne/backend-invoice-lines');
+    expect(read('tsconfig.json')).not.toContain('./packages/backend/invoice-lines');
+  });
+
+  it('adds what a generated lib depends on to the lib it goes into', async () => {
+    await generate(backendLibGenerator, { name: 'billing' });
+    await generate(backendResourceGenerator, { name: 'invoice', lib: 'billing' });
+    const pkg = JSON.parse(read('packages/backend/billing/package.json')) as Record<string, Record<string, string>>;
+    expect(pkg.dependencies).toMatchObject({ '@dafne/backend-session': 'workspace:*', '@dafne/contracts': 'workspace:*', 'drizzle-orm': 'catalog:' });
+    expect(pkg.devDependencies).toMatchObject({ '@nestjs/testing': 'catalog:' });
+    expect(read('apps/sales-api/package.json')).toContain('"drizzle-orm": "catalog:"');
+  });
+
+  it('rejects a lib that does not exist', async () => {
+    await expect(generate(backendResourceGenerator, { name: 'invoice', lib: 'billing' })).rejects.toThrow(/isn't a backend lib/);
+  });
+
   it('rejects an unknown id type, and a length without a varchar id', async () => {
     await expect(generate(backendResourceGenerator, { name: 'invoice', idType: 'bigint' })).rejects.toThrow(/isn't one of/);
     await expect(generate(backendResourceGenerator, { name: 'invoice', idType: 'uuid', idLength: 10 })).rejects.toThrow(/only for a varchar id/);

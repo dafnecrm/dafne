@@ -12,7 +12,7 @@ import {
   type ListCustomersQuery,
 } from '@dafne/contracts';
 
-export const DEFAULT_PAGE_SIZE = 20;
+export const CUSTOMERS_DEFAULT_PAGE_SIZE = 20;
 
 const { customer, customerAddress } = schema;
 
@@ -39,7 +39,7 @@ export class CustomersService {
    */
   async listCustomers(query: ListCustomersQuery = {}): Promise<CustomersList> {
     const {
-      limit = DEFAULT_PAGE_SIZE,
+      limit = CUSTOMERS_DEFAULT_PAGE_SIZE,
       offset = 0,
       sortBy = 'name',
       sortDirection = 'asc',

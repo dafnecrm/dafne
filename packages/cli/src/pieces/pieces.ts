@@ -7,6 +7,12 @@ export interface Ctx {
   names: ResourceNames;
   /** The app the resource goes into (apps/<app>): a backend app for backend pieces, a frontend one for frontend pieces. */
   app: string;
+  /**
+   * Backend pieces: the lib the resource's module goes into
+   * (packages/backend/<lib>, in src/<plural>); unset or the resource's
+   * own name: a lib of its own.
+   */
+  lib?: string;
   /** The primary key of a new backend resource; serial when unset. */
   id?: IdSpec;
 }

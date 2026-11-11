@@ -31,6 +31,10 @@
       "description": "Backend app the lib is registered in (apps/<app>).",
       "default": "sales-api"
     },
+    "lib": {
+      "type": "string",
+      "description": "Existing backend lib the module goes into (packages/backend/<lib>/src/<plural>, e.g. sales-order-types in sales-orders). Default: a lib of its own, packages/backend/<plural>. `dafne g backend-resource` asks for it."
+    },
     "force": { "type": "boolean", "description": "Overwrite files that already exist.", "default": false }
   },
   "required": ["name"]

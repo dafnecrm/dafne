@@ -39,9 +39,6 @@
       "path": "../../packages/backend/sales-orders"
     },
     {
-      "path": "../../packages/backend/sales-order-types"
-    },
-    {
       "path": "../../packages/backend/fsm"
     }
   ]

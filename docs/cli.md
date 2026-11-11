@@ -57,7 +57,7 @@ Common options:
 | `--force`             | overwrite files that already exist (otherwise creating one fails) |
 | `-y`, `--yes`         | never prompt                                                      |
 | `--app <name>`        | the app to generate into: `backend-lib`, `backend-resource` (default `sales-api`); `frontend-resource`, its parts and `frontend-lib` (default `sales-web`) |
-| `--lib <name>`        | `frontend-resource` and its parts but `nav`: the frontend lib for the code (`packages/frontend/<name>`, created if missing); asked when left out, the app with `-y` |
+| `--lib <name>`        | `frontend-resource` and its parts but `nav`: the frontend lib for the code (`packages/frontend/<name>`, created if missing); asked when left out, the app with `-y`. `backend-resource`: an existing backend lib for the module (`packages/backend/<name>/src/<plural>`); asked when left out, a new lib with `-y` |
 | `--port <port>`       | `backend-app` (3001; `PORT` overrides it), `frontend-app` (4001)  |
 | `--field <spec>`      | `backend-resource`: a field of the new table, repeatable          |
 | `--icon <name>`       | `frontend-resource`, `frontend-list`, `frontend-nav`: a lucide-react icon (default `FileIcon`) |
@@ -81,12 +81,18 @@ dafne g backend-resource invoice \
   --field status:enum:values=draft|sent|paid:default=draft \
   --field dueDate:date \
   --field customer:ref:to=customers
+dafne g backend-resource sales-order-type --lib sales-orders
 ```
 
 It creates, following the patterns of the `customers` resource:
 
 - `packages/backend/<plural>/`: the lib `@dafne/backend-<plural>` (module,
-  service, controller, specs), a workspace package;
+  service, controller, specs), a workspace package; or, with `--lib
+  <lib>` (the CLI asks: a new lib or an existing one), the same module,
+  service, controller and specs in `packages/backend/<lib>/src/<plural>/`
+  (as `sales-order-types` in `sales-orders`): the lib's index exports
+  the module and the service, the lib gets the dependencies a new
+  lib would have, and the app imports the module from `@dafne/backend-<lib>`;
 - `packages/contracts/src/<plural>.ts` and its spec;
 - `packages/backend/database/src/tables/<plural>.ts`.
 

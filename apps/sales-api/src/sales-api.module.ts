@@ -15,8 +15,7 @@ import { ActivitiesModule } from '@dafne/backend-activities';
 import { GeoModule } from '@dafne/backend-geo';
 import { ProductsModule } from '@dafne/backend-products';
 import { SessionModule } from '@dafne/backend-session';
-import { SalesOrdersModule } from '@dafne/backend-sales-orders';
-import { SalesOrderTypesModule } from '@dafne/backend-sales-order-types';
+import { SalesOrdersModule, SalesOrderTypesModule } from '@dafne/backend-sales-orders';
 
 @Module({
   imports: [

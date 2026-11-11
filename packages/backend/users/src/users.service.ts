@@ -19,7 +19,7 @@ import {
   msg,
 } from '@dafne/contracts';
 
-export const DEFAULT_PAGE_SIZE = 20;
+export const USERS_DEFAULT_PAGE_SIZE = 20;
 
 const { user } = schema;
 
@@ -77,7 +77,7 @@ export class UsersService {
   /** Lists users, paged and sorted, filtered by every field given (AND). */
   async getUsersList(query: ListUsersQuery = {}): Promise<UsersList> {
     const {
-      limit = DEFAULT_PAGE_SIZE,
+      limit = USERS_DEFAULT_PAGE_SIZE,
       offset = 0,
       sortBy = 'createdAt',
       sortDirection = 'desc',
