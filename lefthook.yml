@@ -1,0 +1,7 @@
+# Git hooks, installed by `pnpm install` (lefthook's install script).
+# Skip one push with `git push --no-verify`; CI still runs the full checks.
+pre-push:
+  jobs:
+    # Only the projects changed since main, and their dependents.
+    - name: typecheck and test and lint
+      run: pnpm nx affected -t typecheck test lint --base=origin/main --head=HEAD

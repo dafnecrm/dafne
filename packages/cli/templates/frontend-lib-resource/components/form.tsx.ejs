@@ -4,7 +4,7 @@ import { revalidateLogic } from "@tanstack/react-form-nextjs";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Button } from "@dafne/frontend-ui/components/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@dafne/frontend-ui/components/card";
+import { DetailSection } from "@dafne/frontend-ui/components/detail";
 import { FieldGroup } from "@dafne/frontend-ui/components/field";
 import { setServerError, useAppForm } from "@dafne/frontend-forms/client";
 import { useResetOnLeave } from "@dafne/frontend-forms/client";
@@ -54,17 +54,10 @@ export function <%= s.pascal %>Form({
       <form.AppForm>
         <FieldGroup>
           <form.FormErrors />
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                <h2>{t("<%= p.camel %>.sections.details")}</h2>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {/* The fields: dafne g/sync add one <form.AppField> per field of the contract's body. */}
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-3"></div>
-            </CardContent>
-          </Card>
+
+          <DetailSection title={t("<%= p.camel %>.sections.details")} groupVariant="grid">
+            {/* The fields: dafne g/sync add one <form.AppField> per field of the contract's body. */}
+          </DetailSection>
 
           <div className="flex justify-end gap-2">
             <Button

@@ -86,9 +86,8 @@ export const en = {
       quantity: { required: 'Enter the quantity' },
       enterAtLeastOneItem: 'Enter at least one item',
     },
-    type: { required: 'Enter the type' },
     typeId: {
-      required: 'Enter the type id',
+      required: 'Enter the sales order type',
       notFound: 'Choose a type from the list',
     },
     status: { required: 'Choose the status' }

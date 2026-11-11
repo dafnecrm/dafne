@@ -2,13 +2,13 @@ import type { SalesOrderTypesMessages } from "./en.ts";
 
 /** Sales order type texts in Italian: same keys as en.ts, checked by the type. */
 export const it: SalesOrderTypesMessages = {
-  title: "Sales order types",
-  singular: "Sales order type",
-  new: "New sales order type",
-  all: "All sales order types",
-  noun: "sales order types",
-  create: "Create sales order type",
-  editMeta: "Edit sales order type",
+  title: "Tipi ordine",
+  singular: "Tipo ordine",
+  new: "Nuovo tipo ordine",
+  all: "Tutti i tipi ordine",
+  noun: "tipi ordine",
+  create: "Crea tipo ordine",
+  editMeta: "Modifica tipo ordine",
   newDescription: "The sales order type's details.",
   editDescription: "Saving replaces the sales order type's details.",
   empty: {
@@ -21,8 +21,17 @@ export const it: SalesOrderTypesMessages = {
   notFound: "This sales order type no longer exists.",
   sections: { details: "Details" },
   fields: {
-    createdAt: "Added",
-    id: "Sales order type ID",
-    description: "Description",
+    createdAt: "Creato il",
+    id: "ID",
+    description: "Descrizione",
+    active: "Attivo",
+    inactive: "Inattivo",
   },
+  inactiveAlert: {
+    title: "Il tipo ordine è disattivato. ",
+    description: "Non può essere utilizzato negli ordini di vendita."
+  },
+  placeholder: 'Scegli un tipo ordine...',
+  loading: 'Sto caricando i tipi ordine...',
+  none: 'Nessun tipo ordine trovato',
 };

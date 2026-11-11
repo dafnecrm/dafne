@@ -9,17 +9,17 @@ import type { BaseFieldProps, OwnProps } from './base.ts'
 import { useErrorText } from './error-text.ts'
 
 export type TextFieldProps = BaseFieldProps & {
-  addons?: React.ReactNode[]
   uncontrolled?: boolean
+  children?: React.ReactNode
 } & Omit<React.ComponentProps<typeof Input>, OwnProps>
 
 export function TextField({
   label,
   className,
   controlClassName,
-  addons,
   uncontrolled,
   orientation,
+  children,
   ...props
 }: TextFieldProps) {
   const field = useFieldContext<string>()
@@ -35,7 +35,6 @@ export function TextField({
         {label}
       </FieldLabel>
       <InputGroup className={controlClassName}>
-        {addons}
         <InputGroupInput
           id={field.name}
           name={field.name}
@@ -46,6 +45,7 @@ export function TextField({
           {...props}
           readOnly={uncontrolled || props.readOnly}
         />
+        {children}
       </InputGroup>
       <FieldError>
         {field.state.meta.errors.length > 0 &&

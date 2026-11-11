@@ -5,11 +5,12 @@ import {
   HistoryIcon,
   UserPenIcon,
   UserPlusIcon,
-  TextIcon,
+  TextIcon, BanknoteIcon
 } from "lucide-react";
 import CopyButton from "@dafne/frontend-ui/components/copy-button";
 import { Detail, DetailSection } from "@dafne/frontend-ui/components/detail";
 import { LocalDate } from "@dafne/frontend-ui/components/local-date";
+import { Currency } from "@dafne/frontend-ui/components/currency";
 import type { ProductDetail } from "../types.ts";
 import { TextEditorContent } from "@dafne/frontend-ui/components/text-editor";
 
@@ -18,11 +19,14 @@ export function ProductDetails({ product }: { product: ProductDetail }) {
   const t = useTranslations();
   return (
     <>
-      <DetailSection title={t("products.sections.details")}>
-        <Detail icon={TextIcon} label={t("products.fields.price")}>
-          {product.price}
+      <DetailSection title={t("products.sections.details")} groupVariant="grid">
+        <Detail icon={TextIcon} label={t("products.fields.name")}>
+          {product.name}
         </Detail>
-        <Detail icon={TextIcon} label={t("products.fields.description")}>
+        <Detail icon={BanknoteIcon} label={t("products.fields.price")}>
+          <Currency value={product.price} />
+        </Detail>
+        <Detail icon={TextIcon} label={t("products.fields.description")} wide>
           {product.description ? (
             <TextEditorContent
               html={product.description}
@@ -33,11 +37,11 @@ export function ProductDetails({ product }: { product: ProductDetail }) {
           )}
         </Detail>
       </DetailSection>
-      <DetailSection title={t("common.record.title")}>
+      <DetailSection title={t("common.record.title")} defaultOpen={false}>
         <Detail icon={FingerprintIcon} label={t("products.fields.id")}>
           <div className="flex items-center gap-2">
             <code className="truncate font-sans text-xs">{product.id}</code>
-            <CopyButton variant="ghost" value={String(product.id)} />
+            <CopyButton variant="ghost" size="xs" value={String(product.id)} />
           </div>
         </Detail>
         <Detail icon={CalendarPlusIcon} label={t("common.record.created")}>

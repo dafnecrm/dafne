@@ -44,7 +44,6 @@ export const en = {
     loadError: "Couldn't load the item. Try again.",
     none: "No item yet.",
     noneDetail: "No item has been added.",
-    addOne: "Add a new item",
     positionTaken: "Another item already has this position",
     fields: {
       position: "Position",
@@ -53,11 +52,6 @@ export const en = {
       add: "Add",
       save: "Save",
     },
-  },
-  salesOrderTypes: {
-    placeholder: 'Choose a sales order type...',
-    loading: 'Loading sales order types...',
-    none: 'No sales order type found'
   },
   status: { draft: 'Draft', open: 'Open', completed: 'Completed', cancelled: 'Cancelled', rejected: 'Rejected' }
 };

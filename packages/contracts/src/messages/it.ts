@@ -83,10 +83,9 @@ export const it: ContractMessages = {
       quantity: { required: 'Inserisci la quantità' },
       enterAtLeastOneItem: 'Inserisci almeno un articolo',
     },
-    type: { required: 'Inserisci il tipo' },
     typeId: {
-      required: 'Enter the type id',
-      notFound: 'Scegli un tipo dall\'elenco',
+      required: 'Inserisci il tipo ordine',
+      notFound: 'Scegli un tipo ordine dall\'elenco',
     },
     status: { required: 'Scegli lo stato' }
   },

@@ -1,5 +1,5 @@
 import { defineRelationsPart } from 'drizzle-orm';
-import { index, timestamp, varchar } from 'drizzle-orm/pg-core';
+import { boolean, index, timestamp, varchar } from 'drizzle-orm/pg-core';
 import { user } from '../auth.js';
 import { salesSchema } from './sales.js';
 
@@ -13,6 +13,7 @@ export const salesOrderType = salesSchema.table(
     // A code the users pick (no default): in the contract's body.
     id: varchar('id', { length: 5 }).primaryKey(),
     description: varchar('description', { length: 255 }).notNull(),
+    active: boolean().default(true),
     createdAt: timestamp('created_at', { precision: 3, withTimezone: true })
       .defaultNow()
       .notNull(),

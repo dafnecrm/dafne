@@ -6,16 +6,19 @@ import { useTranslations } from "next-intl";
 import { Button } from "@dafne/frontend-ui/components/button";
 import {
   Card,
+  CardAction,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@dafne/frontend-ui/components/card";
-import { FieldGroup } from "@dafne/frontend-ui/components/field";
+import { FieldDescription, FieldGroup } from "@dafne/frontend-ui/components/field";
 import { setServerError, useAppForm } from "@dafne/frontend-forms/client";
 import { useResetOnLeave } from "@dafne/frontend-forms/client";
 import { saveSalesOrderType } from "../actions.ts";
 import { salesOrderTypeFormOpts, salesOrderTypeSchema } from "../schema.ts";
 import type { SalesOrderTypeDetail } from "../types.ts";
+import { CircleAlertIcon } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@dafne/frontend-ui/components/tooltip";
 
 /**
  * Creates a sales order type, or edits `salesOrderType`. Saving opens the sales order type's page
@@ -68,6 +71,26 @@ export function SalesOrderTypeForm({
               <CardTitle>
                 <h2>{t("salesOrderTypes.sections.details")}</h2>
               </CardTitle>
+              <CardAction>
+                <form.AppField name="active">
+                  {(field) => (
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <field.SwitchField
+                          aria-label={field.state.value
+                            ? t("salesOrderTypes.fields.active")
+                            : t("salesOrderTypes.fields.inactive")}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {field.state.value
+                          ? t("salesOrderTypes.fields.active")
+                          : t("salesOrderTypes.fields.inactive")}
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                </form.AppField>
+              </CardAction>
             </CardHeader>
             <CardContent>
               {/* The fields: dafne g/sync add one <form.AppField> per field of the contract's body. */}

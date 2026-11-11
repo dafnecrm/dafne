@@ -68,7 +68,6 @@ async function SalesOrderProfile({
       <PageContentBody>
         <SalesOrderDetails
           salesOrder={salesOrder}
-          path={salesOrdersTable.path}
           customersPath={customersTable.path}
         />
       </PageContentBody>

@@ -3,17 +3,23 @@
 import { useOptionLabel } from "@dafne/frontend-ui/hooks/use-option-labels";
 import { countryName } from "@dafne/frontend-ui/lib/country-name";
 import { CUSTOMER_ADDRESS_TYPE_OPTIONS } from "../customers-table.ts";
-import { CustomerAddress, CustomerDetail } from "@dafne/contracts";
+import { CustomerAddressType } from "@dafne/contracts";
 import { defineDataTable, TableParams } from "@dafne/frontend-data-table";
 import { createDataTableColumnHelper, DataTable } from "@dafne/frontend-data-table/table";
-import { Button } from "@dafne/frontend-ui/components/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@dafne/frontend-ui/components/empty";
 import { MapPinIcon } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
-import Link from "next/link";
-import { useMemo } from "react";
+import { ReactNode, useMemo } from "react";
 
-const col = createDataTableColumnHelper<CustomerAddress>();
+export interface CustomerAddressRow {
+  type: CustomerAddressType;
+  street: string;
+  postalCode: string | null;
+  city: string;
+  countryCode: string;
+}
+
+const col = createDataTableColumnHelper<CustomerAddressRow>();
 
 function useCustomerAddressColumns() {
   const t = useTranslations("customers.addresses.fields")
@@ -44,7 +50,7 @@ function useCustomerAddressColumns() {
         // `country` object.
         col.accessor(
           (address) =>
-            countryName(address.countryCode, locale, address.country.name),
+            countryName(address.countryCode, locale, address.countryCode),
           { id: "country", header: t("country") },
         ),
       ]),
@@ -56,7 +62,15 @@ function useCustomerAddressColumns() {
  * A customer's addresses. With none, links to the edit page
  * (`<path>/<id>/edit`, `path` being the app's customers list).
  */
-export function CustomerAddressTable({ customerId, addresses, path }: { customerId: number, addresses: CustomerDetail["addresses"], path: string }) {
+export function CustomerAddressTable({
+  addresses,
+  rowActions,
+  emptyContent
+}: {
+  addresses: CustomerAddressRow[],
+  rowActions?: (row: CustomerAddressRow, index: number) => ReactNode;
+  emptyContent?: ReactNode;
+}) {
   const t = useTranslations();
   const columns = useCustomerAddressColumns()
   const params: TableParams = {
@@ -73,8 +87,6 @@ export function CustomerAddressTable({ customerId, addresses, path }: { customer
     pageSizes: [5]
   })
 
-  const editHref = `${path}/${encodeURIComponent(customerId)}/edit`;
-
   return (<DataTable
     columns={columns}
     data={addresses}
@@ -83,6 +95,7 @@ export function CustomerAddressTable({ customerId, addresses, path }: { customer
     config={tableConfig}
     manualPagination={false}
     manualSorting={false}
+    rowActions={rowActions}
     empty={<Empty>
       <EmptyHeader>
         <EmptyMedia variant="icon">
@@ -95,13 +108,9 @@ export function CustomerAddressTable({ customerId, addresses, path }: { customer
           {t("customers.addresses.noneDetail")}{" "}
         </EmptyDescription>
       </EmptyHeader>
-      <EmptyContent>
-        <Button variant="outline" size="sm">
-          <Link href={editHref}>
-            {t("customers.addresses.addOne")}
-          </Link>
-        </Button>
-      </EmptyContent>
+      {emptyContent && <EmptyContent>
+        {emptyContent}
+      </EmptyContent>}
     </Empty>}
   />)
 }

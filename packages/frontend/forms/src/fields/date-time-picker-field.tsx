@@ -60,7 +60,7 @@ export function DateTimePickerField({
         />
         <Input
           type="time"
-          aria-label={t('timeOf', { label })}
+          aria-label={t('timeOf', { label: label ?? field.name })}
           className="w-28 appearance-none [&::-webkit-calendar-picker-indicator]:hidden"
           value={time}
           disabled={!date || props.disabled}

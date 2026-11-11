@@ -37,14 +37,12 @@ const view = { ...names, icon: 'FileIcon' };
 /* The pages of a resource generated with a `name` field (the templates have none). */
 const namedSchema = () =>
   render('frontend/schema.ts', view).replace('defaultValues: {} satisfies', 'defaultValues: {\n      name: activity?.name ?? "",\n    } satisfies');
-const GRID = '<div className="grid grid-cols-1 gap-4 md:grid-cols-3"></div>';
+const SECTION_END = '\n          </DetailSection>';
 const namedForm = () =>
   render('frontend/form.tsx', view).replace(
-    GRID,
-    GRID.replace(
-      '></div>',
-      '>\n                <form.AppField name="name">\n                  {(field) => (\n                    <field.TextField label={t("activities.fields.name")} autoComplete="off" autoFocus />\n                  )}\n                </form.AppField>\n              </div>',
-    ),
+    SECTION_END,
+    '\n            <form.AppField name="name">\n              {(field) => (\n                <field.TextField label={t("activities.fields.name")} autoComplete="off" autoFocus />\n              )}\n            </form.AppField>' +
+      SECTION_END,
   );
 
 describe('readBody', () => {
@@ -106,14 +104,19 @@ describe('syncFormComponent', () => {
     const source = namedForm().replace('label={t("activities.fields.name")}', 'label="Title"');
     const { content, report } = syncFormComponent('form.tsx', source, fields, names);
     expect(content).toContain('label="Title"');
-    expect(content).toContain('<field.SelectField label={t("activities.fields.type")} options={typeOptions} />');
-    expect(content).toContain('<field.NumberField label={t("activities.fields.priority")} />');
-    expect(content).toContain('<field.NumberField label={t("activities.fields.budget")} />');
+    expect(content).toMatch(
+      /<field\.SelectField\s+label=\{t\("activities\.fields\.type"\)\}\s+options=\{typeOptions\}\s*>\s*<InputGroupAddon>\s*<TagIcon \/>\s*<\/InputGroupAddon>\s*<\/field\.SelectField>/,
+    );
+    expect(content).toMatch(/<field\.NumberField\s+label=\{t\("activities\.fields\.priority"\)\}\s*>\s*<InputGroupAddon>\s*<HashIcon \/>/);
+    expect(content).toMatch(/<field\.NumberField\s+label=\{t\("activities\.fields\.budget"\)\}\s*>/);
+    expect(content).toMatch(/<field\.TextField\s+label=\{t\("activities\.fields\.customerId"\)\}\s+autoComplete="off"\s*>\s*<InputGroupAddon>\s*<TextIcon \/>/);
     expect(content).toContain('<field.CheckboxField label={t("activities.fields.done")} />');
-    expect(content).toContain('<field.TextareaField label={t("activities.fields.notes")} />');
-    expect(content).toContain('<field.TextEditorField label={t("activities.fields.description")} />');
+    expect(content).toContain('<field.TextareaField label={t("activities.fields.notes")} className="col-span-full" />');
+    expect(content).toContain('<field.TextEditorField label={t("activities.fields.description")} className="col-span-full" />');
     expect(content).toContain('<field.DatePickerField label={t("activities.fields.dueDate")} />');
-    expect(content).toContain('<field.DateTimePickerField label={t("activities.fields.startsAt")} />');
+    expect(content).toContain('<field.DateTimePickerField label={t("activities.fields.startsAt")} icon={CalendarClockIcon} />');
+    expect(content).toMatch(/import \{ InputGroupAddon \} from "@dafne\/frontend-ui\/components\/input-group"/);
+    expect(content).toMatch(/import \{[^}]*\bHashIcon\b[^}]*\} from "lucide-react"/);
     expect(content).toMatch(/import \{[^}]*TYPE_OPTIONS[^}]*\} from "\.\/schema"/);
     // Translated options are made at the top of the component, not in a render prop.
     expect(content).toContain('  const t = useTranslations();\n  const typeOptions = useOptionLabels(TYPE_OPTIONS);\n');
@@ -134,11 +137,10 @@ describe('syncFormComponent', () => {
     expect(syncFormComponent('form.tsx', once, fields, names).report.added).toEqual([]);
   });
 
-  it('puts the first input into the empty fields grid of a new form', () => {
+  it('puts the first input into the empty Details section of a new form', () => {
     const { fields } = setup();
     const { content, report } = syncFormComponent('form.tsx', render('frontend/form.tsx', view), fields, names);
-    expect(content).not.toContain(GRID);
-    expect(content).toMatch(/md:grid-cols-3">\s*<form\.AppField name="name">/);
+    expect(content).toMatch(/groupVariant="grid">\s*\{\/\*[^}]*\*\/\}\n\s*<form\.AppField name="name">/);
     expect(content.indexOf('name="name"')).toBeLessThan(content.indexOf('name="type"'));
     expect(report.warnings).toEqual([]);
   });

@@ -12,9 +12,10 @@ import {
 } from "@dafne/frontend-ui/components/combobox";
 import {
   getSalesOrderTypeOption,
-  searchSalesOrderTypes,
-  type SalesOrderTypeOption,
+  searchSalesOrderTypes, type SalesOrderTypeOption
 } from "../actions.ts";
+import { InputGroupAddon } from "@dafne/frontend-ui/components/input-group";
+import { BoxesLinkedIcon } from "lucide-react";
 
 /** Wait after the last keystroke before searching, so typing isn't a request per key. */
 const SEARCH_DELAY_MS = 250;
@@ -23,8 +24,8 @@ const SEARCH_DELAY_MS = 250;
 const SEARCH_LIMIT = 20;
 
 /**
- * Picks a sales order type by typing part of their name: the backend searches
- * (GET /sales-order-types?name=…, through a server action) as the user types. The
+ * Picks an active sales order type by typing part of its id or description: the
+ * backend searches (GET /sales-order-types?search=…, through a server action) as the user types. The
  * value is the sales order type's ID as text (form values are strings), "" when
  * none is chosen.
  */
@@ -55,7 +56,7 @@ export function SalesOrderTypeSelect({
   /** For a picker with no visible label, e.g. a table filter. */
   "aria-label"?: string;
 }) {
-  const t = useTranslations("salesOrders.salesOrderTypes");
+  const t = useTranslations("salesOrderTypes");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SalesOrderTypeOption[]>([]);
   const [searching, setSearching] = useState(true);
@@ -71,7 +72,7 @@ export function SalesOrderTypeSelect({
     let current = true;
     const timer = setTimeout(
       () =>
-        searchSalesOrderTypes({ description: query, limit: SEARCH_LIMIT }).then(
+        searchSalesOrderTypes({ search: query, limit: SEARCH_LIMIT }).then(
           (list) => current && setResults(list),
           () => current && setResults([]),
         ).finally(() => current && setSearching(false)),
@@ -131,7 +132,11 @@ export function SalesOrderTypeSelect({
         aria-label={ariaLabel}
         showClear
         onBlur={onBlur}
-      />
+      >
+        <InputGroupAddon>
+          <BoxesLinkedIcon />
+        </InputGroupAddon>
+      </ComboboxInput>
       <ComboboxContent>
         <ComboboxEmpty>
           {searching ? t("loading") : t("none")}
@@ -139,7 +144,7 @@ export function SalesOrderTypeSelect({
         <ComboboxList>
           {(soType: SalesOrderTypeOption) => (
             <ComboboxItem key={soType.id} value={soType}>
-              {soType.description}
+              {soType.id} - {soType.description}
             </ComboboxItem>
           )}
         </ComboboxList>

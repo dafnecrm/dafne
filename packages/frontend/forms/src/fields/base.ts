@@ -3,7 +3,7 @@ import type React from 'react'
 
 /** Props every field takes. */
 export type BaseFieldProps = {
-  label: string
+  label?: string
   /** Classes of the whole field (label, control and errors). */
   className?: string
   /** Classes of the control itself (input box, textarea, editor area…), e.g. its height. */

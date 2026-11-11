@@ -4,9 +4,10 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { and, asc, desc, eq, isNull, ilike, type Column, type SQL } from 'drizzle-orm';
+import { and, asc, desc, eq, isNull, ilike, type Column, type SQL, or } from 'drizzle-orm';
 import {
   CUSTOMER_FILTER_FIELDS,
   type CustomerFilterField,
@@ -67,6 +68,8 @@ type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0];
 
 @Injectable()
 export class CustomersService {
+  logger = new Logger(CustomersService.name);
+
   constructor(@InjectDrizzle() private readonly db: Database) {}
 
   /**
@@ -90,6 +93,19 @@ export class CustomersService {
       // As a plain Column: eq can't type a union of columns against number | string.
       return [exact ? eq(customer[field] as Column, exact(value)) : ilike(customer[field], `%${escapeLike(value)}%`)];
     });
+    const search = query.search?.trim();
+    if (search) {
+      const pattern = `%${escapeLike(search)}%`;
+      // Only a whole number can be an id ("1.5" or "1e3" would break the query or match oddly).
+      const id = /^\d+$/.test(search) ? Number(search) : NaN;
+      filters.push(
+        or(
+          Number.isSafeInteger(id) ? eq(customer.id, id) : undefined,
+          ilike(customer.name, pattern),
+        ) as SQL,
+      );
+    }
+
     const where = and(notDeleted, ...filters) as SQL;
     const direction = sortDirection === 'asc' ? asc : desc;
 

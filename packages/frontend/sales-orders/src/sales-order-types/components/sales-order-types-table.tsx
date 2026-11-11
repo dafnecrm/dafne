@@ -55,6 +55,13 @@ function useSalesOrderTypeColumns(path: string) {
         col.accessor("description", {
           header: t("salesOrderTypes.fields.description"),
         }),
+        col.accessor("active", {
+          header: t("salesOrderTypes.fields.active"),
+          cell: (info) =>
+            info.getValue() === null
+              ? "—"
+              : t(info.getValue() ? "common.yes" : "common.no"),
+        }),
         col.accessor("createdAt", {
           header: t("salesOrderTypes.fields.createdAt"),
           meta: { className: "text-right" },

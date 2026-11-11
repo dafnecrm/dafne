@@ -13,7 +13,7 @@ function failedFields(body: unknown) {
 
 describe('salesOrderTypeBodySchema', () => {
   it('parses a body', () => {
-    expect(salesOrderTypeBodySchema.parse({description: 'Description', id: 'Id'})).toEqual({description: 'Description', id: 'Id'});
+    expect(salesOrderTypeBodySchema.parse({description: 'Description', id: 'Id'})).toEqual({description: 'Description', id: 'Id', active: null});
   });
 
   it('rejects unknown properties such as deletedAt', () => {
@@ -28,6 +28,11 @@ describe('listSalesOrderTypesQuerySchema', () => {
     expect(
       listSalesOrderTypesQuerySchema.parse({ limit: '10', offset: '20' }),
     ).toEqual({ limit: 10, offset: 20 });
+  });
+
+  it('takes a search text', () => {
+    expect(listSalesOrderTypesQuerySchema.parse({ search: 'ab' })).toEqual({ search: 'ab' });
+    expect(listSalesOrderTypesQuerySchema.safeParse({ search: 'x'.repeat(256) }).success).toBe(false);
   });
 
   it('rejects an unknown sort field and a limit over 100', () => {

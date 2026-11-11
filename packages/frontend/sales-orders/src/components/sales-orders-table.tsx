@@ -30,12 +30,13 @@ import Link from "next/link";
 import { Button } from "@dafne/frontend-ui/components/button";
 import { SalesOrderTypeSelect } from "../sales-order-types/components/sales-order-type-select.tsx";
 import { useOptionLabel } from "@dafne/frontend-ui/hooks/use-option-labels";
+import { SALES_ORDER_STATUS_ICONS } from "./sales-order-status-icons.ts";
+import { Badge } from "@dafne/frontend-ui/components/badge";
 
 /*
  * Columns of the sales orders table. Column ids double as the backend's
  * sort fields, so they must match `sortable` in ../sales-orders-table.ts.
  */
-
 const col = createDataTableColumnHelper<ListedSalesOrder>();
 
 /**
@@ -75,8 +76,13 @@ function useSalesOrderColumns({
         }),
         col.accessor("status", {
           header: t("salesOrders.fields.status"),
-          cell: (info) =>
-            optionLabel(SALES_ORDER_STATUS_OPTIONS, info.getValue()),
+          cell: (info) => {
+            const Icon = SALES_ORDER_STATUS_ICONS[info.getValue()]
+            return <Badge variant="outline">
+              <Icon />
+              {optionLabel(SALES_ORDER_STATUS_OPTIONS, info.getValue())}
+            </Badge>
+          }
         }),
         col.accessor("customer", {
           header: t("salesOrders.fields.customer"),
@@ -181,8 +187,8 @@ export function SalesOrdersTable({
             <EmptyDescription>
               {Object.keys(params.filters).length
                 ? t("salesOrders.empty.filtered", {
-                    filter: describeFilters(params.filters, config.filters),
-                  })
+                  filter: describeFilters(params.filters, config.filters),
+                })
                 : t("salesOrders.empty.none")}
             </EmptyDescription>
           </EmptyHeader>

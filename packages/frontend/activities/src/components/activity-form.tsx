@@ -13,6 +13,9 @@ import { saveActivity } from "../actions";
 import { activityFormOpts, activitySchema } from "../schema";
 import { ActivityDetail } from "../types";
 import { ACTIVITY_TYPE_OPTIONS } from "../activity-type-options";
+import { DetailSection } from "@dafne/frontend-ui/components/detail";
+import { InputGroupAddon } from "@dafne/frontend-ui/components/input-group";
+import { CalendarClockIcon, TagIcon, TextIcon } from "lucide-react";
 
 /** Creates a activity, or edits `activity`. Saving opens its page. */
 export function ActivityForm({ activity }: { activity?: ActivityDetail }) {
@@ -48,50 +51,51 @@ export function ActivityForm({ activity }: { activity?: ActivityDetail }) {
       <form.AppForm>
         <FieldGroup>
           <form.FormErrors />
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                <h2>{t("activities.sections.details")}</h2>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <FieldGroup className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <form.AppField name="name">
-                  {(field) => (
-                    <field.TextField
-                      label={t("activities.fields.name")}
-                      autoComplete="off"
-                      autoFocus
-                    />
-                  )}
-                </form.AppField>
-                <form.AppField name="type">
-                  {(field) => (
-                    <field.SelectField
-                      label={t("activities.fields.type")}
-                      options={typeOptions}
-                      disabled={!!activity}
-                    />
-                  )}
-                </form.AppField>
-                <form.AppField name="dueDate">
-                  {(field) => (
-                    <field.DateTimePickerField
-                      label={t("activities.fields.dueDate")}
-                    />
-                  )}
-                </form.AppField>
-                <form.AppField name="notes">
-                  {(field) => (
-                    <field.TextEditorField
-                      label={t("activities.fields.notes")}
-                      controlClassName="col-span-2"
-                    />
-                  )}
-                </form.AppField>
-              </FieldGroup>
-            </CardContent>
-          </Card>
+
+          <DetailSection title={t("activities.sections.details")} groupVariant="grid">
+            <form.AppField name="name">
+              {(field) => (
+                <field.TextField
+                  label={t("activities.fields.name")}
+                  autoComplete="off"
+                  autoFocus
+                >
+                  <InputGroupAddon>
+                    <TextIcon />
+                  </InputGroupAddon>
+                </field.TextField>
+              )}
+            </form.AppField>
+            <form.AppField name="type">
+              {(field) => (
+                <field.SelectField
+                  label={t("activities.fields.type")}
+                  options={typeOptions}
+                  disabled={!!activity}
+                >
+                  <InputGroupAddon>
+                    <TagIcon />
+                  </InputGroupAddon>
+                </field.SelectField>
+              )}
+            </form.AppField>
+            <form.AppField name="dueDate">
+              {(field) => (
+                <field.DateTimePickerField
+                  label={t("activities.fields.dueDate")}
+                  icon={CalendarClockIcon}
+                />
+              )}
+            </form.AppField>
+            <form.AppField name="notes">
+              {(field) => (
+                <field.TextEditorField
+                  label={t("activities.fields.notes")}
+                  className="col-span-full"
+                />
+              )}
+            </form.AppField>
+          </DetailSection>
 
           <div className="flex justify-end gap-2">
             <Button

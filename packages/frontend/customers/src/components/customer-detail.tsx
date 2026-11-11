@@ -11,7 +11,7 @@ import {
   TagIcon,
   CalendarIcon,
   IdCardIcon,
-  Building2Icon
+  Building2Icon, SquareUserIcon
 } from "lucide-react";
 import CopyButton from "@dafne/frontend-ui/components/copy-button";
 import { Detail, DetailSection } from "@dafne/frontend-ui/components/detail";
@@ -37,7 +37,10 @@ export function CustomerDetails({
 
   return (
     <>
-      <DetailSection title={t("customers.sections.details")}>
+      <DetailSection title={t("customers.sections.details")} groupVariant="grid">
+        <Detail icon={SquareUserIcon} label={t("customers.fields.name")}>
+          {customer.name}
+        </Detail>
         <Detail icon={TagIcon} label={t("customers.fields.type")}>
           {optionLabel(CUSTOMER_TYPE_OPTIONS, customer.type)}
         </Detail>
@@ -63,7 +66,7 @@ export function CustomerDetails({
         )}
       </DetailSection>
 
-      <DetailSection title={t("customers.sections.contact")}>
+      <DetailSection title={t("customers.sections.contact")} groupVariant="grid">
         <Detail icon={MailIcon} label={t("customers.fields.email")}>
           {customer.email ? (
             <a
@@ -94,12 +97,15 @@ export function CustomerDetails({
         title={t("customers.sections.addressesCount", {
           count: customer.addresses.length,
         })}
-        groupClassName="flex"
       >
         <CustomerAddressTable
-          customerId={customer.id}
-          addresses={customer.addresses}
-          path={path}
+          addresses={customer.addresses.map((addr) => ({
+            city: addr.city,
+            countryCode: addr.countryCode,
+            postalCode: addr.postalCode,
+            street: addr.street,
+            type: addr.type
+          }))}
         />
       </DetailSection>
 
@@ -107,7 +113,7 @@ export function CustomerDetails({
         <Detail icon={FingerprintIcon} label={t("customers.fields.id")}>
           <div className="flex items-center gap-2">
             <code className="truncate font-sans text-xs">{customer.id}</code>
-            <CopyButton variant="ghost" value={String(customer.id)} />
+            <CopyButton variant="ghost" size="xs" value={String(customer.id)} />
           </div>
         </Detail>
         <Detail icon={CalendarPlusIcon} label={t("common.record.created")}>

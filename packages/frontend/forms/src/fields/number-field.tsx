@@ -14,8 +14,8 @@ export function NumberField({
   label,
   className,
   controlClassName,
-  addons,
   orientation,
+  children,
   ...props
 }: Omit<TextFieldProps, 'type' | 'uncontrolled'>) {
   const field = useFieldContext<number | null>()
@@ -31,7 +31,6 @@ export function NumberField({
         {label}
       </FieldLabel>
       <InputGroup className={controlClassName}>
-        {addons}
         <InputGroupInput
           id={field.name}
           name={field.name}
@@ -46,6 +45,7 @@ export function NumberField({
           }
           {...props}
         />
+        {children}
       </InputGroup>
       <FieldError>
         {field.state.meta.errors.length > 0 &&

@@ -138,8 +138,8 @@ Templates, names, wiring, relations, messages and formatting:
   `${t("<plural>.singular")} ${<record>.id}` (title, breadcrumb, dialogs,
   aria-labels), the list sync adds the id as the first column, linking
   to the detail page, when the contract lists it (`@api` tags may not),
-  and the form has an empty fields grid, where the sync
-  puts the first `<form.AppField>`. The tests that need a field add a
+  and the form has an empty "Details" section (a `DetailSection` grid),
+  where the sync puts the first `<form.AppField>`. The tests that need a field add a
   `name` themselves. A key to a serial id is `integer`, `requiredId` /
   `optionalId` in the contract, the `id` kind (text input) in the form; a
   key to a uuid id is `uuid`, `requiredUuid` / `optionalUuid` in the

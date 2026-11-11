@@ -227,24 +227,24 @@ const ACTION_GROUPS: Action[][] = [
     //   isActive: (e) => e.isActive('code'),
     //   run: (e) => e.chain().focus().toggleCode().run(),
     // },
-    {
-      label: 'link',
-      icon: LinkIcon,
-      isActive: (e) => e.isActive('link'),
-      run: (e, text) => {
-        const previous = e.getAttributes('link').href as string | undefined
-        const href = window.prompt(text('linkPrompt'), previous ?? 'https://')
-        if (href === null) {
-          return
-        }
-        const chain = e.chain().focus().extendMarkRange('link')
-        if (href.trim() === '') {
-          chain.unsetLink().run()
-        } else {
-          chain.setLink({ href: href.trim() }).run()
-        }
-      },
-    },
+    // {
+    //   label: 'link',
+    //   icon: LinkIcon,
+    //   isActive: (e) => e.isActive('link'),
+    //   run: (e, text) => {
+    //     const previous = e.getAttributes('link').href as string | undefined
+    //     const href = window.prompt(text('linkPrompt'), previous ?? 'https://')
+    //     if (href === null) {
+    //       return
+    //     }
+    //     const chain = e.chain().focus().extendMarkRange('link')
+    //     if (href.trim() === '') {
+    //       chain.unsetLink().run()
+    //     } else {
+    //       chain.setLink({ href: href.trim() }).run()
+    //     }
+    //   },
+    // },
   ],
   [
     {
@@ -315,6 +315,22 @@ function TextEditorToolbar({
 const subscribe = () => () => {}
 
 /**
+ * A TextEditor inside an InputGroup: the group draws the frame (border,
+ * focus ring, invalid and disabled states), the editor fills it.
+ */
+function InputGroupTextEditor({ className, ...props }: TextEditorProps) {
+  return (
+    <TextEditor
+      className={cn(
+        'min-w-0 flex-1 self-stretch rounded-none border-0 bg-transparent ring-0 focus-within:ring-0 aria-disabled:bg-transparent aria-disabled:opacity-100 aria-invalid:ring-0 dark:bg-transparent dark:aria-disabled:bg-transparent',
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+/**
  * Shows HTML written with <TextEditor />. It comes from users, so it's
  * sanitized first. DOMPurify needs a DOM: on the server nothing is
  * rendered, and the content appears once the page is in the browser.
@@ -338,10 +354,10 @@ function TextEditorContent({
   return (
     <div
       data-slot="text-editor-content"
-      className={cn('text-editor-content', className)}
+      className={cn('text-editor-content min-h-20', className)}
       dangerouslySetInnerHTML={{ __html: clean }}
     />
   )
 }
 
-export { TextEditor, TextEditorContent }
+export { InputGroupTextEditor, TextEditor, TextEditorContent }

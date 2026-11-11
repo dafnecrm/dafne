@@ -19,11 +19,13 @@ import { salesOrderFormOpts, salesOrderSchema, STATUS_OPTIONS } from "../schema.
 import type { SalesOrderDetail } from "../types.ts";
 import { DetailSection } from "@dafne/frontend-ui/components/detail";
 import { SalesOrderItemTable } from "./sales-order-items-table.tsx";
-import { PencilIcon, Trash2Icon } from "lucide-react";
+import { PencilIcon, PlusIcon, TagIcon, Trash2Icon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { SalesOrderItemSheet } from "./sales-order-item-sheet.tsx";
 import type { ProductOption } from "@dafne/frontend-products/actions";
 import { useOptionLabels } from "@dafne/frontend-ui/hooks/use-option-labels";
+import { InputGroupAddon } from "@dafne/frontend-ui/components/input-group";
+
 
 /**
  * Creates a sales order, or edits `salesOrder`. Saving opens the sales order's page
@@ -77,20 +79,6 @@ export function SalesOrderForm({
     index: number | null;
   }>({ open: false, index: null });
 
-  function CreateSalesOrderButton() {
-    return <Button
-      variant="outline"
-      onClick={() =>
-        setSalesOrderItemSheet({
-          open: true,
-          index: null,
-        })
-      }
-    >
-      {t("salesOrders.items.addOne")}
-    </Button>
-  }
-
   return (
     <form
       noValidate
@@ -102,46 +90,44 @@ export function SalesOrderForm({
       <form.AppForm>
         <FieldGroup>
           <form.FormErrors />
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                <h2>{t("salesOrders.sections.details")}</h2>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <FieldGroup className="flex flex-col gap-6">
-                <form.AppField name="customerId">
-                  {(field) => (
-                    <field.CustomerSelectField
-                      label={t("salesOrders.fields.customer")}
-                      option={salesOrder?.customer}
-                    />
-                  )}
-                </form.AppField>
 
-                <form.AppField name="typeId">
-                  {(field) => (
-                    <field.SalesOrderTypeSelectField
-                      label={t("salesOrders.fields.type")}
-                      option={salesOrder?.type}
-                    />
-                  )}
-                </form.AppField>
+          <DetailSection title={t("salesOrders.sections.details")} groupVariant="grid">
+            <form.AppField name="typeId">
+              {(field) => (
+                <field.SalesOrderTypeSelectField
+                  label={t("salesOrders.fields.type")}
+                  option={salesOrder?.type}
+                />
+              )}
+            </form.AppField>
+            <form.AppField name="customerId">
+              {(field) => (
+                <field.CustomerSelectField
+                  label={t("salesOrders.fields.customer")}
+                  option={salesOrder?.customer}
+                />
+              )}
+            </form.AppField>
+            <form.AppField name="status">
+              {(field) => <field.SelectField
+                label={t("salesOrders.fields.status")}
+                options={statusOptions}>
+                  <InputGroupAddon>
+                    <TagIcon />
+                  </InputGroupAddon>
+              </field.SelectField>}
+            </form.AppField>
 
-                <form.AppField name="status">
-                  {(field) => <field.SelectField label={t("salesOrders.fields.status")} options={statusOptions} />}
-                </form.AppField>
+            <form.AppField name="notes">
+              {(field) => (
+                <field.TextEditorField
+                  label={t("salesOrders.fields.notes")}
+                  className="col-span-full"
+                />
+              )}
+            </form.AppField>
 
-                <form.AppField name="notes">
-                  {(field) => (
-                    <field.TextEditorField
-                      label={t("salesOrders.fields.notes")}
-                    />
-                  )}
-                </form.AppField>
-              </FieldGroup>
-            </CardContent>
-          </Card>
+          </DetailSection>
 
           {salesOrder && (
             // Not mode="array": that re-renders only when its array version
@@ -153,15 +139,24 @@ export function SalesOrderForm({
                   <DetailSection
                     title={t("salesOrders.sections.items")}
                     groupClassName="flex"
-                    actions={<CreateSalesOrderButton />}
+                    actions={<Button
+                      variant="outline"
+                      onClick={() =>
+                        setSalesOrderItemSheet({
+                          open: true,
+                          index: null,
+                        })
+                      }
+                    >
+                      <PlusIcon />
+                      {t("salesOrders.items.add")}
+                    </Button>}
                   >
                     <SalesOrderItemTable
-                      salesOrderId={salesOrder.id}
                       items={items.state.value.map((item) => ({
                         ...item,
                         product: productOf(item.productId),
                       }))}
-                      path="/sales-orders"
                       rowActions={(item, i) => (
                         <>
                           <Button
@@ -176,12 +171,11 @@ export function SalesOrderForm({
                           >
                             <PencilIcon />
                           </Button>
-                          <Button variant="ghost" size="icon-sm">
+                          <Button variant="ghost" size="icon-sm" onClick={() => items.removeValue(i)}>
                             <Trash2Icon />
                           </Button>
                         </>
                       )}
-                      editButton={<CreateSalesOrderButton />}
                     />
                   </DetailSection>
                   <SalesOrderItemSheet

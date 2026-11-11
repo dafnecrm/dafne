@@ -16,8 +16,9 @@ import {
   eq,
   isNull,
   ilike,
+  or,
   type Column,
-  type SQL,
+  type SQL
 } from 'drizzle-orm';
 import {
   SALES_ORDER_TYPE_FILTER_FIELDS,
@@ -41,9 +42,11 @@ const escapeLike = (value: string) => value.replace(/[\\%_]/g, '\\$&');
  * their query param becomes the column's value; the others contain the text.
  */
 const EXACT_FILTERS: Partial<
-  Record<SalesOrderTypeFilterField, (value: string) => number | string>
+  Record<SalesOrderTypeFilterField, (value: string) => boolean | number | string>
 > = {
   id: String,
+  // "true" | "false" (the contract checks it): ILIKE doesn't work on a boolean.
+  active: (value) => value === 'true',
 };
 
 /** Sales order types that haven't been deleted. */
@@ -63,11 +66,12 @@ const userSummary = { columns: { id: true, name: true } } as const;
 
 @Injectable()
 export class SalesOrderTypesService {
-  constructor(@InjectDrizzle() private readonly db: Database) {}
+  constructor(@InjectDrizzle() private readonly db: Database) { }
 
   /**
    * Lists sales order types that aren't deleted, paged and sorted, filtered by
-   * every field given (AND, each matching text the field contains).
+   * every field given (AND, each matching text the field contains) and by
+   * `search` (text the id or the description contains).
    */
   async listSalesOrderTypes(
     query: ListSalesOrderTypesQuery = {},
@@ -75,7 +79,7 @@ export class SalesOrderTypesService {
     const {
       limit = SALES_ORDER_TYPES_DEFAULT_PAGE_SIZE,
       offset = 0,
-      sortBy = 'createdAt',
+      sortBy = 'id',
       sortDirection = 'asc',
     } = query;
     const { db } = this;
@@ -92,6 +96,16 @@ export class SalesOrderTypesService {
           : ilike(salesOrderType[field], `%${escapeLike(value)}%`),
       ];
     });
+    const search = query.search?.trim();
+    if (search) {
+      const pattern = `%${escapeLike(search)}%`;
+      filters.push(
+        or(
+          ilike(salesOrderType.id, pattern),
+          ilike(salesOrderType.description, pattern),
+        ) as SQL,
+      );
+    }
     const where = and(notDeleted, ...filters) as SQL;
     const direction = sortDirection === 'asc' ? asc : desc;
 
@@ -100,6 +114,7 @@ export class SalesOrderTypesService {
         .select({
           id: salesOrderType.id,
           description: salesOrderType.description,
+          active: salesOrderType.active,
           createdAt: salesOrderType.createdAt,
           updatedAt: salesOrderType.updatedAt,
         })
@@ -143,6 +158,7 @@ export class SalesOrderTypesService {
       .values({
         id: body.id,
         description: body.description,
+        active: body.active,
         createdAt: now,
         updatedAt: now,
         createdById: userId,
@@ -166,6 +182,7 @@ export class SalesOrderTypesService {
       .update(salesOrderType)
       .set({
         description: body.description,
+        active: body.active,
         updatedById: userId,
         // The time of this change.
         updatedAt: new Date(),
