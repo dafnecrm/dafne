@@ -65,7 +65,7 @@ describe('ProductsService', () => {
   });
 
   describe('listProducts', () => {
-    it('lists products that are not deleted, by name', async () => {
+    it('lists products that are not deleted, newest first', async () => {
       await expect(service.listProducts()).resolves.toEqual({
         products: rows,
         total: 42,
@@ -77,7 +77,7 @@ describe('ProductsService', () => {
       expect(select.where).toHaveBeenCalledWith(where);
       expect(db.$count).toHaveBeenCalledWith(product, where);
       expect(select.orderBy).toHaveBeenCalledWith(
-        asc(product.name),
+        desc(product.id),
         asc(product.id),
       );
     });

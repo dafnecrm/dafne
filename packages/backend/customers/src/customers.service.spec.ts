@@ -86,7 +86,7 @@ describe('CustomersService', () => {
   });
 
   describe('listCustomers', () => {
-    it('lists customers that are not deleted, by name', async () => {
+    it('lists customers that are not deleted, newest first', async () => {
       await expect(service.listCustomers()).resolves.toEqual({
         customers: rows,
         total: 42,
@@ -98,7 +98,7 @@ describe('CustomersService', () => {
       expect(select.where).toHaveBeenCalledWith(where);
       expect(db.$count).toHaveBeenCalledWith(customer, where);
       expect(select.orderBy).toHaveBeenCalledWith(
-        asc(customer.name),
+        desc(customer.id),
         asc(customer.id),
       );
     });

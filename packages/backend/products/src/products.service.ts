@@ -56,8 +56,8 @@ export class ProductsService {
     const {
       limit = PRODUCTS_DEFAULT_PAGE_SIZE,
       offset = 0,
-      sortBy = 'name',
-      sortDirection = 'asc',
+      sortBy = 'id',
+      sortDirection = 'desc',
     } = query;
     const { db } = this;
     const filters = PRODUCT_FILTER_FIELDS.flatMap((field) => {

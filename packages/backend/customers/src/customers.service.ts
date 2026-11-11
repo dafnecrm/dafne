@@ -80,8 +80,8 @@ export class CustomersService {
     const {
       limit = CUSTOMERS_DEFAULT_PAGE_SIZE,
       offset = 0,
-      sortBy = 'name',
-      sortDirection = 'asc',
+      sortBy = 'id',
+      sortDirection = 'desc',
     } = query;
     const { db } = this;
     const filters = CUSTOMER_FILTER_FIELDS.flatMap((field) => {

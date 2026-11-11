@@ -10,7 +10,7 @@ import { ACTIVITY_TYPE_OPTIONS } from "./activity-type-options.ts";
 import { ACTIVITY_STATUS_OPTIONS } from "./activity-status-options.ts";
 
 /** Sort of the list without `?sort=`. */
-export const ACTIVITIES_DEFAULT_SORT = { id: "name", desc: false };
+export const ACTIVITIES_DEFAULT_SORT = { id: "id", desc: true };
 
 /** A activities table's config: its path is always set (detail links use it). */
 export type ActivitiesTableConfig = DataTableConfig & { path: string };
@@ -43,7 +43,7 @@ export function defineActivitiesTable({
       "createdAt",
       "updatedAt",
     ] satisfies ActivitySortField[],
-    defaultSort: { id: "name", desc: false },
+    defaultSort: ACTIVITIES_DEFAULT_SORT,
     filters: [
       {
         field: "id" satisfies ActivityFilterField,

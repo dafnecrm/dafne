@@ -67,7 +67,7 @@ describe('ActivitiesService', () => {
   });
 
   describe('listActivities', () => {
-    it('lists activities that are not deleted, by name', async () => {
+    it('lists activities that are not deleted, newest first', async () => {
       await expect(service.listActivities()).resolves.toEqual({
         activities: rows,
         total: 42,
@@ -79,7 +79,7 @@ describe('ActivitiesService', () => {
       expect(select.where).toHaveBeenCalledWith(where);
       expect(db.$count).toHaveBeenCalledWith(activity, where);
       expect(select.orderBy).toHaveBeenCalledWith(
-        asc(activity.name),
+        desc(activity.id),
         asc(activity.id),
       );
     });

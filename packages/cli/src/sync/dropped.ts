@@ -16,8 +16,9 @@ import { readTable } from './table.ts';
  * loops below look nodes up again after each edit.
  */
 
-/** The sort used when the dropped one was the default: createdAt, else the first field left. */
-export const fallbackSort = (sortFields: string[]) => (sortFields.includes('createdAt') ? 'createdAt' : sortFields[0]);
+/** The sort used when the dropped one was the default: id, else createdAt, else the first field left. */
+export const fallbackSort = (sortFields: string[]) =>
+  ['id', 'createdAt'].find((field) => sortFields.includes(field)) ?? sortFields[0];
 
 const lower = (key: string) => casings(words(key)).lower;
 const alternation = (keys: string[]) => keys.map((k) => k.replace(/\W/g, '')).join('|');
@@ -101,7 +102,7 @@ export function syncDropped(changes: Changes, names: ResourceNames, dropped: str
     if (changes.exists(specPath)) {
       changes.update(specPath, (text) => {
         if (defaultDropped && sort) {
-          // The default-order test: asc(order.name) → asc(order.createdAt), and its title.
+          // The default-order test: asc(order.name) → asc(order.id), and its title.
           text = text.replace(new RegExp(`\\b(asc|desc)\\(${variable}\\.(${keys})\\)`, 'g'), `$1(${variable}.${sort})`);
           text = text.replace(new RegExp(`(it\\((['"])[^'"]*, by )(${keys})\\2`, 'g'), `$1${lower(sort)}$2`);
         }

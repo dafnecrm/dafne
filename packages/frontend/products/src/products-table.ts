@@ -6,7 +6,7 @@ import {
 import type { ProductsMessageKey } from "./messages/index.ts";
 
 /** Sort of the list without `?sort=`. */
-export const PRODUCTS_DEFAULT_SORT = { id: "name", desc: false };
+export const PRODUCTS_DEFAULT_SORT = { id: "id", desc: true };
 
 /** A products table's config: its path is always set (detail links use it). */
 export type ProductsTableConfig = DataTableConfig & { path: string };

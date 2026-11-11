@@ -79,9 +79,9 @@ export const listSalesOrdersQuerySchema = z.strictObject({
   status: z.enum(SALES_ORDER_STATUSES).optional(),
   customerId: z.string().regex(/^\s*\d{0,9}\s*$/).optional(),
   typeId: z.string().max(5).optional(),
-  /** Defaults to createdAt. */
+  /** Defaults to id. */
   sortBy: z.enum(SALES_ORDER_SORT_FIELDS).optional(),
-  /** Defaults to asc. */
+  /** Defaults to desc. */
   sortDirection: z.enum(SORT_DIRECTIONS).optional(),
 });
 export type ListSalesOrdersQuery = z.output<typeof listSalesOrdersQuerySchema>;

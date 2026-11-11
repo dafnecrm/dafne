@@ -53,7 +53,7 @@ export const CUSTOMER_TYPE_OPTIONS = [
 ] satisfies { value: CustomerType; label: CustomersMessageKey }[];
 
 /** Sort of the list without `?sort=`. */
-export const CUSTOMERS_DEFAULT_SORT = { id: "name", desc: false };
+export const CUSTOMERS_DEFAULT_SORT = { id: "id", desc: true };
 
 /** A customers table's config: its path is always set (detail links use it). */
 export type CustomersTableConfig = DataTableConfig & { path: string };

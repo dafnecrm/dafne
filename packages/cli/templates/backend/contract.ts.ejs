@@ -30,9 +30,9 @@ export type <%= s.pascal %>FilterField = (typeof <%= s.constant %>_FILTER_FIELDS
 export const list<%= p.pascal %>QuerySchema = z.strictObject({
   ...pageQuery,
   id: <%= id.filterZod %>,
-  /** Defaults to createdAt. */
+  /** Defaults to id. */
   sortBy: z.enum(<%= s.constant %>_SORT_FIELDS).optional(),
-  /** Defaults to asc. */
+  /** Defaults to desc. */
   sortDirection: z.enum(SORT_DIRECTIONS).optional(),
 });
 export type List<%= p.pascal %>Query = z.output<typeof list<%= p.pascal %>QuerySchema>;
