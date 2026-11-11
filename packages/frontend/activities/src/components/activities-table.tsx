@@ -103,7 +103,7 @@ function useActivityColumns() {
             <LocalDate
               value={info.getValue()}
               format="dateTime"
-              className="text-muted-foreground"
+              className="text-muted-foreground tabular-nums font-medium"
             />
           ),
         }),

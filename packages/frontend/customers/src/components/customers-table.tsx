@@ -110,7 +110,7 @@ function useCustomerColumns(path: string) {
         cell: (info) => (
           <LocalDate
             value={info.getValue()}
-            className="text-muted-foreground"
+            className="text-muted-foreground tabular-nums font-medium"
             format="dateTime"
           />
         ),
