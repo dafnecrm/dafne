@@ -115,15 +115,14 @@ keep it in line when these rules change. Each project has its own
 ## Workflow
 
 - `main` only changes through pull requests. CI
-  (`.github/workflows/ci.yml`) runs `nx sync:check`, `pnpm boundaries` and
-  `nx affected -t lint typecheck test build` on each PR, so only the
-  touched projects and their dependents, in parallel jobs per scope
-  (`backend` with `shared`, `frontend`, `tooling`): a scope whose paths
-  didn't change doesn't start. The `affected` job gathers them, and is
-  the check `main` requires. A PR that changes only documentation
-  (`*.md`, `docs/`) skips them all, and `affected` still passes.
+  (`.github/workflows/ci.yml`) runs, in one job (`affected`, the check
+  `main` requires), `nx sync:check`, `pnpm boundaries` and `nx affected
+  -t lint typecheck test build` on each PR, so only the touched projects
+  and their dependents. A PR that changes only documentation (`*.md`,
+  `docs/`) skips the checks, and `affected` still passes.
 - **CI keeps one cache**, the pnpm store, saved only on `main` (PRs
   restore it; `.github/actions/setup`). No `cache:` on `setup-node`, no
-  Nx cache: the free Actions cache (10 GB) fills up and blocks runs.
+  Nx cache: the Actions cache (10 GB) would fill up and evict `main`'s
+  store, so installs would miss it.
 - `.github/CODEOWNERS` assigns the reviewers of each folder; a change to
   `packages/contracts` needs both the backend and the frontend owners.
