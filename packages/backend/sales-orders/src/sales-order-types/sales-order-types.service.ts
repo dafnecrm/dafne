@@ -79,7 +79,7 @@ export class SalesOrderTypesService {
     const {
       limit = SALES_ORDER_TYPES_DEFAULT_PAGE_SIZE,
       offset = 0,
-      sortBy = 'createdAt',
+      sortBy = 'id',
       sortDirection = 'asc',
     } = query;
     const { db } = this;

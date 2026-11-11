@@ -116,7 +116,6 @@ export async function getSalesOrderTypeOption(
   }
 }
 
-
 /**
  * The active sales order types whose id or description contains `search`
  * (all when blank): the first `limit`, for a picker that searches as the

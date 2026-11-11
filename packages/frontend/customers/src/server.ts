@@ -22,11 +22,13 @@ export async function listCustomers({
   limit,
   offset,
   filters = {},
+  search,
   sort = CUSTOMERS_DEFAULT_SORT,
 }: {
   limit: number;
   offset: number;
   filters?: TableFilters;
+  search?: string,
   sort?: TableSort;
 }): Promise<CustomersList> {
   const query = new URLSearchParams({
@@ -35,6 +37,9 @@ export async function listCustomers({
   });
   for (const [field, value] of Object.entries(filters)) {
     query.set(field, value);
+  }
+  if (search) {
+    query.set("search", search);
   }
   query.set("sortBy", sort.id);
   query.set("sortDirection", sort.desc ? "desc" : "asc");

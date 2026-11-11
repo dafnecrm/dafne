@@ -139,6 +139,8 @@ export const listCustomersQuerySchema = z.strictObject({
   name: z.string().max(255).optional(),
   email: z.string().max(255).optional(),
   phone: z.string().max(32).optional(),
+  /** Free text: customers whose id is it or whose name contains it. */
+  search: z.string().max(255).optional(),
   /** Defaults to name. */
     sortBy: z.enum(CUSTOMER_SORT_FIELDS).optional(),
   /** Defaults to asc. */

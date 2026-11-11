@@ -71,7 +71,7 @@ export function CustomerSelect({
     let current = true;
     const timer = setTimeout(
       () =>
-        searchCustomers({ name: query, limit: SEARCH_LIMIT }).then(
+        searchCustomers({ search: query, limit: SEARCH_LIMIT }).then(
           (list) => current && setResults(list),
           () => current && setResults([]),
         ).finally(() => current && setSearching(false)),

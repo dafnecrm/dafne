@@ -94,18 +94,18 @@ export type CustomerOption = Pick<ListedCustomer, "id" | "name">;
  * server.
  */
 export async function searchCustomers({
-  name,
+  search = "",
   limit = 20,
 }: {
-  name: string;
+  search: string;
   limit?: number;
 }): Promise<CustomerOption[]> {
-  const query = name.trim();
+  const query = search.trim();
   const list = await listCustomers({
     // The backend allows up to 100.
     limit: Math.min(Math.max(limit, 1), 100),
     offset: 0,
-    filters: query ? { name: query } : {},
+    search: query || undefined,
   });
   return list.customers.map(({ id, name }) => ({ id, name }));
 }
