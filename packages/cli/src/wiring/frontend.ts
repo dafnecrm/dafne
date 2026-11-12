@@ -1,7 +1,7 @@
 import { applyEdits, modify, parse } from 'jsonc-parser';
 import { Node, SyntaxKind, type ObjectLiteralExpression } from 'ts-morph';
 import type { Changes } from '../core/changes.ts';
-import { libMessagesDir, type LibTarget } from '../core/frontend-target.ts';
+import { libMessagesDir, type FrontendTarget, type LibTarget } from '../core/frontend-target.ts';
 import { casings, words, type ResourceNames } from '../core/names.ts';
 import { render } from '../core/templates.ts';
 import { frontendApp, frontendLib, frontendPackage } from '../core/workspace.ts';
@@ -261,10 +261,29 @@ export const i18nTypes = (app: string) => `${frontendApp(app)}/i18n/global.d.ts`
  * i18n/global.d.ts. Warns when a file isn't as expected.
  */
 export function wireLibMessages(changes: Changes, { p }: ResourceNames, target: LibTarget) {
-  const ns = p.camel;
-  const value = `${p.constant}_MESSAGES`;
-  const type = `${p.pascal}Messages`;
+  wireMessages(changes, target.app, {
+    ns: p.camel,
+    value: `${p.constant}_MESSAGES`,
+    type: `${p.pascal}Messages`,
+    pkg: target.pkg,
+  });
+}
 
+/** A lib's catalogs as an app merges them: `<ns>: <value>[locale]`, typed `<ns>: <type>`, both from `pkg`. */
+export interface LibMessages {
+  ns: string;
+  value: string;
+  type: string;
+  pkg: string;
+}
+
+/**
+ * Merges a lib's texts into apps/<app>'s next-intl messages (i18n/request.ts)
+ * and their `Messages` type (i18n/global.d.ts), unless they're there. Warns
+ * when a file isn't as expected.
+ */
+export function wireMessages(changes: Changes, app: string, { ns, value, type, pkg }: LibMessages) {
+  const target = { app, pkg };
   const request = i18nRequest(target.app);
   if (!changes.exists(request)) {
     changes.warn(`${request} not found: merge ${value} (${target.pkg}) into the app's messages by hand.`);
@@ -337,4 +356,32 @@ export function wireLibMessages(changes: Changes, { p }: ResourceNames, target: 
       }),
     );
   }
+}
+
+/** The frontend's change log lib: the history sheet and its texts. */
+export const CHANGELOG_FRONTEND_LIB = 'changelog';
+
+/** Whether the workspace has @dafne/frontend-changelog; warns when it hasn't. */
+export function hasChangelogFrontend(changes: Changes): boolean {
+  const dir = frontendLib(CHANGELOG_FRONTEND_LIB);
+  if (changes.exists(`${dir}/package.json`)) {
+    return true;
+  }
+  changes.warn(`${dir} not found: the detail page gets no history (${frontendPackage(CHANGELOG_FRONTEND_LIB)} shows it).`);
+  return false;
+}
+
+/**
+ * Sets up the history of a resource's pages (idempotent):
+ * @dafne/frontend-changelog registered in the app (as `wireFrontendLib`)
+ * with its texts under `changelog`, and a dependency of the resource's lib
+ * when the code is in one (its package.json must exist).
+ */
+export function wireChangelogFrontend(changes: Changes, target: FrontendTarget) {
+  const pkg = frontendPackage(CHANGELOG_FRONTEND_LIB);
+  wireFrontendLib(changes, CHANGELOG_FRONTEND_LIB, target.app);
+  if (target.kind === 'lib') {
+    ensureDependency(changes, `${frontendLib(target.lib)}/package.json`, pkg, 'workspace:*');
+  }
+  wireMessages(changes, target.app, { ns: 'changelog', value: 'CHANGELOG_MESSAGES', type: 'ChangelogMessages', pkg });
 }

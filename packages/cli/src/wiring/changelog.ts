@@ -107,6 +107,31 @@ export function addChangelog(
   return { wasLogged, migration };
 }
 
+/**
+ * The fields a resource's change log shows, or undefined when it keeps
+ * none (no service, or no `ChangelogModule.forFeature` in its module): the
+ * `fields` of `<singular>.changelog.ts`, plus `status` when a state machine
+ * logs its transitions (`changelogTransitionHook`).
+ */
+export function loggedFields(changes: Changes, names: ResourceNames): string[] | undefined {
+  const service = serviceFile(changes, names);
+  if (!changes.exists(service)) {
+    return undefined;
+  }
+  const dir = service.slice(0, service.lastIndexOf('/'));
+  const module = changes.read(`${dir}/${names.p.kebab}.module.ts`) ?? '';
+  if (!module.includes('ChangelogModule.forFeature')) {
+    return undefined;
+  }
+  const options = changes.read(`${dir}/${changelogNames(names).file}.ts`) ?? '';
+  const list = /\bfields:\s*\[([^\]]*)\]/.exec(options)?.[1] ?? '';
+  const fields = [...list.matchAll(/['"`](\w+)['"`]/g)].map((match) => match[1]);
+  const transitions = /\bchangelogTransitionHook\b/.test(
+    changes.list(dir).map((file) => changes.read(`${dir}/${file}`) ?? '').join('\n'),
+  );
+  return transitions && !fields.includes('status') ? [...fields, 'status'] : fields;
+}
+
 /** The keys of the resource's body schema: what a write can change. */
 function bodyFields(changes: Changes, names: ResourceNames): string[] {
   const path = contractFile(names);

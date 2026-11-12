@@ -1,4 +1,5 @@
 import type { ContractMessages } from "@dafne/contracts";
+import type { ChangelogMessages } from "@dafne/frontend-changelog";
 import type { CustomersMessages } from "@dafne/frontend-customers";
 import type { ActivitiesMessages } from "@dafne/frontend-activities";
 import type { GeoMessages } from "@dafne/frontend-geo";
@@ -11,7 +12,7 @@ import type { SalesOrderTypesMessages } from "@dafne/frontend-sales-orders/sales
 /**
  * Typed messages: t("customers.title") only compiles if the key exists in
  * messages/en.json (or, under `contracts`, in the backend's catalog, and
- * under `customers`, `activities`, `products`, `salesOrders` and `geo`, in their
+ * under `customers`, `activities`, `products`, `salesOrders`, `changelog` and `geo`, in their
  * @dafne/frontend-* libs).
  * messages/it.json is checked against en.json in i18n/messages.check.ts.
  */
@@ -26,6 +27,7 @@ declare module "next-intl" {
       products: ProductsMessages;
       salesOrders: SalesOrdersMessages;
       salesOrderTypes: SalesOrderTypesMessages;
+      changelog: ChangelogMessages;
     };
   }
 }

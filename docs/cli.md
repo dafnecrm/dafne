@@ -197,6 +197,20 @@ the patterns of `customers`. Each part is a generator of its own:
 | `form`    | `<singular>-form.tsx`, `new/page.tsx`, `[id]/edit/page.tsx`                     | data, actions, detail |
 | `nav`     | a link in `lib/navigation.ts`                                                  | –                    |
 
+A resource that keeps a change log (`ChangelogModule.forFeature` in its
+module, from `g backend-changelog`) also gets its history: `data` adds
+`list<Singular>Changes` (GET `/<plural>/:id/changes`), `actions` the server
+action `get<Singular>Changes`, `detail` a `<singular>-changelog.tsx` sheet
+(`@dafne/frontend-changelog`, one label per logged field, plus `status`
+when a state machine logs its transitions) opened by a History item of
+the detail page's menu; `@dafne/frontend-changelog` is wired into the app
+(and the resource's lib) with its texts under `changelog`. Turned on
+after the pages exist, `g backend-changelog` adds the history to them (in
+`sales-web` or a lib), and `sync frontend-resource` adds it to pages that
+lack it (any app, `--app`) and names the newly logged fields in the
+sheet. A detail-actions file that isn't as generated (no Edit item,
+delete state or menu) gets a warning: open the sheet from it by hand.
+
 Pages live in `app/[locale]/(app)/<plural>/`. A part also generates the
 parts it needs, if they're missing. The list, detail and form are synced
 with the contract (`packages/contracts/src/<plural>.ts`): they get its

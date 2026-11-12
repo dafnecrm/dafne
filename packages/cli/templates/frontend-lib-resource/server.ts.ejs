@@ -1,5 +1,6 @@
 import { backendFetch } from "@dafne/frontend-api/server";
-import type { TableFilters, TableSort } from "@dafne/frontend-data-table";
+<% if (changelog) { %>import type { ChangesPage } from "@dafne/frontend-changelog";
+<% } %>import type { TableFilters, TableSort } from "@dafne/frontend-data-table";
 import { <%= p.constant %>_DEFAULT_SORT } from "./<%= p.kebab %>-table.ts";
 import type { <%= s.pascal %>Detail, <%= p.pascal %>List } from "./types.ts";
 
@@ -40,4 +41,6 @@ export async function list<%= p.pascal %>({
   query.set("sortDirection", sort.desc ? "desc" : "asc");
   const res = await backendFetch(`/<%= p.kebab %>?${query}`);
   return res.json();
-}
+}<% if (changelog) { %>
+
+<%- include('../frontend/partials/changes-fetcher.ts.ejs') %><% } %>

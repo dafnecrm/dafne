@@ -1,7 +1,12 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { EllipsisVerticalIcon, PencilIcon, Trash2Icon } from "lucide-react";
+import {
+  EllipsisVerticalIcon,
+  PencilIcon,
+  Trash2Icon,
+  HistoryIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@dafne/frontend-ui/components/button";
@@ -13,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@dafne/frontend-ui/components/dropdown-menu";
 import { DeleteProductDialog, type ProductRef } from "./product-dialogs.tsx";
+import { ProductChangelogSheet } from "./product-changelog.tsx";
 
 /**
  * Actions on the product's page, in a menu: edit (`<path>/<id>/edit`) and
@@ -26,7 +32,9 @@ export function ProductDetailActions({
   path: string;
 }) {
   const [deleting, setDeleting] = useState(false);
+  const [history, setHistory] = useState(false);
   const t = useTranslations("common");
+  const tChangelog = useTranslations("changelog");
   const href = `${path}/${encodeURIComponent(product.id)}`;
 
   return (
@@ -48,6 +56,10 @@ export function ProductDetailActions({
             <PencilIcon />
             {t("edit")}
           </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setHistory(true)}>
+            <HistoryIcon />
+            {tChangelog("open")}
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
             variant="destructive"
@@ -58,6 +70,11 @@ export function ProductDetailActions({
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      <ProductChangelogSheet
+        productId={product.id}
+        open={history}
+        onOpenChange={setHistory}
+      />
       {/* Outside the menu, which closes when an item is clicked. */}
       {deleting && (
         <DeleteProductDialog

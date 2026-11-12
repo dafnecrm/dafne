@@ -4,8 +4,9 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { BackendError, backendFetch } from "@dafne/frontend-api/server";
 import { customerSchema, type CustomerFormValues } from "./schema.ts";
-import { getCustomer, listCustomers } from "./server.ts";
+import { getCustomer, listCustomers, listCustomerChanges } from "./server.ts";
 import type { CustomerDetail, ListedCustomer } from "./types.ts";
+import type { ChangesPage } from "@dafne/frontend-changelog";
 
 /*
  * Customer mutations shared by the apps. The backend checks the session
@@ -125,5 +126,20 @@ export async function getCustomerOption(
       return null;
     }
     throw error;
+  }
+}
+
+/**
+ * A page of the customer's change log, for its history sheet (a client
+ * component: backendFetch only runs on the server).
+ */
+export async function getCustomerChanges(
+  id: CustomerDetail["id"],
+  query: { limit: number; offset: number },
+): Promise<ChangesPage | ActionError> {
+  try {
+    return await listCustomerChanges(id, query);
+  } catch (error) {
+    return { error: await errorMessage(error) };
   }
 }

@@ -30,6 +30,13 @@ export interface FrontendOptions {
 export interface FrontendCtx extends Ctx {
   options: FrontendOptions;
   target: FrontendTarget;
+  /**
+   * The fields the resource's change log shows (`loggedFields`), when it
+   * keeps one and @dafne/frontend-changelog is wired (`wireChangelogFrontend`):
+   * its fetcher, server action and history sheet are generated too, the
+   * latter in the detail page's menu.
+   */
+  changelog?: string[];
 }
 
 export const DEFAULT_ICON = 'FileIcon';
@@ -44,11 +51,13 @@ export const frontendOptions = (options: Partial<FrontendOptions>): FrontendOpti
 /**
  * Renders a template of the target's layout: templates/frontend (the app)
  * or templates/frontend-lib-resource (a lib, `app/…` for its route pages).
+ * `changelog` is the logged fields, or null.
  */
 const create = (ctx: FrontendCtx, path: string, template: string) => {
   const dir = ctx.target.kind === 'app' ? 'frontend' : 'frontend-lib-resource';
   const pkg = ctx.target.kind === 'lib' ? ctx.target.pkg : undefined;
-  ctx.changes.create(path, render(`${dir}/${template}`, { ...ctx.names, icon: ctx.options.icon, pkg }));
+  const changelog = ctx.changelog ?? null;
+  ctx.changes.create(path, render(`${dir}/${template}`, { ...ctx.names, icon: ctx.options.icon, pkg, changelog }));
 };
 
 /** In a lib, the template's name for the app layout's one. */
@@ -116,6 +125,11 @@ export const frontendPieces: Record<string, Piece<FrontendCtx>> = {
       const components = files.component.slice(0, files.component.lastIndexOf('/'));
       const dir = routeDir(ctx.names, ctx.target);
       create(ctx, files.component, pick(ctx, 'detail.tsx', 'components/detail.tsx'));
+      // A logged resource's history, in a sheet opened from the menu.
+      if (ctx.changelog) {
+        create(ctx, `${components}/${s.kebab}-changelog.tsx`, pick(ctx, 'changelog.tsx', 'components/changelog.tsx'));
+        warnMissingChangesAction(ctx);
+      }
       create(ctx, `${components}/${s.kebab}-detail-actions.tsx`, pick(ctx, 'detail-actions.tsx', 'components/detail-actions.tsx'));
       create(ctx, files.page, pick(ctx, 'detail-page.tsx', 'app/detail-page.tsx'));
       create(ctx, `${dir}/[id]/load-${s.kebab}.ts`, pick(ctx, 'load.ts', 'app/load.ts'));
@@ -145,6 +159,21 @@ export const frontendPieces: Record<string, Piece<FrontendCtx>> = {
     },
   },
 };
+
+/**
+ * The history sheet calls `get<S>Changes`, which the actions piece writes
+ * for a logged resource: warns when actions.ts predates the change log.
+ */
+function warnMissingChangesAction(ctx: FrontendCtx) {
+  const { s, p } = ctx.names;
+  const { actions } = actionFiles(ctx.names, ctx.target);
+  const { lib } = dataFiles(ctx.names, ctx.target);
+  if (!(ctx.changes.read(actions) ?? '').includes(`get${s.pascal}Changes`)) {
+    ctx.changes.warn(
+      `${actions} has no get${s.pascal}Changes (nor ${lib} list${s.pascal}Changes, maybe): the history sheet needs them. Copy them from a resource generated with a change log (GET /${p.kebab}/:id/changes).`,
+    );
+  }
+}
 
 /** Every frontend piece of a resource, in generation order. */
 export const FRONTEND_RESOURCE = ['data', 'actions', 'list', 'detail', 'form', 'nav'];

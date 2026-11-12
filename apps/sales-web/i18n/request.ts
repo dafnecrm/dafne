@@ -1,4 +1,5 @@
 import { CONTRACT_MESSAGES } from "@dafne/contracts";
+import { CHANGELOG_MESSAGES } from "@dafne/frontend-changelog";
 import { CUSTOMERS_MESSAGES } from "@dafne/frontend-customers";
 import { GEO_MESSAGES } from "@dafne/frontend-geo";
 import { hasLocale } from "next-intl";
@@ -46,6 +47,8 @@ export default getRequestConfig(async ({ locale, requestLocale }) => {
       // Address search and country texts, shipped by @dafne/frontend-geo.
       geo: GEO_MESSAGES[resolved],
       salesOrderTypes: SALES_ORDER_TYPES_MESSAGES[resolved],
+      // History sheet texts, shipped by @dafne/frontend-changelog.
+      changelog: CHANGELOG_MESSAGES[resolved],
     },
   };
 });

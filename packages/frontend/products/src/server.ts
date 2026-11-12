@@ -2,6 +2,7 @@ import { backendFetch } from "@dafne/frontend-api/server";
 import type { TableFilters, TableSort } from "@dafne/frontend-data-table";
 import { PRODUCTS_DEFAULT_SORT } from "./products-table.ts";
 import type { ProductDetail, ProductsList } from "./types.ts";
+import type { ChangesPage } from "@dafne/frontend-changelog";
 
 /*
  * Reads from the backend, for server components (backendFetch forwards the
@@ -39,5 +40,24 @@ export async function listProducts({
   query.set("sortBy", sort.id);
   query.set("sortDirection", sort.desc ? "desc" : "asc");
   const res = await backendFetch(`/products?${query}`);
+  return res.json();
+}
+
+/**
+ * Calls the backend's GET /products/:id/changes (newest first). Throws
+ * a BackendError with status 404 when the product doesn't exist or was
+ * deleted.
+ */
+export async function listProductChanges(
+  id: ProductDetail["id"],
+  { limit, offset }: { limit: number; offset: number },
+): Promise<ChangesPage> {
+  const query = new URLSearchParams({
+    limit: String(limit),
+    offset: String(offset),
+  });
+  const res = await backendFetch(
+    `/products/${encodeURIComponent(id)}/changes?${query}`,
+  );
   return res.json();
 }

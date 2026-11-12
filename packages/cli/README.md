@@ -73,7 +73,13 @@ the resource's texts go into `packages/frontend/<lib>/src` (or
 `src/<plural>` when the lib has another name), created and wired into the
 app (`i18n/request.ts`, `i18n/global.d.ts`) if missing; the route pages,
 `lib/<plural>-table.ts` and the sidebar link stay in the app. A resource
-that already has a place is generated there.
+that already has a place is generated there. A resource that keeps a
+change log (`g backend-changelog`) also gets its history: a fetcher, a
+server action, `<singular>-changelog.tsx` (a sheet of
+`@dafne/frontend-changelog` naming the logged fields) and a History item
+in the detail page's menu. Pages that exist already get it from
+`g backend-changelog`, or from `sync frontend-resource` (which also names
+the fields logged since).
 
 Each command runs a generator of this package, which can also be run with
 Nx directly:

@@ -23,6 +23,7 @@
   "dependencies": {
     "@dafne/contracts": "workspace:*",
     "@dafne/frontend-api": "workspace:*",
+    "@dafne/frontend-changelog": "workspace:*",
     "@dafne/frontend-customers": "workspace:*",
     "@dafne/frontend-products": "workspace:*",
     "@dafne/frontend-data-table": "workspace:*",

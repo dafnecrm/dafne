@@ -97,6 +97,9 @@
     },
     {
       "path": "./packages/backend/database-changelog"
+    },
+    {
+      "path": "./packages/frontend/changelog"
     }
   ]
 }

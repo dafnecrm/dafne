@@ -1,6 +1,6 @@
 "use client";
 
-import { EllipsisVerticalIcon, PencilIcon, Trash2Icon } from "lucide-react";
+import { EllipsisVerticalIcon, <% if (changelog) { %>HistoryIcon, <% } %>PencilIcon, Trash2Icon } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -13,11 +13,14 @@ import {
   DropdownMenuTrigger,
 } from "@dafne/frontend-ui/components/dropdown-menu";
 import { Delete<%= s.pascal %>Dialog, type <%= s.pascal %>Ref } from "./<%= s.kebab %>-dialogs";
+<% if (changelog) { %>import { <%= s.pascal %>ChangelogSheet } from "./<%= s.kebab %>-changelog";
+<% } %>
 
-/** Actions on the <%= s.lower %>'s page, in a menu. */
+/** Actions on the <%= s.lower %>'s page, in a menu<% if (changelog) { %> (its history in a sheet)<% } %>. */
 export function <%= s.pascal %>DetailActions({ <%= s.camel %> }: { <%= s.camel %>: <%= s.pascal %>Ref }) {
   const [deleting, setDeleting] = useState(false);
-  const t = useTranslations();
+<% if (changelog) { %>  const [history, setHistory] = useState(false);
+<% } %>  const t = useTranslations();
   const href = `/<%= p.kebab %>/${encodeURIComponent(<%= s.camel %>.id)}`;
 
   return (
@@ -39,7 +42,11 @@ export function <%= s.pascal %>DetailActions({ <%= s.camel %> }: { <%= s.camel %
             <PencilIcon />
             {t("common.edit")}
           </DropdownMenuItem>
-          <DropdownMenuSeparator />
+<% if (changelog) { %>          <DropdownMenuItem onClick={() => setHistory(true)}>
+            <HistoryIcon />
+            {t("changelog.open")}
+          </DropdownMenuItem>
+<% } %>          <DropdownMenuSeparator />
           <DropdownMenuItem
             variant="destructive"
             onClick={() => setDeleting(true)}
@@ -50,7 +57,12 @@ export function <%= s.pascal %>DetailActions({ <%= s.camel %> }: { <%= s.camel %
         </DropdownMenuContent>
       </DropdownMenu>
       {/* Outside the menu, which closes when an item is clicked. */}
-      {deleting && (
+<% if (changelog) { %>      <<%= s.pascal %>ChangelogSheet
+        <%= s.camel %>Id={<%= s.camel %>.id}
+        open={history}
+        onOpenChange={setHistory}
+      />
+<% } %>      {deleting && (
         <Delete<%= s.pascal %>Dialog
           <%= s.camel %>={<%= s.camel %>}
           then="list"

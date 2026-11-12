@@ -1,0 +1,16 @@
+/**
+ * Calls the backend's GET /<%= p.kebab %>/:id/changes (newest first). Throws
+ * a BackendError with status 404 when the <%= s.lower %> doesn't exist or was
+ * deleted.
+ */
+export async function list<%= s.pascal %>Changes(
+  id: <%= s.pascal %>Detail["id"],
+  { limit, offset }: { limit: number; offset: number },
+): Promise<ChangesPage> {
+  const query = new URLSearchParams({
+    limit: String(limit),
+    offset: String(offset),
+  });
+  const res = await backendFetch(`/<%= p.kebab %>/${encodeURIComponent(id)}/changes?${query}`);
+  return res.json();
+}

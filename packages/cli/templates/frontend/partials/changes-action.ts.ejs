@@ -1,0 +1,14 @@
+/**
+ * A page of the <%= s.lower %>'s change log, for its history sheet (a client
+ * component: backendFetch only runs on the server).
+ */
+export async function get<%= s.pascal %>Changes(
+  id: <%= s.pascal %>Detail["id"],
+  query: { limit: number; offset: number },
+): Promise<ChangesPage | ActionError> {
+  try {
+    return await list<%= s.pascal %>Changes(id, query);
+  } catch (error) {
+    return { error: await errorMessage(error) };
+  }
+}

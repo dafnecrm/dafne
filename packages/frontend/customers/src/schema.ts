@@ -10,6 +10,7 @@ import {
 import { formSchema } from "@dafne/frontend-forms";
 import type { CustomerDetail } from "./types.ts";
 import { CUSTOMER_ADDRESS_TYPE_OPTIONS } from "./customers-table.ts";
+import { type CustomersMessageKey } from "./messages/index.ts";
 
 /**
  * Form values: every field is text, "" when blank, except the types
@@ -69,6 +70,11 @@ export const emptyAddress = (
   region: "",
   countryCode: "",
 });
+
+export const TYPE_OPTIONS = [
+  { value: "person", label: "customers.type.person" },
+  { value: "company", label: "customers.type.company" },
+] satisfies { value: CustomerType; label: CustomersMessageKey }[];
 
 /** Form values for a new customer, or for editing `customer`. */
 export function customerFormOpts(customer?: CustomerDetail) {

@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import {
   CopyIcon,
   EllipsisVerticalIcon,
+  HistoryIcon,
   PencilIcon,
   Trash2Icon,
 } from "lucide-react";
@@ -18,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@dafne/frontend-ui/components/dropdown-menu";
 import { DeleteCustomerDialog, type CustomerRef } from "./customer-dialogs.tsx";
+import { CustomerChangelogSheet } from "./customer-changelog.tsx";
 
 /**
  * Actions on the customer's page, in a menu: edit (`<path>/<id>/edit`) and
@@ -32,9 +34,9 @@ export function CustomerDetailActions({
   path: string;
 }) {
   const [deleting, setDeleting] = useState(false);
-  const t = useTranslations("common");
+  const [history, setHistory] = useState(false);
+  const t = useTranslations();
   const href = `${path}/${encodeURIComponent(customer.id)}`;
-  const { email } = customer;
 
   return (
     <>
@@ -44,7 +46,7 @@ export function CustomerDetailActions({
             <Button
               variant="outline"
               size="icon-sm"
-              aria-label={t("actionsFor", { name: customer.name })}
+              aria-label={t("common.actionsFor", { name: customer.name })}
             />
           }
         >
@@ -53,7 +55,11 @@ export function CustomerDetailActions({
         <DropdownMenuContent align="end">
           <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
             <PencilIcon />
-            {t("edit")}
+            {t("common.edit")}
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setHistory(true)}>
+            <HistoryIcon />
+            {t("changelog.open")}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
@@ -61,11 +67,16 @@ export function CustomerDetailActions({
             onClick={() => setDeleting(true)}
           >
             <Trash2Icon />
-            {t("delete")}
+            {t("common.delete")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
       {/* Outside the menu, which closes when an item is clicked. */}
+      <CustomerChangelogSheet
+        customerId={customer.id}
+        open={history}
+        onOpenChange={setHistory}
+      />
       {deleting && (
         <DeleteCustomerDialog
           customer={customer}

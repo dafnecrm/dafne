@@ -6,6 +6,8 @@ import { DEFAULT_FRONTEND_APP, frontendLib } from '../core/workspace.ts';
 import { FRONTEND_RESOURCE, frontendOptions, frontendPieces, type FrontendOptions } from '../pieces/frontend.ts';
 import { generatePieces } from '../pieces/pieces.ts';
 import { dataFiles } from '../sync/frontend.ts';
+import { loggedFields } from '../wiring/changelog.ts';
+import { hasChangelogFrontend, wireChangelogFrontend } from '../wiring/frontend.ts';
 import { resourceMessages, syncMessages } from '../wiring/messages.ts';
 import { runGenerator } from './run.ts';
 
@@ -59,8 +61,15 @@ export function generateFrontendPieces(tree: Tree, options: FrontendPieceSchema,
     }
     const newLib = target.kind === 'lib' && !changes.exists(`${frontendLib(target.lib)}/package.json`);
 
-    const ctx = { changes, names, app, target, options: frontendOptions(options) };
+    // A logged resource gets its history, if the frontend's changelog lib is there.
+    const logged = pieces.some((piece) => piece !== 'nav') ? loggedFields(changes, names) : undefined;
+    const changelog = logged && hasChangelogFrontend(changes) ? logged : undefined;
+    const ctx = { changes, names, app, target, options: frontendOptions(options), changelog };
     const dependencies = generatePieces(frontendPieces, pieces, ctx);
+    // After the pieces: a new lib's package.json is theirs.
+    if (changelog) {
+      wireChangelogFrontend(changes, target);
+    }
     const pages = [...pieces, ...dependencies].some((piece) => piece !== 'nav');
     syncMessages(changes, { frontend: pages ? resourceMessages(names).frontend : undefined, app });
 

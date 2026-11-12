@@ -18,6 +18,7 @@
   "dependencies": {
     "@dafne/contracts": "workspace:*",
     "@dafne/frontend-api": "workspace:*",
+    "@dafne/frontend-changelog": "workspace:*",
     "@dafne/frontend-data-table": "workspace:*",
     "@dafne/frontend-forms": "workspace:*",
     "@dafne/frontend-ui": "workspace:*",
