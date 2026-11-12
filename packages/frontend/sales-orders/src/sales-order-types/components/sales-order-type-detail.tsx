@@ -29,7 +29,7 @@ export function SalesOrderTypeDetails({
         <AlertTitle>{t('salesOrderTypes.inactiveAlert.title')}</AlertTitle>
         <AlertDescription>{t('salesOrderTypes.inactiveAlert.description')}</AlertDescription>
       </Alert>}
-      <DetailSection title={t("salesOrderTypes.sections.details")}>
+      <DetailSection title={t("salesOrderTypes.sections.details")} groupVariant="grid">
         <Detail icon={TextIcon} label={t("salesOrderTypes.fields.description")}>
           {salesOrderType.description}
         </Detail>
@@ -42,7 +42,7 @@ export function SalesOrderTypeDetails({
             : t(salesOrderType.active ? "common.yes" : "common.no")}
         </Detail>
       </DetailSection>
-      <DetailSection title={t("common.record.title")}>
+      <DetailSection title={t("common.record.title")} groupVariant="grid" defaultOpen={false}>
         <Detail icon={FingerprintIcon} label={t("salesOrderTypes.fields.id")}>
           <div className="flex items-center gap-2">
             <code className="truncate font-sans text-xs">
