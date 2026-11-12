@@ -45,7 +45,7 @@ keep it in line when these rules change. Each project has its own
   and inputs, the `nx` field of a `package.json` its outputs.
 - **New backend libs, apps, resources, contracts, frontend apps, libs and
   pages come from the `dafne` CLI** (`dafne g <kind> <name>`, the kind being
-  the generator's name: `backend-resource|backend-lib|backend-app`,
+  the generator's name: `backend-resource|backend-changelog|backend-lib|backend-app`,
   `contract`, `frontend-resource` and its parts
   `frontend-list|detail|form|actions|data|nav`, `frontend-app`,
   `frontend-lib`), which runs this workspace's own Nx generators
@@ -123,7 +123,9 @@ keep it in line when these rules change. Each project has its own
   editing the resource. Who may call stays with Nest guards.
   A resource's change log is turned on in its module
   (`ChangelogModule.forFeature('<resource>', { fields })`, plus
-  `changelogTransitionHook` for its state machine).
+  `changelogTransitionHook` for its state machine), with the CLI:
+  `dafne g backend-changelog <resource>` (or `backend-resource
+  --changelog`), `--partition` for a partition of its own.
 - **Braces on every `if`/`else`/loop body**, one-liners included
   (`curly: all`, in the oxlint and ESLint configs and the CLI's templates).
 - `.nxignore` hides the CLIs' test fixtures, which look like projects.

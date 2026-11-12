@@ -163,7 +163,10 @@ drizzle-kit can't create partitioned tables, so the package's
 see it), and its migrations are written by hand:
 `pnpm dafne db generate @dafne/backend-database-changelog --custom --name <name>`.
 
-**A resource of its own partition.** If the resource has no rows yet
+**A resource of its own partition.** `dafne g backend-changelog
+<resource> --partition` (or `dafne g backend-resource <name> --changelog
+--partition`) writes the migration below, the right one of the two: the
+CLI asks for it when the flag is left out. By hand: if the resource has no rows yet
 (e.g. in the migration that comes with its first `forFeature`), it's one
 statement:
 

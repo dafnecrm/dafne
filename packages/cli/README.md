@@ -12,6 +12,8 @@ are asked interactively; `-y` fails instead.
 ```sh
 dafne g backend-resource invoice         # contract + table + lib with service and controller
 dafne g backend-resource invoice-line --lib invoices   # the module in packages/backend/invoices/src/invoice-lines
+dafne g backend-resource invoice --changelog --partition   # with its change log, in a partition of its own
+dafne g backend-changelog customer       # turn on the change log of an existing resource (asks: own partition?)
 dafne g backend-lib reports              # empty Nest lib: @dafne/backend-reports
 dafne g backend-lib jobs --app worker    # wire the lib into another app (default: sales-api)
 dafne g backend-app worker --port 3002   # NestJS app in apps/worker

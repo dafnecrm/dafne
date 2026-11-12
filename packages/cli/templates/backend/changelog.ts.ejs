@@ -1,0 +1,13 @@
+import type { ChangelogOptions } from '@dafne/backend-changelog';
+import type { <%= s.pascal %>Detail } from '@dafne/contracts';
+
+/** The resource's name in the change log (and in CrudHooks). */
+export const <%= p.constant %>_RESOURCE = '<%= p.kebab %>';
+
+/**
+ * What the change log keeps of <%= s.a %>: the fields whose changes are
+ * logged (`map` logs a field otherwise than as it is, e.g. a list sorted).
+ */
+export const <%= s.constant %>_CHANGELOG: ChangelogOptions<<%= s.pascal %>Detail> = {
+  fields: [<%- fields.map((f) => `'${f}'`).join(', ') %>],
+};

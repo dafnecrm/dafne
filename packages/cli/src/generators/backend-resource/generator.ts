@@ -8,6 +8,7 @@ import { parseFieldSpec } from '../../fields/parse.ts';
 import { BACKEND_RESOURCE, backendPieces, tableFile } from '../../pieces/backend.ts';
 import { generatePieces } from '../../pieces/pieces.ts';
 import { syncOne } from '../../sync/resource.ts';
+import { addChangelog, partitionTable } from '../../wiring/changelog.ts';
 import { resourceMessages, syncMessages } from '../../wiring/messages.ts';
 import { runGenerator } from '../run.ts';
 
@@ -22,6 +23,10 @@ export interface BackendResourceSchema {
   app?: string;
   /** An existing backend lib the module goes into (packages/backend/<lib>/src/<plural>); default a lib of its own. */
   lib?: string;
+  /** Turn on its change log (see wiring/changelog.ts), once the fields are in. */
+  changelog?: boolean;
+  /** With `changelog`: a partition of changelog.change of its own. */
+  partition?: boolean;
   force?: boolean;
 }
 
@@ -66,12 +71,22 @@ export default async function backendResourceGenerator(tree: Tree, options: Back
 
     syncMessages(changes, { contracts: resourceMessages(names).contracts });
 
+    if (options.partition && !options.changelog) {
+      throw new Error('partition is only with changelog.');
+    }
+    // After the sync: the change log logs the body's fields.
+    const migration = options.changelog
+      ? addChangelog(changes, names, { partition: options.partition, app: options.app ?? DEFAULT_APP }).migration
+      : undefined;
+
     return {
       next: [
         'pnpm install   # links the new package',
         'pnpm nx sync   # TypeScript project references',
         ...(fields.length ? [] : ['Add the real fields to the table, then:']),
         `pnpm dafne db generate --name add-${names.s.kebab}   # the table migration`,
+        ...(migration ? [`pnpm dafne db migrate   # also creates changelog.${partitionTable(names)} (${migration})`] : []),
+        ...(options.changelog ? [`Check the logged fields in ${names.s.kebab}.changelog.ts as the table grows`] : []),
         `pnpm dafne test @dafne/backend-${lib}`,
       ],
     };

@@ -1,9 +1,10 @@
 import { logger } from '@nx/devkit';
 import { parse } from 'jsonc-parser';
-import { rmSync, writeFileSync } from 'node:fs';
+import { readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { flushChanges } from 'nx/src/generators/tree.js';
 import backendAppGenerator from '../src/generators/backend-app/generator.ts';
+import backendChangelogGenerator from '../src/generators/backend-changelog/generator.ts';
 import backendLibGenerator from '../src/generators/backend-lib/generator.ts';
 import backendResourceGenerator from '../src/generators/backend-resource/generator.ts';
 import contractGenerator from '../src/generators/contract/generator.ts';
@@ -184,6 +185,77 @@ describe('backend-resource', () => {
   it('refuses a resource that exists', async () => {
     await generate(backendResourceGenerator, { name: 'invoice' });
     await expect(generate(backendResourceGenerator, { name: 'invoices' })).rejects.toThrow(/already exists/);
+  });
+});
+
+describe('backend-changelog', () => {
+  const dir = 'packages/backend/invoices/src';
+  const migrations = 'packages/backend/database-changelog/migrations';
+  const partitions = () => readdirSync(join(root, migrations)).filter((m) => m.endsWith('_changelog-invoices'));
+
+  it('logs the body fields, wires the module, the service, the controller and the packages', async () => {
+    await generate(backendResourceGenerator, { name: 'invoice', fields: ['number:string:required', 'notes:text'] });
+    const changes = await generate(backendChangelogGenerator, { name: 'invoices' });
+    expect(changes).toContain(`CREATE ${dir}/invoice.changelog.ts`);
+    const changelog = read(`${dir}/invoice.changelog.ts`);
+    expect(changelog).toContain("export const INVOICES_RESOURCE = 'invoices';");
+    expect(changelog).toMatch(/INVOICE_CHANGELOG: ChangelogOptions<InvoiceDetail> = \{\s*fields: \['number', 'notes'\]/);
+    const module = read(`${dir}/invoices.module.ts`);
+    expect(module).toMatch(/ChangelogModule\.forFeature<InvoiceDetail>\(\s*INVOICES_RESOURCE,\s*INVOICE_CHANGELOG,?\s*\)/);
+    expect(module).toContain("import type { InvoiceDetail } from '@dafne/contracts';");
+    expect(module).toMatch(/imports: \[[^\]]*ChangelogModule,/);
+    expect(read(`${dir}/invoices.service.ts`)).toContain('registry.for(INVOICES_RESOURCE, {');
+    const controller = read(`${dir}/invoices.controller.ts`);
+    expect(controller).toContain("@Get(':id/changes')");
+    expect(controller).toContain('private readonly changelog: ChangelogService');
+    expect(controller).toContain('return this.changelog.list(INVOICES_RESOURCE, id, query);');
+    expect(controller).toMatch(/type ListChangesQuery/);
+    expect(read(`${dir}/index.ts`)).toContain("export * from './invoice.changelog.js';");
+    expect(read('packages/backend/invoices/package.json')).toContain('"@dafne/backend-changelog": "workspace:*"');
+    expect(read('packages/backend/invoices/tsconfig.json')).toContain('"../changelog"');
+    const app = read('apps/sales-api/package.json');
+    expect(app).toContain('"@dafne/backend-changelog": "workspace:*"');
+    expect(app).toContain('"@dafne/backend-database-changelog": "workspace:*"');
+    expect(read('tsconfig.json')).toContain('./packages/backend/database-changelog');
+    expect(partitions()).toEqual([]);
+  });
+
+  it('is idempotent, and adds only the partition to a logged resource, moving its rows', async () => {
+    await generate(backendResourceGenerator, { name: 'invoice' });
+    await generate(backendChangelogGenerator, { name: 'invoice' });
+    const controller = read(`${dir}/invoices.controller.ts`);
+    const changes = await generate(backendChangelogGenerator, { name: 'invoice', partition: true });
+    expect(read(`${dir}/invoices.controller.ts`)).toBe(controller);
+    expect(changes.every((c) => c.includes(migrations))).toBe(true);
+    const [folder] = partitions();
+    const sql = read(`${migrations}/${folder}/migration.sql`);
+    expect(sql).toContain('CREATE TABLE "changelog"."change_invoices" PARTITION OF "changelog"."change" FOR VALUES IN (\'invoices\');');
+    expect(sql).toContain('DETACH PARTITION "changelog"."change_default"');
+    const init = JSON.parse(read(`${migrations}/20261112140626_init/snapshot.json`)) as { id: string };
+    expect((JSON.parse(read(`${migrations}/${folder}/snapshot.json`)) as { prevIds: string[] }).prevIds).toEqual([init.id]);
+    // Once.
+    await generate(backendChangelogGenerator, { name: 'invoice', partition: true });
+    expect(partitions()).toHaveLength(1);
+  });
+
+  it('comes with a new resource (changelog), its partition in one statement', async () => {
+    await generate(backendResourceGenerator, { name: 'invoice', changelog: true, partition: true });
+    expect(read(`${dir}/invoices.module.ts`)).toContain('ChangelogModule.forFeature<InvoiceDetail>');
+    const sql = read(`${migrations}/${partitions()[0]}/migration.sql`);
+    expect(sql).toContain('FOR VALUES IN (\'invoices\')');
+    expect(sql).not.toContain('DETACH');
+  });
+
+  it('works on a resource in another lib', async () => {
+    await generate(backendResourceGenerator, { name: 'invoice' });
+    await generate(backendResourceGenerator, { name: 'invoice-line', lib: 'invoices', changelog: true });
+    expect(read(`${dir}/invoice-lines/invoice-lines.module.ts`)).toContain('INVOICE_LINES_RESOURCE');
+    expect(read(`${dir}/index.ts`)).toContain("export * from './invoice-lines/invoice-line.changelog.js';");
+  });
+
+  it('refuses a resource that does not exist, and a partition without changelog', async () => {
+    await expect(generate(backendChangelogGenerator, { name: 'invoice' })).rejects.toThrow(/generate the resource first/);
+    await expect(generate(backendResourceGenerator, { name: 'invoice', partition: true })).rejects.toThrow(/only with changelog/);
   });
 });
 

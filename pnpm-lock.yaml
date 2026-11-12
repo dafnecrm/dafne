@@ -452,6 +452,9 @@ importers:
       '@dafne/backend-database':
         specifier: workspace:*
         version: link:../../packages/backend/database
+      '@dafne/backend-database-auth':
+        specifier: workspace:*
+        version: link:../../packages/backend/database-auth
       '@dafne/backend-database-changelog':
         specifier: workspace:*
         version: link:../../packages/backend/database-changelog
@@ -952,6 +955,9 @@ importers:
 
   packages/backend/customers:
     dependencies:
+      '@dafne/backend-changelog':
+        specifier: workspace:*
+        version: link:../changelog
       '@dafne/backend-common':
         specifier: workspace:*
         version: link:../common
