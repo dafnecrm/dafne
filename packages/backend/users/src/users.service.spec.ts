@@ -50,8 +50,8 @@ describe('UsersService', () => {
   });
 
   it('lists users with default paging and sorting', async () => {
-    await expect(service.getUsersList()).resolves.toEqual({
-      users: rows,
+    await expect(service.list()).resolves.toEqual({
+      items: rows,
       total: 42,
       limit: 20,
       offset: 0,
@@ -68,7 +68,7 @@ describe('UsersService', () => {
   });
 
   it('passes paging and filters email with contains', async () => {
-    await service.getUsersList({ limit: 5, offset: 10, email: 'ada' });
+    await service.list({ limit: 5, offset: 10, email: 'ada' });
 
     const where = and(ilike(schema.user.email, '%ada%'));
     expect(query.where).toHaveBeenCalledWith(where);
@@ -78,7 +78,7 @@ describe('UsersService', () => {
   });
 
   it('filters name with contains and escapes LIKE wildcards', async () => {
-    await service.getUsersList({ name: '50%_a' });
+    await service.list({ name: '50%_a' });
 
     expect(query.where).toHaveBeenCalledWith(
       and(ilike(schema.user.name, '%50\\%\\_a%')),
@@ -86,7 +86,7 @@ describe('UsersService', () => {
   });
 
   it('filters role and banned with equals', async () => {
-    await service.getUsersList({ role: 'admin', banned: 'false' });
+    await service.list({ role: 'admin', banned: 'false' });
 
     expect(query.where).toHaveBeenCalledWith(
       and(eq(schema.user.role, 'admin'), eq(schema.user.banned, false)),
@@ -94,7 +94,7 @@ describe('UsersService', () => {
   });
 
   it('combines every filter with AND', async () => {
-    await service.getUsersList({
+    await service.list({
       email: 'ada',
       name: 'Ada',
       role: 'user',
@@ -112,13 +112,13 @@ describe('UsersService', () => {
   });
 
   it('ignores empty filter values', async () => {
-    await service.getUsersList({ email: '', role: '' });
+    await service.list({ email: '', role: '' });
 
     expect(query.where).toHaveBeenCalledWith(undefined);
   });
 
   it('sorts by the given field and direction', async () => {
-    await service.getUsersList({ sortBy: 'email', sortDirection: 'asc' });
+    await service.list({ sortBy: 'email', sortDirection: 'asc' });
 
     expect(query.orderBy).toHaveBeenCalledWith(
       asc(schema.user.email),
@@ -126,7 +126,7 @@ describe('UsersService', () => {
     );
   });
 
-  describe('getUser', () => {
+  describe('get', () => {
     it('returns the user with accounts, active sessions and last activity', async () => {
       const lastActive = new Date('2026-10-01T10:00:00Z');
       const active = {
@@ -151,7 +151,7 @@ describe('UsersService', () => {
         sessions: [active, expired],
       });
 
-      await expect(service.getUser('1')).resolves.toEqual({
+      await expect(service.get('1')).resolves.toEqual({
         id: '1',
         email: 'ada@example.com',
         providers: ['credential', 'google'],
@@ -164,7 +164,7 @@ describe('UsersService', () => {
 
     it('never selects tokens or passwords', async () => {
       findFirst.mockResolvedValue({ id: '1', accounts: [], sessions: [] });
-      await service.getUser('1');
+      await service.get('1');
 
       const { with: relations } = findFirst.mock.calls[0][0];
       expect(relations.sessions.columns).not.toHaveProperty('token');
@@ -180,7 +180,7 @@ describe('UsersService', () => {
         sessions: [{ updatedAt: lastActive, expiresAt: new Date(0) }],
       });
 
-      await expect(service.getUser('1')).resolves.toMatchObject({
+      await expect(service.get('1')).resolves.toMatchObject({
         lastActiveAt: lastActive,
         sessions: [],
       });
@@ -189,7 +189,7 @@ describe('UsersService', () => {
     it('has no last activity without sessions', async () => {
       findFirst.mockResolvedValue({ id: '1', accounts: [], sessions: [] });
 
-      await expect(service.getUser('1')).resolves.toMatchObject({
+      await expect(service.get('1')).resolves.toMatchObject({
         providers: [],
         accounts: [],
         sessions: [],
@@ -200,13 +200,13 @@ describe('UsersService', () => {
     it('throws 404 when the user does not exist', async () => {
       findFirst.mockResolvedValue(undefined);
 
-      await expect(service.getUser('nope')).rejects.toBeInstanceOf(
+      await expect(service.get('nope')).rejects.toBeInstanceOf(
         NotFoundException,
       );
     });
   });
 
-  describe('createUser', () => {
+  describe('create', () => {
     const body = createUserBodySchema.parse({
       firstname: 'Ada',
       lastname: 'Lovelace',
@@ -218,7 +218,7 @@ describe('UsersService', () => {
       auth.createUser.mockResolvedValue('u1');
       findFirst.mockResolvedValue({ id: 'u1', accounts: [], sessions: [] });
 
-      await expect(service.createUser(body)).resolves.toMatchObject({
+      await expect(service.create(body)).resolves.toMatchObject({
         id: 'u1',
       });
       expect(auth.createUser).toHaveBeenCalledWith(
@@ -236,7 +236,7 @@ describe('UsersService', () => {
       auth.sendVerificationEmail.mockRejectedValue(new Error('no API key'));
       findFirst.mockResolvedValue({ id: 'u1', accounts: [], sessions: [] });
 
-      await expect(service.createUser(body)).resolves.toMatchObject({
+      await expect(service.create(body)).resolves.toMatchObject({
         id: 'u1',
       });
     });
@@ -249,7 +249,7 @@ describe('UsersService', () => {
         }),
       );
 
-      await expect(service.createUser(body)).rejects.toBeInstanceOf(
+      await expect(service.create(body)).rejects.toBeInstanceOf(
         ConflictException,
       );
       expect(auth.sendVerificationEmail).not.toHaveBeenCalled();

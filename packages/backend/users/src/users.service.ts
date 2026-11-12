@@ -18,6 +18,7 @@ import {
   type UsersList,
   msg,
 } from '@dafne/contracts';
+import type { CrudService } from '@dafne/backend-crud';
 
 export const USERS_DEFAULT_PAGE_SIZE = 20;
 
@@ -39,7 +40,13 @@ const USER_FILTERS: Record<UserFilterField, (value: string) => SQL> = {
 };
 
 @Injectable()
-export class UsersService {
+export class UsersService
+  implements
+    Pick<
+      CrudService<string, ListUsersQuery, UsersList, CreateUserBody, UserDetail>,
+      'list' | 'get' | 'create'
+    >
+{
   private readonly logger = new Logger(UsersService.name);
 
   constructor(
@@ -52,7 +59,7 @@ export class UsersService {
    * password the admin picked, and sends them the verification link: they
    * can sign in once they click it. Throws 409 if the email is taken.
    */
-  async createUser(body: CreateUserBody): Promise<UserDetail> {
+  async create(body: CreateUserBody): Promise<UserDetail> {
     let id: string;
     try {
       id = await this.auth.createUser(body, { emailVerified: false });
@@ -71,11 +78,11 @@ export class UsersService {
       // The user exists anyway: signing in sends them a new link.
       this.logger.error(`Verification email to ${body.email} failed`, error);
     }
-    return this.getUser(id);
+    return this.get(id);
   }
 
   /** Lists users, paged and sorted, filtered by every field given (AND). */
-  async getUsersList(query: ListUsersQuery = {}): Promise<UsersList> {
+  async list(query: ListUsersQuery = {}): Promise<UsersList> {
     const {
       limit = USERS_DEFAULT_PAGE_SIZE,
       offset = 0,
@@ -101,7 +108,7 @@ export class UsersService {
       db.$count(user, where),
     ]);
 
-    return { users, total, limit, offset };
+    return { items: users, total, limit, offset };
   }
 
   /**
@@ -109,7 +116,7 @@ export class UsersService {
    * "credential", "google"), their active sessions and when they were last
    * active. Tokens and passwords are never selected.
    */
-  async getUser(id: string): Promise<UserDetail> {
+  async get(id: string): Promise<UserDetail> {
     const found = await this.db.query.user.findFirst({
       where: { id },
       with: {

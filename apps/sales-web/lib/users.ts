@@ -24,7 +24,7 @@ export async function getUser(id: string): Promise<UserDetail> {
 }
 
 /**
- * Calls the backend's GET /users/list (admins only: other users get a
+ * Calls the backend's GET /users (admins only: other users get a
  * BackendError with status 403).
  */
 export async function listUsers({
@@ -47,6 +47,6 @@ export async function listUsers({
   }
   query.set("sortBy", sort.id);
   query.set("sortDirection", sort.desc ? "desc" : "asc");
-  const res = await authFetch(`/users/list?${query}`);
+  const res = await authFetch(`/users?${query}`);
   return res.json();
 }

@@ -78,5 +78,5 @@ async function UsersList({
     throw error;
   }
 
-  return <UsersTable users={data.users} total={data.total} params={params} />;
+  return <UsersTable users={data.items} total={data.total} params={params} />;
 }

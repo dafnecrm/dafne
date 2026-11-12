@@ -11,12 +11,13 @@ every app shares the same users; the frontends call it with `authFetch`
 | Method | Path          | Who       | What                                     |
 | ------ | ------------- | --------- | ---------------------------------------- |
 | `GET`  | `/users/me`   | signed in | The current user (`{ user }`)            |
-| `GET`  | `/users/list` | admin     | List, with paging, filters and sort      |
+| `GET`  | `/users`      | admin     | List, with paging, filters and sort      |
 | `GET`  | `/users/:id`  | admin     | One user                                 |
 | `POST` | `/users`      | admin     | Create a user (Better Auth admin plugin) |
 
-`/users/public` and `/users/optional` are examples of anonymous and
-optional authentication.
+The controller and the service implement `list`, `get` and `create` of
+the CRUD interface (`@dafne/backend-crud`); the list is a `Page<ListedUser>`.
+They run no write hooks: users are written by Better Auth.
 
 Schemas and types: `@dafne/contracts` (`users.ts`).
 

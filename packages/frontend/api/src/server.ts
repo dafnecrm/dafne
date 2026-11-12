@@ -26,7 +26,7 @@ export function backendFetch(path: string, init: RequestInit = {}) {
   return fetchFrom(BACKEND_URL, path, init);
 }
 
-/** Like backendFetch, for apps/auth (e.g. the users: /users/list). */
+/** Like backendFetch, for apps/auth (e.g. the users: /users). */
 export function authFetch(path: string, init: RequestInit = {}) {
   return fetchFrom(AUTH_URL, path, init);
 }

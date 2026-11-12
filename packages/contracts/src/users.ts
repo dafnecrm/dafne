@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { pageQuery, requiredText, SORT_DIRECTIONS } from './common.ts';
+import { pageQuery, requiredText, SORT_DIRECTIONS, type Page } from './common.ts';
 import { msg } from './messages/index.ts';
 
 /* ---------- Requests ---------- */
@@ -62,7 +62,7 @@ export type UserSortField = (typeof USER_SORT_FIELDS)[number];
 export const USER_FILTER_FIELDS = ['email', 'name', 'role', 'banned'] as const;
 export type UserFilterField = (typeof USER_FILTER_FIELDS)[number];
 
-/** Query string of GET /users/list. */
+/** Query string of GET /users. */
 export const listUsersQuerySchema = z.strictObject({
   ...pageQuery,
   /** Emails containing this text. */
@@ -82,7 +82,7 @@ export type ListUsersQuery = z.output<typeof listUsersQuerySchema>;
 
 /* ---------- Responses (dates as Date; clients get Json<T>) ---------- */
 
-/** A user in GET /users/list: the Better Auth user, admin fields included. */
+/** A user in GET /users: the Better Auth user, admin fields included. */
 export interface ListedUser {
   id: string;
   name: string;
@@ -100,13 +100,8 @@ export interface ListedUser {
   updatedAt: Date;
 }
 
-/** Response of GET /users/list. */
-export interface UsersList {
-  users: ListedUser[];
-  total: number;
-  limit: number;
-  offset: number;
-}
+/** Response of GET /users. */
+export type UsersList = Page<ListedUser>;
 
 /** A Better Auth account: one way the user signs in. */
 export interface UserAccount {
