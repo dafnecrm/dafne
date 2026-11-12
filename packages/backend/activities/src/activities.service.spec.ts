@@ -5,6 +5,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { and, asc, desc, eq, isNull, ilike, ne } from 'drizzle-orm';
 import { activityBodySchema, type ActivityBodyInput } from '@dafne/contracts';
 import { ActivitiesService } from './activities.service.js';
+import type { Actor } from '@dafne/backend-crud';
+
+/** A signed-in user, as the services get it; only the id matters here. */
+const actor = (id: string) => ({ id }) as Actor;
 
 /** A body as the validation pipe hands it to the service. */
 const body = (input: ActivityBodyInput) => activityBodySchema.parse(input);
@@ -66,9 +70,9 @@ describe('ActivitiesService', () => {
     service = module.get(ActivitiesService);
   });
 
-  describe('listActivities', () => {
+  describe('list', () => {
     it('lists activities that are not deleted, newest first', async () => {
-      await expect(service.listActivities()).resolves.toEqual({
+      await expect(service.list()).resolves.toEqual({
         activities: rows,
         total: 42,
         limit: 20,
@@ -85,7 +89,7 @@ describe('ActivitiesService', () => {
     });
 
     it('filters with contains, escaping LIKE wildcards', async () => {
-      await service.listActivities({ name: '50%_a' });
+      await service.list({ name: '50%_a' });
 
       expect(select.where).toHaveBeenCalledWith(
         and(notDeleted, ilike(activity.name, '%50\\%\\_a%')),
@@ -93,7 +97,7 @@ describe('ActivitiesService', () => {
     });
 
     it('pages and sorts', async () => {
-      await service.listActivities({
+      await service.list({
         limit: 5,
         offset: 10,
         sortBy: 'createdAt',
@@ -109,9 +113,9 @@ describe('ActivitiesService', () => {
     });
   });
 
-  describe('getActivity', () => {
+  describe('get', () => {
     it('returns a activity that is not deleted, with its users', async () => {
-      await expect(service.getActivity(1)).resolves.toBe(found);
+      await expect(service.get(1)).resolves.toBe(found);
 
       const options = findFirst.mock.calls[0][0];
       expect(options.where).toEqual({ id: 1, deletedAt: { isNull: true } });
@@ -122,16 +126,16 @@ describe('ActivitiesService', () => {
     it('throws 404 when the activity does not exist or is deleted', async () => {
       findFirst.mockResolvedValue(undefined);
 
-      await expect(service.getActivity(999)).rejects.toBeInstanceOf(
+      await expect(service.get(999)).rejects.toBeInstanceOf(
         NotFoundException,
       );
     });
   });
 
-  describe('createActivity', () => {
+  describe('create', () => {
     it('inserts the activity with its creator', async () => {
       await expect(
-        service.createActivity(body({ name: 'Acme', type: 'email' }), 'u1'),
+        service.create(body({ name: 'Acme', type: 'email' }), actor('u1')),
       ).resolves.toBe(found);
 
       const [row] = insert.values.mock.calls[0];
@@ -144,12 +148,12 @@ describe('ActivitiesService', () => {
     });
   });
 
-  describe('updateActivity', () => {
+  describe('update', () => {
     it('updates the activity', async () => {
-      await service.updateActivity(
+      await service.update(
         1,
         body({ name: 'Acme Inc', type: 'email' }),
-        'u2',
+        actor('u2'),
       );
 
       expect(update.set.mock.calls[0][0]).toMatchObject({
@@ -165,14 +169,14 @@ describe('ActivitiesService', () => {
       update.where.mockResolvedValue({ rowCount: 0 });
 
       await expect(
-        service.updateActivity(999, body({ name: 'X', type: 'email' }), 'u2'),
+        service.update(999, body({ name: 'X', type: 'email' }), actor('u2')),
       ).rejects.toBeInstanceOf(NotFoundException);
     });
   });
 
-  describe('deleteActivity', () => {
+  describe('delete', () => {
     it('sets deletedAt instead of deleting the row', async () => {
-      await service.deleteActivity(1, 'u3');
+      await service.delete(1, actor('u3'));
 
       const values = update.set.mock.calls[0][0];
       expect(values.deletedAt).toBeInstanceOf(Date);
@@ -186,7 +190,7 @@ describe('ActivitiesService', () => {
     it('throws 404 when the activity is missing or already deleted', async () => {
       update.where.mockResolvedValue({ rowCount: 0 });
 
-      await expect(service.deleteActivity(1, 'u3')).rejects.toBeInstanceOf(
+      await expect(service.delete(1, actor('u3'))).rejects.toBeInstanceOf(
         NotFoundException,
       );
     });

@@ -24,10 +24,10 @@ describe('syncService', () => {
     const { content, report } = syncService('s.ts', service(), names, table);
     expect(content).toMatch(/name: activity\.name,\s*type: activity\.type,\s*status: activity\.status,\s*createdAt: activity\.createdAt/);
     expect(content).toMatch(/name: body\.name,\s*type: body\.type,\s*createdAt: now/);
-    expect(content).toMatch(/\.set\(\{\s*name: body\.name,\s*type: body\.type,\s*updatedById: userId/);
+    expect(content).toMatch(/\.set\(\{\s*name: body\.name,\s*type: body\.type,\s*updatedById: actor.id/);
     // readonly: in the list, not saved from the body.
     expect(content).not.toContain('status: body.status');
-    expect(report.added).toContain('listActivities select: status');
+    expect(report.added).toContain('list select: status');
   });
 
   it('leaves internal columns out of the detail and the list', () => {
@@ -44,17 +44,17 @@ describe('syncService', () => {
   it('removes dropped columns, but not hand-written values', () => {
     const table = tableWith(`    code: varchar('code', { length: 10 }),`);
     const once = syncService('s.ts', service(), names, table).content.replace(
-      'updatedById: userId,\n        // The time',
-      'updatedById: userId,\n        name2: body.name.toUpperCase(),\n        // The time',
+      'updatedById: actor.id,\n        // The time',
+      'updatedById: actor.id,\n        name2: body.name.toUpperCase(),\n        // The time',
     );
     const { content, report } = syncService('s.ts', once, names, tableWith(''), ['code']);
     expect(content).not.toContain('code: activity.code');
     expect(content).not.toContain('code: body.code');
     expect(content).toContain('name2: body.name.toUpperCase()');
     expect(report.removed).toEqual([
-      'listActivities select: code',
-      'createActivity insert values: code',
-      'updateActivity update set: code',
+      'list select: code',
+      'create insert values: code',
+      'update update set: code',
     ]);
   });
 
@@ -99,6 +99,6 @@ describe('syncService', () => {
     expect(content).toMatch(/type ActivityFilterField/);
     expect(content).toMatch(/import \{[^}]*type Column[^}]*\} from 'drizzle-orm'/);
     expect(content.indexOf('const EXACT_FILTERS')).toBeLessThan(content.indexOf('const notDeleted'));
-    expect(report.added).toContain('listActivities: EXACT_FILTERS (activity)');
+    expect(report.added).toContain('list: EXACT_FILTERS (activity)');
   });
 });

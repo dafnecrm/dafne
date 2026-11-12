@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@dafne/backend-common": "workspace:*",
+    "@dafne/backend-crud": "workspace:*",
     "@dafne/backend-database": "workspace:*",
     "@dafne/backend-fsm": "workspace:*",
     "@dafne/backend-session": "workspace:*",

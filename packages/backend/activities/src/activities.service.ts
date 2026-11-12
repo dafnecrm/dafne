@@ -21,6 +21,7 @@ import {
   type ListActivitiesQuery,
   msg,
 } from '@dafne/contracts';
+import type { Actor, CrudService } from '@dafne/backend-crud';
 
 export const ACTIVITIES_DEFAULT_PAGE_SIZE = 20;
 
@@ -48,14 +49,23 @@ const notClosed = ne(activity.status, 'closed');
 const userSummary = { columns: { id: true, name: true } } as const;
 
 @Injectable()
-export class ActivitiesService {
+export class ActivitiesService
+  implements
+    CrudService<
+      number,
+      ListActivitiesQuery,
+      ActivitiesList,
+      ActivityBody,
+      ActivityDetail
+    >
+{
   constructor(@InjectDrizzle() private readonly db: Database) {}
 
   /**
    * Lists activities that aren't deleted, paged and sorted, filtered by
    * every field given (AND, each matching text the field contains).
    */
-  async listActivities(
+  async list(
     query: ListActivitiesQuery = {},
   ): Promise<ActivitiesList> {
     const {
@@ -109,7 +119,7 @@ export class ActivitiesService {
    * One activity that isn't deleted, with who created and last updated
    * it. Throws 404 otherwise.
    */
-  async getActivity(id: number): Promise<ActivityDetail> {
+  async get(id: number): Promise<ActivityDetail> {
     const found = await this.db.query.activity.findFirst({
       where: { id, deletedAt: { isNull: true } },
       columns: { createdById: false, updatedById: false },
@@ -124,10 +134,10 @@ export class ActivitiesService {
     return found;
   }
 
-  /** Creates a activity; `userId` is the creator. */
-  async createActivity(
+  /** Creates a activity; `actor` is the creator. */
+  async create(
     body: ActivityBody,
-    userId: string,
+    actor: Actor,
   ): Promise<ActivityDetail> {
     // One instant for both: createdAt and updatedAt start equal.
     const now = new Date();
@@ -140,21 +150,21 @@ export class ActivitiesService {
         notes: body.notes,
         createdAt: now,
         updatedAt: now,
-        createdById: userId,
-        updatedById: userId,
+        createdById: actor.id,
+        updatedById: actor.id,
       })
       .returning({ id: activity.id });
-    return this.getActivity(id);
+    return this.get(id);
   }
 
   /**
-   * Replaces a activity's fields; `userId` is the editor.
+   * Replaces a activity's fields; `actor` is the editor.
    * Throws 404 if the activity doesn't exist, is deleted or is closed.
    */
-  async updateActivity(
+  async update(
     id: number,
     body: ActivityBody,
-    userId: string,
+    actor: Actor,
   ): Promise<ActivityDetail> {
     const result = await this.db
       .update(activity)
@@ -163,7 +173,7 @@ export class ActivitiesService {
         type: body.type,
         dueDate: body.dueDate,
         notes: body.notes,
-        updatedById: userId,
+        updatedById: actor.id,
         // The time of this change.
         updatedAt: new Date(),
       })
@@ -171,18 +181,18 @@ export class ActivitiesService {
     if (result.rowCount === 0) {
       throw new NotFoundException(msg('activities.notFound'));
     }
-    return this.getActivity(id);
+    return this.get(id);
   }
 
   /**
    * Deletes a activity logically: sets deletedAt, so it disappears
    * from the API but stays in the database. Throws 404 if already deleted.
    */
-  async deleteActivity(id: number, userId: string) {
+  async delete(id: number, actor: Actor): Promise<void> {
     const now = new Date();
     const result = await this.db
       .update(activity)
-      .set({ deletedAt: now, updatedAt: now, updatedById: userId })
+      .set({ deletedAt: now, updatedAt: now, updatedById: actor.id })
       .where(and(eq(activity.id, id), notDeleted));
     if (result.rowCount === 0) {
       throw new NotFoundException(msg('activities.notFound'));

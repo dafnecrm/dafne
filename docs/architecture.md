@@ -76,6 +76,29 @@ Both sides share **`@dafne/contracts`**, so they can't drift:
   `I18nExceptionFilter` (`@dafne/backend-common`, default locale `it`);
   the frontend translates the same keys.
 
+## CRUD resources: one interface
+
+Every CRUD resource (customers, products, activities, sales orders, sales
+order types) has the same controller and service methods, typed by
+`@dafne/backend-crud`. The compiler checks them (`implements`), and
+`dafne g backend-resource` writes them:
+
+| Route            | Controller / service | Service signature                            |
+| ---------------- | -------------------- | -------------------------------------------- |
+| `GET /`          | `list`               | `list(query?): Promise<List>`                |
+| `GET /:id`       | `get`                | `get(id): Promise<Detail>` (404 if missing)  |
+| `POST /`         | `create`             | `create(body, actor): Promise<Detail>`       |
+| `PUT /:id`       | `update`             | `update(id, body, actor): Promise<Detail>`   |
+| `DELETE /:id`    | `delete` (204)       | `delete(id, actor): Promise<void>` (logical) |
+
+- `actor` is the signed-in `SessionUser` (`session.user`), not only its id.
+- Extra routes sit next to them with their own names (`PATCH
+  /activities/:id/close`, `POST /sales-orders/:id/status`).
+- A resource that lacks some of the five implements a `Pick` of the
+  interface.
+- Who may call a route is decided by Nest guards (`@Roles()`), not by the
+  interface.
+
 ## Better Auth options shared by both sides
 
 `@dafne/auth-options` holds the options that don't depend on the database

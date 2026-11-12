@@ -9,6 +9,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { and, asc, desc, eq, isNull, ilike } from 'drizzle-orm';
 import { customerBodySchema, type CustomerBodyInput } from '@dafne/contracts';
 import { CustomersService } from './customers.service.js';
+import type { Actor } from '@dafne/backend-crud';
+
+/** A signed-in user, as the services get it; only the id matters here. */
+const actor = (id: string) => ({ id }) as Actor;
 
 /** A body as the validation pipe hands it to the service. */
 const body = (input: CustomerBodyInput) => customerBodySchema.parse(input);
@@ -85,9 +89,9 @@ describe('CustomersService', () => {
     service = module.get(CustomersService);
   });
 
-  describe('listCustomers', () => {
+  describe('list', () => {
     it('lists customers that are not deleted, newest first', async () => {
-      await expect(service.listCustomers()).resolves.toEqual({
+      await expect(service.list()).resolves.toEqual({
         customers: rows,
         total: 42,
         limit: 20,
@@ -104,7 +108,7 @@ describe('CustomersService', () => {
     });
 
     it('filters with contains, escaping LIKE wildcards', async () => {
-      await service.listCustomers({ name: '50%_a', phone: ' 333 ', email: '' });
+      await service.list({ name: '50%_a', phone: ' 333 ', email: '' });
 
       expect(select.where).toHaveBeenCalledWith(
         and(
@@ -116,7 +120,7 @@ describe('CustomersService', () => {
     });
 
     it('pages and sorts', async () => {
-      await service.listCustomers({
+      await service.list({
         limit: 5,
         offset: 10,
         sortBy: 'createdAt',
@@ -132,9 +136,9 @@ describe('CustomersService', () => {
     });
   });
 
-  describe('getCustomer', () => {
+  describe('get', () => {
     it('returns a customer that is not deleted, with addresses and users', async () => {
-      await expect(service.getCustomer(1)).resolves.toBe(found);
+      await expect(service.get(1)).resolves.toBe(found);
 
       const options = findFirst.mock.calls[0][0];
       expect(options.where).toEqual({ id: 1, deletedAt: { isNull: true } });
@@ -146,16 +150,16 @@ describe('CustomersService', () => {
     it('throws 404 when the customer does not exist or is deleted', async () => {
       findFirst.mockResolvedValue(undefined);
 
-      await expect(service.getCustomer(999)).rejects.toBeInstanceOf(
+      await expect(service.get(999)).rejects.toBeInstanceOf(
         NotFoundException,
       );
     });
   });
 
-  describe('createCustomer', () => {
+  describe('create', () => {
     it('inserts the customer and its addresses in order', async () => {
       await expect(
-        service.createCustomer(
+        service.create(
           body({
             type: 'company',
             name: 'Acme',
@@ -175,7 +179,7 @@ describe('CustomersService', () => {
               },
             ],
           }),
-          'u1',
+          actor('u1'),
         ),
       ).resolves.toBe(found);
 
@@ -210,9 +214,9 @@ describe('CustomersService', () => {
       insert.returning.mockRejectedValue(duplicateEmail);
 
       await expect(
-        service.createCustomer(
+        service.create(
           body({ type: 'company', name: 'Acme', email: 'info@acme.test' }),
-          'u1',
+          actor('u1'),
         ),
       ).rejects.toBeInstanceOf(ConflictException);
     });
@@ -234,7 +238,7 @@ describe('CustomersService', () => {
       );
 
       await expect(
-        service.createCustomer(
+        service.create(
           body({
             type: 'company',
             name: 'Acme',
@@ -248,24 +252,24 @@ describe('CustomersService', () => {
               },
             ],
           }),
-          'u1',
+          actor('u1'),
         ),
       ).rejects.toBeInstanceOf(BadRequestException);
     });
 
     it('skips the address insert when there are none', async () => {
-      await service.createCustomer(
+      await service.create(
         body({ type: 'company', name: 'Acme', email: 'info@acme.test' }),
-        'u1',
+        actor('u1'),
       );
 
       expect(insert.values).toHaveBeenCalledTimes(1);
     });
   });
 
-  describe('updateCustomer', () => {
+  describe('update', () => {
     it('updates the customer and replaces the addresses', async () => {
-      await service.updateCustomer(
+      await service.update(
         1,
         body({
           type: 'company',
@@ -280,7 +284,7 @@ describe('CustomersService', () => {
             },
           ],
         }),
-        'u2',
+        actor('u2'),
       );
 
       expect(update.set.mock.calls[0][0]).toMatchObject({
@@ -305,10 +309,10 @@ describe('CustomersService', () => {
       update.where.mockRejectedValue(duplicateEmail);
 
       await expect(
-        service.updateCustomer(
+        service.update(
           1,
           body({ type: 'company', name: 'Acme', email: 'info@acme.test' }),
-          'u2',
+          actor('u2'),
         ),
       ).rejects.toBeInstanceOf(ConflictException);
       expect(db.delete).not.toHaveBeenCalled();
@@ -319,14 +323,14 @@ describe('CustomersService', () => {
       findFirst.mockResolvedValue({ id: 1 });
 
       await expect(
-        service.updateCustomer(
+        service.update(
           1,
           body({
             type: 'person',
             name: 'Mario Rossi',
             email: 'info@acme.test',
           }),
-          'u2',
+          actor('u2'),
         ),
       ).rejects.toBeInstanceOf(BadRequestException);
       expect(db.delete).not.toHaveBeenCalled();
@@ -338,10 +342,10 @@ describe('CustomersService', () => {
       findFirst.mockResolvedValue(undefined);
 
       await expect(
-        service.updateCustomer(
+        service.update(
           999,
           body({ type: 'company', name: 'X', email: 'info@acme.test' }),
-          'u2',
+          actor('u2'),
         ),
       ).rejects.toBeInstanceOf(NotFoundException);
       expect(db.delete).not.toHaveBeenCalled();
@@ -349,9 +353,9 @@ describe('CustomersService', () => {
     });
   });
 
-  describe('deleteCustomer', () => {
+  describe('delete', () => {
     it('sets deletedAt instead of deleting the row', async () => {
-      await service.deleteCustomer(1, 'u3');
+      await service.delete(1, actor('u3'));
 
       const values = update.set.mock.calls[0][0];
       expect(values.deletedAt).toBeInstanceOf(Date);
@@ -365,7 +369,7 @@ describe('CustomersService', () => {
     it('throws 404 when the customer is missing or already deleted', async () => {
       update.where.mockResolvedValue({ rowCount: 0 });
 
-      await expect(service.deleteCustomer(1, 'u3')).rejects.toBeInstanceOf(
+      await expect(service.delete(1, actor('u3'))).rejects.toBeInstanceOf(
         NotFoundException,
       );
     });

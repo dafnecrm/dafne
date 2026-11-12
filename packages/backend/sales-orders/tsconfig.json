@@ -21,6 +21,9 @@
       "path": "../database"
     },
     {
+      "path": "../crud"
+    },
+    {
       "path": "../common"
     }
   ]

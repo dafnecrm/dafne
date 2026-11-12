@@ -22,6 +22,7 @@ import {
   PostgresErrorCode,
   rethrowPostgresError,
 } from '@dafne/backend-common';
+import type { Actor, CrudService } from '@dafne/backend-crud';
 
 export const CUSTOMERS_DEFAULT_PAGE_SIZE = 20;
 
@@ -67,7 +68,16 @@ const userSummary = { columns: { id: true, name: true } } as const;
 type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0];
 
 @Injectable()
-export class CustomersService {
+export class CustomersService
+  implements
+    CrudService<
+      number,
+      ListCustomersQuery,
+      CustomersList,
+      CustomerBody,
+      CustomerDetail
+    >
+{
   logger = new Logger(CustomersService.name);
 
   constructor(@InjectDrizzle() private readonly db: Database) {}
@@ -76,7 +86,7 @@ export class CustomersService {
    * Lists customers that aren't deleted, paged and sorted, filtered by every
    * field given (AND, each matching text the field contains).
    */
-  async listCustomers(query: ListCustomersQuery = {}): Promise<CustomersList> {
+  async list(query: ListCustomersQuery = {}): Promise<CustomersList> {
     const {
       limit = CUSTOMERS_DEFAULT_PAGE_SIZE,
       offset = 0,
@@ -135,7 +145,7 @@ export class CustomersService {
    * One customer that isn't deleted, with their addresses and who created
    * and last updated them. Throws 404 otherwise.
    */
-  async getCustomer(id: number): Promise<CustomerDetail> {
+  async get(id: number): Promise<CustomerDetail> {
     const found = await this.db.query.customer.findFirst({
       where: { id, deletedAt: { isNull: true } },
       columns: { createdById: false, updatedById: false },
@@ -156,11 +166,11 @@ export class CustomersService {
   }
 
   /**
-   * Creates a customer and their addresses; `userId` is the creator. Throws 409 if another customer (deleted ones included) has the email.
+   * Creates a customer and their addresses; `actor` is the creator. Throws 409 if another customer (deleted ones included) has the email.
    */
-  async createCustomer(
+  async create(
     body: CustomerBody,
-    userId: string,
+    actor: Actor,
   ): Promise<CustomerDetail> {
     // One instant for both: createdAt and updatedAt start equal.
     const now = new Date();
@@ -178,27 +188,27 @@ export class CustomersService {
             phone: body.phone,
             createdAt: now,
             updatedAt: now,
-            createdById: userId,
-            updatedById: userId,
+            createdById: actor.id,
+            updatedById: actor.id,
           })
           .returning({ id: customer.id });
         await insertAddresses(tx, created.id, body.addresses);
         return created.id;
       })
       .catch(rethrowConstraint);
-    return this.getCustomer(id);
+    return this.get(id);
   }
 
   /**
-   * Replaces a customer's fields and addresses; `userId` is the editor.
+   * Replaces a customer's fields and addresses; `actor` is the editor.
    * Throws 404 if the customer doesn't exist or is deleted, 400 if the body
    * changes the type (it's chosen when the customer is created), 409 if
    * another customer has the email.
    */
-  async updateCustomer(
+  async update(
     id: number,
     body: CustomerBody,
-    userId: string,
+    actor: Actor,
   ): Promise<CustomerDetail> {
     await this.db
       .transaction(async (tx) => {
@@ -213,7 +223,7 @@ export class CustomersService {
             vatNumber: body.vatNumber,
             email: body.email,
             phone: body.phone,
-            updatedById: userId,
+            updatedById: actor.id,
             // The time of this change.
             updatedAt: new Date(),
           })
@@ -240,18 +250,18 @@ export class CustomersService {
         await insertAddresses(tx, id, body.addresses);
       })
       .catch(rethrowConstraint);
-    return this.getCustomer(id);
+    return this.get(id);
   }
 
   /**
    * Deletes a customer logically: sets deletedAt, so they disappear from
    * the API but stay in the database. Throws 404 if already deleted.
    */
-  async deleteCustomer(id: number, userId: string) {
+  async delete(id: number, actor: Actor): Promise<void> {
     const now = new Date();
     const result = await this.db
       .update(customer)
-      .set({ deletedAt: now, updatedAt: now, updatedById: userId })
+      .set({ deletedAt: now, updatedAt: now, updatedById: actor.id })
       .where(and(eq(customer.id, id), notDeleted));
     if (result.rowCount === 0) {
       throw new NotFoundException(msg('customers.notFound'));

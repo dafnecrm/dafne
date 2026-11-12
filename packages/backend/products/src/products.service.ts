@@ -20,6 +20,7 @@ import {
   type ListProductsQuery,
   msg,
 } from '@dafne/contracts';
+import type { Actor, CrudService } from '@dafne/backend-crud';
 
 export const PRODUCTS_DEFAULT_PAGE_SIZE = 20;
 
@@ -45,14 +46,23 @@ const notDeleted = isNull(product.deletedAt);
 const userSummary = { columns: { id: true, name: true } } as const;
 
 @Injectable()
-export class ProductsService {
+export class ProductsService
+  implements
+    CrudService<
+      number,
+      ListProductsQuery,
+      ProductsList,
+      ProductBody,
+      ProductDetail
+    >
+{
   constructor(@InjectDrizzle() private readonly db: Database) {}
 
   /**
    * Lists products that aren't deleted, paged and sorted, filtered by
    * every field given (AND, each matching text the field contains).
    */
-  async listProducts(query: ListProductsQuery = {}): Promise<ProductsList> {
+  async list(query: ListProductsQuery = {}): Promise<ProductsList> {
     const {
       limit = PRODUCTS_DEFAULT_PAGE_SIZE,
       offset = 0,
@@ -100,7 +110,7 @@ export class ProductsService {
    * One product that isn't deleted, with who created and last
    * updated it. Throws 404 otherwise.
    */
-  async getProduct(id: number): Promise<ProductDetail> {
+  async get(id: number): Promise<ProductDetail> {
     const found = await this.db.query.product.findFirst({
       where: { id, deletedAt: { isNull: true } },
       columns: { createdById: false, updatedById: false },
@@ -112,10 +122,10 @@ export class ProductsService {
     return found;
   }
 
-  /** Creates a product; `userId` is the creator. */
-  async createProduct(
+  /** Creates a product; `actor` is the creator. */
+  async create(
     body: ProductBody,
-    userId: string,
+    actor: Actor,
   ): Promise<ProductDetail> {
     // One instant for both: createdAt and updatedAt start equal.
     const now = new Date();
@@ -127,21 +137,21 @@ export class ProductsService {
         price: body.price,
         createdAt: now,
         updatedAt: now,
-        createdById: userId,
-        updatedById: userId,
+        createdById: actor.id,
+        updatedById: actor.id,
       })
       .returning({ id: product.id });
-    return this.getProduct(id);
+    return this.get(id);
   }
 
   /**
-   * Replaces a product's fields; `userId` is the editor. Throws 404
+   * Replaces a product's fields; `actor` is the editor. Throws 404
    * if the product doesn't exist or is deleted.
    */
-  async updateProduct(
+  async update(
     id: number,
     body: ProductBody,
-    userId: string,
+    actor: Actor,
   ): Promise<ProductDetail> {
     const result = await this.db
       .update(product)
@@ -149,7 +159,7 @@ export class ProductsService {
         name: body.name,
         description: body.description,
         price: body.price,
-        updatedById: userId,
+        updatedById: actor.id,
         // The time of this change.
         updatedAt: new Date(),
       })
@@ -157,18 +167,18 @@ export class ProductsService {
     if (result.rowCount === 0) {
       throw new NotFoundException(msg('products.notFound'));
     }
-    return this.getProduct(id);
+    return this.get(id);
   }
 
   /**
    * Deletes a product logically: sets deletedAt, so it disappears
    * from the API but stays in the database. Throws 404 if already deleted.
    */
-  async deleteProduct(id: number, userId: string) {
+  async delete(id: number, actor: Actor): Promise<void> {
     const now = new Date();
     const result = await this.db
       .update(product)
-      .set({ deletedAt: now, updatedAt: now, updatedById: userId })
+      .set({ deletedAt: now, updatedAt: now, updatedById: actor.id })
       .where(and(eq(product.id, id), notDeleted));
     if (result.rowCount === 0) {
       throw new NotFoundException(msg('products.notFound'));

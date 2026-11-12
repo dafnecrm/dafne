@@ -18,6 +18,7 @@ import { InjectStateMachine, StateMachine } from '@dafne/backend-fsm';
 import type { SessionUser } from '@dafne/backend-session';
 import type { SalesOrderStatus } from '@dafne/contracts';
 import { SALES_ORDER_STATE_MACHINE } from './sales-order.states.js';
+import type { Actor, CrudService } from '@dafne/backend-crud';
 
 type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0];
 
@@ -70,7 +71,16 @@ const rethrowConstraint = rethrowPostgresError([
 ]);
 
 @Injectable()
-export class SalesOrdersService {
+export class SalesOrdersService
+  implements
+    CrudService<
+      number,
+      ListSalesOrdersQuery,
+      SalesOrdersList,
+      SalesOrderBody,
+      SalesOrderDetail
+    >
+{
   logger = new Logger(SalesOrdersService.name);
 
   constructor(
@@ -83,7 +93,7 @@ export class SalesOrdersService {
    * Lists sales orders that aren't deleted, paged and sorted, filtered by
    * every field given (AND, each matching text the field contains).
    */
-  async listSalesOrders(query: ListSalesOrdersQuery = {}): Promise<SalesOrdersList> {
+  async list(query: ListSalesOrdersQuery = {}): Promise<SalesOrdersList> {
     const { limit = SALES_ORDERS_DEFAULT_PAGE_SIZE, offset = 0, sortBy = 'id', sortDirection = 'desc' } = query;
     const { db } = this;
     const filters = SALES_ORDER_FILTER_FIELDS.flatMap((field) => {
@@ -133,7 +143,7 @@ export class SalesOrdersService {
    * One sales order that isn't deleted, with who created and last
    * updated it. Throws 404 otherwise.
    */
-  async getSalesOrder(id: number): Promise<SalesOrderDetail> {
+  async get(id: number): Promise<SalesOrderDetail> {
     const found = await this.db.query.salesOrder.findFirst({
       where: { id, deletedAt: { isNull: true } },
       columns: { createdById: false, updatedById: false },
@@ -174,8 +184,8 @@ export class SalesOrdersService {
     return found;
   }
 
-  /** Creates a sales order; `userId` is the creator. */
-  async createSalesOrder(body: SalesOrderBody, user: SessionUser): Promise<SalesOrderDetail> {
+  /** Creates a sales order; `actor` is the creator. */
+  async create(body: SalesOrderBody, actor: Actor): Promise<SalesOrderDetail> {
     // One instant for both: createdAt and updatedAt start equal.
     const now = new Date();
 
@@ -191,27 +201,27 @@ export class SalesOrdersService {
             typeId: body.typeId,
             createdAt: now,
             updatedAt: now,
-            createdById: user.id,
-            updatedById: user.id,
+            createdById: actor.id,
+            updatedById: actor.id,
           })
           .returning({ id: salesOrder.id });
 
         if (body.status) {
-          await this.stateMachine.transition(id, body.status, { tx, user });
+          await this.stateMachine.transition(id, body.status, { tx, user: actor });
         }
         return id;
       })
       .catch(rethrowConstraint);
 
     this.logger.log("ID", id)
-    return this.getSalesOrder(id);
+    return this.get(id);
   }
 
   /**
-   * Replaces a sales order's fields; `userId` is the editor. Throws 404
+   * Replaces a sales order's fields; `actor` is the editor. Throws 404
    * if the sales order doesn't exist or is deleted.
    */
-  async updateSalesOrder(id: number, body: SalesOrderBody, user: SessionUser): Promise<SalesOrderDetail> {
+  async update(id: number, body: SalesOrderBody, actor: Actor): Promise<SalesOrderDetail> {
     await this.db.transaction(async (tx) => {
       const result = await tx
         .update(salesOrder)
@@ -219,7 +229,7 @@ export class SalesOrdersService {
           notes: body.notes,
           customerId: body.customerId,
           typeId: body.typeId,
-          updatedById: user.id,
+          updatedById: actor.id,
           // The time of this change.
           updatedAt: new Date(),
         })
@@ -234,22 +244,22 @@ export class SalesOrdersService {
       
       // After the items: the guards see the order as saved.
       if (body.status) {
-        await this.stateMachine.transition(id, body.status, { tx, user });
+        await this.stateMachine.transition(id, body.status, { tx, user: actor });
       }
     }).catch(rethrowConstraint);
 
-    return this.getSalesOrder(id);
+    return this.get(id);
   }
 
   /**
    * Deletes a sales order logically: sets deletedAt, so it disappears
    * from the API but stays in the database. Throws 404 if already deleted.
    */
-  async deleteSalesOrder(id: number, userId: string) {
+  async delete(id: number, actor: Actor): Promise<void> {
     const now = new Date();
     const result = await this.db
       .update(salesOrder)
-      .set({ deletedAt: now, updatedAt: now, updatedById: userId })
+      .set({ deletedAt: now, updatedAt: now, updatedById: actor.id })
       .where(and(eq(salesOrder.id, id), notDeleted));
     if (result.rowCount === 0) {
       throw new NotFoundException(msg('salesOrders.notFound'));
@@ -263,7 +273,7 @@ export class SalesOrdersService {
    */
   async changeSalesOrderStatus(id: number, status: SalesOrderStatus, user: SessionUser): Promise<SalesOrderDetail> {
     await this.stateMachine.transition(id, status, { user });
-    return this.getSalesOrder(id);
+    return this.get(id);
   }
 
   async insertSalesOrderItems(tx: Transaction, salesOrderId: number, items: SalesOrderItemBody[]) {

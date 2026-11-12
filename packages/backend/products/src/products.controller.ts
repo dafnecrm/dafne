@@ -22,49 +22,59 @@ import {
   type ListProductsQuery,
 } from '@dafne/contracts';
 import { ProductsService } from './products.service.js';
+import type { CrudController } from '@dafne/backend-crud';
 
 /** Products, for any signed-in user (the global auth guard checks it). */
 @Controller('products')
-export class ProductsController {
+export class ProductsController
+  implements
+    CrudController<
+      number,
+      ListProductsQuery,
+      ProductsList,
+      ProductBody,
+      ProductDetail
+    >
+{
   constructor(private readonly productsService: ProductsService) {}
 
   @Get()
-  listProducts(
+  list(
     @Query(new ZodValidationPipe(listProductsQuerySchema))
     query: ListProductsQuery,
   ): Promise<ProductsList> {
-    return this.productsService.listProducts(query);
+    return this.productsService.list(query);
   }
 
   @Get(':id')
-  getProduct(@Param('id', IdPipe) id: number): Promise<ProductDetail> {
-    return this.productsService.getProduct(id);
+  get(@Param('id', IdPipe) id: number): Promise<ProductDetail> {
+    return this.productsService.get(id);
   }
 
   @Post()
-  createProduct(
+  create(
     @Body(new ZodValidationPipe(productBodySchema)) body: ProductBody,
     @Session() session: UserSession,
   ): Promise<ProductDetail> {
-    return this.productsService.createProduct(body, session.user.id);
+    return this.productsService.create(body, session.user);
   }
 
   @Put(':id')
-  updateProduct(
+  update(
     @Param('id', IdPipe) id: number,
     @Body(new ZodValidationPipe(productBodySchema)) body: ProductBody,
     @Session() session: UserSession,
   ): Promise<ProductDetail> {
-    return this.productsService.updateProduct(id, body, session.user.id);
+    return this.productsService.update(id, body, session.user);
   }
 
   /** Logical delete. */
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteProduct(
+  async delete(
     @Param('id', IdPipe) id: number,
     @Session() session: UserSession,
   ): Promise<void> {
-    await this.productsService.deleteProduct(id, session.user.id);
+    await this.productsService.delete(id, session.user);
   }
 }

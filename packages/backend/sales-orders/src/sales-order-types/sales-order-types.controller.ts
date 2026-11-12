@@ -22,62 +22,72 @@ import {
   type ListSalesOrderTypesQuery,
 } from '@dafne/contracts';
 import { SalesOrderTypesService } from './sales-order-types.service.js';
+import type { CrudController } from '@dafne/backend-crud';
 
 /** Sales order types, for any signed-in user (the global auth guard checks it). */
 @Controller('sales-order-types')
-export class SalesOrderTypesController {
+export class SalesOrderTypesController
+  implements
+    CrudController<
+      string,
+      ListSalesOrderTypesQuery,
+      SalesOrderTypesList,
+      SalesOrderTypeBody,
+      SalesOrderTypeDetail
+    >
+{
   constructor(
     private readonly salesOrderTypesService: SalesOrderTypesService,
   ) {}
 
   @Get()
-  listSalesOrderTypes(
+  list(
     @Query(new ZodValidationPipe(listSalesOrderTypesQuerySchema))
     query: ListSalesOrderTypesQuery,
   ): Promise<SalesOrderTypesList> {
-    return this.salesOrderTypesService.listSalesOrderTypes(query);
+    return this.salesOrderTypesService.list(query);
   }
 
   @Get(':id')
-  getSalesOrderType(
+  get(
     @Param('id', new TextIdPipe(5)) id: string,
   ): Promise<SalesOrderTypeDetail> {
-    return this.salesOrderTypesService.getSalesOrderType(id);
+    return this.salesOrderTypesService.get(id);
   }
 
   @Post()
-  createSalesOrderType(
+  create(
     @Body(new ZodValidationPipe(salesOrderTypeBodySchema))
     body: SalesOrderTypeBody,
     @Session() session: UserSession,
   ): Promise<SalesOrderTypeDetail> {
-    return this.salesOrderTypesService.createSalesOrderType(
+    return this.salesOrderTypesService.create(
       body,
-      session.user.id,
+      session.user,
     );
   }
 
   @Put(':id')
-  updateSalesOrderType(
+  update(
     @Param('id', new TextIdPipe(5)) id: string,
     @Body(new ZodValidationPipe(salesOrderTypeBodySchema))
     body: SalesOrderTypeBody,
     @Session() session: UserSession,
   ): Promise<SalesOrderTypeDetail> {
-    return this.salesOrderTypesService.updateSalesOrderType(
+    return this.salesOrderTypesService.update(
       id,
       body,
-      session.user.id,
+      session.user,
     );
   }
 
   /** Logical delete. */
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteSalesOrderType(
+  async delete(
     @Param('id', new TextIdPipe(5)) id: string,
     @Session() session: UserSession,
   ): Promise<void> {
-    await this.salesOrderTypesService.deleteSalesOrderType(id, session.user.id);
+    await this.salesOrderTypesService.delete(id, session.user);
   }
 }
