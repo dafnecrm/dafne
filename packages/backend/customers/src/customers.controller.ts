@@ -22,49 +22,59 @@ import {
   type ListCustomersQuery,
 } from '@dafne/contracts';
 import { CustomersService } from './customers.service.js';
+import type { CrudController } from '@dafne/backend-crud';
 
 /** Customers, for any signed-in user (the global auth guard checks it). */
 @Controller('customers')
-export class CustomersController {
+export class CustomersController
+  implements
+    CrudController<
+      number,
+      ListCustomersQuery,
+      CustomersList,
+      CustomerBody,
+      CustomerDetail
+    >
+{
   constructor(private readonly customersService: CustomersService) {}
 
   @Get()
-  listCustomers(
+  list(
     @Query(new ZodValidationPipe(listCustomersQuerySchema))
     query: ListCustomersQuery,
   ): Promise<CustomersList> {
-    return this.customersService.listCustomers(query);
+    return this.customersService.list(query);
   }
 
   @Get(':id')
-  getCustomer(@Param('id', IdPipe) id: number): Promise<CustomerDetail> {
-    return this.customersService.getCustomer(id);
+  get(@Param('id', IdPipe) id: number): Promise<CustomerDetail> {
+    return this.customersService.get(id);
   }
 
   @Post()
-  createCustomer(
+  create(
     @Body(new ZodValidationPipe(customerBodySchema)) body: CustomerBody,
     @Session() session: UserSession,
   ): Promise<CustomerDetail> {
-    return this.customersService.createCustomer(body, session.user.id);
+    return this.customersService.create(body, session.user);
   }
 
   @Put(':id')
-  updateCustomer(
+  update(
     @Param('id', IdPipe) id: number,
     @Body(new ZodValidationPipe(customerBodySchema)) body: CustomerBody,
     @Session() session: UserSession,
   ): Promise<CustomerDetail> {
-    return this.customersService.updateCustomer(id, body, session.user.id);
+    return this.customersService.update(id, body, session.user);
   }
 
   /** Logical delete. */
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteCustomer(
+  async delete(
     @Param('id', IdPipe) id: number,
     @Session() session: UserSession,
   ): Promise<void> {
-    await this.customersService.deleteCustomer(id, session.user.id);
+    await this.customersService.delete(id, session.user);
   }
 }

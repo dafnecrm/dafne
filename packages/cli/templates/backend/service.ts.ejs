@@ -14,6 +14,7 @@ import {
   type List<%= p.pascal %>Query,
   msg,
 } from '@dafne/contracts';
+import type { Actor, CrudService } from '@dafne/backend-crud';
 
 export const <%= p.constant %>_DEFAULT_PAGE_SIZE = 20;
 
@@ -46,14 +47,23 @@ const rethrowTakenId = rethrowPostgresError([
 const userSummary = { columns: { id: true, name: true } } as const;
 
 @Injectable()
-export class <%= p.pascal %>Service {
+export class <%= p.pascal %>Service
+  implements
+    CrudService<
+      <%= id.ts %>,
+      List<%= p.pascal %>Query,
+      <%= p.pascal %>List,
+      <%= s.pascal %>Body,
+      <%= s.pascal %>Detail
+    >
+{
   constructor(@InjectDrizzle() private readonly db: Database) {}
 
   /**
    * Lists <%= p.lower %> that aren't deleted, paged and sorted, filtered by
    * every field given (AND, each matching text the field contains).
    */
-  async list<%= p.pascal %>(query: List<%= p.pascal %>Query = {}): Promise<<%= p.pascal %>List> {
+  async list(query: List<%= p.pascal %>Query = {}): Promise<<%= p.pascal %>List> {
     const {
       limit = <%= p.constant %>_DEFAULT_PAGE_SIZE,
       offset = 0,
@@ -95,7 +105,7 @@ export class <%= p.pascal %>Service {
    * One <%= s.lower %> that isn't deleted, with who created and last
    * updated it. Throws 404 otherwise.
    */
-  async get<%= s.pascal %>(id: <%= id.ts %>): Promise<<%= s.pascal %>Detail> {
+  async get(id: <%= id.ts %>): Promise<<%= s.pascal %>Detail> {
     const found = await this.db.query.<%= s.camel %>.findFirst({
       where: { id, deletedAt: { isNull: true } },
       columns: { createdById: false, updatedById: false },
@@ -107,8 +117,8 @@ export class <%= p.pascal %>Service {
     return found;
   }
 
-  /** Creates <%= s.a %>; `userId` is the creator. */
-  async create<%= s.pascal %>(body: <%= s.pascal %>Body, userId: string): Promise<<%= s.pascal %>Detail> {
+  /** Creates <%= s.a %>; `actor` is the creator. */
+  async create(body: <%= s.pascal %>Body, actor: Actor): Promise<<%= s.pascal %>Detail> {
     // One instant for both: createdAt and updatedAt start equal.
     const now = new Date();
     // <%= id.createComment %>
@@ -117,27 +127,27 @@ export class <%= p.pascal %>Service {
       .values({
         createdAt: now,
         updatedAt: now,
-        createdById: userId,
-        updatedById: userId,
+        createdById: actor.id,
+        updatedById: actor.id,
       })
       .returning({ id: <%= s.camel %>.id })<% if (id.clientPicks) { %>
       .catch(rethrowTakenId)<% } %>;
-    return this.get<%= s.pascal %>(id);
+    return this.get(id);
   }
 
   /**
-   * Replaces <%= s.a %>'s fields; `userId` is the editor. Throws 404
+   * Replaces <%= s.a %>'s fields; `actor` is the editor. Throws 404
    * if the <%= s.lower %> doesn't exist or is deleted.
    */
-  async update<%= s.pascal %>(
+  async update(
     id: <%= id.ts %>,
     body: <%= s.pascal %>Body,
-    userId: string,
+    actor: Actor,
   ): Promise<<%= s.pascal %>Detail> {
     const result = await this.db
       .update(<%= s.camel %>)
       .set({
-        updatedById: userId,
+        updatedById: actor.id,
         // The time of this change.
         updatedAt: new Date(),
       })
@@ -145,18 +155,18 @@ export class <%= p.pascal %>Service {
     if (result.rowCount === 0) {
       throw new NotFoundException(msg('<%= p.camel %>.notFound'));
     }
-    return this.get<%= s.pascal %>(id);
+    return this.get(id);
   }
 
   /**
    * Deletes <%= s.a %> logically: sets deletedAt, so it disappears
    * from the API but stays in the database. Throws 404 if already deleted.
    */
-  async delete<%= s.pascal %>(id: <%= id.ts %>, userId: string) {
+  async delete(id: <%= id.ts %>, actor: Actor): Promise<void> {
     const now = new Date();
     const result = await this.db
       .update(<%= s.camel %>)
-      .set({ deletedAt: now, updatedAt: now, updatedById: userId })
+      .set({ deletedAt: now, updatedAt: now, updatedById: actor.id })
       .where(and(eq(<%= s.camel %>.id, id), notDeleted));
     if (result.rowCount === 0) {
       throw new NotFoundException(msg('<%= p.camel %>.notFound'));

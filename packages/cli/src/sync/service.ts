@@ -104,29 +104,29 @@ export function syncService(
       label: 'exact filters',
     },
     {
-      method: `list${p.pascal}`,
-      locate: inMethod(`list${p.pascal}`, callArgument('select')),
+      method: 'list',
+      locate: inMethod('list', callArgument('select')),
       owns: (key, value) => isColumn.has(key) && value === `${record}.${key}`,
       wanted: listed.map((key) => ({ key, text: `${key}: ${record}.${key}` })),
       label: 'select',
     },
     {
-      method: `get${s.pascal}`,
-      locate: inMethod(`get${s.pascal}`, findFirstColumns),
+      method: 'get',
+      locate: inMethod('get', findFirstColumns),
       owns: (key, value) => isColumn.has(key) && value === 'false',
       wanted: hidden.map((key) => ({ key, text: `${key}: false` })),
       label: 'findFirst columns',
     },
     {
-      method: `create${s.pascal}`,
-      locate: inMethod(`create${s.pascal}`, callArgument('values')),
+      method: 'create',
+      locate: inMethod('create', callArgument('values')),
       owns: (key, value) => isColumn.has(key) && value === `body.${key}`,
       wanted: body.map((key) => ({ key, text: `${key}: body.${key}` })),
       label: 'insert values',
     },
     {
-      method: `update${s.pascal}`,
-      locate: inMethod(`update${s.pascal}`, callArgument('set')),
+      method: 'update',
+      locate: inMethod('update', callArgument('set')),
       owns: (key, value) => isColumn.has(key) && value === `body.${key}`,
       wanted: updatable.map((key) => ({ key, text: `${key}: body.${key}` })),
       label: 'update set',
@@ -186,9 +186,9 @@ export function syncChildService(
 
   const sections: Section[] = [
     {
-      method: `get${s.pascal}`,
+      method: 'get',
       locate: (file) => {
-        const method = file.getClass(`${p.pascal}Service`)?.getMethod(`get${s.pascal}`);
+        const method = file.getClass(`${p.pascal}Service`)?.getMethod('get');
         const options = method && callArgument('findFirst')(method);
         const withs = options?.getProperty('with');
         const entry = withs && Node.isPropertyAssignment(withs) ? withs.getInitializer()?.asKind(SyntaxKind.ObjectLiteralExpression)?.getProperty(relation) : undefined;
@@ -237,7 +237,7 @@ function addExactFilters(path: string, source: string, { s, p }: ResourceNames, 
   const old = OLD_FILTER.exec(source);
   if (!old) {
     if (needed) {
-      report.warnings.push(`${path}: list${p.pascal} has no EXACT_FILTERS: match the keys to other records with eq by hand.`);
+      report.warnings.push(`${path}: list has no EXACT_FILTERS: match the keys to other records with eq by hand.`);
     }
     return source;
   }
@@ -261,7 +261,7 @@ const EXACT_FILTERS: Partial<Record<${s.pascal}FilterField, (value: string) => n
     const anchor = file.getVariableStatement('notDeleted') ?? file.getClass(`${p.pascal}Service`);
     file.insertText(anchor ? anchor.getStart(true) : file.getEnd(), declaration);
   });
-  report.added.push(`list${p.pascal}: EXACT_FILTERS (${record})`);
+  report.added.push(`list: EXACT_FILTERS (${record})`);
   return source;
 }
 

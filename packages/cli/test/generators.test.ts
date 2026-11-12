@@ -94,7 +94,7 @@ describe('backend-resource', () => {
     expect(contract).toContain('id: string;');
     expect(contract).toContain('[0-9a-fA-F]{8}-');
     const service = read('packages/backend/payments/src/payments.service.ts');
-    expect(service).toContain('getPayment(id: string)');
+    expect(service).toContain('get(id: string)');
     expect(service).toContain('id: String,');
     expect(read('packages/backend/payments/src/payments.controller.ts')).toContain("@Param('id', UuidPipe) id: string");
     expect(read('packages/backend/payments/src/payments.service.spec.ts')).toContain("'00000000-0000-4000-8000-000000000001'");

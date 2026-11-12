@@ -23,50 +23,60 @@ import {
   type ListActivitiesQuery,
 } from '@dafne/contracts';
 import { ActivitiesService } from './activities.service.js';
+import type { CrudController } from '@dafne/backend-crud';
 
 /** Activities, for any signed-in user (the global auth guard checks it). */
 @Controller('activities')
-export class ActivitiesController {
+export class ActivitiesController
+  implements
+    CrudController<
+      number,
+      ListActivitiesQuery,
+      ActivitiesList,
+      ActivityBody,
+      ActivityDetail
+    >
+{
   constructor(private readonly activitiesService: ActivitiesService) {}
 
   @Get()
-  listActivities(
+  list(
     @Query(new ZodValidationPipe(listActivitiesQuerySchema))
     query: ListActivitiesQuery,
   ): Promise<ActivitiesList> {
-    return this.activitiesService.listActivities(query);
+    return this.activitiesService.list(query);
   }
 
   @Get(':id')
-  getActivity(@Param('id', IdPipe) id: number): Promise<ActivityDetail> {
-    return this.activitiesService.getActivity(id);
+  get(@Param('id', IdPipe) id: number): Promise<ActivityDetail> {
+    return this.activitiesService.get(id);
   }
 
   @Post()
-  createActivity(
+  create(
     @Body(new ZodValidationPipe(activityBodySchema)) body: ActivityBody,
     @Session() session: UserSession,
   ): Promise<ActivityDetail> {
-    return this.activitiesService.createActivity(body, session.user.id);
+    return this.activitiesService.create(body, session.user);
   }
 
   @Put(':id')
-  updateActivity(
+  update(
     @Param('id', IdPipe) id: number,
     @Body(new ZodValidationPipe(activityBodySchema)) body: ActivityBody,
     @Session() session: UserSession,
   ): Promise<ActivityDetail> {
-    return this.activitiesService.updateActivity(id, body, session.user.id);
+    return this.activitiesService.update(id, body, session.user);
   }
 
   /** Logical delete. */
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteActivity(
+  async delete(
     @Param('id', IdPipe) id: number,
     @Session() session: UserSession,
   ): Promise<void> {
-    await this.activitiesService.deleteActivity(id, session.user.id);
+    await this.activitiesService.delete(id, session.user);
   }
 
   @Patch(':id/close')

@@ -8,6 +8,10 @@ import {
   type SalesOrderTypeBodyInput,
 } from '@dafne/contracts';
 import { SalesOrderTypesService } from './sales-order-types.service.js';
+import type { Actor } from '@dafne/backend-crud';
+
+/** A signed-in user, as the services get it; only the id matters here. */
+const actor = (id: string) => ({ id }) as Actor;
 
 /** A body as the validation pipe hands it to the service. */
 const body = (input: SalesOrderTypeBodyInput) =>
@@ -68,9 +72,9 @@ describe('SalesOrderTypesService', () => {
     service = module.get(SalesOrderTypesService);
   });
 
-  describe('listSalesOrderTypes', () => {
+  describe('list', () => {
     it('lists sales order types that are not deleted, by id', async () => {
-      await expect(service.listSalesOrderTypes()).resolves.toEqual({
+      await expect(service.list()).resolves.toEqual({
         salesOrderTypes: rows,
         total: 42,
         limit: 20,
@@ -87,7 +91,7 @@ describe('SalesOrderTypesService', () => {
     });
 
     it('pages and sorts', async () => {
-      await service.listSalesOrderTypes({
+      await service.list({
         limit: 5,
         offset: 10,
         sortBy: 'createdAt',
@@ -103,7 +107,7 @@ describe('SalesOrderTypesService', () => {
     });
 
     it('searches the id or the description, with the other filters', async () => {
-      await service.listSalesOrderTypes({ active: 'true', search: ' 5%_ ' });
+      await service.list({ active: 'true', search: ' 5%_ ' });
 
       const where = select.where.mock.calls[0][0];
       const pattern = '%5\\%\\_%';
@@ -120,9 +124,9 @@ describe('SalesOrderTypesService', () => {
     });
   });
 
-  describe('getSalesOrderType', () => {
+  describe('get', () => {
     it('returns a sales order type that is not deleted, with its users', async () => {
-      await expect(service.getSalesOrderType('id-1')).resolves.toBe(found);
+      await expect(service.get('id-1')).resolves.toBe(found);
 
       const options = findFirst.mock.calls[0][0];
       expect(options.where).toEqual({
@@ -136,18 +140,18 @@ describe('SalesOrderTypesService', () => {
     it('throws 404 when the sales order type does not exist or is deleted', async () => {
       findFirst.mockResolvedValue(undefined);
 
-      await expect(service.getSalesOrderType('id-999')).rejects.toBeInstanceOf(
+      await expect(service.get('id-999')).rejects.toBeInstanceOf(
         NotFoundException,
       );
     });
   });
 
-  describe('createSalesOrderType', () => {
+  describe('create', () => {
     it('inserts the sales order type with its creator', async () => {
       await expect(
-        service.createSalesOrderType(
+        service.create(
           body({ description: 'Description', id: 'Id' }),
-          'u1',
+          actor('u1'),
         ),
       ).resolves.toBe(found);
 
@@ -168,20 +172,20 @@ describe('SalesOrderTypesService', () => {
       });
       insert.returning.mockRejectedValue(new Error('insert failed', { cause }));
       await expect(
-        service.createSalesOrderType(
+        service.create(
           body({ description: 'Description', id: 'Id' }),
-          'u1',
+          actor('u1'),
         ),
       ).rejects.toBeInstanceOf(ConflictException);
     });
   });
 
-  describe('updateSalesOrderType', () => {
+  describe('update', () => {
     it('updates the sales order type', async () => {
-      await service.updateSalesOrderType(
+      await service.update(
         'id-1',
         body({ description: 'Description', id: 'Id' }),
-        'u2',
+        actor('u2'),
       );
 
       expect(update.set.mock.calls[0][0]).toMatchObject({
@@ -196,18 +200,18 @@ describe('SalesOrderTypesService', () => {
       update.where.mockResolvedValue({ rowCount: 0 });
 
       await expect(
-        service.updateSalesOrderType(
+        service.update(
           'id-999',
           body({ description: 'Description', id: 'Id' }),
-          'u2',
+          actor('u2'),
         ),
       ).rejects.toBeInstanceOf(NotFoundException);
     });
   });
 
-  describe('deleteSalesOrderType', () => {
+  describe('delete', () => {
     it('sets deletedAt instead of deleting the row', async () => {
-      await service.deleteSalesOrderType('id-1', 'u3');
+      await service.delete('id-1', actor('u3'));
 
       const values = update.set.mock.calls[0][0];
       expect(values.deletedAt).toBeInstanceOf(Date);
@@ -222,7 +226,7 @@ describe('SalesOrderTypesService', () => {
       update.where.mockResolvedValue({ rowCount: 0 });
 
       await expect(
-        service.deleteSalesOrderType('id-1', 'u3'),
+        service.delete('id-1', actor('u3')),
       ).rejects.toBeInstanceOf(NotFoundException);
     });
   });

@@ -107,7 +107,10 @@ erasable syntax (no enums, namespaces or constructor parameter properties;
   `prune*Messages` removes those the changed files stopped using;
   `ast.ts`: helpers).
 - `templates/backend` and `templates/frontend` (copies of the `customers`
-  resource), `templates/app` (a minimal `apps/sales-api`),
+  resource; their services and controllers implement `CrudService` /
+  `CrudController` from `@dafne/backend-crud`, and the syncs find the
+  methods by those fixed names: `list`, `get`, `create`, `update`),
+  `templates/app` (a minimal `apps/sales-api`),
   `templates/frontend-lib-resource` (a resource in a lib: copies of
   `packages/frontend/sales-orders` without its order-specific code, `app/`
   for its route pages),

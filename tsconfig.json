@@ -88,6 +88,9 @@
     },
     {
       "path": "./packages/backend/fsm"
+    },
+    {
+      "path": "./packages/backend/crud"
     }
   ]
 }

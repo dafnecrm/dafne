@@ -4,7 +4,11 @@ import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { and, asc, desc, eq, isNull } from 'drizzle-orm';
 import { <%= s.camel %>BodySchema, type <%= s.pascal %>BodyInput } from '@dafne/contracts';
+import type { Actor } from '@dafne/backend-crud';
 import { <%= p.pascal %>Service } from './<%= p.kebab %>.service.js';
+
+/** A signed-in user, as the services get it; only the id matters here. */
+const actor = (id: string) => ({ id }) as Actor;
 
 /** A body as the validation pipe hands it to the service. */
 const body = (input: <%= s.pascal %>BodyInput) => <%= s.camel %>BodySchema.parse(input);
@@ -64,9 +68,9 @@ describe('<%= p.pascal %>Service', () => {
     service = module.get(<%= p.pascal %>Service);
   });
 
-  describe('list<%= p.pascal %>', () => {
+  describe('list', () => {
     it('lists <%= p.lower %> that are not deleted, newest first', async () => {
-      await expect(service.list<%= p.pascal %>()).resolves.toEqual({
+      await expect(service.list()).resolves.toEqual({
         <%= p.camel %>: rows,
         total: 42,
         limit: 20,
@@ -83,7 +87,7 @@ describe('<%= p.pascal %>Service', () => {
     });
 
     it('pages and sorts', async () => {
-      await service.list<%= p.pascal %>({
+      await service.list({
         limit: 5,
         offset: 10,
         sortBy: 'createdAt',
@@ -99,9 +103,9 @@ describe('<%= p.pascal %>Service', () => {
     });
   });
 
-  describe('get<%= s.pascal %>', () => {
+  describe('get', () => {
     it('returns <%= s.a %> that is not deleted, with its users', async () => {
-      await expect(service.get<%= s.pascal %>(<%= id.sample %>)).resolves.toBe(found);
+      await expect(service.get(<%= id.sample %>)).resolves.toBe(found);
 
       const options = findFirst.mock.calls[0][0];
       expect(options.where).toEqual({ id: <%= id.sample %>, deletedAt: { isNull: true } });
@@ -112,16 +116,16 @@ describe('<%= p.pascal %>Service', () => {
     it('throws 404 when the <%= s.lower %> does not exist or is deleted', async () => {
       findFirst.mockResolvedValue(undefined);
 
-      await expect(service.get<%= s.pascal %>(<%= id.missing %>)).rejects.toBeInstanceOf(
+      await expect(service.get(<%= id.missing %>)).rejects.toBeInstanceOf(
         NotFoundException,
       );
     });
   });
 
-  describe('create<%= s.pascal %>', () => {
+  describe('create', () => {
     it('inserts the <%= s.lower %> with its creator', async () => {
       await expect(
-        service.create<%= s.pascal %>(body({}), 'u1'),
+        service.create(body({}), actor('u1')),
       ).resolves.toBe(found);
 
       const [row] = insert.values.mock.calls[0];
@@ -134,9 +138,9 @@ describe('<%= p.pascal %>Service', () => {
     });
   });
 
-  describe('update<%= s.pascal %>', () => {
+  describe('update', () => {
     it('updates the <%= s.lower %>', async () => {
-      await service.update<%= s.pascal %>(<%= id.sample %>, body({}), 'u2');
+      await service.update(<%= id.sample %>, body({}), actor('u2'));
 
       expect(update.set.mock.calls[0][0]).toMatchObject({
         updatedById: 'u2',
@@ -150,14 +154,14 @@ describe('<%= p.pascal %>Service', () => {
       update.where.mockResolvedValue({ rowCount: 0 });
 
       await expect(
-        service.update<%= s.pascal %>(<%= id.missing %>, body({}), 'u2'),
+        service.update(<%= id.missing %>, body({}), actor('u2')),
       ).rejects.toBeInstanceOf(NotFoundException);
     });
   });
 
-  describe('delete<%= s.pascal %>', () => {
+  describe('delete', () => {
     it('sets deletedAt instead of deleting the row', async () => {
-      await service.delete<%= s.pascal %>(<%= id.sample %>, 'u3');
+      await service.delete(<%= id.sample %>, actor('u3'));
 
       const values = update.set.mock.calls[0][0];
       expect(values.deletedAt).toBeInstanceOf(Date);
@@ -171,7 +175,7 @@ describe('<%= p.pascal %>Service', () => {
     it('throws 404 when the <%= s.lower %> is missing or already deleted', async () => {
       update.where.mockResolvedValue({ rowCount: 0 });
 
-      await expect(service.delete<%= s.pascal %>(<%= id.sample %>, 'u3')).rejects.toBeInstanceOf(
+      await expect(service.delete(<%= id.sample %>, actor('u3'))).rejects.toBeInstanceOf(
         NotFoundException,
       );
     });

@@ -29,6 +29,7 @@ import {
   type ListSalesOrderTypesQuery,
   msg,
 } from '@dafne/contracts';
+import type { Actor, CrudService } from '@dafne/backend-crud';
 
 export const SALES_ORDER_TYPES_DEFAULT_PAGE_SIZE = 20;
 
@@ -65,7 +66,16 @@ const rethrowTakenId = rethrowPostgresError([
 const userSummary = { columns: { id: true, name: true } } as const;
 
 @Injectable()
-export class SalesOrderTypesService {
+export class SalesOrderTypesService
+  implements
+    CrudService<
+      string,
+      ListSalesOrderTypesQuery,
+      SalesOrderTypesList,
+      SalesOrderTypeBody,
+      SalesOrderTypeDetail
+    >
+{
   constructor(@InjectDrizzle() private readonly db: Database) { }
 
   /**
@@ -73,7 +83,7 @@ export class SalesOrderTypesService {
    * every field given (AND, each matching text the field contains) and by
    * `search` (text the id or the description contains).
    */
-  async listSalesOrderTypes(
+  async list(
     query: ListSalesOrderTypesQuery = {},
   ): Promise<SalesOrderTypesList> {
     const {
@@ -133,7 +143,7 @@ export class SalesOrderTypesService {
    * One sales order type that isn't deleted, with who created and last
    * updated it. Throws 404 otherwise.
    */
-  async getSalesOrderType(id: string): Promise<SalesOrderTypeDetail> {
+  async get(id: string): Promise<SalesOrderTypeDetail> {
     const found = await this.db.query.salesOrderType.findFirst({
       where: { id, deletedAt: { isNull: true } },
       columns: { createdById: false, updatedById: false },
@@ -145,10 +155,10 @@ export class SalesOrderTypesService {
     return found;
   }
 
-  /** Creates a sales order type; `userId` is the creator. */
-  async createSalesOrderType(
+  /** Creates a sales order type; `actor` is the creator. */
+  async create(
     body: SalesOrderTypeBody,
-    userId: string,
+    actor: Actor,
   ): Promise<SalesOrderTypeDetail> {
     // One instant for both: createdAt and updatedAt start equal.
     const now = new Date();
@@ -161,29 +171,29 @@ export class SalesOrderTypesService {
         active: body.active,
         createdAt: now,
         updatedAt: now,
-        createdById: userId,
-        updatedById: userId,
+        createdById: actor.id,
+        updatedById: actor.id,
       })
       .returning({ id: salesOrderType.id })
       .catch(rethrowTakenId);
-    return this.getSalesOrderType(id);
+    return this.get(id);
   }
 
   /**
-   * Replaces a sales order type's fields; `userId` is the editor. Throws 404
+   * Replaces a sales order type's fields; `actor` is the editor. Throws 404
    * if the sales order type doesn't exist or is deleted.
    */
-  async updateSalesOrderType(
+  async update(
     id: string,
     body: SalesOrderTypeBody,
-    userId: string,
+    actor: Actor,
   ): Promise<SalesOrderTypeDetail> {
     const result = await this.db
       .update(salesOrderType)
       .set({
         description: body.description,
         active: body.active,
-        updatedById: userId,
+        updatedById: actor.id,
         // The time of this change.
         updatedAt: new Date(),
       })
@@ -191,18 +201,18 @@ export class SalesOrderTypesService {
     if (result.rowCount === 0) {
       throw new NotFoundException(msg('salesOrderTypes.notFound'));
     }
-    return this.getSalesOrderType(id);
+    return this.get(id);
   }
 
   /**
    * Deletes a sales order type logically: sets deletedAt, so it disappears
    * from the API but stays in the database. Throws 404 if already deleted.
    */
-  async deleteSalesOrderType(id: string, userId: string) {
+  async delete(id: string, actor: Actor): Promise<void> {
     const now = new Date();
     const result = await this.db
       .update(salesOrderType)
-      .set({ deletedAt: now, updatedAt: now, updatedById: userId })
+      .set({ deletedAt: now, updatedAt: now, updatedById: actor.id })
       .where(and(eq(salesOrderType.id, id), notDeleted));
     if (result.rowCount === 0) {
       throw new NotFoundException(msg('salesOrderTypes.notFound'));

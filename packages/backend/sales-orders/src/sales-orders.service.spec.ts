@@ -8,6 +8,10 @@ import { salesOrderBodySchema, type SalesOrderBodyInput } from '@dafne/contracts
 import { getStateMachineToken } from '@dafne/backend-fsm';
 import { SalesOrdersService } from './sales-orders.service.js';
 import { SALES_ORDER_STATE_MACHINE } from './sales-order.states.js';
+import type { Actor } from '@dafne/backend-crud';
+
+/** A signed-in user, as the services get it; only the id matters here. */
+const actor = (id: string) => ({ id }) as Actor;
 
 /** A body as the validation pipe hands it to the service. */
 const body = (input: SalesOrderBodyInput) => salesOrderBodySchema.parse(input);
@@ -81,9 +85,9 @@ describe('SalesOrdersService', () => {
     service = module.get(SalesOrdersService);
   });
 
-  describe('listSalesOrders', () => {
+  describe('list', () => {
     it('lists sales orders that are not deleted, newest first', async () => {
-      await expect(service.listSalesOrders()).resolves.toEqual({
+      await expect(service.list()).resolves.toEqual({
         salesOrders: rows,
         total: 42,
         limit: 20,
@@ -100,7 +104,7 @@ describe('SalesOrdersService', () => {
     });
 
     it('filters by id, matching it exactly', async () => {
-      await service.listSalesOrders({ id: ' 12 ' });
+      await service.list({ id: ' 12 ' });
 
       expect(select.where).toHaveBeenCalledWith(
         and(notDeleted, eq(salesOrder.id, 12)),
@@ -108,7 +112,7 @@ describe('SalesOrdersService', () => {
     });
 
     it('pages and sorts', async () => {
-      await service.listSalesOrders({
+      await service.list({
         limit: 5,
         offset: 10,
         sortBy: 'createdAt',
@@ -124,9 +128,9 @@ describe('SalesOrdersService', () => {
     });
   });
 
-  describe('getSalesOrder', () => {
+  describe('get', () => {
     it('returns a sales order that is not deleted, with its users', async () => {
-      await expect(service.getSalesOrder(1)).resolves.toBe(found);
+      await expect(service.get(1)).resolves.toBe(found);
 
       const options = findFirst.mock.calls[0][0];
       expect(options.where).toEqual({ id: 1, deletedAt: { isNull: true } });
@@ -137,7 +141,7 @@ describe('SalesOrdersService', () => {
     it('throws 404 when the sales order does not exist or is deleted', async () => {
       findFirst.mockResolvedValue(undefined);
 
-      await expect(service.getSalesOrder(999)).rejects.toBeInstanceOf(
+      await expect(service.get(999)).rejects.toBeInstanceOf(
         NotFoundException,
       );
     });
@@ -168,11 +172,11 @@ describe('SalesOrdersService', () => {
     });
   });
 
-  describe('createSalesOrder', () => {
+  describe('create', () => {
     const u1 = { id: 'u1' } as SessionUser;
     it('inserts the sales order with its creator', async () => {
       await expect(
-        service.createSalesOrder(body({ customerId: 1, typeId: 'T1' }), u1),
+        service.create(body({ customerId: 1, typeId: 'T1' }), u1),
       ).resolves.toBe(found);
 
       const [row] = insert.values.mock.calls[0];
@@ -185,17 +189,17 @@ describe('SalesOrdersService', () => {
     });
 
     it('inserts it in draft and moves it to the status through the state machine', async () => {
-      await service.createSalesOrder(body({ customerId: 1, typeId: 'T1', status: 'open' }), u1);
+      await service.create(body({ customerId: 1, typeId: 'T1', status: 'open' }), u1);
 
       expect(insert.values.mock.calls[0][0]).not.toHaveProperty('status');
       expect(stateMachine.transition).toHaveBeenCalledWith(1, 'open', { tx: db, user: u1 });
     });
   });
 
-  describe('updateSalesOrder', () => {
+  describe('update', () => {
     const u2 = { id: 'u2' } as SessionUser;
     it('updates the sales order', async () => {
-      await service.updateSalesOrder(1, body({ customerId: 1, typeId: 'T1' }), u2);
+      await service.update(1, body({ customerId: 1, typeId: 'T1' }), u2);
 
       expect(update.set.mock.calls[0][0]).toMatchObject({
         updatedById: 'u2',
@@ -206,7 +210,7 @@ describe('SalesOrdersService', () => {
     });
 
     it('changes the status through the state machine, after the items', async () => {
-      await service.updateSalesOrder(1, body({ customerId: 1, typeId: 'T1', status: 'open' }), u2);
+      await service.update(1, body({ customerId: 1, typeId: 'T1', status: 'open' }), u2);
 
       expect(update.set.mock.calls[0][0]).not.toHaveProperty('status');
       expect(stateMachine.transition).toHaveBeenCalledWith(1, 'open', { tx: db, user: u2 });
@@ -216,14 +220,14 @@ describe('SalesOrdersService', () => {
       update.where.mockResolvedValue({ rowCount: 0 });
 
       await expect(
-        service.updateSalesOrder(999, body({ customerId: 1, typeId: 'T1' }), u2),
+        service.update(999, body({ customerId: 1, typeId: 'T1' }), u2),
       ).rejects.toBeInstanceOf(NotFoundException);
     });
   });
 
-  describe('deleteSalesOrder', () => {
+  describe('delete', () => {
     it('sets deletedAt instead of deleting the row', async () => {
-      await service.deleteSalesOrder(1, 'u3');
+      await service.delete(1, actor('u3'));
 
       const values = update.set.mock.calls[0][0];
       expect(values.deletedAt).toBeInstanceOf(Date);
@@ -237,7 +241,7 @@ describe('SalesOrdersService', () => {
     it('throws 404 when the sales order is missing or already deleted', async () => {
       update.where.mockResolvedValue({ rowCount: 0 });
 
-      await expect(service.deleteSalesOrder(1, 'u3')).rejects.toBeInstanceOf(
+      await expect(service.delete(1, actor('u3'))).rejects.toBeInstanceOf(
         NotFoundException,
       );
     });

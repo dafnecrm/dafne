@@ -5,6 +5,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { and, asc, desc, eq, isNull, ilike } from 'drizzle-orm';
 import { productBodySchema, type ProductBodyInput } from '@dafne/contracts';
 import { ProductsService } from './products.service.js';
+import type { Actor } from '@dafne/backend-crud';
+
+/** A signed-in user, as the services get it; only the id matters here. */
+const actor = (id: string) => ({ id }) as Actor;
 
 /** A body as the validation pipe hands it to the service. */
 const body = (input: ProductBodyInput) => productBodySchema.parse(input);
@@ -64,9 +68,9 @@ describe('ProductsService', () => {
     service = module.get(ProductsService);
   });
 
-  describe('listProducts', () => {
+  describe('list', () => {
     it('lists products that are not deleted, newest first', async () => {
-      await expect(service.listProducts()).resolves.toEqual({
+      await expect(service.list()).resolves.toEqual({
         products: rows,
         total: 42,
         limit: 20,
@@ -83,7 +87,7 @@ describe('ProductsService', () => {
     });
 
     it('filters with contains, escaping LIKE wildcards', async () => {
-      await service.listProducts({ name: '50%_a' });
+      await service.list({ name: '50%_a' });
 
       expect(select.where).toHaveBeenCalledWith(
         and(notDeleted, ilike(product.name, '%50\\%\\_a%')),
@@ -91,7 +95,7 @@ describe('ProductsService', () => {
     });
 
     it('pages and sorts', async () => {
-      await service.listProducts({
+      await service.list({
         limit: 5,
         offset: 10,
         sortBy: 'createdAt',
@@ -107,9 +111,9 @@ describe('ProductsService', () => {
     });
   });
 
-  describe('getProduct', () => {
+  describe('get', () => {
     it('returns a product that is not deleted, with its users', async () => {
-      await expect(service.getProduct(1)).resolves.toBe(found);
+      await expect(service.get(1)).resolves.toBe(found);
 
       const options = findFirst.mock.calls[0][0];
       expect(options.where).toEqual({ id: 1, deletedAt: { isNull: true } });
@@ -120,16 +124,16 @@ describe('ProductsService', () => {
     it('throws 404 when the product does not exist or is deleted', async () => {
       findFirst.mockResolvedValue(undefined);
 
-      await expect(service.getProduct(999)).rejects.toBeInstanceOf(
+      await expect(service.get(999)).rejects.toBeInstanceOf(
         NotFoundException,
       );
     });
   });
 
-  describe('createProduct', () => {
+  describe('create', () => {
     it('inserts the product with its creator', async () => {
       await expect(
-        service.createProduct(body({ name: 'Acme', price: '1.00' }), 'u1'),
+        service.create(body({ name: 'Acme', price: '1.00' }), actor('u1')),
       ).resolves.toBe(found);
 
       const [row] = insert.values.mock.calls[0];
@@ -142,12 +146,12 @@ describe('ProductsService', () => {
     });
   });
 
-  describe('updateProduct', () => {
+  describe('update', () => {
     it('updates the product', async () => {
-      await service.updateProduct(
+      await service.update(
         1,
         body({ name: 'Acme Inc', price: '1.00' }),
-        'u2',
+        actor('u2'),
       );
 
       expect(update.set.mock.calls[0][0]).toMatchObject({
@@ -163,14 +167,14 @@ describe('ProductsService', () => {
       update.where.mockResolvedValue({ rowCount: 0 });
 
       await expect(
-        service.updateProduct(999, body({ name: 'X', price: '1.00' }), 'u2'),
+        service.update(999, body({ name: 'X', price: '1.00' }), actor('u2')),
       ).rejects.toBeInstanceOf(NotFoundException);
     });
   });
 
-  describe('deleteProduct', () => {
+  describe('delete', () => {
     it('sets deletedAt instead of deleting the row', async () => {
-      await service.deleteProduct(1, 'u3');
+      await service.delete(1, actor('u3'));
 
       const values = update.set.mock.calls[0][0];
       expect(values.deletedAt).toBeInstanceOf(Date);
@@ -184,7 +188,7 @@ describe('ProductsService', () => {
     it('throws 404 when the product is missing or already deleted', async () => {
       update.where.mockResolvedValue({ rowCount: 0 });
 
-      await expect(service.deleteProduct(1, 'u3')).rejects.toBeInstanceOf(
+      await expect(service.delete(1, actor('u3'))).rejects.toBeInstanceOf(
         NotFoundException,
       );
     });

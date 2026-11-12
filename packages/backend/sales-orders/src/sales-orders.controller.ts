@@ -25,23 +25,33 @@ import {
   type ListSalesOrdersQuery,
 } from '@dafne/contracts';
 import { SalesOrdersService } from './sales-orders.service.js';
+import type { CrudController } from '@dafne/backend-crud';
 
 /** Sales orders, for any signed-in user (the global auth guard checks it). */
 @Controller('sales-orders')
-export class SalesOrdersController {
+export class SalesOrdersController
+  implements
+    CrudController<
+      number,
+      ListSalesOrdersQuery,
+      SalesOrdersList,
+      SalesOrderBody,
+      SalesOrderDetail
+    >
+{
   constructor(private readonly salesOrdersService: SalesOrdersService) {}
 
   @Get()
-  listSalesOrders(
+  list(
     @Query(new ZodValidationPipe(listSalesOrdersQuerySchema))
     query: ListSalesOrdersQuery,
   ): Promise<SalesOrdersList> {
-    return this.salesOrdersService.listSalesOrders(query);
+    return this.salesOrdersService.list(query);
   }
 
   @Get(':id')
-  getSalesOrder(@Param('id', IdPipe) id: number): Promise<SalesOrderDetail> {
-    return this.salesOrdersService.getSalesOrder(id);
+  get(@Param('id', IdPipe) id: number): Promise<SalesOrderDetail> {
+    return this.salesOrdersService.get(id);
   }
 
   @Get(':id/items/:position')
@@ -53,20 +63,20 @@ export class SalesOrdersController {
   }
 
   @Post()
-  createSalesOrder(
+  create(
     @Body(new ZodValidationPipe(salesOrderBodySchema)) body: SalesOrderBody,
     @Session() session: UserSession,
   ): Promise<SalesOrderDetail> {
-    return this.salesOrdersService.createSalesOrder(body, session.user);
+    return this.salesOrdersService.create(body, session.user);
   }
 
   @Put(':id')
-  updateSalesOrder(
+  update(
     @Param('id', IdPipe) id: number,
     @Body(new ZodValidationPipe(salesOrderBodySchema)) body: SalesOrderBody,
     @Session() session: UserSession,
   ): Promise<SalesOrderDetail> {
-    return this.salesOrdersService.updateSalesOrder(id, body, session.user);
+    return this.salesOrdersService.update(id, body, session.user);
   }
 
   /** Moves the sales order to another status (see SALES_ORDER_STATES). */
@@ -83,10 +93,10 @@ export class SalesOrdersController {
   /** Logical delete. */
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteSalesOrder(
+  async delete(
     @Param('id', IdPipe) id: number,
     @Session() session: UserSession,
   ): Promise<void> {
-    await this.salesOrdersService.deleteSalesOrder(id, session.user.id);
+    await this.salesOrdersService.delete(id, session.user);
   }
 }

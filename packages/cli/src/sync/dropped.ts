@@ -234,7 +234,7 @@ function dropFilters(file: SourceFile, names: ResourceNames, gone: Set<string>, 
   const listProp = (test: Node) =>
     test
       .getDescendantsOfKind(SyntaxKind.CallExpression)
-      .filter((c) => c.getExpression().getText().endsWith(`.list${names.p.pascal}`))
+      .filter((c) => c.getExpression().getText().endsWith('.list'))
       .flatMap((c) => c.getArguments().filter(Node.isObjectLiteralExpression))
       .map((object) => ({
         object,
