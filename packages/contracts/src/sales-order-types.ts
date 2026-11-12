@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { pageQuery, requiredText, SORT_DIRECTIONS } from './common.ts';
+import { pageQuery, requiredText, SORT_DIRECTIONS, type Page } from './common.ts';
 import { msg } from './messages/index.ts';
 
 /* ---------- Requests ---------- */
@@ -63,12 +63,7 @@ export interface ListedSalesOrderType {
 }
 
 /** Response of GET /sales-order-types. */
-export interface SalesOrderTypesList {
-  salesOrderTypes: ListedSalesOrderType[];
-  total: number;
-  limit: number;
-  offset: number;
-}
+export type SalesOrderTypesList = Page<ListedSalesOrderType>;
 
 /** A user who created or last updated a sales order type; null if since removed. */
 export interface SalesOrderTypeUser {

@@ -75,7 +75,7 @@ describe('ProductsService', () => {
   describe('list', () => {
     it('lists products that are not deleted, newest first', async () => {
       await expect(service.list()).resolves.toEqual({
-        products: rows,
+        items: rows,
         total: 42,
         limit: 20,
         offset: 0,

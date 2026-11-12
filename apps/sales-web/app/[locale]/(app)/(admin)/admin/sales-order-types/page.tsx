@@ -70,7 +70,7 @@ async function SalesOrderTypesList({
   return (
     <SalesOrderTypesTable
       config={salesOrderTypesTable}
-      salesOrderTypes={data.salesOrderTypes}
+      salesOrderTypes={data.items}
       total={data.total}
       params={params}
     />

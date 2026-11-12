@@ -5,6 +5,7 @@ import {
   SORT_DIRECTIONS,
   optionalText,
   optionalDate,
+  type Page,
 } from './common.ts';
 import { msg } from './messages/index.ts';
 
@@ -80,12 +81,7 @@ export interface ListedActivity {
 }
 
 /** Response of GET /activities. */
-export interface ActivitiesList {
-  activities: ListedActivity[];
-  total: number;
-  limit: number;
-  offset: number;
-}
+export type ActivitiesList = Page<ListedActivity>;
 
 /** A user who created or last updated a activity; null if since removed. */
 export interface ActivityUser {

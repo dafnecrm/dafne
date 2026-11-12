@@ -67,7 +67,7 @@ async function ActivitiesList({
   return (
     <ActivitiesTable
       config={activitiesTable}
-      activities={data.activities}
+      activities={data.items}
       total={data.total}
       params={params}
     />

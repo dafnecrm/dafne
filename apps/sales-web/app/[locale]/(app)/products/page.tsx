@@ -67,7 +67,7 @@ async function ProductsList({
   return (
     <ProductsTable
       config={productsTable}
-      products={data.products}
+      products={data.items}
       total={data.total}
       params={params}
     />

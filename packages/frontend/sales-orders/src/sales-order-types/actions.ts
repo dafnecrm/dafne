@@ -136,5 +136,5 @@ export async function searchSalesOrderTypes({
     filters: { active: "true" },
     search: search.trim() || undefined,
   });
-  return list.salesOrderTypes.map(({ id, description }) => ({ id, description }));
+  return list.items.map(({ id, description }) => ({ id, description }));
 }

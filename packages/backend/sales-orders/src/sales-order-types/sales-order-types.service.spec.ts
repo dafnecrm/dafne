@@ -79,7 +79,7 @@ describe('SalesOrderTypesService', () => {
   describe('list', () => {
     it('lists sales order types that are not deleted, by id', async () => {
       await expect(service.list()).resolves.toEqual({
-        salesOrderTypes: rows,
+        items: rows,
         total: 42,
         limit: 20,
         offset: 0,

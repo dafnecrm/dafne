@@ -126,7 +126,7 @@ export class ActivitiesService
       db.$count(activity, where),
     ]);
 
-    return { activities, total, limit, offset };
+    return { items: activities, total, limit, offset };
   }
 
   /**

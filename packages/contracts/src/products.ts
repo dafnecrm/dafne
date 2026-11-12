@@ -4,6 +4,7 @@ import {
   requiredText,
   SORT_DIRECTIONS,
   optionalText,
+  type Page,
 } from './common.ts';
 import { msg } from './messages/index.ts';
 
@@ -65,12 +66,7 @@ export interface ListedProduct {
 }
 
 /** Response of GET /products. */
-export interface ProductsList {
-  products: ListedProduct[];
-  total: number;
-  limit: number;
-  offset: number;
-}
+export type ProductsList = Page<ListedProduct>;
 
 /** A user who created or last updated a product; null if since removed. */
 export interface ProductUser {

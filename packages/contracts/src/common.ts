@@ -36,6 +36,17 @@ export const pageQuery = {
   offset: z.coerce.number().int().min(0).optional(),
 };
 
+/**
+ * A page of a list (the response of `GET /<resource>`): the records, how
+ * many match in all, and the `limit` and `offset` it was read with.
+ */
+export interface Page<T> {
+  items: T[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
 export const SORT_DIRECTIONS = ['asc', 'desc'] as const;
 export type SortDirection = (typeof SORT_DIRECTIONS)[number];
 

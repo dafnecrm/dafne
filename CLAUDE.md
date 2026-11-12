@@ -111,7 +111,8 @@ keep it in line when these rules change. Each project has its own
 - **CRUD resources share one interface** (`@dafne/backend-crud`): the
   controller `implements CrudController<Id, Query, List, Body, Detail>`,
   the service `CrudService<…>`, with the methods `list | get | create |
-  update | delete`. Services take the whole `SessionUser` as `actor`
+  update | delete`, and lists answer `Page<T>` (`{ items, total, limit,
+  offset }`). Services take the whole `SessionUser` as `actor`
   (controllers pass `session.user`). Extra routes keep their own names.
   The CLI's templates and syncs rely on these names.
   **Writes run through `CrudHooks`** (`registry.for('<resource>', { db, load })`):

@@ -112,7 +112,7 @@ export class <%= p.pascal %>Service
       db.$count(<%= s.camel %>, where),
     ]);
 
-    return { <%= p.camel %>, total, limit, offset };
+    return { items: <%= p.camel %>, total, limit, offset };
   }
 
   /**
