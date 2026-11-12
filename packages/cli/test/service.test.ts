@@ -44,8 +44,8 @@ describe('syncService', () => {
   it('removes dropped columns, but not hand-written values', () => {
     const table = tableWith(`    code: varchar('code', { length: 10 }),`);
     const once = syncService('s.ts', service(), names, table).content.replace(
-      'updatedById: actor.id,\n        // The time',
-      'updatedById: actor.id,\n        name2: body.name.toUpperCase(),\n        // The time',
+      'updatedById: actor.id,\n          // The time',
+      'updatedById: actor.id,\n          name2: body.name.toUpperCase(),\n          // The time',
     );
     const { content, report } = syncService('s.ts', once, names, tableWith(''), ['code']);
     expect(content).not.toContain('code: activity.code');

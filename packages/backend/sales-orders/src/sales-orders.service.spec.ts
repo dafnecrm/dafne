@@ -8,7 +8,7 @@ import { salesOrderBodySchema, type SalesOrderBodyInput } from '@dafne/contracts
 import { getStateMachineToken } from '@dafne/backend-fsm';
 import { SalesOrdersService } from './sales-orders.service.js';
 import { SALES_ORDER_STATE_MACHINE } from './sales-order.states.js';
-import type { Actor } from '@dafne/backend-crud';
+import { CrudHooksRegistry, type Actor } from '@dafne/backend-crud';
 
 /** A signed-in user, as the services get it; only the id matters here. */
 const actor = (id: string) => ({ id }) as Actor;
@@ -78,6 +78,7 @@ describe('SalesOrdersService', () => {
       providers: [
         SalesOrdersService,
         { provide: getDrizzleToken(), useValue: db },
+        CrudHooksRegistry,
         { provide: getStateMachineToken(SALES_ORDER_STATE_MACHINE), useValue: stateMachine },
       ],
     }).compile();

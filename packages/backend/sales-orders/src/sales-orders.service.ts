@@ -18,9 +18,14 @@ import { InjectStateMachine, StateMachine } from '@dafne/backend-fsm';
 import type { SessionUser } from '@dafne/backend-session';
 import type { SalesOrderStatus } from '@dafne/contracts';
 import { SALES_ORDER_STATE_MACHINE } from './sales-order.states.js';
-import type { Actor, CrudService } from '@dafne/backend-crud';
-
-type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0];
+import {
+  CrudHooksRegistry,
+  type Actor,
+  type CrudHooks,
+  type CrudService,
+  type Executor,
+  type Transaction,
+} from '@dafne/backend-crud';
 
 export const SALES_ORDERS_DEFAULT_PAGE_SIZE = 20;
 
@@ -83,11 +88,17 @@ export class SalesOrdersService
 {
   logger = new Logger(SalesOrdersService.name);
 
+  /** Runs the writes with the hooks registered on `sales-orders`. */
+  private readonly hooks: CrudHooks<number, SalesOrderBody, SalesOrderDetail>;
+
   constructor(
     @InjectDrizzle() private readonly db: Database,
     @InjectStateMachine(SALES_ORDER_STATE_MACHINE)
     private readonly stateMachine: StateMachine<SalesOrderStatus, number>,
-  ) { }
+    registry: CrudHooksRegistry,
+  ) {
+    this.hooks = registry.for('sales-orders', { db, load: (id, tx) => this.get(id, tx) });
+  }
 
   /**
    * Lists sales orders that aren't deleted, paged and sorted, filtered by
@@ -143,8 +154,8 @@ export class SalesOrdersService
    * One sales order that isn't deleted, with who created and last
    * updated it. Throws 404 otherwise.
    */
-  async get(id: number): Promise<SalesOrderDetail> {
-    const found = await this.db.query.salesOrder.findFirst({
+  async get(id: number, db: Executor = this.db): Promise<SalesOrderDetail> {
+    const found = await db.query.salesOrder.findFirst({
       where: { id, deletedAt: { isNull: true } },
       columns: { createdById: false, updatedById: false },
       with: {
@@ -190,8 +201,8 @@ export class SalesOrdersService
     const now = new Date();
 
     this.logger.log("CREATING", JSON.stringify(body))
-    const id = await this.db
-      .transaction(async (tx) => {
+    return this.hooks
+      .create({ body, actor }, async ({ tx, body }) => {
         // Born in draft: another status goes through the state machine.
         const [{ id }] = await tx
           .insert(salesOrder)
@@ -212,9 +223,6 @@ export class SalesOrdersService
         return id;
       })
       .catch(rethrowConstraint);
-
-    this.logger.log("ID", id)
-    return this.get(id);
   }
 
   /**
@@ -222,7 +230,7 @@ export class SalesOrdersService
    * if the sales order doesn't exist or is deleted.
    */
   async update(id: number, body: SalesOrderBody, actor: Actor): Promise<SalesOrderDetail> {
-    await this.db.transaction(async (tx) => {
+    return this.hooks.update({ id, body, actor }, async ({ tx, body }) => {
       const result = await tx
         .update(salesOrder)
         .set({
@@ -247,8 +255,6 @@ export class SalesOrdersService
         await this.stateMachine.transition(id, body.status, { tx, user: actor });
       }
     }).catch(rethrowConstraint);
-
-    return this.get(id);
   }
 
   /**
@@ -256,14 +262,16 @@ export class SalesOrdersService
    * from the API but stays in the database. Throws 404 if already deleted.
    */
   async delete(id: number, actor: Actor): Promise<void> {
-    const now = new Date();
-    const result = await this.db
-      .update(salesOrder)
-      .set({ deletedAt: now, updatedAt: now, updatedById: actor.id })
-      .where(and(eq(salesOrder.id, id), notDeleted));
-    if (result.rowCount === 0) {
-      throw new NotFoundException(msg('salesOrders.notFound'));
-    }
+    await this.hooks.delete({ id, actor }, async ({ tx }) => {
+      const now = new Date();
+      const result = await tx
+        .update(salesOrder)
+        .set({ deletedAt: now, updatedAt: now, updatedById: actor.id })
+        .where(and(eq(salesOrder.id, id), notDeleted));
+      if (result.rowCount === 0) {
+        throw new NotFoundException(msg('salesOrders.notFound'));
+      }
+    });
   }
 
   /**

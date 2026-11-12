@@ -1,8 +1,9 @@
+import { CrudHooksModule } from '@dafne/backend-crud';
 import { DatabaseModule } from '@dafne/backend-database';
 import { Module } from '@nestjs/common';
 
 @Module({
-  imports: [DatabaseModule],
+  imports: [DatabaseModule, CrudHooksModule],
   controllers: [],
   providers: [],
   exports: [],

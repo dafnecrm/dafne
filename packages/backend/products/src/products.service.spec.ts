@@ -5,7 +5,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { and, asc, desc, eq, isNull, ilike } from 'drizzle-orm';
 import { productBodySchema, type ProductBodyInput } from '@dafne/contracts';
 import { ProductsService } from './products.service.js';
-import type { Actor } from '@dafne/backend-crud';
+import { CrudHooksRegistry, type Actor } from '@dafne/backend-crud';
 
 /** A signed-in user, as the services get it; only the id matters here. */
 const actor = (id: string) => ({ id }) as Actor;
@@ -32,6 +32,7 @@ describe('ProductsService', () => {
   const update = { set: vi.fn(), where: vi.fn() };
   const findFirst = vi.fn();
   const db = {
+    transaction: vi.fn(),
     select: vi.fn(),
     $count: vi.fn(),
     insert: vi.fn(),
@@ -43,6 +44,8 @@ describe('ProductsService', () => {
 
   beforeEach(async () => {
     vi.resetAllMocks();
+    // The transaction runs on the same mock db.
+    db.transaction.mockImplementation((run: (tx: typeof db) => unknown) => run(db));
     db.select.mockReturnValue(select);
     select.from.mockReturnValue(select);
     select.where.mockReturnValue(select);
@@ -62,6 +65,7 @@ describe('ProductsService', () => {
       providers: [
         ProductsService,
         { provide: getDrizzleToken(), useValue: db },
+        CrudHooksRegistry,
       ],
     }).compile();
 

@@ -1,3 +1,4 @@
+import { CrudHooksModule } from '@dafne/backend-crud';
 import { DatabaseModule } from '@dafne/backend-database';
 import { FsmModule } from '@dafne/backend-fsm';
 import type { SalesOrderStatus } from '@dafne/contracts';
@@ -10,6 +11,7 @@ import { SALES_ORDER_STATE_MACHINE, SALES_ORDER_STATES } from './sales-order.sta
 @Module({
   imports: [
     DatabaseModule,
+    CrudHooksModule,
     FsmModule.forFeature<SalesOrderStatus, number>({
       name: SALES_ORDER_STATE_MACHINE,
       transition: SalesOrderTransition,

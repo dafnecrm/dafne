@@ -20,7 +20,13 @@ import {
   type ListProductsQuery,
   msg,
 } from '@dafne/contracts';
-import type { Actor, CrudService } from '@dafne/backend-crud';
+import {
+  CrudHooksRegistry,
+  type Actor,
+  type CrudHooks,
+  type CrudService,
+  type Executor,
+} from '@dafne/backend-crud';
 
 export const PRODUCTS_DEFAULT_PAGE_SIZE = 20;
 
@@ -56,7 +62,15 @@ export class ProductsService
       ProductDetail
     >
 {
-  constructor(@InjectDrizzle() private readonly db: Database) {}
+  /** Runs the writes with the hooks registered on `products`. */
+  private readonly hooks: CrudHooks<number, ProductBody, ProductDetail>;
+
+  constructor(
+    @InjectDrizzle() private readonly db: Database,
+    registry: CrudHooksRegistry,
+  ) {
+    this.hooks = registry.for('products', { db, load: (id, tx) => this.get(id, tx) });
+  }
 
   /**
    * Lists products that aren't deleted, paged and sorted, filtered by
@@ -110,8 +124,8 @@ export class ProductsService
    * One product that isn't deleted, with who created and last
    * updated it. Throws 404 otherwise.
    */
-  async get(id: number): Promise<ProductDetail> {
-    const found = await this.db.query.product.findFirst({
+  async get(id: number, db: Executor = this.db): Promise<ProductDetail> {
+    const found = await db.query.product.findFirst({
       where: { id, deletedAt: { isNull: true } },
       columns: { createdById: false, updatedById: false },
       with: { createdBy: userSummary, updatedBy: userSummary },
@@ -129,19 +143,21 @@ export class ProductsService
   ): Promise<ProductDetail> {
     // One instant for both: createdAt and updatedAt start equal.
     const now = new Date();
-    const [{ id }] = await this.db
-      .insert(product)
-      .values({
-        name: body.name,
-        description: body.description,
-        price: body.price,
-        createdAt: now,
-        updatedAt: now,
-        createdById: actor.id,
-        updatedById: actor.id,
-      })
-      .returning({ id: product.id });
-    return this.get(id);
+    return this.hooks.create({ body, actor }, async ({ tx, body }) => {
+      const [{ id }] = await tx
+        .insert(product)
+        .values({
+          name: body.name,
+          description: body.description,
+          price: body.price,
+          createdAt: now,
+          updatedAt: now,
+          createdById: actor.id,
+          updatedById: actor.id,
+        })
+        .returning({ id: product.id });
+      return id;
+    });
   }
 
   /**
@@ -153,21 +169,22 @@ export class ProductsService
     body: ProductBody,
     actor: Actor,
   ): Promise<ProductDetail> {
-    const result = await this.db
-      .update(product)
-      .set({
-        name: body.name,
-        description: body.description,
-        price: body.price,
-        updatedById: actor.id,
-        // The time of this change.
-        updatedAt: new Date(),
-      })
-      .where(and(eq(product.id, id), notDeleted));
-    if (result.rowCount === 0) {
-      throw new NotFoundException(msg('products.notFound'));
-    }
-    return this.get(id);
+    return this.hooks.update({ id, body, actor }, async ({ tx, body }) => {
+      const result = await tx
+        .update(product)
+        .set({
+          name: body.name,
+          description: body.description,
+          price: body.price,
+          updatedById: actor.id,
+          // The time of this change.
+          updatedAt: new Date(),
+        })
+        .where(and(eq(product.id, id), notDeleted));
+      if (result.rowCount === 0) {
+        throw new NotFoundException(msg('products.notFound'));
+      }
+    });
   }
 
   /**
@@ -175,13 +192,15 @@ export class ProductsService
    * from the API but stays in the database. Throws 404 if already deleted.
    */
   async delete(id: number, actor: Actor): Promise<void> {
-    const now = new Date();
-    const result = await this.db
-      .update(product)
-      .set({ deletedAt: now, updatedAt: now, updatedById: actor.id })
-      .where(and(eq(product.id, id), notDeleted));
-    if (result.rowCount === 0) {
-      throw new NotFoundException(msg('products.notFound'));
-    }
+    await this.hooks.delete({ id, actor }, async ({ tx }) => {
+      const now = new Date();
+      const result = await tx
+        .update(product)
+        .set({ deletedAt: now, updatedAt: now, updatedById: actor.id })
+        .where(and(eq(product.id, id), notDeleted));
+      if (result.rowCount === 0) {
+        throw new NotFoundException(msg('products.notFound'));
+      }
+    });
   }
 }

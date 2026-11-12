@@ -99,6 +99,45 @@ order types) has the same controller and service methods, typed by
 - Who may call a route is decided by Nest guards (`@Roles()`), not by the
   interface.
 
+### Write hooks
+
+`create`, `update` and `delete` run through the resource's `CrudHooks`
+(`registry.for('<resource>', { db, load })` in the service). That runner
+opens one transaction and runs, in order:
+
+1. `previous` (update, delete): the record before the write, read only
+   when the operation has hooks;
+2. **pre** hooks: they may change `context.body`, or stop the write by
+   returning a message key (403) or throwing;
+3. the write itself;
+4. `result` (create, update): the record after the write, read in the
+   transaction;
+5. **post** hooks: they may write related rows with `context.tx`, and a
+   failure rolls everything back.
+
+After the commit come the **afterCommit** hooks, for emails, notifications
+and calls to other systems. They have no transaction, the response doesn't
+wait for them, and their errors are only logged.
+
+Hooks are injectable classes, registered from any module:
+
+```ts
+@Module({
+  imports: [
+    CrudHooksModule.forFeature('customers', {
+      delete: { pre: [NoOpenOrdersHook] },
+      create: { afterCommit: [WelcomeEmailHook] },
+    }, { imports: [NotificationsModule] }),
+  ],
+})
+export class SalesOrdersModule {}
+```
+
+Registrations from several modules add up, in import order. A lib can then
+hook into a resource it depends on (sales orders into customers) without
+that resource knowing about it. Hooks are a business rule on the data: who
+may call the endpoint stays with Nest guards.
+
 ## Better Auth options shared by both sides
 
 `@dafne/auth-options` holds the options that don't depend on the database

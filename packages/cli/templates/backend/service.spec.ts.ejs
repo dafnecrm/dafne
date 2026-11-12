@@ -4,7 +4,7 @@ import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { and, asc, desc, eq, isNull } from 'drizzle-orm';
 import { <%= s.camel %>BodySchema, type <%= s.pascal %>BodyInput } from '@dafne/contracts';
-import type { Actor } from '@dafne/backend-crud';
+import { CrudHooksRegistry, type Actor } from '@dafne/backend-crud';
 import { <%= p.pascal %>Service } from './<%= p.kebab %>.service.js';
 
 /** A signed-in user, as the services get it; only the id matters here. */
@@ -32,6 +32,7 @@ describe('<%= p.pascal %>Service', () => {
   const update = { set: vi.fn(), where: vi.fn() };
   const findFirst = vi.fn();
   const db = {
+    transaction: vi.fn(),
     select: vi.fn(),
     $count: vi.fn(),
     insert: vi.fn(),
@@ -43,6 +44,8 @@ describe('<%= p.pascal %>Service', () => {
 
   beforeEach(async () => {
     vi.resetAllMocks();
+    // The transaction runs on the same mock db.
+    db.transaction.mockImplementation((run: (tx: typeof db) => unknown) => run(db));
     db.select.mockReturnValue(select);
     select.from.mockReturnValue(select);
     select.where.mockReturnValue(select);
@@ -62,6 +65,7 @@ describe('<%= p.pascal %>Service', () => {
       providers: [
         <%= p.pascal %>Service,
         { provide: getDrizzleToken(), useValue: db },
+        CrudHooksRegistry,
       ],
     }).compile();
 
