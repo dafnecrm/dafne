@@ -84,8 +84,10 @@ keep it in line when these rules change. Each project has its own
   `packages/frontend/eslint.config.mjs`) and `pnpm boundaries` (the whole
   project graph, in CI) enforce them.
 - **Database**: one PostgreSQL database per environment (`dafne`), one
-  schema per app (`sales`, `<app>`), plus `auth` (users, sessions) and,
-  once a second app needs a table, `core`. Names are fixed. A table is
+  schema per app (`sales`, `<app>`), plus `auth` (users, sessions),
+  `changelog` (the change log, written only by `@dafne/backend-changelog`,
+  depending only on `auth`) and, once a second app needs a table, `core`.
+  Names are fixed. A table is
   born in the schema of the app that creates it and moves to `core` when
   another app must read it or reference it (`ALTER TABLE … SET SCHEMA`).
   Dependencies go one way: app → core → auth (foreign keys included).
@@ -119,6 +121,9 @@ keep it in line when these rules change. Each project has its own
   one transaction with pre hooks, the write, post hooks, then after-commit
   hooks. Other libs add hooks with `CrudHooksModule.forFeature`, not by
   editing the resource. Who may call stays with Nest guards.
+  A resource's change log is turned on in its module
+  (`ChangelogModule.forFeature('<resource>', { fields })`, plus
+  `changelogTransitionHook` for its state machine).
 - **Braces on every `if`/`else`/loop body**, one-liners included
   (`curly: all`, in the oxlint and ESLint configs and the CLI's templates).
 - `.nxignore` hides the CLIs' test fixtures, which look like projects.

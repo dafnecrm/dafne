@@ -44,6 +44,7 @@ Each project has one scope tag (see [Project boundaries](boundaries.md)).
 | ------------------------------ | --------------------------------------------------------------------------------------------------- |
 | `@dafne/backend-database`      | The `sales` schema: Drizzle tables, `DatabaseModule`, migrations                                      |
 | `@dafne/backend-database-auth` | The `auth` schema: Better Auth tables and `app_access`, migrations                                  |
+| `@dafne/backend-database-changelog` | The `changelog` schema: the change log table (partitioned by resource), migrations written by hand |
 | `@dafne/backend-migrator`      | Applies the migrations of every schema in one order; generates them                                |
 | `@dafne/backend-auth`          | Better Auth in Nest (`AuthModule`), used only by `apps/auth`                                        |
 | `@dafne/backend-session`       | Session guard for the apps' APIs (`SessionModule.forRoot({ app })`, `@Session()`, `@Roles()`)        |
@@ -52,7 +53,8 @@ Each project has one scope tag (see [Project boundaries](boundaries.md)).
 | `@dafne/backend-notifications` | Notifications and emails (Resend)                                                                   |
 | `@dafne/backend-geo`           | Place search and countries                                                                          |
 | `@dafne/backend-crud`          | The interface every CRUD resource implements (`CrudController`, `CrudService`, `Actor`) and its write hooks (`CrudHooksModule.forFeature`) |
-| `@dafne/backend-fsm`           | State machines for a record's status (`FsmModule.forFeature`, `@InjectStateMachine()`): guards, pre/post hooks, one transaction |
+| `@dafne/backend-changelog`     | Change log of CRUD resources (`ChangelogModule.forFeature`, `changelogTransitionHook`, `ChangelogService`) |
+| `@dafne/backend-fsm`           | State machines for a record's status (`FsmModule.forFeature`, `@InjectStateMachine()`): guards, pre/post hooks (per transition, or of every transition), one transaction |
 | `@dafne/backend-customers`, `-products`, `-activities` | Feature libs of the sales app (module, controller, service)                       |
 
 ### Frontend libs (`packages/frontend/*`)

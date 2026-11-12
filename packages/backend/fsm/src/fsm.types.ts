@@ -58,6 +58,12 @@ export interface TransitionConfig<S extends string = string, Id = unknown> {
 }
 
 /**
+ * Hooks of every transition of a machine (e.g. a change log), run after
+ * the transition's own pre and post hooks.
+ */
+export type EveryTransitionHooks<S extends string = string, Id = unknown> = Pick<TransitionConfig<S, Id>, 'pre' | 'post'>;
+
+/**
  * The statuses a record can move to from each status, with the aspects of
  * each passage: `{ draft: { open: { guards: [...] }, cancelled: {} } }`.
  * A status missing here is final.

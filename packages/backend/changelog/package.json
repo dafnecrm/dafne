@@ -1,0 +1,40 @@
+{
+  "name": "@dafne/backend-changelog",
+  "version": "0.0.1",
+  "description": "Change log of CRUD resources: ChangelogModule.forFeature records each write (and status change) in the changelog schema",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "oxlint -c ../.oxlintrc.json --type-aware src",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@dafne/backend-crud": "workspace:*",
+    "@dafne/backend-database": "workspace:*",
+    "@dafne/backend-database-auth": "workspace:*",
+    "@dafne/backend-database-changelog": "workspace:*",
+    "@dafne/backend-fsm": "workspace:*",
+    "@dafne/contracts": "workspace:*",
+    "@nestjs/common": "catalog:",
+    "@nestjs/drizzle": "catalog:",
+    "drizzle-orm": "catalog:"
+  },
+  "devDependencies": {
+    "@nestjs/testing": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/node": "catalog:",
+    "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:",
+    "typescript": "catalog:",
+    "unplugin-swc": "catalog:",
+    "vitest": "catalog:"
+  },
+  "nx": {
+    "tags": [
+      "scope:backend"
+    ]
+  }
+}

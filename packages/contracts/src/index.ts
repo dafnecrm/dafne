@@ -16,3 +16,4 @@ export * from './countries.ts';
 export * from './products.ts';
 export * from './sales-orders.ts';
 export * from './sales-order-types.ts';
+export * from './changelog.ts';
