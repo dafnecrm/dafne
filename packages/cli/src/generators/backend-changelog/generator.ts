@@ -21,7 +21,11 @@ export interface BackendChangelogSchema {
 export default async function backendChangelogGenerator(tree: Tree, options: BackendChangelogSchema) {
   return runGenerator(tree, options, (changes) => {
     const names = resourceNames(options.name);
-    const { migration } = addChangelog(changes, names, { partition: options.partition, app: options.app ?? DEFAULT_APP });
+    const { migration } = addChangelog(changes, names, {
+      partition: options.partition,
+      app: options.app ?? DEFAULT_APP,
+      input: options.name,
+    });
     return {
       next: [
         'pnpm install   # links @dafne/backend-changelog',

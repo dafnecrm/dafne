@@ -27,6 +27,7 @@ import {
   type CrudService,
   type Executor,
 } from '@dafne/backend-crud';
+import { PRODUCTS_RESOURCE } from './product.changelog.js';
 
 export const PRODUCTS_DEFAULT_PAGE_SIZE = 20;
 
@@ -69,7 +70,7 @@ export class ProductsService
     @InjectDrizzle() private readonly db: Database,
     registry: CrudHooksRegistry,
   ) {
-    this.hooks = registry.for('products', { db, load: (id, tx) => this.get(id, tx) });
+    this.hooks = registry.for(PRODUCTS_RESOURCE, { db, load: (id, tx) => this.get(id, tx) });
   }
 
   /**

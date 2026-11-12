@@ -253,9 +253,14 @@ describe('backend-changelog', () => {
     expect(read(`${dir}/index.ts`)).toContain("export * from './invoice-lines/invoice-line.changelog.js';");
   });
 
-  it('refuses a resource that does not exist, and a partition without changelog', async () => {
-    await expect(generate(backendChangelogGenerator, { name: 'invoice' })).rejects.toThrow(/generate the resource first/);
-    await expect(generate(backendResourceGenerator, { name: 'invoice', partition: true })).rejects.toThrow(/only with changelog/);
+  it('refuses a resource that does not exist, naming the closest one, and a partition without changelog', async () => {
+    await expect(generate(backendChangelogGenerator, { name: 'invoice' })).rejects.toThrow(/No resource "invoice".*backend-resource <name> --changelog/);
+    await generate(backendResourceGenerator, { name: 'invoice' });
+    await expect(generate(backendChangelogGenerator, { name: 'invoicessss' })).rejects.toThrow(
+      /No resource "invoicessss": there is no service for [a-z-]+\. Did you mean "invoices"\? Resources: invoices\./,
+    );
+    expect(partitions()).toEqual([]);
+    await expect(generate(backendResourceGenerator, { name: 'payment', partition: true })).rejects.toThrow(/only with changelog/);
   });
 });
 

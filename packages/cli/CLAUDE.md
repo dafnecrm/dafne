@@ -75,7 +75,8 @@ erasable syntax (no enums, namespaces or constructor parameter properties;
 - `src/index.ts`, `src/commands/`: the `dafne` command (commander, clack).
   `generate.ts` asks for what's missing (for a backend resource, a new
   lib or an existing one, the id, the fields, with the questions in `field-prompts.ts`, whether it keeps a change log;
-  for `backend-resource --changelog` and `backend-changelog`, whether it gets a partition of its own) and runs `nx g`: its
+  for `backend-resource --changelog` and `backend-changelog`, whether it gets a partition of its own; `backend-changelog`
+  first checks the resource exists, `crudResources`, and offers the closest, `core/names.ts` `closest`) and runs `nx g`: its
   kinds are the generators' names, and it rejects options a kind doesn't
   take. `remove.ts` (`dafne remove backend-db-column`: asks for the table
   and the columns, runs the generator, then `db generate` unless

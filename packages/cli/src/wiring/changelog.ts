@@ -1,10 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import { SyntaxKind, type SourceFile } from 'ts-morph';
 import type { Changes } from '../core/changes.ts';
-import type { ResourceNames } from '../core/names.ts';
+import { closest, resourceNames, words, type ResourceNames } from '../core/names.ts';
 import { render } from '../core/templates.ts';
 import { backendApp, backendLib, backendPackage, DEFAULT_APP } from '../core/workspace.ts';
 import { contractFile, serviceFile } from '../pieces/backend.ts';
+import { listResources } from '../fields/operations.ts';
 import { readBody } from '../sync/body.ts';
 import { arrayProperty, decoratorObject, editSource, ensureArrayElement, ensureNamedImport, insertImportLine } from './ast.ts';
 import { ensureDependency, ensureExportStar, ensureReference } from './backend.ts';
@@ -16,11 +17,32 @@ export const CHANGELOG_DB_LIB = 'database-changelog';
 const CHANGELOG_PACKAGE = backendPackage(CHANGELOG_LIB);
 export const CHANGELOG_MIGRATIONS = `${backendLib(CHANGELOG_DB_LIB)}/migrations`;
 
+/** The resources a change log can be turned on for: a table and a CRUD service (by plural name). */
+export function crudResources(changes: Changes): string[] {
+  return [...new Set(listResources(changes))]
+    .filter((resource) => changes.exists(serviceFile(changes, resourceNames(resource))))
+    .sort();
+}
+
+/** Why `input` isn't a resource: the closest one (a typo?), else the list, else how to make one. */
+export function unknownResourceMessage(input: string, resources: readonly string[]): string {
+  const asked = resourceNames(input).p.kebab;
+  const guess = closest([words(input).join('-'), asked], resources);
+  return [
+    `No resource "${input}": there is no service for ${asked}.`,
+    guess ? `Did you mean "${guess}"?` : undefined,
+    resources.length ? `Resources: ${resources.join(', ')}.` : undefined,
+    guess ? undefined : `A new one comes from dafne g backend-resource <name> --changelog.`,
+  ]
+    .filter(Boolean)
+    .join(' ');
+}
+
 /** Where a resource's backend code is: its lib, and the folder of its module. */
-function resourceDir(changes: Changes, names: ResourceNames) {
+function resourceDir(changes: Changes, names: ResourceNames, input: string) {
   const service = serviceFile(changes, names);
   if (!changes.exists(service)) {
-    throw new Error(`${service} not found: generate the resource first (dafne g backend-resource ${names.s.kebab}).`);
+    throw new Error(unknownResourceMessage(input, crudResources(changes)));
   }
   const dir = service.slice(0, service.lastIndexOf('/'));
   const lib = dir.split('/')[2];
@@ -52,9 +74,9 @@ export interface ChangelogResult {
 export function addChangelog(
   changes: Changes,
   names: ResourceNames,
-  options: { partition?: boolean; app?: string } = {},
+  options: { partition?: boolean; app?: string; input?: string } = {},
 ): ChangelogResult {
-  const { dir, lib, nested } = resourceDir(changes, names);
+  const { dir, lib, nested } = resourceDir(changes, names, options.input ?? names.p.kebab);
   const { p } = names;
   const c = changelogNames(names);
   const modulePath = `${dir}/${p.kebab}.module.ts`;

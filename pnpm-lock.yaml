@@ -1314,6 +1314,9 @@ importers:
 
   packages/backend/products:
     dependencies:
+      '@dafne/backend-changelog':
+        specifier: workspace:*
+        version: link:../changelog
       '@dafne/backend-common':
         specifier: workspace:*
         version: link:../common

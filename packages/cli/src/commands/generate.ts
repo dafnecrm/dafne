@@ -4,12 +4,12 @@ import { FsTree } from 'nx/src/generators/tree.js';
 import { Changes } from '../core/changes.ts';
 import { findFrontendTarget, frontendLibs, libName } from '../core/frontend-target.ts';
 import { DEFAULT_ID_LENGTH, ID_TYPES, idSpec, type IdSpec, type IdType } from '../core/id.ts';
-import { resourceNames } from '../core/names.ts';
+import { closest, resourceNames, words } from '../core/names.ts';
 import { findWorkspaceRoot, runNx } from '../core/nx.ts';
 import { backendLib, DEFAULT_APP, DEFAULT_FRONTEND_APP, frontendApp, frontendLib } from '../core/workspace.ts';
 import { FIELD_SPEC_HELP, formatFieldSpec, parseFieldSpec } from '../fields/parse.ts';
 import { backendLibs, tableFile } from '../pieces/backend.ts';
-import { findPartition, partitionTable } from '../wiring/changelog.ts';
+import { crudResources, findPartition, partitionTable, unknownResourceMessage } from '../wiring/changelog.ts';
 import { askNewFields, cancelled, interactive } from './field-prompts.ts';
 
 /*
@@ -201,6 +201,31 @@ async function changelogPartition(root: string, name: string, options: GenerateO
   );
 }
 
+/**
+ * The resource of `backend-changelog`, checked before anything is asked:
+ * as given when it exists; else picked from the resources (the closest
+ * first) when interactive; else an error naming the closest one.
+ */
+async function changelogResource(root: string, name: string, options: GenerateOptions): Promise<string> {
+  const resources = crudResources(new Changes(new FsTree(root, false)));
+  const asked = resourceNames(name).p.kebab;
+  if (resources.includes(asked)) {
+    return name;
+  }
+  if (!interactive(options) || !resources.length) {
+    throw new Error(unknownResourceMessage(name, resources));
+  }
+  const guess = closest([words(name).join('-'), asked], resources);
+  p.log.warn(`No resource "${name}" (no service for ${asked}).`);
+  return cancelled<string>(
+    await p.select<string>({
+      message: 'Which resource?',
+      initialValue: guess ?? resources[0],
+      options: resources.map((value) => ({ value, label: value, hint: value === guess ? 'closest' : undefined })),
+    }),
+  );
+}
+
 const NEW_LIB = '\0new';
 
 /**
@@ -360,7 +385,10 @@ Same as: nx g @dafne/cli:<kind> <name> ...`,
         p.intro('dafne generate');
       }
       const kind = await askKind(kindArg, options);
-      const name = await askName(nameArg, kind, options);
+      let name = await askName(nameArg, kind, options);
+      if (kind === 'backend-changelog') {
+        name = await changelogResource(root, name, options);
+      }
       const only = (option: string, kinds: Kind[], set: unknown) => {
         if (set !== undefined && !kinds.includes(kind)) {
           throw new Error(`${option} is only for ${kinds.join(', ')}.`);

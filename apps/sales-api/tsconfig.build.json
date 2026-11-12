@@ -39,6 +39,9 @@
       "path": "../../packages/backend/database-changelog"
     },
     {
+      "path": "../../packages/backend/database-auth"
+    },
+    {
       "path": "../../packages/backend/database"
     },
     {
