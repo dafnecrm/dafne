@@ -27,6 +27,9 @@
       "path": "../data-table"
     },
     {
+      "path": "../changelog"
+    },
+    {
       "path": "../api"
     },
     {
