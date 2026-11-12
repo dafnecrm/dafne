@@ -151,7 +151,7 @@ export class CustomersService
       db.$count(customer, where),
     ]);
 
-    return { customers, total, limit, offset };
+    return { items: customers, total, limit, offset };
   }
 
   /**

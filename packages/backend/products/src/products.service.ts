@@ -117,7 +117,7 @@ export class ProductsService
       db.$count(product, where),
     ]);
 
-    return { products, total, limit, offset };
+    return { items: products, total, limit, offset };
   }
 
   /**

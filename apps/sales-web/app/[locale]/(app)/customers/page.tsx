@@ -67,7 +67,7 @@ async function CustomersList({
   return (
     <CustomersTable
       config={customersTable}
-      customers={data.customers}
+      customers={data.items}
       total={data.total}
       params={params}
     />

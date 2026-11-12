@@ -107,7 +107,7 @@ export async function searchCustomers({
     offset: 0,
     search: query || undefined,
   });
-  return list.customers.map(({ id, name }) => ({ id, name }));
+  return list.items.map(({ id, name }) => ({ id, name }));
 }
 
 /**

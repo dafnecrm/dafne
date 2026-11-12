@@ -5,6 +5,7 @@ import {
   requiredText,
   SORT_DIRECTIONS,
   optionalDate,
+  type Page,
 } from './common.ts';
 import { msg } from './messages/index.ts';
 
@@ -162,12 +163,7 @@ export interface ListedCustomer {
 }
 
 /** Response of GET /customers. */
-export interface CustomersList {
-  customers: ListedCustomer[];
-  total: number;
-  limit: number;
-  offset: number;
-}
+export type CustomersList = Page<ListedCustomer>;
 
 export interface CustomerAddress {
   id: number;

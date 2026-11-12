@@ -150,7 +150,7 @@ export class SalesOrderTypesService
       db.$count(salesOrderType, where),
     ]);
 
-    return { salesOrderTypes, total, limit, offset };
+    return { items: salesOrderTypes, total, limit, offset };
   }
 
   /**

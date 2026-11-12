@@ -77,7 +77,7 @@ describe('ActivitiesService', () => {
   describe('list', () => {
     it('lists activities that are not deleted, newest first', async () => {
       await expect(service.list()).resolves.toEqual({
-        activities: rows,
+        items: rows,
         total: 42,
         limit: 20,
         offset: 0,

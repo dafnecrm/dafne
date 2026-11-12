@@ -105,7 +105,7 @@ export async function searchProducts({
     offset: 0,
     filters: query ? { name: query } : {},
   });
-  return list.products.map(({ id, name }) => ({ id, name }));
+  return list.items.map(({ id, name }) => ({ id, name }));
 }
 
 /**

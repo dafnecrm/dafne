@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { pageQuery, SORT_DIRECTIONS } from './common.ts';
+import { pageQuery, SORT_DIRECTIONS, type Page } from './common.ts';
 
 /* ---------- Requests ---------- */
 
@@ -47,12 +47,7 @@ export interface Listed<%= s.pascal %> {
 }
 
 /** Response of GET /<%= p.kebab %>. */
-export interface <%= p.pascal %>List {
-  <%= p.camel %>: Listed<%= s.pascal %>[];
-  total: number;
-  limit: number;
-  offset: number;
-}
+export type <%= p.pascal %>List = Page<Listed<%= s.pascal %>>;
 
 /** A user who created or last updated <%= s.a %>; null if since removed. */
 export interface <%= s.pascal %>User {

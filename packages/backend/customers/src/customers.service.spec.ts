@@ -93,7 +93,7 @@ describe('CustomersService', () => {
   describe('list', () => {
     it('lists customers that are not deleted, newest first', async () => {
       await expect(service.list()).resolves.toEqual({
-        customers: rows,
+        items: rows,
         total: 42,
         limit: 20,
         offset: 0,

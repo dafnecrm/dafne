@@ -75,7 +75,7 @@ describe('<%= p.pascal %>Service', () => {
   describe('list', () => {
     it('lists <%= p.lower %> that are not deleted, newest first', async () => {
       await expect(service.list()).resolves.toEqual({
-        <%= p.camel %>: rows,
+        items: rows,
         total: 42,
         limit: 20,
         offset: 0,

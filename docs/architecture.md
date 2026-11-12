@@ -91,6 +91,8 @@ order types) has the same controller and service methods, typed by
 | `PUT /:id`       | `update`             | `update(id, body, actor): Promise<Detail>`   |
 | `DELETE /:id`    | `delete` (204)       | `delete(id, actor): Promise<void>` (logical) |
 
+- Every list answers a `Page<T>` (`@dafne/contracts`): `{ items, total, limit,
+  offset }`, e.g. `ProductsList = Page<ListedProduct>`.
 - `actor` is the signed-in `SessionUser` (`session.user`), not only its id.
 - Extra routes sit next to them with their own names (`PATCH
   /activities/:id/close`, `POST /sales-orders/:id/status`).

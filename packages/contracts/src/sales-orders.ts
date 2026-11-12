@@ -7,6 +7,7 @@ import {
   requiredInt,
   requiredNumber,
   requiredText,
+  type Page,
 } from './common.ts';
 import { msg } from './messages/index.ts';
 
@@ -102,12 +103,7 @@ export interface ListedSalesOrder {
 
 
 /** Response of GET /sales-orders. */
-export interface SalesOrdersList {
-  salesOrders: ListedSalesOrder[];
-  total: number;
-  limit: number;
-  offset: number;
-}
+export type SalesOrdersList = Page<ListedSalesOrder>;
 
 /** A user who created or last updated a sales order; null if since removed. */
 export interface SalesOrderUser {
