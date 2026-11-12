@@ -114,6 +114,10 @@ keep it in line when these rules change. Each project has its own
   update | delete`. Services take the whole `SessionUser` as `actor`
   (controllers pass `session.user`). Extra routes keep their own names.
   The CLI's templates and syncs rely on these names.
+  **Writes run through `CrudHooks`** (`registry.for('<resource>', { db, load })`):
+  one transaction with pre hooks, the write, post hooks, then after-commit
+  hooks. Other libs add hooks with `CrudHooksModule.forFeature`, not by
+  editing the resource. Who may call stays with Nest guards.
 - **Braces on every `if`/`else`/loop body**, one-liners included
   (`curly: all`, in the oxlint and ESLint configs and the CLI's templates).
 - `.nxignore` hides the CLIs' test fixtures, which look like projects.

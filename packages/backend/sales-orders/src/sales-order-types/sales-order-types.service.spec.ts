@@ -8,7 +8,7 @@ import {
   type SalesOrderTypeBodyInput,
 } from '@dafne/contracts';
 import { SalesOrderTypesService } from './sales-order-types.service.js';
-import type { Actor } from '@dafne/backend-crud';
+import { CrudHooksRegistry, type Actor } from '@dafne/backend-crud';
 
 /** A signed-in user, as the services get it; only the id matters here. */
 const actor = (id: string) => ({ id }) as Actor;
@@ -36,6 +36,7 @@ describe('SalesOrderTypesService', () => {
   const update = { set: vi.fn(), where: vi.fn() };
   const findFirst = vi.fn();
   const db = {
+    transaction: vi.fn(),
     select: vi.fn(),
     $count: vi.fn(),
     insert: vi.fn(),
@@ -47,6 +48,8 @@ describe('SalesOrderTypesService', () => {
 
   beforeEach(async () => {
     vi.resetAllMocks();
+    // The transaction runs on the same mock db.
+    db.transaction.mockImplementation((run: (tx: typeof db) => unknown) => run(db));
     db.select.mockReturnValue(select);
     select.from.mockReturnValue(select);
     select.where.mockReturnValue(select);
@@ -66,6 +69,7 @@ describe('SalesOrderTypesService', () => {
       providers: [
         SalesOrderTypesService,
         { provide: getDrizzleToken(), useValue: db },
+        CrudHooksRegistry,
       ],
     }).compile();
 

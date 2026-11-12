@@ -109,7 +109,8 @@ erasable syntax (no enums, namespaces or constructor parameter properties;
 - `templates/backend` and `templates/frontend` (copies of the `customers`
   resource; their services and controllers implement `CrudService` /
   `CrudController` from `@dafne/backend-crud`, and the syncs find the
-  methods by those fixed names: `list`, `get`, `create`, `update`),
+  methods by those fixed names: `list`, `get`, `create`, `update`; the
+  writes run in `this.hooks` callbacks (`CrudHooks`), still named `body`),
   `templates/app` (a minimal `apps/sales-api`),
   `templates/frontend-lib-resource` (a resource in a lib: copies of
   `packages/frontend/sales-orders` without its order-specific code, `app/`

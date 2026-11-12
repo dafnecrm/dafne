@@ -9,7 +9,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { and, asc, desc, eq, isNull, ilike } from 'drizzle-orm';
 import { customerBodySchema, type CustomerBodyInput } from '@dafne/contracts';
 import { CustomersService } from './customers.service.js';
-import type { Actor } from '@dafne/backend-crud';
+import { CrudHooksRegistry, type Actor } from '@dafne/backend-crud';
 
 /** A signed-in user, as the services get it; only the id matters here. */
 const actor = (id: string) => ({ id }) as Actor;
@@ -83,6 +83,7 @@ describe('CustomersService', () => {
       providers: [
         CustomersService,
         { provide: getDrizzleToken(), useValue: db },
+        CrudHooksRegistry,
       ],
     }).compile();
 

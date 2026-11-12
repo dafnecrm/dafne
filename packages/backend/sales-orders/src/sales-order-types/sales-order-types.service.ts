@@ -29,7 +29,13 @@ import {
   type ListSalesOrderTypesQuery,
   msg,
 } from '@dafne/contracts';
-import type { Actor, CrudService } from '@dafne/backend-crud';
+import {
+  CrudHooksRegistry,
+  type Actor,
+  type CrudHooks,
+  type CrudService,
+  type Executor,
+} from '@dafne/backend-crud';
 
 export const SALES_ORDER_TYPES_DEFAULT_PAGE_SIZE = 20;
 
@@ -76,7 +82,15 @@ export class SalesOrderTypesService
       SalesOrderTypeDetail
     >
 {
-  constructor(@InjectDrizzle() private readonly db: Database) { }
+  /** Runs the writes with the hooks registered on `sales-order-types`. */
+  private readonly hooks: CrudHooks<string, SalesOrderTypeBody, SalesOrderTypeDetail>;
+
+  constructor(
+    @InjectDrizzle() private readonly db: Database,
+    registry: CrudHooksRegistry,
+  ) {
+    this.hooks = registry.for('sales-order-types', { db, load: (id, tx) => this.get(id, tx) });
+  }
 
   /**
    * Lists sales order types that aren't deleted, paged and sorted, filtered by
@@ -143,8 +157,8 @@ export class SalesOrderTypesService
    * One sales order type that isn't deleted, with who created and last
    * updated it. Throws 404 otherwise.
    */
-  async get(id: string): Promise<SalesOrderTypeDetail> {
-    const found = await this.db.query.salesOrderType.findFirst({
+  async get(id: string, db: Executor = this.db): Promise<SalesOrderTypeDetail> {
+    const found = await db.query.salesOrderType.findFirst({
       where: { id, deletedAt: { isNull: true } },
       columns: { createdById: false, updatedById: false },
       with: { createdBy: userSummary, updatedBy: userSummary },
@@ -163,20 +177,22 @@ export class SalesOrderTypesService
     // One instant for both: createdAt and updatedAt start equal.
     const now = new Date();
     // The id is the body's: the client picks it (409 when taken).
-    const [{ id }] = await this.db
-      .insert(salesOrderType)
-      .values({
-        id: body.id,
-        description: body.description,
-        active: body.active,
-        createdAt: now,
-        updatedAt: now,
-        createdById: actor.id,
-        updatedById: actor.id,
-      })
-      .returning({ id: salesOrderType.id })
-      .catch(rethrowTakenId);
-    return this.get(id);
+    return this.hooks.create({ body, actor }, async ({ tx, body }) => {
+      const [{ id }] = await tx
+        .insert(salesOrderType)
+        .values({
+          id: body.id,
+          description: body.description,
+          active: body.active,
+          createdAt: now,
+          updatedAt: now,
+          createdById: actor.id,
+          updatedById: actor.id,
+        })
+        .returning({ id: salesOrderType.id })
+        .catch(rethrowTakenId);
+      return id;
+    });
   }
 
   /**
@@ -188,20 +204,21 @@ export class SalesOrderTypesService
     body: SalesOrderTypeBody,
     actor: Actor,
   ): Promise<SalesOrderTypeDetail> {
-    const result = await this.db
-      .update(salesOrderType)
-      .set({
-        description: body.description,
-        active: body.active,
-        updatedById: actor.id,
-        // The time of this change.
-        updatedAt: new Date(),
-      })
-      .where(and(eq(salesOrderType.id, id), notDeleted));
-    if (result.rowCount === 0) {
-      throw new NotFoundException(msg('salesOrderTypes.notFound'));
-    }
-    return this.get(id);
+    return this.hooks.update({ id, body, actor }, async ({ tx, body }) => {
+      const result = await tx
+        .update(salesOrderType)
+        .set({
+          description: body.description,
+          active: body.active,
+          updatedById: actor.id,
+          // The time of this change.
+          updatedAt: new Date(),
+        })
+        .where(and(eq(salesOrderType.id, id), notDeleted));
+      if (result.rowCount === 0) {
+        throw new NotFoundException(msg('salesOrderTypes.notFound'));
+      }
+    });
   }
 
   /**
@@ -209,13 +226,15 @@ export class SalesOrderTypesService
    * from the API but stays in the database. Throws 404 if already deleted.
    */
   async delete(id: string, actor: Actor): Promise<void> {
-    const now = new Date();
-    const result = await this.db
-      .update(salesOrderType)
-      .set({ deletedAt: now, updatedAt: now, updatedById: actor.id })
-      .where(and(eq(salesOrderType.id, id), notDeleted));
-    if (result.rowCount === 0) {
-      throw new NotFoundException(msg('salesOrderTypes.notFound'));
-    }
+    await this.hooks.delete({ id, actor }, async ({ tx }) => {
+      const now = new Date();
+      const result = await tx
+        .update(salesOrderType)
+        .set({ deletedAt: now, updatedAt: now, updatedById: actor.id })
+        .where(and(eq(salesOrderType.id, id), notDeleted));
+      if (result.rowCount === 0) {
+        throw new NotFoundException(msg('salesOrderTypes.notFound'));
+      }
+    });
   }
 }

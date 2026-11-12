@@ -22,7 +22,14 @@ import {
   PostgresErrorCode,
   rethrowPostgresError,
 } from '@dafne/backend-common';
-import type { Actor, CrudService } from '@dafne/backend-crud';
+import {
+  CrudHooksRegistry,
+  type Actor,
+  type CrudHooks,
+  type CrudService,
+  type Executor,
+  type Transaction,
+} from '@dafne/backend-crud';
 
 export const CUSTOMERS_DEFAULT_PAGE_SIZE = 20;
 
@@ -65,8 +72,6 @@ const rethrowConstraint = rethrowPostgresError([
 /** Only the user's ID and name, for "created by" / "updated by". */
 const userSummary = { columns: { id: true, name: true } } as const;
 
-type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0];
-
 @Injectable()
 export class CustomersService
   implements
@@ -80,7 +85,15 @@ export class CustomersService
 {
   logger = new Logger(CustomersService.name);
 
-  constructor(@InjectDrizzle() private readonly db: Database) {}
+  /** Runs the writes with the hooks registered on `customers`. */
+  private readonly hooks: CrudHooks<number, CustomerBody, CustomerDetail>;
+
+  constructor(
+    @InjectDrizzle() private readonly db: Database,
+    registry: CrudHooksRegistry,
+  ) {
+    this.hooks = registry.for('customers', { db, load: (id, tx) => this.get(id, tx) });
+  }
 
   /**
    * Lists customers that aren't deleted, paged and sorted, filtered by every
@@ -145,8 +158,8 @@ export class CustomersService
    * One customer that isn't deleted, with their addresses and who created
    * and last updated them. Throws 404 otherwise.
    */
-  async get(id: number): Promise<CustomerDetail> {
-    const found = await this.db.query.customer.findFirst({
+  async get(id: number, db: Executor = this.db): Promise<CustomerDetail> {
+    const found = await db.query.customer.findFirst({
       where: { id, deletedAt: { isNull: true } },
       columns: { createdById: false, updatedById: false },
       with: {
@@ -174,8 +187,8 @@ export class CustomersService
   ): Promise<CustomerDetail> {
     // One instant for both: createdAt and updatedAt start equal.
     const now = new Date();
-    const id = await this.db
-      .transaction(async (tx) => {
+    return this.hooks
+      .create({ body, actor }, async ({ tx, body }) => {
         const [created] = await tx
           .insert(customer)
           .values({
@@ -196,7 +209,6 @@ export class CustomersService
         return created.id;
       })
       .catch(rethrowConstraint);
-    return this.get(id);
   }
 
   /**
@@ -210,8 +222,8 @@ export class CustomersService
     body: CustomerBody,
     actor: Actor,
   ): Promise<CustomerDetail> {
-    await this.db
-      .transaction(async (tx) => {
+    return this.hooks
+      .update({ id, body, actor }, async ({ tx, body }) => {
         const result = await tx
           .update(customer)
           .set({
@@ -250,7 +262,6 @@ export class CustomersService
         await insertAddresses(tx, id, body.addresses);
       })
       .catch(rethrowConstraint);
-    return this.get(id);
   }
 
   /**
@@ -258,14 +269,16 @@ export class CustomersService
    * the API but stay in the database. Throws 404 if already deleted.
    */
   async delete(id: number, actor: Actor): Promise<void> {
-    const now = new Date();
-    const result = await this.db
-      .update(customer)
-      .set({ deletedAt: now, updatedAt: now, updatedById: actor.id })
-      .where(and(eq(customer.id, id), notDeleted));
-    if (result.rowCount === 0) {
-      throw new NotFoundException(msg('customers.notFound'));
-    }
+    await this.hooks.delete({ id, actor }, async ({ tx }) => {
+      const now = new Date();
+      const result = await tx
+        .update(customer)
+        .set({ deletedAt: now, updatedAt: now, updatedById: actor.id })
+        .where(and(eq(customer.id, id), notDeleted));
+      if (result.rowCount === 0) {
+        throw new NotFoundException(msg('customers.notFound'));
+      }
+    });
   }
 }
 

@@ -21,7 +21,13 @@ import {
   type ListActivitiesQuery,
   msg,
 } from '@dafne/contracts';
-import type { Actor, CrudService } from '@dafne/backend-crud';
+import {
+  CrudHooksRegistry,
+  type Actor,
+  type CrudHooks,
+  type CrudService,
+  type Executor,
+} from '@dafne/backend-crud';
 
 export const ACTIVITIES_DEFAULT_PAGE_SIZE = 20;
 
@@ -59,7 +65,15 @@ export class ActivitiesService
       ActivityDetail
     >
 {
-  constructor(@InjectDrizzle() private readonly db: Database) {}
+  /** Runs the writes with the hooks registered on `activities`. */
+  private readonly hooks: CrudHooks<number, ActivityBody, ActivityDetail>;
+
+  constructor(
+    @InjectDrizzle() private readonly db: Database,
+    registry: CrudHooksRegistry,
+  ) {
+    this.hooks = registry.for('activities', { db, load: (id, tx) => this.get(id, tx) });
+  }
 
   /**
    * Lists activities that aren't deleted, paged and sorted, filtered by
@@ -119,8 +133,8 @@ export class ActivitiesService
    * One activity that isn't deleted, with who created and last updated
    * it. Throws 404 otherwise.
    */
-  async get(id: number): Promise<ActivityDetail> {
-    const found = await this.db.query.activity.findFirst({
+  async get(id: number, db: Executor = this.db): Promise<ActivityDetail> {
+    const found = await db.query.activity.findFirst({
       where: { id, deletedAt: { isNull: true } },
       columns: { createdById: false, updatedById: false },
       with: {
@@ -141,20 +155,22 @@ export class ActivitiesService
   ): Promise<ActivityDetail> {
     // One instant for both: createdAt and updatedAt start equal.
     const now = new Date();
-    const [{ id }] = await this.db
-      .insert(activity)
-      .values({
-        name: body.name,
-        type: body.type,
-        dueDate: body.dueDate,
-        notes: body.notes,
-        createdAt: now,
-        updatedAt: now,
-        createdById: actor.id,
-        updatedById: actor.id,
-      })
-      .returning({ id: activity.id });
-    return this.get(id);
+    return this.hooks.create({ body, actor }, async ({ tx, body }) => {
+      const [{ id }] = await tx
+        .insert(activity)
+        .values({
+          name: body.name,
+          type: body.type,
+          dueDate: body.dueDate,
+          notes: body.notes,
+          createdAt: now,
+          updatedAt: now,
+          createdById: actor.id,
+          updatedById: actor.id,
+        })
+        .returning({ id: activity.id });
+      return id;
+    });
   }
 
   /**
@@ -166,22 +182,23 @@ export class ActivitiesService
     body: ActivityBody,
     actor: Actor,
   ): Promise<ActivityDetail> {
-    const result = await this.db
-      .update(activity)
-      .set({
-        name: body.name,
-        type: body.type,
-        dueDate: body.dueDate,
-        notes: body.notes,
-        updatedById: actor.id,
-        // The time of this change.
-        updatedAt: new Date(),
-      })
-      .where(and(eq(activity.id, id), notDeleted, notClosed));
-    if (result.rowCount === 0) {
-      throw new NotFoundException(msg('activities.notFound'));
-    }
-    return this.get(id);
+    return this.hooks.update({ id, body, actor }, async ({ tx, body }) => {
+      const result = await tx
+        .update(activity)
+        .set({
+          name: body.name,
+          type: body.type,
+          dueDate: body.dueDate,
+          notes: body.notes,
+          updatedById: actor.id,
+          // The time of this change.
+          updatedAt: new Date(),
+        })
+        .where(and(eq(activity.id, id), notDeleted, notClosed));
+      if (result.rowCount === 0) {
+        throw new NotFoundException(msg('activities.notFound'));
+      }
+    });
   }
 
   /**
@@ -189,14 +206,16 @@ export class ActivitiesService
    * from the API but stays in the database. Throws 404 if already deleted.
    */
   async delete(id: number, actor: Actor): Promise<void> {
-    const now = new Date();
-    const result = await this.db
-      .update(activity)
-      .set({ deletedAt: now, updatedAt: now, updatedById: actor.id })
-      .where(and(eq(activity.id, id), notDeleted));
-    if (result.rowCount === 0) {
-      throw new NotFoundException(msg('activities.notFound'));
-    }
+    await this.hooks.delete({ id, actor }, async ({ tx }) => {
+      const now = new Date();
+      const result = await tx
+        .update(activity)
+        .set({ deletedAt: now, updatedAt: now, updatedById: actor.id })
+        .where(and(eq(activity.id, id), notDeleted));
+      if (result.rowCount === 0) {
+        throw new NotFoundException(msg('activities.notFound'));
+      }
+    });
   }
 
   /** Completes an activity */

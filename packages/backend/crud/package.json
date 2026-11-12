@@ -11,9 +11,12 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@dafne/backend-session": "workspace:*"
+    "@dafne/backend-database": "workspace:*",
+    "@dafne/backend-session": "workspace:*",
+    "@nestjs/common": "catalog:"
   },
   "devDependencies": {
+    "@nestjs/testing": "catalog:",
     "@swc/core": "catalog:",
     "@types/node": "catalog:",
     "oxlint": "catalog:",
