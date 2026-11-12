@@ -1,6 +1,6 @@
 "use client";
 
-import { EllipsisVerticalIcon, PencilIcon, Trash2Icon } from "lucide-react";
+import { EllipsisVerticalIcon, HistoryIcon, PencilIcon, Trash2Icon } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -16,10 +16,11 @@ import {
   DeleteSalesOrderDialog,
   type SalesOrderRef,
 } from "./sales-order-dialogs.tsx";
+import { SalesOrderChangelogSheet } from "./sales-order-changelog.tsx";
 
 /**
- * Actions on the sales order's page, in a menu: edit (`<path>/<id>/edit`) and
- * delete, then back to the list at `path`.
+ * Actions on the sales order's page, in a menu: edit (`<path>/<id>/edit`),
+ * its history (in a sheet) and delete, then back to the list at `path`.
  */
 export function SalesOrderDetailActions({
   salesOrder,
@@ -29,6 +30,7 @@ export function SalesOrderDetailActions({
   path: string;
 }) {
   const [deleting, setDeleting] = useState(false);
+  const [history, setHistory] = useState(false);
   const t = useTranslations();
   const href = `${path}/${encodeURIComponent(salesOrder.id)}`;
 
@@ -53,6 +55,10 @@ export function SalesOrderDetailActions({
             <PencilIcon />
             {t("common.edit")}
           </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setHistory(true)}>
+            <HistoryIcon />
+            {t("changelog.open")}
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
             variant="destructive"
@@ -64,6 +70,11 @@ export function SalesOrderDetailActions({
         </DropdownMenuContent>
       </DropdownMenu>
       {/* Outside the menu, which closes when an item is clicked. */}
+      <SalesOrderChangelogSheet
+        salesOrderId={salesOrder.id}
+        open={history}
+        onOpenChange={setHistory}
+      />
       {deleting && (
         <DeleteSalesOrderDialog
           salesOrder={salesOrder}

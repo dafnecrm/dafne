@@ -1,6 +1,6 @@
 import { logger } from '@nx/devkit';
 import { parse } from 'jsonc-parser';
-import { readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { flushChanges } from 'nx/src/generators/tree.js';
 import backendAppGenerator from '../src/generators/backend-app/generator.ts';
@@ -404,6 +404,173 @@ describe('frontend-resource', () => {
     await frontendResourceGenerator(tree, { name: 'invoice' });
     expect(warn.mock.calls.flat().join('\n')).toContain("packages/contracts/src/invoices.ts doesn't exist");
     warn.mockRestore();
+  });
+});
+
+describe('frontend-resource with a change log', () => {
+  const FIELDS = ['number:string:length=20:required', 'notes:text'];
+  /** @dafne/frontend-changelog, as in the workspace (the fixture has no frontend libs). */
+  const addChangelogLib = () => {
+    mkdirSync(join(root, 'packages/frontend/changelog'), { recursive: true });
+    writeFileSync(join(root, 'packages/frontend/changelog/package.json'), '{ "name": "@dafne/frontend-changelog" }\n');
+  };
+
+  it('adds the history to the detail page of a logged resource', async () => {
+    addChangelogLib();
+    await generate(backendResourceGenerator, { name: 'invoice', fields: FIELDS, changelog: true });
+    const changes = await generate(frontendResourceGenerator, { name: 'invoice' });
+    expect(changes).toContain(`CREATE ${PAGES}/invoice-changelog.tsx`);
+    expect(read('apps/sales-web/lib/invoices.ts')).toContain('export async function listInvoiceChanges(');
+    expect(read('apps/sales-web/lib/invoices.ts')).toContain('/invoices/${encodeURIComponent(id)}/changes?${query}');
+    expect(read(`${PAGES}/actions.ts`)).toContain('export async function getInvoiceChanges(');
+    const sheet = read(`${PAGES}/invoice-changelog.tsx`);
+    expect(sheet).toContain('export function InvoiceChangelogSheet(');
+    expect(sheet).toContain('number: { label: t("invoices.fields.number") },');
+    expect(sheet).toContain('notes: { label: t("invoices.fields.notes") },');
+    expect(sheet).toContain('load={(query) => getInvoiceChanges(invoiceId, query)}');
+    const actions = read(`${PAGES}/invoice-detail-actions.tsx`);
+    expect(actions).toContain('{t("changelog.open")}');
+    expect(actions).toContain('<InvoiceChangelogSheet');
+    expect(actions).toContain('import { InvoiceChangelogSheet } from "./invoice-changelog";');
+    // The lib, wired into the app with its texts.
+    expect(read('apps/sales-web/package.json')).toContain('"@dafne/frontend-changelog": "workspace:*"');
+    expect(read('apps/sales-web/next.config.ts')).toContain('"@dafne/frontend-changelog"');
+    expect(read('apps/sales-web/i18n/request.ts')).toMatch(/changelog: CHANGELOG_MESSAGES\[\w+\]/);
+    expect(read('apps/sales-web/i18n/global.d.ts')).toContain('changelog: ChangelogMessages;');
+    expect(JSON.parse(read('apps/sales-web/messages/en.json')).invoices.fields.notes).toBe('Notes');
+  });
+
+  it('puts the history in the lib of a resource there, depending on the changelog lib', async () => {
+    addChangelogLib();
+    await generate(backendResourceGenerator, { name: 'invoice', fields: FIELDS, changelog: true });
+    await generate(frontendResourceGenerator, { name: 'invoice', lib: 'invoices' });
+    expect(read('packages/frontend/invoices/src/server.ts')).toContain('listInvoiceChanges');
+    expect(read('packages/frontend/invoices/src/actions.ts')).toContain('import { listInvoiceChanges } from "./server.ts";');
+    expect(read('packages/frontend/invoices/src/components/invoice-changelog.tsx')).toContain('from "../actions.ts"');
+    expect(read('packages/frontend/invoices/src/components/invoice-detail-actions.tsx')).toContain(
+      'import { InvoiceChangelogSheet } from "./invoice-changelog.tsx";',
+    );
+    expect(JSON.parse(read('packages/frontend/invoices/package.json')).dependencies['@dafne/frontend-changelog']).toBe('workspace:*');
+    expect(read('packages/frontend/invoices/src/messages/en.ts')).toMatch(/notes: "Notes"/);
+  });
+
+  it('adds no history when the resource keeps no change log, or the workspace has no changelog lib', async () => {
+    addChangelogLib();
+    await generate(backendResourceGenerator, { name: 'invoice', fields: FIELDS });
+    let changes = await generate(frontendResourceGenerator, { name: 'invoice' });
+    expect(changes).not.toContain(`CREATE ${PAGES}/invoice-changelog.tsx`);
+    expect(read(`${PAGES}/invoice-detail-actions.tsx`)).not.toContain('History');
+    expect(read(`${PAGES}/actions.ts`)).not.toContain('Changes');
+    expect(read('apps/sales-web/package.json')).not.toContain('frontend-changelog');
+
+    rmSync(join(root, 'packages/frontend/changelog'), { recursive: true });
+    await generate(backendChangelogGenerator, { name: 'invoice' });
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {});
+    changes = await generate(frontendResourceGenerator, { name: 'invoice', force: true });
+    expect(warn.mock.calls.flat().join('\n')).toContain('packages/frontend/changelog not found');
+    warn.mockRestore();
+    expect(changes).not.toContain(`CREATE ${PAGES}/invoice-changelog.tsx`);
+    expect(read(`${PAGES}/invoice-detail-actions.tsx`)).not.toContain('ChangelogSheet');
+    expect(read('apps/sales-web/lib/invoices.ts')).not.toContain('frontend-changelog');
+    expect(read(`${PAGES}/actions.ts`)).not.toContain('Changes');
+  });
+
+  it('adds the history to existing pages when backend-changelog turns the change log on', async () => {
+    addChangelogLib();
+    await generate(backendResourceGenerator, { name: 'invoice', fields: FIELDS });
+    await generate(frontendResourceGenerator, { name: 'invoice' });
+    const changes = await generate(backendChangelogGenerator, { name: 'invoice' });
+    expect(changes).toContain(`CREATE ${PAGES}/invoice-changelog.tsx`);
+    expect(read(`${PAGES}/invoice-changelog.tsx`)).toContain('number: { label: t("invoices.fields.number") },');
+    expect(read('apps/sales-web/lib/invoices.ts')).toContain('import type { ChangesPage } from "@dafne/frontend-changelog";');
+    expect(read('apps/sales-web/lib/invoices.ts')).toContain('export async function listInvoiceChanges(');
+    const actions = read(`${PAGES}/actions.ts`);
+    expect(actions).toContain('export async function getInvoiceChanges(');
+    expect(actions).toMatch(/import \{[^}]*listInvoiceChanges[^}]*\} from "@\/lib\/invoices";/);
+    const menu = read(`${PAGES}/invoice-detail-actions.tsx`);
+    expect(menu).toMatch(/import \{[^}]*HistoryIcon[^}]*\} from "lucide-react";/);
+    expect(menu).toContain('import { InvoiceChangelogSheet } from "./invoice-changelog";');
+    expect(menu).toContain('const [history, setHistory] = useState(false);');
+    expect(menu).toMatch(/\{t\("common\.edit"\)\}\s*<\/DropdownMenuItem>\s*<DropdownMenuItem onClick=\{\(\) => setHistory\(true\)\}>\s*<HistoryIcon \/>\s*\{t\("changelog\.open"\)\}/);
+    expect(menu).toMatch(/<\/DropdownMenu>\s*<InvoiceChangelogSheet\s+invoiceId=\{invoice\.id\}\s+open=\{history\}\s+onOpenChange=\{setHistory\}\s*\/>/);
+    expect(read('apps/sales-web/i18n/request.ts')).toMatch(/changelog: CHANGELOG_MESSAGES\[\w+\]/);
+    // Once.
+    const again = await generate(backendChangelogGenerator, { name: 'invoice' });
+    expect(again.filter((change) => change.includes('apps/sales-web'))).toEqual([]);
+  });
+
+  it('adds it to the pages of a resource in a lib too', async () => {
+    addChangelogLib();
+    await generate(backendResourceGenerator, { name: 'invoice', fields: FIELDS });
+    await generate(frontendResourceGenerator, { name: 'invoice', lib: 'invoices' });
+    await generate(backendChangelogGenerator, { name: 'invoice' });
+    const src = 'packages/frontend/invoices/src';
+    expect(read(`${src}/server.ts`)).toContain('export async function listInvoiceChanges(');
+    expect(read(`${src}/actions.ts`)).toMatch(/import \{[^}]*listInvoiceChanges[^}]*\} from "\.\/server\.ts";/);
+    expect(read(`${src}/components/invoice-detail-actions.tsx`)).toContain('import { InvoiceChangelogSheet } from "./invoice-changelog.tsx";');
+    expect(read(`${src}/components/invoice-changelog.tsx`)).toContain('from "../actions.ts"');
+    expect(JSON.parse(read('packages/frontend/invoices/package.json')).dependencies['@dafne/frontend-changelog']).toBe('workspace:*');
+  });
+
+  it('sync frontend-resource adds the history the pages lack, and the fields newly logged', async () => {
+    addChangelogLib();
+    rmSync(join(root, 'packages/frontend/changelog'), { recursive: true });
+    await generate(backendResourceGenerator, { name: 'invoice', changelog: true });
+    await generate(frontendResourceGenerator, { name: 'invoice' }); // no changelog lib yet: no history
+    expect(read(`${PAGES}/invoice-detail-actions.tsx`)).not.toContain('History');
+    addChangelogLib();
+    await generate(frontendResourceSyncGenerator, { name: 'invoice' });
+    // Nothing logged yet: no field, no `t`.
+    expect(read(`${PAGES}/invoice-changelog.tsx`)).toContain('const fields: Record<string, ChangeFieldConfig> = {};');
+    expect(read(`${PAGES}/invoice-detail-actions.tsx`)).toContain('<InvoiceChangelogSheet');
+
+    // The log keeps more fields: the sheet names them, translated.
+    const options = 'packages/backend/invoices/src/invoice.changelog.ts';
+    writeFileSync(join(root, options), read(options).replace('fields: []', "fields: ['number', 'notes']"));
+    await generate(frontendResourceSyncGenerator, { name: 'invoice' });
+    const sheet = read(`${PAGES}/invoice-changelog.tsx`);
+    expect(sheet).toMatch(/import \{ useTranslations \} from "next-intl";/);
+    expect(sheet).toMatch(/const t = useTranslations\(\);\s*const fields: Record<string, ChangeFieldConfig> = \{\s*number: \{ label: t\("invoices\.fields\.number"\) \},\s*notes: \{ label: t\("invoices\.fields\.notes"\) \},\s*\};/);
+    expect(JSON.parse(read('apps/sales-web/messages/en.json')).invoices.fields.notes).toBe('Notes');
+    // Once.
+    const again = await generate(frontendResourceSyncGenerator, { name: 'invoice' });
+    expect(again).not.toContain(`UPDATE ${PAGES}/invoice-changelog.tsx`);
+  });
+
+  it('reads the History label with a translator of its own when `t` has a namespace', async () => {
+    addChangelogLib();
+    await generate(backendResourceGenerator, { name: 'invoice', fields: FIELDS });
+    await generate(frontendResourceGenerator, { name: 'invoice' });
+    const path = `${PAGES}/invoice-detail-actions.tsx`;
+    writeFileSync(
+      join(root, path),
+      read(path).replace('const t = useTranslations();', 'const t = useTranslations("common");').replace('t("common.edit")', 't("edit")'),
+    );
+    await generate(backendChangelogGenerator, { name: 'invoice' });
+    const menu = read(path);
+    expect(menu).toMatch(/const t = useTranslations\("common"\);\s*const tChangelog = useTranslations\("changelog"\);/);
+    expect(menu).toContain('{tChangelog("open")}');
+    expect(menu).not.toContain('t("changelog.open")');
+  });
+
+  it('warns when the detail actions are not as generated', async () => {
+    addChangelogLib();
+    await generate(backendResourceGenerator, { name: 'invoice', fields: FIELDS });
+    await generate(frontendResourceGenerator, { name: 'invoice' });
+    writeFileSync(join(root, `${PAGES}/invoice-detail-actions.tsx`), 'export function InvoiceDetailActions() {\n  return null;\n}\n');
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {});
+    await generate(backendChangelogGenerator, { name: 'invoice' });
+    expect(warn.mock.calls.flat().join('\n')).toContain('open InvoiceChangelogSheet (./invoice-changelog) from the menu by hand');
+    warn.mockRestore();
+    expect(read(`${PAGES}/invoice-detail-actions.tsx`)).not.toContain('History');
+  });
+
+  it('gives the data and actions parts the change log too, wired on their own', async () => {
+    addChangelogLib();
+    await generate(backendResourceGenerator, { name: 'invoice', changelog: true });
+    await generate(frontendDataGenerator, { name: 'invoice' });
+    expect(read('apps/sales-web/lib/invoices.ts')).toContain('import type { ChangesPage } from "@dafne/frontend-changelog";');
+    expect(read('apps/sales-web/package.json')).toContain('"@dafne/frontend-changelog": "workspace:*"');
   });
 });
 

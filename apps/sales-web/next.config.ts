@@ -23,6 +23,7 @@ const nextConfig: NextConfig = {
     "@dafne/frontend-activities",
     "@dafne/frontend-products",
     "@dafne/frontend-sales-orders",
+    "@dafne/frontend-changelog",
   ],
   cacheComponents: true,
   partialPrefetching: true,

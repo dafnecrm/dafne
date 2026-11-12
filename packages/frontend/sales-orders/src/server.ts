@@ -2,6 +2,7 @@ import { backendFetch } from "@dafne/frontend-api/server";
 import type { TableFilters, TableSort } from "@dafne/frontend-data-table";
 import { SALES_ORDERS_DEFAULT_SORT } from "./sales-orders-table.ts";
 import type { SalesOrderTypesList } from "@dafne/contracts";
+import type { ChangesPage } from "@dafne/frontend-changelog";
 import type {
   SalesOrderDetail,
   SalesOrderDetailItem,
@@ -58,6 +59,25 @@ export async function getSalesOrderItem(
 ): Promise<SalesOrderDetailItem> {
   const res = await backendFetch(
     `/sales-orders/${encodeURIComponent(salesOrderId)}/items/${encodeURIComponent(position)}`,
+  );
+  return res.json();
+}
+
+/**
+ * Calls the backend's GET /sales-orders/:id/changes (newest first). Throws
+ * a BackendError with status 404 when the sales order doesn't exist or was
+ * deleted.
+ */
+export async function listSalesOrderChanges(
+  id: number,
+  { limit, offset }: { limit: number; offset: number },
+): Promise<ChangesPage> {
+  const query = new URLSearchParams({
+    limit: String(limit),
+    offset: String(offset),
+  });
+  const res = await backendFetch(
+    `/sales-orders/${encodeURIComponent(id)}/changes?${query}`,
   );
   return res.json();
 }

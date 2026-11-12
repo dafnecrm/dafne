@@ -5,7 +5,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { BackendError, backendFetch } from "@dafne/frontend-api/server";
 import { salesOrderSchema, type SalesOrderFormValues } from "./schema.ts";
-import { getSalesOrderItem } from "./server.ts";
+import { getSalesOrderItem, listSalesOrderChanges } from "./server.ts";
+import type { ChangesPage } from "@dafne/frontend-changelog";
 import type { SalesOrderDetail } from "./types.ts";
 import type { SalesOrderItem } from "@dafne/contracts";
 
@@ -106,5 +107,20 @@ export async function fetchSalesOrderItem(
       return null;
     }
     throw error;
+  }
+}
+
+/**
+ * A page of a sales order's change log, for its history sheet (a client
+ * component: backendFetch only runs on the server).
+ */
+export async function getSalesOrderChanges(
+  id: number,
+  query: { limit: number; offset: number },
+): Promise<ChangesPage | ActionError> {
+  try {
+    return await listSalesOrderChanges(id, query);
+  } catch (error) {
+    return { error: await errorMessage(error) };
   }
 }

@@ -2,6 +2,7 @@ import { logger, type Tree } from '@nx/devkit';
 import { resourceNames } from '../../core/names.ts';
 import { DEFAULT_FRONTEND_APP } from '../../core/workspace.ts';
 import { syncResourcePages, warnReports } from '../../sync/frontend.ts';
+import { historyOfPages } from '../../sync/history.ts';
 import { pruneFrontendMessages, syncMessages } from '../../wiring/messages.ts';
 import { resolveTarget } from '../frontend-pieces.ts';
 import { runGenerator } from '../run.ts';
@@ -21,7 +22,9 @@ export interface FrontendResourceSyncSchema {
  * Syncs the pages of a resource with its contract: the form gets the body's
  * fields, the list and the detail the response's; what the contract no
  * longer has is removed (unless `keep`), with the message keys only it used.
- * Reads of dropped fields elsewhere (titles, dialogs…) are reported.
+ * Reads of dropped fields elsewhere (titles, dialogs…) are reported. A
+ * logged resource gets its history if the pages lack it, and its sheet the
+ * fields newly logged.
  */
 export default async function frontendResourceSyncGenerator(tree: Tree, options: FrontendResourceSyncSchema) {
   return runGenerator(tree, {}, (changes) => {
@@ -30,6 +33,8 @@ export default async function frontendResourceSyncGenerator(tree: Tree, options:
     // Where the pages are (the lib given, or found; the app by default).
     const target = resolveTarget(changes, names, { app, lib: options.lib });
     const { reports, skipped, leftovers } = syncResourcePages(changes, names, target, { prune: !options.keep });
+    // A logged resource: its history, and the sheet naming the logged fields.
+    const history = historyOfPages(changes, names, { app, target });
 
     warnReports(changes, reports);
     if (skipped.length) {
@@ -48,6 +53,9 @@ export default async function frontendResourceSyncGenerator(tree: Tree, options:
       for (const item of report.removed ?? []) {
         logger.info(`- ${path}: ${item}`);
       }
+    }
+    for (const item of history) {
+      logger.info(`+ ${item}`);
     }
     if (prunedKeys.length) {
       logger.info(`- messages: ${prunedKeys.join(', ')}`);

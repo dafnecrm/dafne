@@ -32,6 +32,7 @@ export function defineProductsTable({
     // The backend allows up to 100.
     pageSizes: [10, 20, 50],
     sortable: [
+      "id",
       "name",
       "price",
       "createdAt",

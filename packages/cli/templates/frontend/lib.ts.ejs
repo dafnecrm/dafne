@@ -1,7 +1,8 @@
 import type * as contracts from "@dafne/contracts";
 import type { Json } from "@dafne/contracts";
 import { backendFetch } from "@dafne/frontend-api/server";
-import type { TableFilters, TableSort } from "@dafne/frontend-data-table";
+<% if (changelog) { %>import type { ChangesPage } from "@dafne/frontend-changelog";
+<% } %>import type { TableFilters, TableSort } from "@dafne/frontend-data-table";
 import { <%= p.camel %>Table } from "./<%= p.kebab %>-table";
 
 /*
@@ -45,4 +46,6 @@ export async function list<%= p.pascal %>({
   query.set("sortDirection", sort.desc ? "desc" : "asc");
   const res = await backendFetch(`/<%= p.kebab %>?${query}`);
   return res.json();
-}
+}<% if (changelog) { %>
+
+<%- include('partials/changes-fetcher.ts.ejs') %><% } %>

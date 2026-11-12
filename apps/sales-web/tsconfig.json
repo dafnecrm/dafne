@@ -14,7 +14,8 @@
         "@dafne/frontend-geo",
         "@dafne/frontend-activities",
         "@dafne/frontend-products",
-        "@dafne/frontend-sales-orders"
+        "@dafne/frontend-sales-orders",
+        "@dafne/frontend-changelog"
       ]
     }
   },

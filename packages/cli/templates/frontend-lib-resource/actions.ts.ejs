@@ -6,7 +6,9 @@ import { redirect } from "next/navigation";
 import { BackendError, backendFetch } from "@dafne/frontend-api/server";
 import { <%= s.camel %>Schema, type <%= s.pascal %>FormValues } from "./schema.ts";
 import type { <%= s.pascal %>Detail } from "./types.ts";
-
+<% if (changelog) { %>import { list<%= s.pascal %>Changes } from "./server.ts";
+import type { ChangesPage } from "@dafne/frontend-changelog";
+<% } %>
 /*
  * <%= s.title %> mutations shared by the apps. The backend checks the session
  * (forwarded by backendFetch) on every call, since these can be invoked by
@@ -87,4 +89,6 @@ export async function delete<%= s.pascal %>(
   } catch (error) {
     return { error: await errorMessage(error) };
   }
-}
+}<% if (changelog) { %>
+
+<%- include('../frontend/partials/changes-action.ts.ejs') %><% } %>

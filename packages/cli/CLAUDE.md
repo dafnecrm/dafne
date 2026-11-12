@@ -51,7 +51,23 @@ erasable syntax (no enums, namespaces or constructor parameter properties;
     (`--lib`; `resolveTarget`: the lib given, else where the resource
     already is, else the app). The list, detail and form are synced with
     the contract; message keys go into the app's catalogs, or the lib's
-    for the resource's own namespace.
+    for the resource's own namespace. A logged resource (`loggedFields`,
+    `wiring/changelog.ts`: `ChangelogModule.forFeature` in its module,
+    the fields of `<singular>.changelog.ts`, plus `status` with
+    `changelogTransitionHook`) gets its history when
+    `packages/frontend/changelog` exists (`hasChangelogFrontend`):
+    `FrontendCtx.changelog` (the templates' `changelog`, else null) adds
+    the fetcher, the server action, `<singular>-changelog.tsx` and the
+    History item of the detail actions; `wireChangelogFrontend` (after the
+    pieces: a new lib's package.json is theirs) wires the lib and its
+    texts (`wireMessages`). Existing pages: `historyOfPages`
+    (`sync/history.ts`, run by `backend-changelog` on the default app and
+    by `frontend-resource-sync`) adds what they lack with `addHistory`
+    (the fetcher and action from `templates/frontend/partials`, which the
+    data and actions templates include too; the sheet; the History item,
+    its state and the sheet placed after Edit and the menu of the detail
+    actions, warned when those aren't found) and `syncHistoryFields`
+    (the logged fields the sheet's `fields` lacks).
   - `frontend-app`: a Next app in `apps/<name>` (`templates/frontend-app`,
     every file rendered, binaries copied as they are).
   - `remove-backend-db-column`: `removeField` for each column, then
@@ -69,7 +85,8 @@ erasable syntax (no enums, namespaces or constructor parameter properties;
     has, and `useIdForDropped` puts the record's label
     (`${t("<plural>.singular")} ${<record>.id}`) where the pages still read a
     dropped field; with `keep` those reads are warned as `file:line`.
-    Then `pruneFrontendMessages`.
+    Then `historyOfPages` (a logged resource's history) and
+    `pruneFrontendMessages`.
   `src/generators/run.ts` (`runGenerator`) wraps them: change set, Prettier,
   warnings, and the next steps printed after Nx writes the files.
 - `src/index.ts`, `src/commands/`: the `dafne` command (commander, clack).

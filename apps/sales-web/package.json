@@ -15,6 +15,7 @@
     "@dafne/frontend-activities": "workspace:*",
     "@dafne/frontend-api": "workspace:*",
     "@dafne/frontend-auth": "workspace:*",
+    "@dafne/frontend-changelog": "workspace:*",
     "@dafne/frontend-customers": "workspace:*",
     "@dafne/frontend-data-table": "workspace:*",
     "@dafne/frontend-forms": "workspace:*",

@@ -2,6 +2,7 @@ import { backendFetch } from "@dafne/frontend-api/server";
 import type { TableFilters, TableSort } from "@dafne/frontend-data-table";
 import { CUSTOMERS_DEFAULT_SORT } from "./customers-table.ts";
 import type { CustomerDetail, CustomersList } from "./types.ts";
+import type { ChangesPage } from "@dafne/frontend-changelog";
 
 /*
  * Reads from the backend, for server components (backendFetch forwards the
@@ -44,5 +45,22 @@ export async function listCustomers({
   query.set("sortBy", sort.id);
   query.set("sortDirection", sort.desc ? "desc" : "asc");
   const res = await backendFetch(`/customers?${query}`);
+  return res.json();
+}
+
+/**
+ * Calls the backend's GET /customers/:id/changes (newest first). Throws
+ * a BackendError with status 404 when the customer doesn't exist or was
+ * deleted.
+ */
+export async function listCustomerChanges(
+  id: CustomerDetail["id"],
+  { limit, offset }: { limit: number; offset: number },
+): Promise<ChangesPage> {
+  const query = new URLSearchParams({
+    limit: String(limit),
+    offset: String(offset),
+  });
+  const res = await backendFetch(`/customers/${encodeURIComponent(id)}/changes?${query}`);
   return res.json();
 }

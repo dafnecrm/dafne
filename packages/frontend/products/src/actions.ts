@@ -5,7 +5,8 @@ import { redirect } from "next/navigation";
 import { BackendError, backendFetch } from "@dafne/frontend-api/server";
 import { productSchema, type ProductFormValues } from "./schema.ts";
 import type { ListedProduct, ProductDetail } from "./types.ts";
-import { getProduct, listProducts } from "./server.ts";
+import { getProduct, listProducts, listProductChanges } from "./server.ts";
+import type { ChangesPage } from "@dafne/frontend-changelog";
 
 /*
  * Product mutations shared by the apps. The backend checks the session (forwarded by
@@ -123,5 +124,20 @@ export async function getProductOption(
       return null;
     }
     throw error;
+  }
+}
+
+/**
+ * A page of the product's change log, for its history sheet (a client
+ * component: backendFetch only runs on the server).
+ */
+export async function getProductChanges(
+  id: ProductDetail["id"],
+  query: { limit: number; offset: number },
+): Promise<ChangesPage | ActionError> {
+  try {
+    return await listProductChanges(id, query);
+  } catch (error) {
+    return { error: await errorMessage(error) };
   }
 }

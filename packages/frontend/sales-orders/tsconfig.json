@@ -18,9 +18,6 @@
   ],
   "references": [
     {
-      "path": "../products"
-    },
-    {
       "path": "../ui"
     },
     {
@@ -30,7 +27,13 @@
       "path": "../data-table"
     },
     {
+      "path": "../products"
+    },
+    {
       "path": "../customers"
+    },
+    {
+      "path": "../changelog"
     },
     {
       "path": "../api"

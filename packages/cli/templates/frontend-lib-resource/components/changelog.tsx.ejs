@@ -1,0 +1,40 @@
+"use client";
+
+<% if (changelog.length) { %>import { useTranslations } from "next-intl";
+<% } %>import {
+  ChangelogSheet,
+  type ChangeFieldConfig,
+} from "@dafne/frontend-changelog/components/changelog-sheet";
+import type { <%= s.pascal %>Detail } from "../types.ts";
+import { get<%= s.pascal %>Changes } from "../actions.ts";
+
+/**
+ * The <%= s.lower %>'s change log, in a sheet (opened from its actions menu).
+ * `fields` names the logged fields; a field's `value` or `summary` shows it
+ * otherwise (e.g. a record's name for its id: ResolvedName, in
+ * @dafne/frontend-changelog/components/change-values).
+ */
+export function <%= s.pascal %>ChangelogSheet({
+  <%= s.camel %>Id,
+  open,
+  onOpenChange,
+}: {
+  <%= s.camel %>Id: <%= s.pascal %>Detail["id"];
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+<% if (changelog.length) { %>  const t = useTranslations();
+  const fields: Record<string, ChangeFieldConfig> = {
+<% for (const field of changelog) { %>    <%= field %>: { label: t("<%= p.camel %>.fields.<%= field %>") },
+<% } %>  };
+<% } else { %>  const fields: Record<string, ChangeFieldConfig> = {};
+<% } %>
+  return (
+    <ChangelogSheet
+      open={open}
+      onOpenChange={onOpenChange}
+      load={(query) => get<%= s.pascal %>Changes(<%= s.camel %>Id, query)}
+      fields={fields}
+    />
+  );
+}
