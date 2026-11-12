@@ -1,12 +1,8 @@
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
-import {
-  Session,
-  AllowAnonymous,
-  OptionalAuth,
-  Roles,
-} from '@thallesp/nestjs-better-auth';
+import { Session, Roles } from '@thallesp/nestjs-better-auth';
 import type { UserSession } from '@thallesp/nestjs-better-auth';
 import { ZodValidationPipe } from '@dafne/backend-common';
+import type { CrudController } from '@dafne/backend-crud';
 import {
   createUserBodySchema,
   listUsersQuerySchema,
@@ -17,8 +13,18 @@ import {
 } from '@dafne/contracts';
 import { UsersService } from './users.service.js';
 
+/**
+ * Users: list, get and create, for admins (Better Auth's session, in
+ * apps/auth). No update or delete yet; `me` is the signed-in user.
+ */
 @Controller('users')
-export class UsersController {
+export class UsersController
+  implements
+    Pick<
+      CrudController<string, ListUsersQuery, UsersList, CreateUserBody, UserDetail>,
+      'list' | 'get' | 'create'
+    >
+{
   constructor(private usersService: UsersService) {}
 
   @Get('me')
@@ -26,38 +32,26 @@ export class UsersController {
     return { user: session.user };
   }
 
-  @Get('public')
-  @AllowAnonymous() // Allow anonymous access
-  async getPublic() {
-    return { message: 'Public route' };
-  }
-
-  @Get('optional')
-  @OptionalAuth() // Authentication is optional
-  async getOptional(@Session() session: UserSession) {
-    return { authenticated: !!session };
-  }
-
-  @Get('/list')
+  @Get()
   @Roles(['admin'])
-  async getUsersList(
+  async list(
     @Query(new ZodValidationPipe(listUsersQuerySchema)) query: ListUsersQuery,
   ): Promise<UsersList> {
-    return this.usersService.getUsersList(query);
+    return this.usersService.list(query);
   }
 
   @Post()
   @Roles(['admin'])
-  async createUser(
+  async create(
     @Body(new ZodValidationPipe(createUserBodySchema)) body: CreateUserBody,
   ): Promise<UserDetail> {
-    return this.usersService.createUser(body);
+    return this.usersService.create(body);
   }
 
-  /** Declared last so it doesn't catch /users/me, /users/list… */
+  /** Declared last so it doesn't catch /users/me. */
   @Get(':id')
   @Roles(['admin'])
-  async getUser(@Param('id') id: string): Promise<UserDetail> {
-    return this.usersService.getUser(id);
+  async get(@Param('id') id: string): Promise<UserDetail> {
+    return this.usersService.get(id);
   }
 }

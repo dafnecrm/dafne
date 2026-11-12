@@ -97,7 +97,8 @@ order types) has the same controller and service methods, typed by
 - Extra routes sit next to them with their own names (`PATCH
   /activities/:id/close`, `POST /sales-orders/:id/status`).
 - A resource that lacks some of the five implements a `Pick` of the
-  interface.
+  interface: `users` (in `apps/auth`) has `list`, `get` and `create`, and
+  no write hooks, since Better Auth writes them.
 - Who may call a route is decided by Nest guards (`@Roles()`), not by the
   interface.
 
