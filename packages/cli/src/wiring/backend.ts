@@ -225,7 +225,7 @@ export function ensureMergedRelations(changes: Changes) {
 }
 
 /** Adds `export * from 'specifier';` after the other exports, unless present. */
-function ensureExportStar(source: string, specifier: string) {
+export function ensureExportStar(source: string, specifier: string) {
   const line = `export * from '${specifier}';`;
   if (source.includes(`'${specifier}'`) || source.includes(`"${specifier}"`)) {
     return source;

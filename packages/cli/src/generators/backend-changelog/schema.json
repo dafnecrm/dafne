@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/schema",
+  "$id": "DafneBackendChangelog",
+  "title": "Backend change log",
+  "description": "Turns on the change log of a resource: its creates, updates and deletes in the changelog schema, and GET :id/changes.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Resource name, singular or plural (e.g. invoice).",
+      "$default": { "$source": "argv", "index": 0 },
+      "x-prompt": "Resource name (e.g. invoice)"
+    },
+    "partition": {
+      "type": "boolean",
+      "description": "Give the resource a partition of changelog.change of its own (a migration of @dafne/backend-database-changelog); otherwise its rows go to change_default. `dafne g backend-changelog` asks.",
+      "default": false
+    },
+    "app": {
+      "type": "string",
+      "description": "Backend app the resource's lib is registered in (apps/<app>).",
+      "default": "sales-api"
+    },
+    "force": { "type": "boolean", "description": "Overwrite files that already exist.", "default": false }
+  },
+  "required": ["name"]
+}

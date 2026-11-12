@@ -91,6 +91,12 @@
     },
     {
       "path": "./packages/backend/crud"
+    },
+    {
+      "path": "./packages/backend/changelog"
+    },
+    {
+      "path": "./packages/backend/database-changelog"
     }
   ]
 }

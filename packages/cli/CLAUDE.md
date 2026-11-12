@@ -21,6 +21,20 @@ erasable syntax (no enums, namespaces or constructor parameter properties;
     service either way for the syncs); then the
     `fields` (`name:type[:option…]`) go into the table and the contract,
     service and specs are synced with them.
+  - `backend-changelog` (and `backend-resource` with `changelog`):
+    `addChangelog` (`wiring/changelog.ts`) turns on a resource's change
+    log: `<singular>.changelog.ts` (`templates/backend/changelog.ts`,
+    the body's fields), `ChangelogModule.forFeature` in the module,
+    `registry.for(<P>_RESOURCE…)` in the service, `GET :id/changes` and
+    `ChangelogService` in the controller, the lib's and the app's
+    dependencies and references. Each step is skipped when done already.
+    With `partition`, a hand-written migration of
+    `@dafne/backend-database-changelog` (`migration.sql` and a snapshot
+    chained to the last one) for `changelog.change_<plural>`: one
+    `CREATE TABLE … PARTITION OF`, or, when the resource was logged
+    already, the version that moves its rows out of `change_default`. A
+    module with a state machine gets a warning: its
+    `changelogTransitionHook` is added by hand.
   - `backend-lib`: an empty lib, named as given (not pluralized).
   - `backend-app`: a Nest app in `apps/<name>` (`templates/app`), which
     migrates on startup with `MIGRATE_ON_START=true` (`@dafne/backend-migrator`).
@@ -60,7 +74,9 @@ erasable syntax (no enums, namespaces or constructor parameter properties;
   warnings, and the next steps printed after Nx writes the files.
 - `src/index.ts`, `src/commands/`: the `dafne` command (commander, clack).
   `generate.ts` asks for what's missing (for a backend resource, a new
-  lib or an existing one, the id, the fields, with the questions in `field-prompts.ts`) and runs `nx g`: its
+  lib or an existing one, the id, the fields, with the questions in `field-prompts.ts`, whether it keeps a change log;
+  for `backend-resource --changelog` and `backend-changelog`, whether it gets a partition of its own; `backend-changelog`
+  first checks the resource exists, `crudResources`, and offers the closest, `core/names.ts` `closest`) and runs `nx g`: its
   kinds are the generators' names, and it rejects options a kind doesn't
   take. `remove.ts` (`dafne remove backend-db-column`: asks for the table
   and the columns, runs the generator, then `db generate` unless

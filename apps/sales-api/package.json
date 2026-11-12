@@ -24,10 +24,13 @@
   },
   "dependencies": {
     "@dafne/backend-activities": "workspace:*",
+    "@dafne/backend-changelog": "workspace:*",
     "@dafne/backend-common": "workspace:*",
     "@dafne/backend-crud": "workspace:*",
     "@dafne/backend-customers": "workspace:*",
     "@dafne/backend-database": "workspace:*",
+    "@dafne/backend-database-auth": "workspace:*",
+    "@dafne/backend-database-changelog": "workspace:*",
     "@dafne/backend-fsm": "workspace:*",
     "@dafne/backend-geo": "workspace:*",
     "@dafne/backend-migrator": "workspace:*",

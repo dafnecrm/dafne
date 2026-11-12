@@ -14,6 +14,9 @@ import { Session } from '@dafne/backend-session';
 import type { UserSession } from '@dafne/backend-session';
 import { IdPipe, ZodValidationPipe } from '@dafne/backend-common';
 import {
+  listChangesQuerySchema,
+  type ChangesList,
+  type ListChangesQuery,
   salesOrderBodySchema,
   salesOrderStatusBodySchema,
   type SalesOrderStatusBody,
@@ -24,7 +27,9 @@ import {
   type SalesOrdersList,
   type ListSalesOrdersQuery,
 } from '@dafne/contracts';
+import { ChangelogService } from '@dafne/backend-changelog';
 import { SalesOrdersService } from './sales-orders.service.js';
+import { SALES_ORDERS_RESOURCE } from './sales-order.changelog.js';
 import type { CrudController } from '@dafne/backend-crud';
 
 /** Sales orders, for any signed-in user (the global auth guard checks it). */
@@ -39,7 +44,10 @@ export class SalesOrdersController
       SalesOrderDetail
     >
 {
-  constructor(private readonly salesOrdersService: SalesOrdersService) {}
+  constructor(
+    private readonly salesOrdersService: SalesOrdersService,
+    private readonly changelog: ChangelogService,
+  ) {}
 
   @Get()
   list(
@@ -52,6 +60,16 @@ export class SalesOrdersController
   @Get(':id')
   get(@Param('id', IdPipe) id: number): Promise<SalesOrderDetail> {
     return this.salesOrdersService.get(id);
+  }
+
+  /** The changes of a sales order, newest first. 404 if it doesn't exist or is deleted. */
+  @Get(':id/changes')
+  async changes(
+    @Param('id', IdPipe) id: number,
+    @Query(new ZodValidationPipe(listChangesQuerySchema)) query: ListChangesQuery,
+  ): Promise<ChangesList> {
+    await this.salesOrdersService.get(id);
+    return this.changelog.list(SALES_ORDERS_RESOURCE, id, query);
   }
 
   @Get(':id/items/:position')

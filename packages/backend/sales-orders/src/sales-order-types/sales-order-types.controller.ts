@@ -16,6 +16,9 @@ import { TextIdPipe, ZodValidationPipe } from '@dafne/backend-common';
 import {
   salesOrderTypeBodySchema,
   listSalesOrderTypesQuerySchema,
+  listChangesQuerySchema,
+  type ListChangesQuery,
+  type ChangesList,
   type SalesOrderTypeBody,
   type SalesOrderTypeDetail,
   type SalesOrderTypesList,
@@ -23,6 +26,8 @@ import {
 } from '@dafne/contracts';
 import { SalesOrderTypesService } from './sales-order-types.service.js';
 import type { CrudController } from '@dafne/backend-crud';
+import { ChangelogService } from '@dafne/backend-changelog';
+import { SALES_ORDER_TYPES_RESOURCE } from './sales-order-type.changelog.js';
 
 /** Sales order types, for any signed-in user (the global auth guard checks it). */
 @Controller('sales-order-types')
@@ -38,6 +43,7 @@ export class SalesOrderTypesController
 {
   constructor(
     private readonly salesOrderTypesService: SalesOrderTypesService,
+    private readonly changelog: ChangelogService,
   ) {}
 
   @Get()
@@ -53,6 +59,16 @@ export class SalesOrderTypesController
     @Param('id', new TextIdPipe(5)) id: string,
   ): Promise<SalesOrderTypeDetail> {
     return this.salesOrderTypesService.get(id);
+  }
+
+  /** The changes of a sales order type, newest first. 404 if it doesn't exist or is deleted. */
+  @Get(':id/changes')
+  async changes(
+    @Param('id', new TextIdPipe(5)) id: string,
+    @Query(new ZodValidationPipe(listChangesQuerySchema)) query: ListChangesQuery,
+  ): Promise<ChangesList> {
+    await this.salesOrderTypesService.get(id);
+    return this.changelog.list(SALES_ORDER_TYPES_RESOURCE, id, query);
   }
 
   @Post()

@@ -1,4 +1,4 @@
-import { resourceNames, words } from '../src/core/names.ts';
+import { closest, resourceNames, words } from '../src/core/names.ts';
 
 describe('resourceNames', () => {
   it('gets singular and plural from either form', () => {
@@ -35,5 +35,13 @@ describe('resourceNames', () => {
     expect(() => resourceNames(' ')).toThrow();
     expect(() => resourceNames('2fa')).toThrow();
     expect(() => resourceNames('news')).toThrow(/same singular and plural/);
+  });
+});
+
+describe('closest', () => {
+  it('finds a typo, not an unrelated name', () => {
+    expect(closest('productsssss', ['customers', 'products', 'sales-orders'])).toBe('products');
+    expect(closest('custmers', ['customers', 'products'])).toBe('customers');
+    expect(closest('invoices', ['customers', 'products'])).toBeUndefined();
   });
 });

@@ -15,6 +15,7 @@ drizzle-kit.
 | `sales`  | `@dafne/backend-database` (`apps/sales-api`)  | The sales app's tables                                |
 | `<app>`  | the app's schema package                      | One per new app                                       |
 | `core`   | its own package (not created yet)             | Tables shared by several apps                         |
+| `changelog` | `@dafne/backend-database-changelog`        | The change log of the CRUD resources ([below](#the-change-log)) |
 
 Rules:
 
@@ -139,6 +140,56 @@ pnpm dafne db generate --custom --name x  # empty, for SQL written by hand
 In development, `dafne dev` runs `migrate:dev` before the APIs; it skips
 with a warning when `MIGRATIONS_DATABASE_URL` isn't set.
 
+## The change log
+
+`changelog.change` records the changes of the CRUD resources that turn it
+on (`ChangelogModule.forFeature`, in `@dafne/backend-changelog`; see
+[Architecture](architecture.md#change-log)): one row per create, update,
+delete or status change, with the fields that changed (`changes`, jsonb:
+`{ "notes": { "from": "a", "to": "b" } }`), who made it (`actor_id` →
+`auth.user`) and when. It is written in the transaction of the write.
+Only `@dafne/backend-changelog` writes it. It depends only on `auth`, so
+any app can log to it.
+
+The table is **partitioned by resource** (`PARTITION BY LIST (resource)`),
+so it can grow without one huge index:
+
+- `change_default` (DEFAULT) takes every resource without a partition of
+  its own, so **a new resource needs no migration**;
+- `change_sales_orders` takes `sales-orders`.
+
+drizzle-kit can't create partitioned tables, so the package's
+`src/change.ts` defines the table for queries only (drizzle-kit doesn't
+see it), and its migrations are written by hand:
+`pnpm dafne db generate @dafne/backend-database-changelog --custom --name <name>`.
+
+**A resource of its own partition.** `dafne g backend-changelog
+<resource> --partition` (or `dafne g backend-resource <name> --changelog
+--partition`) writes the migration below, the right one of the two: the
+CLI asks for it when the flag is left out. By hand: if the resource has no rows yet
+(e.g. in the migration that comes with its first `forFeature`), it's one
+statement:
+
+```sql
+CREATE TABLE "changelog"."change_invoices" PARTITION OF "changelog"."change" FOR VALUES IN ('invoices');
+```
+
+If `change_default` already holds its rows, Postgres refuses that. Move
+them in the same migration (it runs in a transaction, and locks the table
+while it runs):
+
+```sql
+ALTER TABLE "changelog"."change" DETACH PARTITION "changelog"."change_default";
+--> statement-breakpoint
+CREATE TABLE "changelog"."change_invoices" PARTITION OF "changelog"."change" FOR VALUES IN ('invoices');
+--> statement-breakpoint
+INSERT INTO "changelog"."change" SELECT * FROM "changelog"."change_default" WHERE "resource" = 'invoices';
+--> statement-breakpoint
+DELETE FROM "changelog"."change_default" WHERE "resource" = 'invoices';
+--> statement-breakpoint
+ALTER TABLE "changelog"."change" ATTACH PARTITION "changelog"."change_default" DEFAULT;
+```
+
 ## Migrations in production
 
 Two options:
@@ -169,6 +220,10 @@ ALTER DEFAULT PRIVILEGES FOR ROLE dafne IN SCHEMA sales
   GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO dafne_sales;
 GRANT USAGE ON SCHEMA auth TO dafne_sales;
 GRANT SELECT, REFERENCES ON auth."user" TO dafne_sales;
+-- The change log: write and read, never change.
+GRANT USAGE ON SCHEMA changelog TO dafne_sales;
+GRANT SELECT, INSERT ON ALL TABLES IN SCHEMA changelog TO dafne_sales;
+GRANT USAGE ON SEQUENCE changelog.change_id_seq TO dafne_sales;
 ```
 
 (`dafne` being the role of `MIGRATIONS_DATABASE_URL`, which owns the

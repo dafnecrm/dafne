@@ -1,0 +1,38 @@
+{
+  "name": "@dafne/backend-database-changelog",
+  "version": "0.0.1",
+  "description": "changelog: the change log of the CRUD resources (one table, partitioned by resource), with its migrations",
+  "private": true,
+  "type": "module",
+  "dafne": {
+    "schema": "changelog"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "oxlint -c ../.oxlintrc.json --type-aware src",
+    "test": "vitest run --passWithNoTests",
+    "migration:generate": "node ../migrator/src/generate.ts"
+  },
+  "dependencies": {
+    "@dafne/backend-database-auth": "workspace:*",
+    "@dafne/contracts": "workspace:*",
+    "drizzle-orm": "catalog:"
+  },
+  "devDependencies": {
+    "@dafne/backend-migrator": "workspace:*",
+    "@swc/core": "catalog:",
+    "@types/node": "catalog:",
+    "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:",
+    "typescript": "catalog:",
+    "unplugin-swc": "catalog:",
+    "vitest": "catalog:"
+  },
+  "nx": {
+    "tags": [
+      "scope:backend"
+    ]
+  }
+}

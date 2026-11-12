@@ -35,6 +35,16 @@
       "type": "string",
       "description": "Existing backend lib the module goes into (packages/backend/<lib>/src/<plural>, e.g. sales-order-types in sales-orders). Default: a lib of its own, packages/backend/<plural>. `dafne g backend-resource` asks for it."
     },
+    "changelog": {
+      "type": "boolean",
+      "description": "Turn on its change log (as dafne g backend-changelog): its writes in the changelog schema, GET :id/changes. `dafne g backend-resource` asks.",
+      "default": false
+    },
+    "partition": {
+      "type": "boolean",
+      "description": "With changelog: a partition of changelog.change of its own (a migration of @dafne/backend-database-changelog). `dafne g backend-resource` asks.",
+      "default": false
+    },
     "force": { "type": "boolean", "description": "Overwrite files that already exist.", "default": false }
   },
   "required": ["name"]

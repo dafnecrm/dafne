@@ -1,0 +1,23 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "out-tsc",
+    "tsBuildInfoFile": "out-tsc/tsconfig.tsbuildinfo",
+    "types": ["node", "vitest/globals"]
+  },
+  "include": [
+    "src"
+  ],
+  "references": [
+    {
+      "path": "../../contracts"
+    },
+    {
+      "path": "../database-auth"
+    },
+    {
+      "path": "../migrator"
+    }
+  ]
+}

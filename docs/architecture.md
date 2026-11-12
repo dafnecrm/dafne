@@ -141,6 +141,37 @@ hook into a resource it depends on (sales orders into customers) without
 that resource knowing about it. Hooks are a business rule on the data: who
 may call the endpoint stays with Nest guards.
 
+### Change log
+
+`@dafne/backend-changelog` records a resource's changes in the
+`changelog` schema ([Databases](databases.md#the-change-log)). A
+resource's module turns it on, and the lib needs no edits:
+
+```ts
+ChangelogModule,
+ChangelogModule.forFeature<SalesOrderDetail>('sales-orders', {
+  fields: ['notes', 'customerId', 'typeId', 'items'],
+  // optional: how a field is logged (e.g. items without product names)
+  map: { items: (items) => items.map(({ position, productId, quantity }) => ({ position, productId, quantity })) },
+}),
+FsmModule.forFeature({ …, imports: [ChangelogModule], post: [changelogTransitionHook('sales-orders')] }),
+```
+
+- `forFeature` adds a **post** write hook (create, update, delete), so
+  the change is saved in the write's transaction or not at all. It
+  compares `previous` and `result` on the listed `fields`: a create logs
+  their first values, an update only what changed (nothing if nothing
+  did), a delete no fields.
+- `changelogTransitionHook(resource)` is a hook of **every** transition
+  of the state machine (`FsmModule.forFeature({ pre, post })`): it logs
+  `{ status: { from, to } }` as a `transition`. Keep `status` out of
+  `fields`, so a status change is logged once. In a create that moves
+  straight out of `draft`, the transition is logged before the create
+  (it runs inside the write).
+- `ChangelogService.list(resource, id, query)` reads a record's changes,
+  newest first (`Page<ChangeEntry>` of `@dafne/contracts`), e.g.
+  `GET /sales-orders/:id/changes`.
+
 ## Better Auth options shared by both sides
 
 `@dafne/auth-options` holds the options that don't depend on the database

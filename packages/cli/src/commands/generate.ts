@@ -4,11 +4,12 @@ import { FsTree } from 'nx/src/generators/tree.js';
 import { Changes } from '../core/changes.ts';
 import { findFrontendTarget, frontendLibs, libName } from '../core/frontend-target.ts';
 import { DEFAULT_ID_LENGTH, ID_TYPES, idSpec, type IdSpec, type IdType } from '../core/id.ts';
-import { resourceNames } from '../core/names.ts';
+import { closest, resourceNames, words } from '../core/names.ts';
 import { findWorkspaceRoot, runNx } from '../core/nx.ts';
 import { backendLib, DEFAULT_APP, DEFAULT_FRONTEND_APP, frontendApp, frontendLib } from '../core/workspace.ts';
 import { FIELD_SPEC_HELP, formatFieldSpec, parseFieldSpec } from '../fields/parse.ts';
 import { backendLibs, tableFile } from '../pieces/backend.ts';
+import { crudResources, findPartition, partitionTable, unknownResourceMessage } from '../wiring/changelog.ts';
 import { askNewFields, cancelled, interactive } from './field-prompts.ts';
 
 /*
@@ -18,6 +19,7 @@ import { askNewFields, cancelled, interactive } from './field-prompts.ts';
 
 const KINDS = {
   'backend-resource': { hint: 'contract + table + lib with service and controller', placeholder: 'invoice' },
+  'backend-changelog': { hint: "a resource's change log: its writes, GET :id/changes, optionally its own partition", placeholder: 'invoice' },
   'backend-lib': { hint: 'an empty Nest lib in packages/backend', placeholder: 'reports' },
   'backend-app': { hint: 'a NestJS app in apps/', placeholder: 'worker' },
   contract: { hint: 'Zod schemas and response types in packages/contracts', placeholder: 'invoice' },
@@ -34,9 +36,9 @@ const KINDS = {
 type Kind = keyof typeof KINDS;
 
 /** Kinds named after a resource (singular or plural). */
-const RESOURCE_KINDS: Kind[] = ['backend-resource', 'contract', 'frontend-resource', 'frontend-list', 'frontend-detail', 'frontend-form', 'frontend-actions', 'frontend-data', 'frontend-nav'];
+const RESOURCE_KINDS: Kind[] = ['backend-resource', 'backend-changelog', 'contract', 'frontend-resource', 'frontend-list', 'frontend-detail', 'frontend-form', 'frontend-actions', 'frontend-data', 'frontend-nav'];
 /** Kinds with an --app: a backend app, or a frontend one. */
-const BACKEND_APP_KINDS: Kind[] = ['backend-resource', 'backend-lib'];
+const BACKEND_APP_KINDS: Kind[] = ['backend-resource', 'backend-changelog', 'backend-lib'];
 const FRONTEND_APP_KINDS: Kind[] = ['frontend-resource', 'frontend-list', 'frontend-detail', 'frontend-form', 'frontend-actions', 'frontend-data', 'frontend-nav', 'frontend-lib'];
 /** Kinds that go into the app or into a frontend lib (--lib); backend-resource takes --lib too, a backend lib. */
 const LIB_KINDS: Kind[] = ['frontend-resource', 'frontend-list', 'frontend-detail', 'frontend-form', 'frontend-actions', 'frontend-data'];
@@ -50,6 +52,8 @@ interface GenerateOptions {
   field?: string[];
   idType?: string;
   idLength?: string;
+  changelog?: boolean;
+  partition?: boolean;
   port?: string;
   backendUrl?: string;
   icon?: string;
@@ -155,6 +159,71 @@ async function resourceId(root: string, name: string, options: GenerateOptions):
     );
   }
   return idSpec(type, idLength);
+}
+
+/**
+ * Whether a new resource keeps a change log: --changelog / --no-changelog,
+ * or asked (unless -y, or the resource exists already: no).
+ */
+async function resourceChangelog(root: string, name: string, options: GenerateOptions): Promise<boolean> {
+  if (options.changelog !== undefined) {
+    return options.changelog;
+  }
+  if (!interactive(options) || new Changes(new FsTree(root, false)).exists(tableFile(resourceNames(name)))) {
+    return false;
+  }
+  return cancelled<boolean>(
+    await p.confirm({
+      message: `Keep a change log of ${resourceNames(name).p.lower} (creates, updates, deletes, and GET :id/changes)?`,
+      initialValue: true,
+    }),
+  );
+}
+
+/**
+ * Whether a logged resource gets a partition of changelog.change of its
+ * own: --partition / --no-partition, or asked (unless -y: no, its rows go
+ * to change_default). Not asked when it has one already.
+ */
+async function changelogPartition(root: string, name: string, options: GenerateOptions): Promise<boolean> {
+  if (options.partition !== undefined) {
+    return options.partition;
+  }
+  const names = resourceNames(name);
+  if (!interactive(options) || findPartition(new Changes(new FsTree(root, false)), names)) {
+    return false;
+  }
+  return cancelled<boolean>(
+    await p.confirm({
+      message: `Give ${names.p.lower} a partition of the change log of their own (changelog.${partitionTable(names)})? Worth it for a resource with many changes; otherwise its rows go to change_default.`,
+      initialValue: false,
+    }),
+  );
+}
+
+/**
+ * The resource of `backend-changelog`, checked before anything is asked:
+ * as given when it exists; else picked from the resources (the closest
+ * first) when interactive; else an error naming the closest one.
+ */
+async function changelogResource(root: string, name: string, options: GenerateOptions): Promise<string> {
+  const resources = crudResources(new Changes(new FsTree(root, false)));
+  const asked = resourceNames(name).p.kebab;
+  if (resources.includes(asked)) {
+    return name;
+  }
+  if (!interactive(options) || !resources.length) {
+    throw new Error(unknownResourceMessage(name, resources));
+  }
+  const guess = closest([words(name).join('-'), asked], resources);
+  p.log.warn(`No resource "${name}" (no service for ${asked}).`);
+  return cancelled<string>(
+    await p.select<string>({
+      message: 'Which resource?',
+      initialValue: guess ?? resources[0],
+      options: resources.map((value) => ({ value, label: value, hint: value === guess ? 'closest' : undefined })),
+    }),
+  );
 }
 
 const NEW_LIB = '\0new';
@@ -275,6 +344,10 @@ export function generateCommand() {
     ])
     .option('--id-type <type>', `backend-resource: type of the id, ${ID_TYPES.join(' | ')} (default serial)`)
     .option('--id-length <n>', `backend-resource: length of a varchar id (default ${DEFAULT_ID_LENGTH})`)
+    .option('--changelog', 'backend-resource: keep a change log of it (asked when interactive)')
+    .option('--no-changelog', 'backend-resource: no change log')
+    .option('--partition', 'backend-changelog, backend-resource with a change log: a partition of changelog.change of its own (asked when interactive)')
+    .option('--no-partition', 'backend-changelog, backend-resource: no partition of its own (its rows go to change_default)')
     .option('--port <port>', 'backend-app, frontend-app: default port')
     .option('--backend-url <url>', "frontend-app: the app's API (BACKEND_URL)")
     .option('--icon <name>', 'frontend-resource, frontend-list, frontend-nav: lucide-react icon (e.g. ReceiptIcon)')
@@ -295,6 +368,9 @@ Examples:
   dafne g frontend-resource invoice --icon ReceiptIcon
   dafne g frontend-resource invoice --lib invoices   # in packages/frontend/invoices
   dafne g frontend-detail invoice          # one part (and the parts it needs), where the resource is
+  dafne g backend-resource invoice --changelog --partition
+  dafne g backend-changelog customer            # asks whether it gets a partition of its own
+  dafne g backend-changelog customer --partition   # on a logged resource: only the partition
   dafne g backend-lib reports
   dafne g backend-app worker --port 3002
   dafne g frontend-app billing-web --port 4001
@@ -309,7 +385,10 @@ Same as: nx g @dafne/cli:<kind> <name> ...`,
         p.intro('dafne generate');
       }
       const kind = await askKind(kindArg, options);
-      const name = await askName(nameArg, kind, options);
+      let name = await askName(nameArg, kind, options);
+      if (kind === 'backend-changelog') {
+        name = await changelogResource(root, name, options);
+      }
       const only = (option: string, kinds: Kind[], set: unknown) => {
         if (set !== undefined && !kinds.includes(kind)) {
           throw new Error(`${option} is only for ${kinds.join(', ')}.`);
@@ -318,6 +397,8 @@ Same as: nx g @dafne/cli:<kind> <name> ...`,
       only('--field', ['backend-resource'], options.field);
       only('--id-type', ['backend-resource'], options.idType);
       only('--id-length', ['backend-resource'], options.idLength);
+      only('--changelog', ['backend-resource'], options.changelog);
+      only('--partition', ['backend-resource', 'backend-changelog'], options.partition);
       only('--app', [...BACKEND_APP_KINDS, ...FRONTEND_APP_KINDS], options.app);
       only('--lib', [...LIB_KINDS, 'backend-resource'], options.lib);
       only('--port', ['backend-app', 'frontend-app'], options.port);
@@ -342,6 +423,17 @@ Same as: nx g @dafne/cli:<kind> <name> ...`,
         for (const spec of await resourceFields(root, name, options)) {
           args.push(`--fields=${spec}`);
         }
+        if (await resourceChangelog(root, name, options)) {
+          args.push('--changelog');
+          if (await changelogPartition(root, name, options)) {
+            args.push('--partition');
+          }
+        } else if (options.partition) {
+          throw new Error('--partition is only with --changelog.');
+        }
+      }
+      if (kind === 'backend-changelog' && (await changelogPartition(root, name, options))) {
+        args.push('--partition');
       }
       if (options.app) {
         args.push(`--app=${options.app}`);

@@ -7,6 +7,11 @@
       "schema": "./src/generators/backend-app/schema.json",
       "description": "A NestJS app in apps/<name>, set up like apps/sales-api."
     },
+    "backend-changelog": {
+      "factory": "./src/generators/backend-changelog/generator.ts",
+      "schema": "./src/generators/backend-changelog/schema.json",
+      "description": "The change log of a resource: its writes in the changelog schema, GET :id/changes, optionally a partition of its own."
+    },
     "backend-lib": {
       "factory": "./src/generators/backend-lib/generator.ts",
       "schema": "./src/generators/backend-lib/schema.json",

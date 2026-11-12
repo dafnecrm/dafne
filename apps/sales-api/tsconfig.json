@@ -15,6 +15,9 @@
       "path": "../../packages/backend/session"
     },
     {
+      "path": "../../packages/backend/sales-orders"
+    },
+    {
       "path": "../../packages/backend/products"
     },
     {
@@ -24,25 +27,31 @@
       "path": "../../packages/backend/geo"
     },
     {
+      "path": "../../packages/backend/fsm"
+    },
+    {
+      "path": "../../packages/backend/database-changelog"
+    },
+    {
+      "path": "../../packages/backend/database-auth"
+    },
+    {
       "path": "../../packages/backend/database"
     },
     {
       "path": "../../packages/backend/customers"
     },
     {
+      "path": "../../packages/backend/crud"
+    },
+    {
       "path": "../../packages/backend/common"
     },
     {
+      "path": "../../packages/backend/changelog"
+    },
+    {
       "path": "../../packages/backend/activities"
-    },
-    {
-      "path": "../../packages/backend/sales-orders"
-    },
-    {
-      "path": "../../packages/backend/fsm"
-    },
-    {
-      "path": "../../packages/backend/crud"
     }
   ]
 }

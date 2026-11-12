@@ -3,6 +3,7 @@ import { msg } from '@dafne/contracts';
 import { BadRequestException, ForbiddenException, type Type } from '@nestjs/common';
 import type { SessionUser } from '@dafne/backend-session';
 import type {
+  EveryTransitionHooks,
   StatesConfig,
   Transaction,
   TransitionConfig,
@@ -23,8 +24,10 @@ export class StateMachine<S extends string = string, Id = unknown> {
     private readonly db: Database,
     private readonly stateTransition: StateTransition<S, Id>,
     private readonly states: StatesConfig<S, Id>,
-    /** The instances of the guards and hooks in `states`, by class. */
+    /** The instances of the guards and hooks in `states` and `every`, by class. */
     private readonly aspects: Map<Type, unknown>,
+    /** Hooks of every transition, run after the transition's own. */
+    private readonly every: EveryTransitionHooks<S, Id> = {},
   ) {}
 
   /** The statuses a record in `from` can move to. */
@@ -33,8 +36,9 @@ export class StateMachine<S extends string = string, Id = unknown> {
   }
 
   /**
-   * Moves the record `id` to `to`, in one transaction: guards, pre hooks,
-   * the transition, post hooks. Throws 400 if `to` doesn't follow the
+   * Moves the record `id` to `to`, in one transaction: guards, pre hooks
+   * (the transition's, then those of every transition), the transition,
+   * post hooks (likewise). Throws 400 if `to` doesn't follow the
    * record's status, 403 if a guard says no or a hook returns a message (with the
    * message they give), or whatever an aspect throws;
    * any failure rolls everything back. Does nothing if the record is
@@ -68,11 +72,11 @@ export class StateMachine<S extends string = string, Id = unknown> {
       }
       throw new ForbiddenException(typeof result === 'string' && result ? result : msg('fsm.transitionForbidden'));
     }
-    for (const hook of this.instances<TransitionHook<S, Id>>(config.pre)) {
+    for (const hook of this.instances<TransitionHook<S, Id>>([...(config.pre ?? []), ...(this.every.pre ?? [])])) {
       await this.runHook(hook, context);
     }
     await this.stateTransition.execute(context);
-    for (const hook of this.instances<TransitionHook<S, Id>>(config.post)) {
+    for (const hook of this.instances<TransitionHook<S, Id>>([...(config.post ?? []), ...(this.every.post ?? [])])) {
       await this.runHook(hook, context);
     }
   }

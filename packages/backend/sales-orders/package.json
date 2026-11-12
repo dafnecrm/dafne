@@ -11,6 +11,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@dafne/backend-changelog": "workspace:*",
     "@dafne/backend-common": "workspace:*",
     "@dafne/backend-crud": "workspace:*",
     "@dafne/backend-database": "workspace:*",

@@ -36,6 +36,7 @@ import {
   type CrudService,
   type Executor,
 } from '@dafne/backend-crud';
+import { SALES_ORDER_TYPES_RESOURCE } from './sales-order-type.changelog.js';
 
 export const SALES_ORDER_TYPES_DEFAULT_PAGE_SIZE = 20;
 
@@ -89,7 +90,7 @@ export class SalesOrderTypesService
     @InjectDrizzle() private readonly db: Database,
     registry: CrudHooksRegistry,
   ) {
-    this.hooks = registry.for('sales-order-types', { db, load: (id, tx) => this.get(id, tx) });
+    this.hooks = registry.for(SALES_ORDER_TYPES_RESOURCE, { db, load: (id, tx) => this.get(id, tx) });
   }
 
   /**

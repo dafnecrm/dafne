@@ -15,6 +15,7 @@
     "@dafne/backend-crud": "workspace:*",
     "@dafne/backend-database": "workspace:*",
     "@dafne/backend-session": "workspace:*",
+    "@dafne/backend-changelog": "workspace:*",
     "@dafne/contracts": "workspace:*",
     "@nestjs/common": "catalog:",
     "@nestjs/drizzle": "catalog:",

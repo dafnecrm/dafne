@@ -6,3 +6,5 @@ export * from './sales-order.guards.js';
 export * from './sales-order.hooks.js';
 export * from './sales-order-types/sales-order-types.module.js';
 export * from './sales-order-types/sales-order-types.service.js';
+export * from './sales-order.changelog.js';
+export * from './sales-order-types/sales-order-type.changelog.js';

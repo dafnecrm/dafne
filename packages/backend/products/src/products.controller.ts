@@ -16,6 +16,9 @@ import { IdPipe, ZodValidationPipe } from '@dafne/backend-common';
 import {
   productBodySchema,
   listProductsQuerySchema,
+  listChangesQuerySchema,
+  type ListChangesQuery,
+  type ChangesList,
   type ProductBody,
   type ProductDetail,
   type ProductsList,
@@ -23,6 +26,8 @@ import {
 } from '@dafne/contracts';
 import { ProductsService } from './products.service.js';
 import type { CrudController } from '@dafne/backend-crud';
+import { ChangelogService } from '@dafne/backend-changelog';
+import { PRODUCTS_RESOURCE } from './product.changelog.js';
 
 /** Products, for any signed-in user (the global auth guard checks it). */
 @Controller('products')
@@ -36,7 +41,10 @@ export class ProductsController
       ProductDetail
     >
 {
-  constructor(private readonly productsService: ProductsService) {}
+  constructor(
+    private readonly productsService: ProductsService,
+    private readonly changelog: ChangelogService,
+  ) {}
 
   @Get()
   list(
@@ -49,6 +57,16 @@ export class ProductsController
   @Get(':id')
   get(@Param('id', IdPipe) id: number): Promise<ProductDetail> {
     return this.productsService.get(id);
+  }
+
+  /** The changes of a product, newest first. 404 if it doesn't exist or is deleted. */
+  @Get(':id/changes')
+  async changes(
+    @Param('id', IdPipe) id: number,
+    @Query(new ZodValidationPipe(listChangesQuerySchema)) query: ListChangesQuery,
+  ): Promise<ChangesList> {
+    await this.productsService.get(id);
+    return this.changelog.list(PRODUCTS_RESOURCE, id, query);
   }
 
   @Post()

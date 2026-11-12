@@ -18,6 +18,7 @@ import { InjectStateMachine, StateMachine } from '@dafne/backend-fsm';
 import type { SessionUser } from '@dafne/backend-session';
 import type { SalesOrderStatus } from '@dafne/contracts';
 import { SALES_ORDER_STATE_MACHINE } from './sales-order.states.js';
+import { SALES_ORDERS_RESOURCE } from './sales-order.changelog.js';
 import {
   CrudHooksRegistry,
   type Actor,
@@ -97,7 +98,7 @@ export class SalesOrdersService
     private readonly stateMachine: StateMachine<SalesOrderStatus, number>,
     registry: CrudHooksRegistry,
   ) {
-    this.hooks = registry.for('sales-orders', { db, load: (id, tx) => this.get(id, tx) });
+    this.hooks = registry.for(SALES_ORDERS_RESOURCE, { db, load: (id, tx) => this.get(id, tx) });
   }
 
   /**
