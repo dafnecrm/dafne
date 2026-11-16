@@ -66,7 +66,7 @@ function useSalesOrderColumns({
             </Link>
           ),
           meta: {
-            className: "w-30",
+            className: "w-20",
           },
         }),
         col.accessor("type", {
@@ -108,7 +108,7 @@ function useSalesOrderColumns({
           ),
         }),
       ]),
-    [t, path],
+    [t, path, customersPath, optionLabel],
   );
 }
 

@@ -169,6 +169,7 @@
       "firstname": "Nome",
       "lastname": "Cognome",
       "email": "Email",
+      "emailVerified": "Email verificata",
       "role": "Ruolo",
       "status": "Stato",
       "password": "Password",

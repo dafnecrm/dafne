@@ -29,6 +29,9 @@
       "path": "../../packages/backend/common"
     },
     {
+      "path": "../../packages/backend/changelog"
+    },
+    {
       "path": "../../packages/backend/auth"
     },
     {

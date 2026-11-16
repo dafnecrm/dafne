@@ -25,6 +25,10 @@ imports: [
 - `changelogTransitionHook(resource, field = 'status')` logs a state
   machine's status changes (`transition`). Give it as a hook of every
   transition, and keep the status out of `fields`.
+- `ChangelogService.recordSnapshot(executor, { resource, recordId,
+  operation, snapshot })` logs a write that skips CrudHooks from the
+  record's fields after it (an update against the log's latest values):
+  the users, from Better Auth's hooks (`@dafne/backend-auth`).
 - `ChangelogService.list(resource, id, { limit, offset })` returns a
   record's changes, newest first, with who made them (`ChangesList` of
   `@dafne/contracts`).

@@ -47,6 +47,9 @@ function useCustomerColumns(path: string) {
     };
     return col.columns([
       col.accessor("id", {
+        meta: {
+          className: 'w-20'
+        },
         header: t("id"),
         cell: ({ row }) => (
           <Link

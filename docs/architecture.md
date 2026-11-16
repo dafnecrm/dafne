@@ -172,6 +172,17 @@ FsmModule.forFeature({ …, imports: [ChangelogModule], post: [changelogTransiti
   newest first (`Page<ChangeEntry>` of `@dafne/contracts`), e.g.
   `GET /sales-orders/:id/changes`.
 
+**Users** are written by Better Auth, not through CrudHooks, so
+`@dafne/backend-auth` logs them from its `databaseHooks.user` (`after`
+create, update, delete: `userChangelog`, fields in
+`USER_CHANGELOG_FIELDS`) with `ChangelogService.recordSnapshot`. Those
+hooks get only the new row, so an update's `from` values are the log's
+latest ones; a migration (`*_changelog-users`) gave the users already
+there a baseline create. They run after Better Auth's transaction: a
+failure to log is logged, not thrown. The actor is the request's
+signed-in user (none for a sign-up). `GET /users/:id/changes` (admins)
+reads it; `dafne g backend-changelog` doesn't apply to users.
+
 ## Better Auth options shared by both sides
 
 `@dafne/auth-options` holds the options that don't depend on the database

@@ -147,7 +147,9 @@ on (`ChangelogModule.forFeature`, in `@dafne/backend-changelog`; see
 [Architecture](architecture.md#change-log)): one row per create, update,
 delete or status change, with the fields that changed (`changes`, jsonb:
 `{ "notes": { "from": "a", "to": "b" } }`), who made it (`actor_id` →
-`auth.user`) and when. It is written in the transaction of the write.
+`auth.user`) and when. It is written in the transaction of the write
+(the users, written by Better Auth, right after it: see
+[Architecture](architecture.md#change-log)).
 Only `@dafne/backend-changelog` writes it. It depends only on `auth`, so
 any app can log to it.
 

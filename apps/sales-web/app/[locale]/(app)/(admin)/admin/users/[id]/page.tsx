@@ -21,6 +21,7 @@ import { isAdmin, requireUser } from "@/lib/session";
 import { getUser } from "@/lib/users";
 import { NotAllowed } from "../not-allowed";
 import { UserDetails } from "../user-detail";
+import { UserChangelogButton } from "../user-changelog";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("users");
@@ -81,7 +82,8 @@ async function UserProfile({
             <PageContentDescription>{user.email}</PageContentDescription>
           </div>
         </div>
-        <PageContentAction>
+        <PageContentAction className="flex gap-2">
+          <UserChangelogButton userId={user.id} />
           <Button
             variant="outline"
             size="sm"

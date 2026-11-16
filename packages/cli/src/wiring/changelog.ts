@@ -24,9 +24,16 @@ export function crudResources(changes: Changes): string[] {
     .sort();
 }
 
+/** Users are written by Better Auth: @dafne/backend-auth logs them, from its database hooks. */
+export const USERS_CHANGELOG_MESSAGE =
+  'Users are logged already: Better Auth writes them, and @dafne/backend-auth logs its writes (userChangelog, USER_CHANGELOG_FIELDS).';
+
 /** Why `input` isn't a resource: the closest one (a typo?), else the list, else how to make one. */
 export function unknownResourceMessage(input: string, resources: readonly string[]): string {
   const asked = resourceNames(input).p.kebab;
+  if (asked === 'users') {
+    return USERS_CHANGELOG_MESSAGE;
+  }
   const guess = closest([words(input).join('-'), asked], resources);
   return [
     `No resource "${input}": there is no service for ${asked}.`,

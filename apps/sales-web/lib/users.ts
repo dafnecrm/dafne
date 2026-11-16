@@ -1,6 +1,7 @@
 import type * as contracts from "@dafne/contracts";
 import type { Json } from "@dafne/contracts";
 import { authFetch } from "@dafne/frontend-api/server";
+import type { ChangesPage } from "@dafne/frontend-changelog";
 import type { TableFilters, TableSort } from "@dafne/frontend-data-table";
 import { usersTable } from "./users-table";
 
@@ -20,6 +21,23 @@ export type UserDetail = Json<contracts.UserDetail>;
  */
 export async function getUser(id: string): Promise<UserDetail> {
   const res = await authFetch(`/users/${encodeURIComponent(id)}`);
+  return res.json();
+}
+
+/**
+ * Calls the backend's GET /users/:id/changes (admins only, newest first).
+ * Throws a BackendError with status 404 when the user doesn't exist, 403
+ * for non-admins.
+ */
+export async function listUserChanges(
+  id: string,
+  { limit, offset }: { limit: number; offset: number },
+): Promise<ChangesPage> {
+  const query = new URLSearchParams({
+    limit: String(limit),
+    offset: String(offset),
+  });
+  const res = await authFetch(`/users/${encodeURIComponent(id)}/changes?${query}`);
   return res.json();
 }
 

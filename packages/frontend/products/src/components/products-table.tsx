@@ -41,6 +41,9 @@ function useProductColumns(path: string) {
     () =>
       col.columns([
         col.accessor("id", {
+          meta: {
+            className: 'w-20'
+          },
           header: t("id"),
           cell: ({ row }) => (
             <Link
