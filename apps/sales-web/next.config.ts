@@ -26,6 +26,10 @@ const nextConfig: NextConfig = {
     "@dafne/frontend-changelog",
   ],
   cacheComponents: true,
+  experimental: {
+    // `next upgrade --agent` applies security releases.
+    agentUpgrade: "security",
+  },
   partialPrefetching: true,
   // Keep the dev badge off the sidebar's user menu (bottom-left).
   devIndicators: { position: "bottom-right" },
