@@ -337,6 +337,9 @@ importers:
       '@dafne/backend-auth':
         specifier: workspace:*
         version: link:../../packages/backend/auth
+      '@dafne/backend-changelog':
+        specifier: workspace:*
+        version: link:../../packages/backend/changelog
       '@dafne/backend-common':
         specifier: workspace:*
         version: link:../../packages/backend/common
@@ -762,6 +765,9 @@ importers:
       '@dafne/auth-options':
         specifier: workspace:*
         version: link:../../auth-options
+      '@dafne/backend-changelog':
+        specifier: workspace:*
+        version: link:../changelog
       '@dafne/backend-common':
         specifier: workspace:*
         version: link:../common
@@ -1470,6 +1476,9 @@ importers:
       '@dafne/backend-auth':
         specifier: workspace:*
         version: link:../auth
+      '@dafne/backend-changelog':
+        specifier: workspace:*
+        version: link:../changelog
       '@dafne/backend-common':
         specifier: workspace:*
         version: link:../common

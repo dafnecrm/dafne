@@ -5,6 +5,7 @@ import { appAccess, authSchema, type AuthDatabase } from '@dafne/backend-databas
 import { Resend } from 'resend';
 import { localeFrom } from '@dafne/backend-common';
 import { authOptions } from '@dafne/auth-options';
+import type { UserChangelog } from './user-changelog.js';
 
 /** The verification email, by language. */
 const VERIFY_EMAIL = {
@@ -32,6 +33,8 @@ export interface CreateAuthOptions {
   cookieDomain?: string;
   /** Apps a new user can use from the start (app_access), e.g. ['sales']. */
   defaultApps?: string[];
+  /** Logs the writes to users (userChangelog); none in the schema CLI. */
+  changelog?: UserChangelog;
 }
 
 /** A user's apps and roles in them, as the session carries them. */
@@ -77,7 +80,8 @@ export function createAuth(db: AuthDatabase, options: CreateAuthOptions) {
         create: {
           ...authOptions.databaseHooks.user.create,
           // A new user (sign-up or created by an admin) gets the default apps.
-          after: async (user) => {
+          after: async (user, context) => {
+            await options.changelog?.('create', user, context);
             const role = (user as { role?: string | null }).role === 'admin' ? 'admin' : 'user';
             const apps = options.defaultApps ?? [];
             if (!apps.length) {
@@ -87,6 +91,18 @@ export function createAuth(db: AuthDatabase, options: CreateAuthOptions) {
               .insert(appAccess)
               .values(apps.map((app) => ({ id: crypto.randomUUID(), userId: user.id, app, role })))
               .onConflictDoUpdate({ target: [appAccess.userId, appAccess.app], set: { role } });
+          },
+        },
+        // Every write to a user (profile, email, role, ban, verification) goes through these.
+        update: {
+          ...authOptions.databaseHooks.user.update,
+          after: async (user, context) => {
+            await options.changelog?.('update', user, context);
+          },
+        },
+        delete: {
+          after: async (user, context) => {
+            await options.changelog?.('delete', user, context);
           },
         },
       },

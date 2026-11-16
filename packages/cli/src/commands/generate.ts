@@ -212,7 +212,7 @@ async function changelogResource(root: string, name: string, options: GenerateOp
   if (resources.includes(asked)) {
     return name;
   }
-  if (!interactive(options) || !resources.length) {
+  if (!interactive(options) || !resources.length || asked === 'users') {
     throw new Error(unknownResourceMessage(name, resources));
   }
   const guess = closest([words(name).join('-'), asked], resources);

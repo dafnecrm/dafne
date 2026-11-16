@@ -21,6 +21,9 @@
       "path": "../common"
     },
     {
+      "path": "../changelog"
+    },
+    {
       "path": "../auth"
     }
   ]

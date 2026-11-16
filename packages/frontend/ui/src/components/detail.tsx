@@ -75,8 +75,8 @@ const detailGroupVariants = cva("w-full gap-6", {
  * With a title, the section collapses: clicking the title hides the
  * details (open at first, unless `defaultOpen={false}`).
  *
- * Variants: 
- * - `default` frames the details like a Card; 
+ * Variants:
+ * - `default` frames the details like a Card;
  * - `plain` has no frame and no padding around the details;
  */
 export function DetailSection({

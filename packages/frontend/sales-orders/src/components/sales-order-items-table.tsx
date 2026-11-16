@@ -57,10 +57,12 @@ export function SalesOrderItemTable({
   items,
   rowActions,
   emptyContent,
+  bordered = true
 }: {
   items: SalesOrderItemRow[];
   rowActions?: (row: SalesOrderItemRow, index: number) => ReactNode;
-  emptyContent?: ReactNode;
+    emptyContent?: ReactNode;
+  bordered?: boolean
 }) {
   const t = useTranslations();
   const columns = useSalesOrderItemColumns();

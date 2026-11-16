@@ -7,7 +7,7 @@ import {
   TextIcon,
   ContactIcon,
   BoxesLinkedIcon,
-  TagIcon
+  TagIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Detail, DetailSection } from "@dafne/frontend-ui/components/detail";
@@ -37,7 +37,10 @@ export function SalesOrderDetails({
   const optionLabel = useOptionLabel();
   return (
     <>
-      <DetailSection title={t("salesOrders.sections.details")} groupVariant="grid">
+      <DetailSection
+        title={t("salesOrders.sections.details")}
+        groupVariant="grid"
+      >
         <Detail icon={BoxesLinkedIcon} label={t("salesOrders.fields.type")}>
           {salesOrder.type.description}
         </Detail>
@@ -63,17 +66,26 @@ export function SalesOrderDetails({
           )}
         </Detail>
       </DetailSection>
-      <DetailSection
-        title={t("salesOrders.sections.items")}
-        groupClassName="flex"
-      >
-        <SalesOrderItemTable items={salesOrder.items} />
+      <DetailSection title={t("salesOrders.sections.items")}>
+        <SalesOrderItemTable items={salesOrder.items} bordered={false} />
       </DetailSection>
-      <DetailSection title={t("common.record.title")} defaultOpen={false} groupVariant="grid">
-        <Detail icon={FingerprintIcon} label={t("salesOrders.fields.id")} className="col-span-2">
+      <DetailSection
+        title={t("common.record.title")}
+        defaultOpen={false}
+        groupVariant="grid"
+      >
+        <Detail
+          icon={FingerprintIcon}
+          label={t("salesOrders.fields.id")}
+          className="col-span-2"
+        >
           <div className="flex items-center gap-2">
             <code className="truncate font-sans text-xs">{salesOrder.id}</code>
-            <CopyButton variant="ghost" size="xs" value={String(salesOrder.id)} />
+            <CopyButton
+              variant="ghost"
+              size="xs"
+              value={String(salesOrder.id)}
+            />
           </div>
         </Detail>
         <Detail icon={CalendarPlusIcon} label={t("common.record.created")}>

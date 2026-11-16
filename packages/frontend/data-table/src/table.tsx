@@ -73,6 +73,7 @@ import {
   type TableFilters,
   type TableParams,
 } from "./data-table.ts";
+import { cn } from "@dafne/frontend-ui/lib/utils";
 
 /*
  * Generic data table on TanStack Table v9, for server-paginated lists.
@@ -242,6 +243,8 @@ export interface DataTableProps<TData extends RowData> {
    * in the browser, without calling the server.
    */
   manualSorting?: boolean;
+
+  bordered?: boolean;
 }
 
 export function DataTable<TData extends RowData>({
@@ -257,6 +260,7 @@ export function DataTable<TData extends RowData>({
   noun,
   manualPagination = true,
   manualSorting = true,
+  bordered = true,
 }: DataTableProps<TData>) {
   const router = useRouter();
   const [navigating, startTransition] = useTransition();
@@ -366,7 +370,7 @@ export function DataTable<TData extends RowData>({
           />
         ))
       ) : (
-        <div className="overflow-hidden rounded-lg border [&_td:first-child]:pl-4 [&_td:last-child]:pr-4 [&_th:first-child]:pl-4 [&_th:last-child]:pr-4">
+          <div className={cn('overflow-hidden [&_td:first-child]:pl-4 [&_td:last-child]:pr-4 [&_th:first-child]:pl-4 [&_th:last-child]:pr-4', bordered && 'rounded-lg border')}>
           <Table aria-busy={navigating}>
             <TableHeader>
               {table.getHeaderGroups().map((group) => (

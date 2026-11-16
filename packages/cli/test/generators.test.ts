@@ -262,6 +262,10 @@ describe('backend-changelog', () => {
     expect(partitions()).toEqual([]);
     await expect(generate(backendResourceGenerator, { name: 'payment', partition: true })).rejects.toThrow(/only with changelog/);
   });
+
+  it('explains that users are logged by @dafne/backend-auth', async () => {
+    await expect(generate(backendChangelogGenerator, { name: 'user' })).rejects.toThrow(/Users are logged already.*@dafne\/backend-auth/);
+  });
 });
 
 describe('backend-lib', () => {

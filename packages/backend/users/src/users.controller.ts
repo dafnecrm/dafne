@@ -3,10 +3,15 @@ import { Session, Roles } from '@thallesp/nestjs-better-auth';
 import type { UserSession } from '@thallesp/nestjs-better-auth';
 import { ZodValidationPipe } from '@dafne/backend-common';
 import type { CrudController } from '@dafne/backend-crud';
+import { USERS_RESOURCE } from '@dafne/backend-auth';
+import { ChangelogService } from '@dafne/backend-changelog';
 import {
   createUserBodySchema,
+  listChangesQuerySchema,
   listUsersQuerySchema,
+  type ChangesList,
   type CreateUserBody,
+  type ListChangesQuery,
   type ListUsersQuery,
   type UserDetail,
   type UsersList,
@@ -14,8 +19,9 @@ import {
 import { UsersService } from './users.service.js';
 
 /**
- * Users: list, get and create, for admins (Better Auth's session, in
- * apps/auth). No update or delete yet; `me` is the signed-in user.
+ * Users: list, get and create, and their change log, for admins (Better
+ * Auth's session, in apps/auth). No update or delete yet; `me` is the
+ * signed-in user.
  */
 @Controller('users')
 export class UsersController
@@ -25,7 +31,10 @@ export class UsersController
       'list' | 'get' | 'create'
     >
 {
-  constructor(private usersService: UsersService) {}
+  constructor(
+    private usersService: UsersService,
+    private changelog: ChangelogService,
+  ) {}
 
   @Get('me')
   async getProfile(@Session() session: UserSession) {
@@ -46,6 +55,20 @@ export class UsersController
     @Body(new ZodValidationPipe(createUserBodySchema)) body: CreateUserBody,
   ): Promise<UserDetail> {
     return this.usersService.create(body);
+  }
+
+  /**
+   * The changes of a user (Better Auth's writes: profile, email, role,
+   * ban, verification), newest first. 404 if they don't exist.
+   */
+  @Get(':id/changes')
+  @Roles(['admin'])
+  async changes(
+    @Param('id') id: string,
+    @Query(new ZodValidationPipe(listChangesQuerySchema)) query: ListChangesQuery,
+  ): Promise<ChangesList> {
+    await this.usersService.get(id);
+    return this.changelog.list(USERS_RESOURCE, id, query);
   }
 
   /** Declared last so it doesn't catch /users/me. */

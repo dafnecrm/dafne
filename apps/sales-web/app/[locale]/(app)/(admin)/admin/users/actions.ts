@@ -3,7 +3,8 @@
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { BackendError, authFetch } from "@dafne/frontend-api/server";
-import type { UserDetail } from "@/lib/users";
+import type { ChangesPage } from "@dafne/frontend-changelog";
+import { listUserChanges, type UserDetail } from "@/lib/users";
 import { userSchema, type UserFormValues } from "./schema";
 
 /*
@@ -54,4 +55,19 @@ export async function createUser(values: UserFormValues): Promise<ActionError> {
   }
   // Outside the try: redirect works by throwing.
   redirect(`/admin/users/${encodeURIComponent(id)}`);
+}
+
+/**
+ * A page of the user's change log, for its history sheet (a client
+ * component: authFetch only runs on the server).
+ */
+export async function getUserChanges(
+  id: string,
+  query: { limit: number; offset: number },
+): Promise<ChangesPage | ActionError> {
+  try {
+    return await listUserChanges(id, query);
+  } catch (error) {
+    return { error: await errorMessage(error) };
+  }
 }
