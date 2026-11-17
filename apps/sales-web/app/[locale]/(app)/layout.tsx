@@ -5,6 +5,7 @@ import {
   BreadcrumbProvider,
   PageBreadcrumb,
 } from "@/components/page-breadcrumb";
+import { LeaveGuardProvider } from "@dafne/frontend-forms/leave-guard";
 import { ThemeToggle } from "@dafne/frontend-ui/components/theme-toggle";
 import { Separator } from "@dafne/frontend-ui/components/separator";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
@@ -44,7 +45,10 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             <PageBreadcrumb />
             <ThemeToggle className="ml-auto" />
           </header>
-          <div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>
+          {/* Asks before leaving a form with unsaved changes (useResetOnLeave). */}
+          <LeaveGuardProvider>
+            <div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>
+          </LeaveGuardProvider>
         </BreadcrumbProvider>
       </SidebarInset>
     </SidebarProvider>
