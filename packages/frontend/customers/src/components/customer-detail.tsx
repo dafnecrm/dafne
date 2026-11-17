@@ -13,6 +13,7 @@ import {
   IdCardIcon,
   Building2Icon, SquareUserIcon
 } from "lucide-react";
+import type { ReactNode } from "react";
 import CopyButton from "@dafne/frontend-ui/components/copy-button";
 import { Detail, DetailSection } from "@dafne/frontend-ui/components/detail";
 import { LocalDate } from "@dafne/frontend-ui/components/local-date";
@@ -24,19 +25,24 @@ import { CustomerAddressTable } from "./customer-address-table.tsx";
 /**
  * The details of a customer: type and tax data, contact, addresses, then
  * who created and updated it. `path` is the app's customers list.
+ * `children` are extra sections, shown before the record: libs that build
+ * on customers (e.g. the sales orders) add theirs from the app's page.
  */
 export function CustomerDetails({
   customer,
   path,
+  children,
 }: {
   customer: CustomerDetail;
   path: string;
+  children?: ReactNode;
 }) {
   const t = useTranslations();
   const optionLabel = useOptionLabel();
 
   return (
     <>
+      {/* Details */}
       <DetailSection title={t("customers.sections.details")} groupVariant="grid">
         <Detail icon={SquareUserIcon} label={t("customers.fields.name")}>
           {customer.name}
@@ -66,6 +72,7 @@ export function CustomerDetails({
         )}
       </DetailSection>
 
+      {/* Contact */}
       <DetailSection title={t("customers.sections.contact")} groupVariant="grid">
         <Detail icon={MailIcon} label={t("customers.fields.email")}>
           {customer.email ? (
@@ -93,6 +100,7 @@ export function CustomerDetails({
         </Detail>
       </DetailSection>
 
+      {/* Addresses */}
       <DetailSection
         title={t("customers.sections.addressesCount", {
           count: customer.addresses.length,
@@ -109,6 +117,10 @@ export function CustomerDetails({
         />
       </DetailSection>
 
+      {/* Sections of other libs */}
+      {children}
+
+      {/* Record */}
       <DetailSection title={t("common.record.title")} defaultOpen={false}>
         <Detail icon={FingerprintIcon} label={t("customers.fields.id")}>
           <div className="flex items-center gap-2">

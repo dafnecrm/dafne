@@ -51,5 +51,20 @@ export const it: SalesOrdersMessages = {
       save: "Salva",
     },
   },
-  status: { draft: "Draft", open: "Open", completed: "Completed", cancelled: "Cancelled", rejected: "Rejected" }
+  status: { draft: "Draft", open: "Open", completed: "Completed", cancelled: "Cancelled", rejected: "Rejected" },
+  customerSection: {
+    title: "Ultimi {limit} ordini di vendita",
+    loading: "Caricamento degli ordini di vendita…",
+    loadError: "Impossibile caricare gli ordini di vendita. Riprova.",
+    retry: "Riprova",
+    viewAll: "Vedi tutti ({count})",
+    new: "Crea ordine",
+    detail: "Mostra dettagli",
+    edit: "Modifica ordine",
+    delete: "Elimina ordine",
+    empty: {
+      title: "Nessun ordine di vendita",
+      description: "Questo cliente non ha ancora ordini di vendita.",
+    },
+  },
 };

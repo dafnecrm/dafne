@@ -4,12 +4,6 @@ import { revalidateLogic } from "@tanstack/react-form-nextjs";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Button } from "@dafne/frontend-ui/components/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@dafne/frontend-ui/components/card";
 import { FieldGroup } from "@dafne/frontend-ui/components/field";
 import { setServerError } from "@dafne/frontend-forms/client";
 import { useResetOnLeave } from "@dafne/frontend-forms/client";
@@ -25,6 +19,7 @@ import { SalesOrderItemSheet } from "./sales-order-item-sheet.tsx";
 import type { ProductOption } from "@dafne/frontend-products/actions";
 import { useOptionLabels } from "@dafne/frontend-ui/hooks/use-option-labels";
 import { InputGroupAddon } from "@dafne/frontend-ui/components/input-group";
+import { useSearchParams } from "next/navigation";
 
 
 /**
@@ -33,15 +28,19 @@ import { InputGroupAddon } from "@dafne/frontend-ui/components/input-group";
  */
 export function SalesOrderForm({
   salesOrder,
-  path,
+  path
 }: {
   salesOrder?: SalesOrderDetail;
   path: string;
 }) {
   const t = useTranslations();
+  const searchParams = useSearchParams()
+  const customerIdFromParams = searchParams.get('customerId');
+
   const statusOptions = useOptionLabels(STATUS_OPTIONS);
+  
   const form = useAppForm({
-    ...salesOrderFormOpts(salesOrder),
+    ...salesOrderFormOpts(salesOrder, { customerId: customerIdFromParams }),
     // Validate on submit, then on every change.
     validationLogic: revalidateLogic(),
     validators: { onDynamic: salesOrderSchema },

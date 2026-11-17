@@ -59,7 +59,7 @@ export class CustomersController
     return this.customersService.get(id);
   }
 
-  /** The changes of a sales order, newest first. 404 if it doesn't exist or is deleted. */
+  /** The changes of a customer, newest first. 404 if it doesn't exist or is deleted. */
   @Get(':id/changes')
   async changes(
     @Param('id', IdPipe) id: number,

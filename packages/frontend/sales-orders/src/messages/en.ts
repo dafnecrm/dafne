@@ -53,7 +53,23 @@ export const en = {
       save: "Save",
     },
   },
-  status: { draft: 'Draft', open: 'Open', completed: 'Completed', cancelled: 'Cancelled', rejected: 'Rejected' }
+  status: { draft: 'Draft', open: 'Open', completed: 'Completed', cancelled: 'Cancelled', rejected: 'Rejected' },
+  /** The section on a customer's page. */
+  customerSection: {
+    title: "Last {limit} sales orders",
+    loading: "Loading the sales orders…",
+    loadError: "Couldn't load the sales orders. Try again.",
+    retry: "Try again",
+    viewAll: "View all ({count})",
+    new: "Create order",
+    detail: "Show details",
+    edit: "Edit order",
+    delete: "Delete order",
+    empty: {
+      title: "No sales orders",
+      description: "This customer has no sales orders yet.",
+    },
+  },
 };
 
 /** The shape every language must have: same keys, any text. */

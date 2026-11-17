@@ -20,6 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function NewSalesOrderPage() {
   const t = useTranslations();
+
   return (
     <PageContent>
       <PageContentHeader>
