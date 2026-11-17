@@ -16,6 +16,7 @@ export const SALES_ORDER_STATES: StatesConfig<SalesOrderStatus, number> = {
     },
   },
   open: {
+    draft: {},
     completed: {},
     cancelled: {},
     rejected: {},

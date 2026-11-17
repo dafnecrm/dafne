@@ -9,11 +9,17 @@ import { SalesOrdersController } from './sales-orders.controller.js';
 import { SalesOrderTransition } from './sales-order.transition.js';
 import { SALES_ORDER_STATE_MACHINE, SALES_ORDER_STATES } from './sales-order.states.js';
 import { SALES_ORDER_CHANGELOG, SALES_ORDERS_RESOURCE, SalesOrderStatusChangelog } from './sales-order.changelog.js';
+import { SalesOrderIsDraftHook } from './sales-order.hooks.js';
 
 @Module({
   imports: [
     DatabaseModule,
     CrudHooksModule,
+    CrudHooksModule.forFeature(SALES_ORDERS_RESOURCE, {
+      update: {
+        pre: [SalesOrderIsDraftHook],
+      },
+    }),
     // The change log: the CRUD writes, and (below) every status change.
     ChangelogModule,
     ChangelogModule.forFeature<SalesOrderDetail>(SALES_ORDERS_RESOURCE, SALES_ORDER_CHANGELOG),

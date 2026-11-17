@@ -16,7 +16,7 @@ export interface ChangelogOptions<Detail> {
 }
 
 /** The logged fields of a record. */
-function snapshot<Detail>(record: Detail, { fields, map = {} }: ChangelogOptions<Detail>): Record<string, unknown> {
+export function snapshot<Detail>(record: Detail, { fields, map = {} }: ChangelogOptions<Detail>): Record<string, unknown> {
   return Object.fromEntries(
     fields.map((field) => {
       const value = record[field];
