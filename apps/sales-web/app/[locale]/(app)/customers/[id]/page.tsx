@@ -15,7 +15,9 @@ import { Button } from "@dafne/frontend-ui/components/button";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { CustomerDetails } from "@dafne/frontend-customers/components/customer-detail";
 import { CustomerDetailActions } from "@dafne/frontend-customers/components/customer-detail-actions";
+import { CustomerSalesOrdersDetailSection } from "@dafne/frontend-sales-orders/components/customer-sales-orders";
 import { customersTable } from "@/lib/customers-table";
+import { salesOrdersTable } from "@/lib/sales-orders-table";
 import { loadCustomer } from "./load-customer";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -66,7 +68,12 @@ async function CustomerProfile({
       </PageContentHeader>
 
       <PageContentBody>
-        <CustomerDetails customer={customer} path={customersTable.path} />
+        <CustomerDetails customer={customer} path={customersTable.path}>
+          <CustomerSalesOrdersDetailSection
+            customerId={customer.id}
+            path={salesOrdersTable.path}
+          />
+        </CustomerDetails>
       </PageContentBody>
     </PageContent>
   );

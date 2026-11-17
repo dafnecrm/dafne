@@ -41,14 +41,15 @@ const col = createDataTableColumnHelper<ListedSalesOrder>();
 
 /**
  * Translated per language; memoized, so the table sees the same columns on
- * every render. Ids link to `<path>/<id>`, the detail page.
+ * every render. Ids link to `<path>/<id>`, the detail page. Without
+ * `customersPath` there is no customer column (e.g. on a customer's page).
  */
-function useSalesOrderColumns({
+export function useSalesOrderColumns({
   path,
   customersPath,
 }: {
   path: string;
-  customersPath: string;
+  customersPath?: string;
 }) {
   const t = useTranslations();
   const optionLabel = useOptionLabel();
@@ -84,18 +85,22 @@ function useSalesOrderColumns({
             </Badge>
           }
         }),
-        col.accessor("customer", {
-          header: t("salesOrders.fields.customer"),
-          enableSorting: false,
-          cell: ({ row }) => (
-            <Link
-              href={`${customersPath}/${encodeURIComponent(row.original.customer.id)}`}
-              className="font-medium underline-offset-4 hover:underline"
-            >
-              {row.original.customer.name}
-            </Link>
-          ),
-        }),
+        ...(customersPath
+          ? [
+            col.accessor("customer", {
+              header: t("salesOrders.fields.customer"),
+              enableSorting: false,
+              cell: ({ row }) => (
+                <Link
+                  href={`${customersPath}/${encodeURIComponent(row.original.customer.id)}`}
+                  className="font-medium underline-offset-4 hover:underline"
+                >
+                  {row.original.customer.name}
+                </Link>
+              ),
+            }),
+          ]
+          : []),
         col.accessor("createdAt", {
           header: t("salesOrders.fields.createdAt"),
           meta: { className: "text-right" },

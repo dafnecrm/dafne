@@ -49,11 +49,11 @@ export const STATUS_OPTIONS = [
 ] satisfies { value: SalesOrderStatus; label: SalesOrdersMessageKey }[];
 
 /** Form values for a new sales order, or for editing `salesOrder`. */
-export function salesOrderFormOpts(salesOrder?: SalesOrderDetail) {
+export function salesOrderFormOpts(salesOrder?: SalesOrderDetail, defaults?: { customerId?: string | null }) {
   return formOptions({
     defaultValues: {
       notes: salesOrder?.notes ?? "",
-      customerId: salesOrder ? String(salesOrder.customerId) : "",
+      customerId: salesOrder ? String(salesOrder.customerId) : defaults?.customerId ?? "",
       typeId: String(salesOrder?.typeId) ?? "",
       items:
         salesOrder?.items.map((item) => ({

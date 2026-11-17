@@ -3,10 +3,10 @@
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { BackendError, backendFetch } from "@dafne/frontend-api/server";
+import type { ChangesPage } from "@dafne/frontend-changelog";
 import { customerSchema, type CustomerFormValues } from "./schema.ts";
 import { getCustomer, listCustomers, listCustomerChanges } from "./server.ts";
 import type { CustomerDetail, ListedCustomer } from "./types.ts";
-import type { ChangesPage } from "@dafne/frontend-changelog";
 
 /*
  * Customer mutations shared by the apps. The backend checks the session

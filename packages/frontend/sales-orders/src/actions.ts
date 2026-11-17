@@ -5,9 +5,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { BackendError, backendFetch } from "@dafne/frontend-api/server";
 import { salesOrderSchema, type SalesOrderFormValues } from "./schema.ts";
-import { getSalesOrderItem, listSalesOrderChanges } from "./server.ts";
+import { getSalesOrderItem, listSalesOrderChanges, listSalesOrders } from "./server.ts";
 import type { ChangesPage } from "@dafne/frontend-changelog";
-import type { SalesOrderDetail } from "./types.ts";
+import type { SalesOrderDetail, SalesOrdersList } from "./types.ts";
 import type { SalesOrderItem } from "@dafne/contracts";
 
 /*
@@ -120,6 +120,25 @@ export async function getSalesOrderChanges(
 ): Promise<ChangesPage | ActionError> {
   try {
     return await listSalesOrderChanges(id, query);
+  } catch (error) {
+    return { error: await errorMessage(error) };
+  }
+}
+
+/**
+ * A customer's sales orders, newest first (the default sort), for the
+ * section on their page (a client component: backendFetch only runs on the
+ * server).
+ */
+export async function getCustomerSalesOrders(
+  customerId: number,
+  query: { limit: number; offset: number },
+): Promise<SalesOrdersList | ActionError> {
+  try {
+    return await listSalesOrders({
+      ...query,
+      filters: { customerId: String(customerId) },
+    });
   } catch (error) {
     return { error: await errorMessage(error) };
   }
