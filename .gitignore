@@ -10,3 +10,5 @@ node_modules
 
 # TypeScript declarations of the typecheck (tsc --build)
 out-tsc
+
+.claude/settings.local.json
