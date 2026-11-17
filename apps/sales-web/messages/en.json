@@ -132,7 +132,13 @@
     "timeOf": "{label} (time)",
     "serverError": "Something went wrong",
     "hasErrors": "Form has errors!",
-    "pickDate": "Pick a date"
+    "pickDate": "Pick a date",
+    "leave": {
+      "title": "Unsaved changes",
+      "description": "If you leave, the changes to this form will be lost.",
+      "stay": "Stay",
+      "discard": "Leave without saving"
+    }
   },
   "users": {
     "title": "Users",

@@ -7,6 +7,12 @@ compiled by Next. Relative imports end in `.ts`/`.tsx`.
 - `./client`: contexts, the fields (`TextField`, `SelectField`, …),
   `FIELD_COMPONENTS` / `FORM_COMPONENTS`, `createAppFormHook`,
   `useErrorText`, `useResetOnLeave`, `setServerError`.
+- `./leave-guard`: `LeaveGuardProvider` (a `"use client"` module), its own
+  entry so that server layouts can render it (`./client` isn't one).
+- `useResetOnLeave(form)` resets the form when its page is hidden and,
+  under a `LeaveGuardProvider` (the app's `(app)` layout), asks before
+  following a link away from it with unsaved changes, and before
+  Back/Forward where the Navigation API can cancel it (`leave-guard.tsx`).
 - `useAppForm` (`./client`) has the generic fields and Zod's messages in
   the user's language; the apps' forms use it directly. A form that needs
   more fields builds its own hook with `createAppFormHook` (e.g.

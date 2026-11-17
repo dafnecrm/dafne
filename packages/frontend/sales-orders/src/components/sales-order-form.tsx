@@ -13,7 +13,7 @@ import { salesOrderFormOpts, salesOrderSchema, STATUS_OPTIONS } from "../schema.
 import type { SalesOrderDetail } from "../types.ts";
 import { DetailSection } from "@dafne/frontend-ui/components/detail";
 import { SalesOrderItemTable } from "./sales-order-items-table.tsx";
-import { PencilIcon, PlusIcon, TagIcon, Trash2Icon } from "lucide-react";
+import { PencilIcon, TagIcon, Trash2Icon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { SalesOrderItemSheet } from "./sales-order-item-sheet.tsx";
 import type { ProductOption } from "@dafne/frontend-products/actions";
@@ -140,6 +140,7 @@ export function SalesOrderForm({
                     groupClassName="flex"
                     actions={<Button
                       variant="outline"
+                      size="xs"
                       onClick={() =>
                         setSalesOrderItemSheet({
                           open: true,
@@ -147,7 +148,6 @@ export function SalesOrderForm({
                         })
                       }
                     >
-                      <PlusIcon />
                       {t("salesOrders.items.add")}
                     </Button>}
                   >

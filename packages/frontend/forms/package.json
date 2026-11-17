@@ -6,7 +6,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./client": "./src/client.ts"
+    "./client": "./src/client.ts",
+    "./leave-guard": "./src/leave-guard.tsx"
   },
   "scripts": {
     "lint": "eslint src",
@@ -20,12 +21,14 @@
     "zod": "catalog:"
   },
   "peerDependencies": {
+    "next": "catalog:",
     "next-intl": "catalog:",
     "react": "catalog:"
   },
   "devDependencies": {
     "@types/react": "catalog:",
     "eslint": "catalog:",
+    "next": "catalog:",
     "next-intl": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",

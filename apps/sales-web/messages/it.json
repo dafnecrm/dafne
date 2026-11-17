@@ -132,7 +132,13 @@
     "timeOf": "{label} (ora)",
     "serverError": "Qualcosa è andato storto",
     "hasErrors": "Il modulo contiene errori!",
-    "pickDate": "Scegli una data"
+    "pickDate": "Scegli una data",
+    "leave": {
+      "title": "Modifiche non salvate",
+      "description": "Se esci perderai le modifiche fatte al modulo.",
+      "stay": "Resta",
+      "discard": "Esci senza salvare"
+    }
   },
   "users": {
     "title": "Utenti",

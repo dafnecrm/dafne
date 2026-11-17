@@ -11,6 +11,7 @@ import {
   BriefcaseBusinessIcon,
   ShieldIcon,
   KeyRoundIcon,
+  LayoutDashboardIcon,
 } from "lucide-react";
 
 /**
@@ -56,7 +57,7 @@ export const NAV_SECTIONS: NavSection[] = [
     title: "home",
     href: "/",
     icon: HouseIcon,
-    items: [{ title: "dashboard", href: "/", icon: HouseIcon }],
+    items: [{ title: "dashboard", href: "/", icon: LayoutDashboardIcon }],
   },
   {
     title: "sales",
