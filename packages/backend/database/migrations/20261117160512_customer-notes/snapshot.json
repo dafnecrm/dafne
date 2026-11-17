@@ -1,0 +1,47 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "fb763c4c-1499-4928-9373-366d7067eb70",
+  "prevIds": [
+    "a3b366ed-d8c2-4fe8-936d-bc07311b0686"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "sales",
+        "customer",
+        "notes"
+      ],
+      "writes": [
+        "s|col|sales.customer.notes",
+        "n|col|sales.customer.notes",
+        "e|col|sales.customer.notes"
+      ],
+      "reads": [
+        "n|tbl|sales.customer",
+        "n|sch|sales"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "customer",
+        "name": "notes",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    }
+  ]
+}

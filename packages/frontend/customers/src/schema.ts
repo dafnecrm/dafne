@@ -96,6 +96,7 @@ export function customerFormOpts(customer?: CustomerDetail) {
       birthDate: customer?.birthDate?.slice(0, 10) ?? "",
       fiscalCode: customer?.fiscalCode ?? "",
       vatNumber: customer?.vatNumber ?? "",
+      notes: customer?.notes ?? "",
     } satisfies CustomerFormValues as CustomerFormValues,
   });
 }

@@ -35,6 +35,7 @@ export const it: CustomersMessages = {
     createdAt: "Aggiunto",
     id: "ID",
     addresses: "Addresses",
+    notes: "Notes",
   },
   type: {
     person: "Persona",

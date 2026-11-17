@@ -31,6 +31,8 @@ export const customer = salesSchema.table(
     vatNumber: varchar('vat_number', { length: 13 }),
     email: varchar('email', { length: 255 }).notNull(),
     phone: varchar('phone', { length: 32 }),
+    /** @api detail @form editor */
+    notes: text('notes'),
     createdAt: timestamp('created_at', { precision: 3, withTimezone: true })
       .defaultNow()
       .notNull(),

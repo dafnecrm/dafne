@@ -1,0 +1,1 @@
+ALTER TABLE "sales"."customer" ADD COLUMN "notes" text;
