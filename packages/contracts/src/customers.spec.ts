@@ -52,6 +52,7 @@ describe('customerBodySchema', () => {
       email: 'info@acme.test',
       phone: null,
       addresses: [],
+      notes: null,
     });
   });
 

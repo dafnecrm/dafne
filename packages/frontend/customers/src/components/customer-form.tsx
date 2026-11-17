@@ -3,13 +3,25 @@
 import { revalidateLogic } from "@tanstack/react-form-nextjs";
 import { useTranslations } from "next-intl";
 import { useOptionLabels } from "@dafne/frontend-ui/hooks/use-option-labels";
-import { Building2Icon, IdCardIcon, MailIcon, PencilIcon, PhoneIcon, PlusIcon, SquareUserIcon, TagIcon, Trash2Icon } from "lucide-react";
+import {
+  Building2Icon,
+  IdCardIcon,
+  MailIcon,
+  PencilIcon,
+  PhoneIcon,
+  PlusIcon,
+  SquareUserIcon,
+  TagIcon,
+  Trash2Icon,
+} from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@dafne/frontend-ui/components/button";
 import {
-  Card, CardContent, CardHeader,
-  CardTitle
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
 } from "@dafne/frontend-ui/components/card";
 import { FieldGroup } from "@dafne/frontend-ui/components/field";
 import { setServerError } from "@dafne/frontend-forms/client";
@@ -19,10 +31,7 @@ import type { CustomerDetail } from "../types.ts";
 import { CUSTOMER_TYPE_OPTIONS } from "../customers-table.ts";
 import { saveCustomer } from "../actions.ts";
 import { CustomerAddressSheet } from "./customer-address-sheet.tsx";
-import {
-  customerFormOpts,
-  customerSchema
-} from "../schema.ts";
+import { customerFormOpts, customerSchema } from "../schema.ts";
 import { CustomerAddressTable } from "./customer-address-table.tsx";
 import { DetailSection } from "@dafne/frontend-ui/components/detail";
 import { InputGroupAddon } from "@dafne/frontend-ui/components/input-group";
@@ -48,11 +57,7 @@ export function CustomerForm({
     validators: { onDynamic: customerSchema },
     onSubmit: async ({ value, formApi }) => {
       // Redirects on success, so only an error comes back.
-      const result = await saveCustomer(
-        customer?.id ?? null,
-        value,
-        path,
-      );
+      const result = await saveCustomer(customer?.id ?? null, value, path);
       if (result?.error) {
         setServerError(formApi, result.error);
       }
@@ -82,7 +87,10 @@ export function CustomerForm({
         <FieldGroup>
           <form.FormErrors />
 
-          <DetailSection title={t("customers.sections.details")} groupVariant="grid">
+          <DetailSection
+            title={t("customers.sections.details")}
+            groupVariant="grid"
+          >
             <form.AppField name="type">
               {(field) => (
                 <field.SelectField
@@ -161,9 +169,20 @@ export function CustomerForm({
                 </>
               )}
             </form.Subscribe>
+            <form.AppField name="notes">
+              {(field) => (
+                <field.TextEditorField
+                  label={t("customers.fields.notes")}
+                  className="col-span-full"
+                />
+              )}
+            </form.AppField>
           </DetailSection>
 
-          <DetailSection title={t("customers.sections.contact")} groupVariant="grid">
+          <DetailSection
+            title={t("customers.sections.contact")}
+            groupVariant="grid"
+          >
             <form.AppField name="email">
               {(field) => (
                 <field.TextField
@@ -197,81 +216,87 @@ export function CustomerForm({
           <DetailSection
             title={t("customers.sections.addresses")}
             groupClassName="flex"
-            actions={<Button
-              variant="outline"
-              onClick={() =>
-                setAddressSheet({
-                  open: true,
-                  index: null,
-                })
-              }
-            >
-              <PlusIcon />
-              {t("customers.addresses.add")}
-            </Button>}>
+            actions={
+              <Button
+                variant="outline"
+                onClick={() =>
+                  setAddressSheet({
+                    open: true,
+                    index: null,
+                  })
+                }
+              >
+                <PlusIcon />
+                {t("customers.addresses.add")}
+              </Button>
+            }
+          >
             <form.AppField name="addresses">
-              {(addresses) => <>
-                <CustomerAddressTable
-                  addresses={addresses.state.value}
-                  rowActions={(address, i) => <>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-sm"
-                      aria-label={t(
-                        "customers.addresses.editN",
-                        { n: i + 1 },
-                      )}
-                      onClick={() =>
-                        setAddressSheet({
-                          open: true,
-                          index: i,
-                        })
-                      }
-                    >
-                      <PencilIcon />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-sm"
-                      aria-label={t(
-                        "customers.addresses.removeN",
-                        { n: i + 1 },
-                      )}
-                      onClick={() => addresses.removeValue(i)}
-                    >
-                      <Trash2Icon />
-                    </Button>
-                  </>}
-                />
-                <form.Subscribe selector={(state) => state.values.type}>
-                  {(customerType) => (
-                    <CustomerAddressSheet
-                      open={addressSheet.open}
-                      onOpenChange={(open) =>
-                        setAddressSheet((sheet) => ({ ...sheet, open }))
-                      }
-                      customerType={customerType}
-                      usedTypes={addresses.state.value
-                        .filter((_, i) => i !== addressSheet.index)
-                        .map((a) => a.type)}
-                      address={
-                        addressSheet.index === null
-                          ? undefined
-                          : addresses.state.value[addressSheet.index]
-                      }
-                      onSave={(address) =>
-                        addressSheet.index === null
-                          ? addresses.pushValue(address)
-                          : addresses.replaceValue(
-                            addressSheet.index,
-                            address,
-                          )
-                      }
-                    />
-                  )}
-                </form.Subscribe></>}
+              {(addresses) => (
+                <>
+                  <CustomerAddressTable
+                    addresses={addresses.state.value}
+                    rowActions={(address, i) => (
+                      <>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          aria-label={t("customers.addresses.editN", {
+                            n: i + 1,
+                          })}
+                          onClick={() =>
+                            setAddressSheet({
+                              open: true,
+                              index: i,
+                            })
+                          }
+                        >
+                          <PencilIcon />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          aria-label={t("customers.addresses.removeN", {
+                            n: i + 1,
+                          })}
+                          onClick={() => addresses.removeValue(i)}
+                        >
+                          <Trash2Icon />
+                        </Button>
+                      </>
+                    )}
+                  />
+                  <form.Subscribe selector={(state) => state.values.type}>
+                    {(customerType) => (
+                      <CustomerAddressSheet
+                        open={addressSheet.open}
+                        onOpenChange={(open) =>
+                          setAddressSheet((sheet) => ({ ...sheet, open }))
+                        }
+                        customerType={customerType}
+                        usedTypes={addresses.state.value
+                          .filter((_, i) => i !== addressSheet.index)
+                          .map((a) => a.type)}
+                        address={
+                          addressSheet.index === null
+                            ? undefined
+                            : addresses.state.value[addressSheet.index]
+                        }
+                        onSave={(address) =>
+                          addressSheet.index === null
+                            ? addresses.pushValue(address)
+                            : addresses.replaceValue(
+                                addressSheet.index,
+                                address,
+                              )
+                        }
+                      />
+                    )}
+                  </form.Subscribe>
+                </>
+              )}
             </form.AppField>
           </DetailSection>
 

@@ -36,6 +36,7 @@ export const en = {
     createdAt: "Added",
     id: "ID",
     addresses: 'Addresses',
+    notes: 'Notes',
   },
   type: {
     person: "Person",

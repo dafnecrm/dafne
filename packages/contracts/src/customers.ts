@@ -87,6 +87,7 @@ export const customerBodySchema = z
         .string()
         .regex(PHONE_PATTERN, { error: msg('customers.phone.invalid') }),
     ),
+    notes: optionalText(z.string().max(65535)),
     /** In display order; at most one address of each type. */
     addresses: z
       .array(customerAddressBodySchema)
@@ -174,7 +175,6 @@ export interface CustomerAddress {
   /** State, province or region. */
   region: string | null;
   countryCode: string;
-  country: CustomerAddressCountry;
 }
 
 /** The country of an address. */
@@ -197,6 +197,7 @@ export interface CustomerDetail extends ListedCustomer {
   birthDate: Date | null;
   fiscalCode: string | null;
   vatNumber: string | null;
+  notes: string | null;
   /** Always null: deleted customers aren't returned. */
   deletedAt: Date | null;
 }

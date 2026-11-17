@@ -11,7 +11,9 @@ import {
   TagIcon,
   CalendarIcon,
   IdCardIcon,
-  Building2Icon, SquareUserIcon
+  Building2Icon,
+  SquareUserIcon,
+  TextIcon,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import CopyButton from "@dafne/frontend-ui/components/copy-button";
@@ -21,6 +23,7 @@ import { PlainDate } from "@dafne/frontend-ui/components/plain-date";
 import type { CustomerDetail } from "../types.ts";
 import { CUSTOMER_TYPE_OPTIONS } from "../customers-table.ts";
 import { CustomerAddressTable } from "./customer-address-table.tsx";
+import { TextEditorContent } from "@dafne/frontend-ui/components/text-editor";
 
 /**
  * The details of a customer: type and tax data, contact, addresses, then
@@ -43,7 +46,10 @@ export function CustomerDetails({
   return (
     <>
       {/* Details */}
-      <DetailSection title={t("customers.sections.details")} groupVariant="grid">
+      <DetailSection
+        title={t("customers.sections.details")}
+        groupVariant="grid"
+      >
         <Detail icon={SquareUserIcon} label={t("customers.fields.name")}>
           {customer.name}
         </Detail>
@@ -70,10 +76,21 @@ export function CustomerDetails({
             {customer.vatNumber ?? "—"}
           </Detail>
         )}
+
+        <Detail icon={TextIcon} label={t("customers.fields.notes")} wide>
+          {customer.notes ? (
+            <TextEditorContent html={customer.notes} className="font-normal" />
+          ) : (
+            "—"
+          )}
+        </Detail>
       </DetailSection>
 
       {/* Contact */}
-      <DetailSection title={t("customers.sections.contact")} groupVariant="grid">
+      <DetailSection
+        title={t("customers.sections.contact")}
+        groupVariant="grid"
+      >
         <Detail icon={MailIcon} label={t("customers.fields.email")}>
           {customer.email ? (
             <a
@@ -112,7 +129,7 @@ export function CustomerDetails({
             countryCode: addr.countryCode,
             postalCode: addr.postalCode,
             street: addr.street,
-            type: addr.type
+            type: addr.type,
           }))}
         />
       </DetailSection>

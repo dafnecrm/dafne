@@ -166,7 +166,6 @@ export class CustomersService
         addresses: {
           columns: { customerId: false, position: false },
           orderBy: { position: 'asc' },
-          with: { country: { columns: { name: true } } },
         },
         createdBy: userSummary,
         updatedBy: userSummary,
@@ -199,6 +198,7 @@ export class CustomersService
             vatNumber: body.vatNumber,
             email: body.email,
             phone: body.phone,
+            notes: body.notes,
             createdAt: now,
             updatedAt: now,
             createdById: actor.id,
@@ -235,6 +235,7 @@ export class CustomersService
             vatNumber: body.vatNumber,
             email: body.email,
             phone: body.phone,
+            notes: body.notes,
             updatedById: actor.id,
             // The time of this change.
             updatedAt: new Date(),
