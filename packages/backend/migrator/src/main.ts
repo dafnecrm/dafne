@@ -8,14 +8,19 @@
  *
  * --optional (the `migrate:dev` target, run before `dafne dev`): without a
  * server configured it warns and exits, instead of failing.
+ * --create (`migrate:dev` too): when the database or its owner is missing
+ * (a new server, e.g. the one of compose.yaml), creates them first as
+ * `pnpm dafne db create` does, with ADMIN_DATABASE_URL.
  */
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { migrate } from './apply.ts';
+import { ensureDatabase } from './create.ts';
 import { databasePackages, findWorkspaceRoot } from './workspace.ts';
 
 const ENV_FILE = join(import.meta.dirname, '..', '.env');
-if (!process.env.MIGRATIONS_DATABASE_URL && existsSync(ENV_FILE)) {
+// What the environment sets already wins over the file.
+if (existsSync(ENV_FILE)) {
   process.loadEnvFile(ENV_FILE);
 }
 
@@ -32,6 +37,18 @@ if (!url) {
       'Set it in the environment or in packages/backend/migrator/.env.',
   );
   process.exit(1);
+}
+
+const adminUrl = process.env.ADMIN_DATABASE_URL;
+if (process.argv.includes('--create') && adminUrl) {
+  const created = await ensureDatabase({
+    adminUrl,
+    url,
+    log: (line) => console.log(line),
+  });
+  if (created) {
+    console.log('The database was missing: created.');
+  }
 }
 
 const packages = databasePackages(findWorkspaceRoot(import.meta.dirname));

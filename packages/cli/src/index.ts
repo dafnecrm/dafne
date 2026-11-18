@@ -4,6 +4,7 @@ import { Command } from 'commander';
 import { dbCommand } from './commands/db.ts';
 import { generateCommand } from './commands/generate.ts';
 import { removeCommand } from './commands/remove.ts';
+import { servicesCommand } from './commands/services.ts';
 import { syncCommand } from './commands/sync.ts';
 import { taskCommands } from './commands/tasks.ts';
 
@@ -13,7 +14,8 @@ const program = new Command('dafne')
   .addCommand(generateCommand())
   .addCommand(removeCommand())
   .addCommand(syncCommand())
-  .addCommand(dbCommand());
+  .addCommand(dbCommand())
+  .addCommand(servicesCommand());
 for (const command of taskCommands()) {
   program.addCommand(command);
 }

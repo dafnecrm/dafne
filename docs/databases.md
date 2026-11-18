@@ -138,7 +138,10 @@ pnpm dafne db generate --custom --name x  # empty, for SQL written by hand
 `generate` runs drizzle-kit as it is: no patch and no fixes afterwards.
 
 In development, `dafne dev` runs `migrate:dev` before the APIs; it skips
-with a warning when `MIGRATIONS_DATABASE_URL` isn't set.
+with a warning when `MIGRATIONS_DATABASE_URL` isn't set. When the database
+or its owner is missing (a new server, e.g. the one of `compose.yaml`), it
+first creates them as `db create` does, with `ADMIN_DATABASE_URL`
+(`--create`; `db migrate` never does).
 
 ## The change log
 
@@ -211,25 +214,60 @@ first, drop in a later release.
 
 ## Roles and grants
 
-Each app connects to `dafne` with its own role (`DATABASE_URL`), with
-rights on its schema only, plus what it points to elsewhere. E.g. for the
-sales API:
+**In development** every app connects as the database's owner (the
+`dafne` role of `MIGRATIONS_DATABASE_URL`, which `pnpm dafne db create`
+makes): the `.env.example` files use it, and `dafne dev` creates and
+migrates the database by itself.
+
+**In production** each app connects to `dafne` with its own role
+(`DATABASE_URL`), with rights on its schema only, plus what it reads
+elsewhere. The operator creates the roles and runs the grants once, after
+the first `db migrate` (the schemas must exist), as a superuser or as
+`dafne`, the owner of the schemas. The `DEFAULT PRIVILEGES` cover the
+tables and sequences that later migrations create. The ids are `serial`,
+so inserting needs `USAGE` on the sequences too.
 
 ```sql
+CREATE ROLE dafne_auth LOGIN PASSWORD '…';
+CREATE ROLE dafne_sales LOGIN PASSWORD '…';
+
+-- apps/auth: the auth schema (Better Auth: users, sessions, accounts,
+-- verification, app_access).
+GRANT USAGE ON SCHEMA auth TO dafne_auth;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA auth TO dafne_auth;
+GRANT USAGE ON ALL SEQUENCES IN SCHEMA auth TO dafne_auth;
+ALTER DEFAULT PRIVILEGES FOR ROLE dafne IN SCHEMA auth
+  GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO dafne_auth;
+ALTER DEFAULT PRIVILEGES FOR ROLE dafne IN SCHEMA auth
+  GRANT USAGE ON SEQUENCES TO dafne_auth;
+
+-- apps/sales-api: the sales schema, and the users it points to.
 GRANT USAGE ON SCHEMA sales TO dafne_sales;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA sales TO dafne_sales;
+GRANT USAGE ON ALL SEQUENCES IN SCHEMA sales TO dafne_sales;
 ALTER DEFAULT PRIVILEGES FOR ROLE dafne IN SCHEMA sales
   GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO dafne_sales;
+ALTER DEFAULT PRIVILEGES FOR ROLE dafne IN SCHEMA sales
+  GRANT USAGE ON SEQUENCES TO dafne_sales;
 GRANT USAGE ON SCHEMA auth TO dafne_sales;
-GRANT SELECT, REFERENCES ON auth."user" TO dafne_sales;
--- The change log: write and read, never change.
-GRANT USAGE ON SCHEMA changelog TO dafne_sales;
-GRANT SELECT, INSERT ON ALL TABLES IN SCHEMA changelog TO dafne_sales;
-GRANT USAGE ON SEQUENCE changelog.change_id_seq TO dafne_sales;
+GRANT SELECT ON auth."user" TO dafne_sales;
+
+-- Both: the change log, written and read, never changed (the users'
+-- changes are logged by apps/auth, the records' by the APIs).
+GRANT USAGE ON SCHEMA changelog TO dafne_auth, dafne_sales;
+GRANT SELECT, INSERT ON ALL TABLES IN SCHEMA changelog TO dafne_auth, dafne_sales;
+GRANT USAGE ON ALL SEQUENCES IN SCHEMA changelog TO dafne_auth, dafne_sales;
+ALTER DEFAULT PRIVILEGES FOR ROLE dafne IN SCHEMA changelog
+  GRANT SELECT, INSERT ON TABLES TO dafne_auth, dafne_sales;
+ALTER DEFAULT PRIVILEGES FOR ROLE dafne IN SCHEMA changelog
+  GRANT USAGE ON SEQUENCES TO dafne_auth, dafne_sales;
 ```
 
-(`dafne` being the role of `MIGRATIONS_DATABASE_URL`, which owns the
-tables.) The operator sets them up.
+The foreign keys to `auth.user` need no grant at runtime: Postgres checks
+them as the owner of the tables. A new app gets the same block for its
+own schema, plus `auth."user"` and the change log; a new table of a
+schema another app reads (the planned `core`) needs a `GRANT SELECT` to
+that app's role.
 
 ## See also
 

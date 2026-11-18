@@ -28,10 +28,11 @@ function nxBin(root: string) {
 /**
  * Runs `nx <args>` in the workspace with the terminal attached, and
  * resolves with its exit code. Ctrl+C reaches Nx, which stops its tasks.
+ * `env` is added to the environment of Nx and of its tasks.
  */
-export function runNx(root: string, args: string[]): Promise<number> {
+export function runNx(root: string, args: string[], env: Record<string, string> = {}): Promise<number> {
   return new Promise((done, fail) => {
-    const child = spawn(nxBin(root), args, { cwd: root, stdio: 'inherit' });
+    const child = spawn(nxBin(root), args, { cwd: root, stdio: 'inherit', env: { ...process.env, ...env } });
     child.on('error', fail);
     child.on('exit', (code, signal) => done(code ?? (signal ? 1 : 0)));
   });

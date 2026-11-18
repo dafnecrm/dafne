@@ -13,10 +13,11 @@ export const AUTH_URL = process.env.AUTH_URL ?? "http://localhost:3001";
 
 /**
  * Public URL of this app. Sent as the `Origin` header so Better Auth's CSRF
- * check accepts requests that carry the session cookie. It must be listed in
- * the backend's TRUSTED_ORIGINS.
+ * check accepts requests that carry the session cookie. It must be one of
+ * apps/auth's AUTH_ALLOWED_HOSTS (or TRUSTED_ORIGINS). The default is the
+ * CRM's host under `dafne dev`.
  */
-export const APP_URL = process.env.APP_URL ?? "http://localhost:4000";
+export const APP_URL = process.env.APP_URL ?? "https://sales-web.dafne.localhost";
 
 /**
  * Calls the app's API from the server, forwarding the browser's cookies and

@@ -284,6 +284,7 @@ describe('backend-app', () => {
     await generate(backendAppGenerator, { name: 'worker', port: 3002 });
     expect(read('apps/worker/package.json')).toContain('"name": "@dafne/worker"');
     expect(JSON.parse(read('apps/worker/package.json')).nx.tags).toEqual(['scope:backend']);
+    expect(JSON.parse(read('apps/worker/package.json')).dafne.dev).toEqual({ host: 'worker', port: 3002 });
     expect(read('apps/worker/.prettierrc')).toContain('singleQuote');
     const main = read('apps/worker/src/main.ts');
     expect(main).toContain("import { WorkerModule } from './worker.module.js';");
@@ -872,7 +873,10 @@ describe('frontend-app', () => {
     expect(pkg.name).toBe('@dafne/billing-web');
     expect(pkg.scripts.dev).toBe('next dev --port 4100');
     expect(pkg.nx.tags).toEqual(['scope:frontend']);
-    expect(read('apps/billing-web/.env.example')).toContain('APP_URL=http://localhost:4100');
+    // `dafne dev` serves it at https://billing-web.dafne.localhost.
+    expect(pkg.dafne.dev).toEqual({ host: 'billing-web', port: 4100 });
+    expect(read('apps/billing-web/.env.example')).toContain('APP_URL=https://billing-web.dafne.localhost');
+    expect(read('apps/billing-web/next.config.ts')).toContain('allowedDevOrigins: ["*.dafne.localhost"]');
     expect(read('apps/billing-web/.gitignore')).toContain('/.next/');
     expect(changes).toContain('CREATE apps/billing-web/app/favicon.ico');
     expect(changes).toContain('CREATE apps/billing-web/app/[locale]/(app)/account/page.tsx');

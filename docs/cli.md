@@ -393,7 +393,7 @@ packages. `migrate` needs `MIGRATIONS_DATABASE_URL`. See
 ## Running tasks
 
 ```sh
-dafne dev                            # @dafne/auth, @dafne/sales-api, @dafne/sales-web in watch mode
+dafne dev                            # @dafne/auth, @dafne/sales-api, @dafne/sales-web in watch mode, at https://<app>.dafne.localhost
 dafne dev @dafne/worker              # given projects
 dafne test                           # every project
 dafne test @dafne/backend-customers
@@ -407,6 +407,64 @@ dafne projects -t dev                # those with a target
 
 They run `nx run-many` (or `nx affected`) with the terminal attached; Nx
 adds the dependencies each target needs.
+
+### The dev proxy
+
+`dafne dev` first starts a proxy (`src/core/dev-proxy.ts`, Node only)
+that serves each app it starts at `https://<host>.dafne.localhost`, the
+host and port being the app's `"dafne": { "dev": { "host", "port" } }` in
+its `package.json` (`dafne g frontend-app` and `backend-app` write it).
+`*.localhost` resolves to the loopback by itself (browsers, macOS, Node),
+so there is no hosts file to edit.
+
+- **HTTPS** with [mkcert](https://github.com/FiloSottile/mkcert), as
+  Drizzle Studio does: when it's installed, `dafne dev` makes one
+  certificate for `*.dafne.localhost` from mkcert's local CA (kept in
+  `~/Library/Application Support/dafne/certs` on macOS, renewed when it
+  nears its end), serves HTTPS on port 443 and redirects port 80 to it.
+  If the browser warns about the certificate, run `mkcert -install` once
+  (it trusts the CA). Without mkcert, or with **`--no-https`**, the
+  proxy serves plain HTTP on port 80. TLS ends at the proxy: the apps get
+  HTTP, with `X-Forwarded-Proto: https`.
+- **Ports 80 and 443.** macOS lets a non-root process take them only on
+  every address, so the proxy listens there and drops connections that
+  don't come from this machine.
+- **Port taken.** If another `dafne dev` holds it (another worktree),
+  the new one adds its apps to that proxy and removes them when it stops.
+  If something else holds it, the proxy takes the first free port from
+  8443 (8080 on HTTP): `https://sales-web.dafne.localhost:8443`. The
+  redirect from port 80 is skipped when that port is taken.
+- **`DAFNE_PROXY_PORT=<port>`** fixes the port: no fallback, an error if
+  it's taken. **`--no-proxy`**: no proxy, only `localhost:<port>`.
+- The apps get the hosts served in `DEV_AUTH_ALLOWED_HOSTS`: `apps/auth`
+  trusts them (with the port, when it isn't the default one), on top of
+  `AUTH_ALLOWED_HOSTS`.
+- **<https://dafne.localhost>** lists the running apps as links. Nx's
+  terminal UI covers the URLs `dafne dev` prints before it starts, so
+  that page is where to find them. A host the proxy doesn't know gets the
+  same list, with a 404.
+- The proxy keeps the browser's `Host` and passes WebSockets (Next's HMR)
+  through. An app that isn't up yet gets a 502. The frontends' server-side calls
+  (`BACKEND_URL`, `AUTH_URL`) skip it and go straight to the ports.
+
+### Development services
+
+Before the apps (and the migrations they run first), `dafne dev` starts
+the services of `compose.yaml`, PostgreSQL 18 and Redis 8
+(`src/core/dev-services.ts`: `docker compose up -d --wait`, which returns
+at once when they run already). They keep running after `dafne dev`
+stops. Without Docker, or when a port is held by another server (e.g.
+Postgres.app on 5432), that service isn't started and the apps use what
+their `.env` points to. `--no-services` skips them.
+
+```sh
+dafne services up              # start them, wait until healthy
+dafne services status          # ports and health
+dafne services logs [db|redis] # follow the logs
+dafne services down [-v]       # stop them (-v: and delete the data)
+```
+
+`DAFNE_DB_PORT` / `DAFNE_REDIS_PORT` move them off 5432 / 6379.
 
 | Option            | Meaning                                                   |
 | ----------------- | --------------------------------------------------------- |

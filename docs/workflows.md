@@ -153,9 +153,11 @@ cp apps/billing-web/.env.example apps/billing-web/.env
 pnpm dafne dev @dafne/auth @dafne/billing-web   # plus its API
 ```
 
-A Next.js app like `apps/sales-web`, without its resources. Add
-`http://localhost:4001` to `TRUSTED_ORIGINS` of `apps/auth`, then its pages
-with `pnpm dafne g frontend-resource <name> --app billing-web`.
+A Next.js app like `apps/sales-web`, without its resources. `dafne dev`
+serves it at <https://billing-web.dafne.localhost>, which `apps/auth`
+already trusts (`AUTH_ALLOWED_HOSTS=*.dafne.localhost`): its email links go
+back to it, and it shares the sign-in with the other apps. Then add its
+pages with `pnpm dafne g frontend-resource <name> --app billing-web`.
 
 ## Add a shadcn component
 

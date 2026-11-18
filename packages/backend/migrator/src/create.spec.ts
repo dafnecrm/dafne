@@ -1,5 +1,5 @@
 import pg from 'pg';
-import { createDatabase, databaseTarget } from './create.ts';
+import { createDatabase, databaseTarget, ensureDatabase } from './create.ts';
 
 describe('databaseTarget', () => {
   it('reads database, role and password from the URL', () => {
@@ -82,5 +82,15 @@ describe.skipIf(!adminUrl)('createDatabase (Postgres)', () => {
       role: 'exists',
       database: 'exists',
     });
+  });
+
+  it('ensureDatabase creates them only when missing', async () => {
+    expect(await ensureDatabase({ adminUrl: adminUrl!, url: url() })).toBe(true);
+    expect(await ensureDatabase({ adminUrl: adminUrl!, url: url() })).toBe(false);
+    // The database dropped, the role kept: only the database comes back.
+    await query(`DROP DATABASE ${name}`);
+    expect(await ensureDatabase({ adminUrl: adminUrl!, url: url() })).toBe(true);
+    const [db] = await query('SELECT 1 AS ok FROM pg_database WHERE datname = $1', [name]);
+    expect(db).toEqual({ ok: 1 });
   });
 });

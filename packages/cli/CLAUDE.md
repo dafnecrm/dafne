@@ -100,7 +100,17 @@ erasable syntax (no enums, namespaces or constructor parameter properties;
   `--no-migration` or declined) and `sync.ts` (`dafne sync contract`,
   `dafne sync frontend-resource`) do the same for their generators. `tasks.ts` maps
   `dev`, `test`, `build`, `lint`, `typecheck`, `run`, `affected` to
-  `nx run-many`/`nx affected` (`core/nx.ts`).
+  `nx run-many`/`nx affected` (`core/nx.ts`); `dev` first starts the dev
+  proxy (`core/dev-proxy.ts`: `https://<host>.dafne.localhost` → the apps'
+  `dafne.dev` ports, on port 443 with 80 redirecting to it, else joining
+  another `dafne dev`'s proxy, else 8443…; the certificate from mkcert,
+  `core/dev-cert.ts`; plain HTTP on 80/8080… without mkcert or with
+  `--no-https`; `--no-proxy`, `DAFNE_PROXY_PORT`) and passes the hosts it
+  serves as `DEV_AUTH_ALLOWED_HOSTS`. Before that, `dev` starts the
+  services of the root `compose.yaml` (`core/dev-services.ts`:
+  `startServices`, never fatal: no Docker or a port another server holds
+  leaves that service out; `--no-services`), and `services.ts` wraps
+  `docker compose` on it (`dafne services up | down | status | logs`).
 - `src/core/changes.ts`: `Changes`, the old CLI's change set rebuilt on the
   Nx `Tree` (`exists`, `read`, `list`, `create`, `update`, `warn`), so the
   field, sync and wiring code from the old CLI works unchanged on it.
