@@ -5,6 +5,7 @@ import type { Actor } from '@dafne/backend-crud';
 import {
   ACTIVITY_TYPES,
   activityBodySchema,
+  CUSTOMER_ADDRESS_TYPES,
   CUSTOMER_TYPES,
   customerBodySchema,
   SALES_ORDER_STATUSES,
@@ -14,6 +15,7 @@ import {
   type ContractLocale,
   type PermissionAction,
   type PermissionSubject,
+  type CustomerAddressBody,
   type CustomerBodyInput,
   type CustomerDetail,
 } from '@dafne/contracts';
@@ -79,15 +81,42 @@ const customerFields = {
   notes: z.string().max(4000).optional(),
 };
 
-const createCustomerInput = z.object({ type: z.enum(CUSTOMER_TYPES), ...customerFields });
+const addressInput = z.object({
+  type: z
+    .enum(CUSTOMER_ADDRESS_TYPES)
+    .describe('residence or domicile for persons, head_office for companies; shipping, billing for both'),
+  street: z.string().max(255).describe('Street and house number'),
+  city: z.string().max(100),
+  postalCode: z.string().max(20).optional(),
+  region: z.string().max(100).optional().describe('Province or region, e.g. MI'),
+  countryCode: z.string().max(2).optional().describe('ISO 3166-1 alpha-2, e.g. FR; leave it out for Italy'),
+});
+type AddressInput = z.infer<typeof addressInput>;
+
+/** An address from the model as the contract wants it: Italy unless said otherwise. */
+const addressBody = (address: AddressInput): CustomerAddressBody => ({
+  type: address.type,
+  street: address.street,
+  city: address.city,
+  postalCode: address.postalCode ?? null,
+  region: address.region ?? null,
+  countryCode: address.countryCode ?? 'IT',
+});
+
+const createCustomerInput = z.object({
+  type: z.enum(CUSTOMER_TYPES),
+  ...customerFields,
+  addresses: z.array(addressInput).max(20).optional().describe('Only those the user gave; at most one of each type'),
+});
 const createCustomer: WriteTool<z.infer<typeof createCustomerInput>> = {
   needs: { action: 'create', subject: 'Customer' },
   description:
-    'Propose creating a customer. The user confirms it in the UI: never say it is created. Ask for the email if the user did not give it.',
+    'Propose creating a customer, with its addresses if the user gave them. The user confirms it in the UI: never say it is created. Ask for the email if the user did not give it.',
   inputSchema: createCustomerInput,
   prepare: async (input, _deps, locale) => {
-    const parsed = customerBodySchema.safeParse(input);
-    return parsed.success ? { body: input } : issues(parsed.error, locale);
+    const body = { ...input, addresses: (input.addresses ?? []).map(addressBody) };
+    const parsed = customerBodySchema.safeParse(body);
+    return parsed.success ? { body } : issues(parsed.error, locale);
   },
   run: async (payload, deps, actor) => {
     const created = await deps.customers.create(customerBodySchema.parse(payload.body), actor);
@@ -106,16 +135,37 @@ const updateCustomerInput = z.object({
       fiscalCode: customerFields.fiscalCode,
       birthDate: customerFields.birthDate,
       notes: customerFields.notes,
+      addresses: z
+        .array(addressInput)
+        .max(20)
+        .optional()
+        .describe('Addresses to add, or to replace those of the same type; the others stay'),
     })
     .describe('Only the fields to change'),
 });
+
+/** `current` with `changes` on top: same type replaced in place, new types appended. */
+function mergeAddresses(current: CustomerAddressBody[], changes: CustomerAddressBody[]): CustomerAddressBody[] {
+  const merged = current.map((address) => changes.find((change) => change.type === address.type) ?? address);
+  return [...merged, ...changes.filter((change) => !current.some((address) => address.type === change.type))];
+}
+
 const updateCustomer: WriteTool<z.infer<typeof updateCustomerInput>> = {
   needs: { action: 'update', subject: 'Customer' },
-  description: 'Propose changing some fields of a customer (id from search_customers). The user confirms it in the UI.',
+  description:
+    'Propose changing some fields of a customer (id from search_customers), or adding or replacing its addresses. The user confirms it in the UI.',
   inputSchema: updateCustomerInput,
-  prepare: async ({ id, changes }, deps, locale) => {
+  prepare: async ({ id, changes: input }, deps, locale) => {
     const current = await deps.customers.get(id);
-    const body = { ...customerBody(current), ...changes };
+    const currentBody = customerBody(current);
+    const { addresses, ...fields } = input;
+    const newAddresses = addresses?.map(addressBody);
+    const changes = newAddresses ? { ...fields, addresses: newAddresses } : fields;
+    const body = {
+      ...currentBody,
+      ...fields,
+      addresses: mergeAddresses(currentBody.addresses as CustomerAddressBody[], newAddresses ?? []),
+    };
     const parsed = customerBodySchema.safeParse(body);
     return parsed.success ? { id, name: current.name, changes, body } : issues(parsed.error, locale);
   },

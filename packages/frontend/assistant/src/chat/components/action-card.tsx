@@ -4,7 +4,7 @@ import { CheckIcon, ExternalLinkIcon, XIcon } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useTransition } from "react";
-import type { AssistantAction, Json } from "@dafne/contracts";
+import type { AssistantAction, CustomerAddressBody, Json } from "@dafne/contracts";
 import { Badge } from "@dafne/frontend-ui/components/badge";
 import { Button } from "@dafne/frontend-ui/components/button";
 import { Spinner } from "@dafne/frontend-ui/components/spinner";
@@ -55,6 +55,26 @@ function rows(action: ClientAction): [string, string][] {
       : [[field, String(source[field])] as [string, string]],
   );
 }
+
+/** The addresses a customer proposal gives (new ones, or those it changes). */
+function addresses(action: ClientAction): CustomerAddressBody[] {
+  const payload = action.payload as Record<string, unknown>;
+  const source =
+    action.kind === "propose_create_customer"
+      ? payload.body
+      : action.kind === "propose_update_customer"
+        ? payload.changes
+        : undefined;
+  return ((source as { addresses?: CustomerAddressBody[] } | undefined)?.addresses ?? []);
+}
+
+/** An address on one line: "Via Roma 1, 20100 Milano (MI), IT". */
+const addressLine = (address: CustomerAddressBody) =>
+  [
+    address.street,
+    [address.postalCode, address.city, address.region && `(${address.region})`].filter(Boolean).join(" "),
+    address.countryCode,
+  ].join(", ");
 
 /**
  * A write the assistant proposed: what it would do, and Confirm / Discard.
@@ -122,6 +142,24 @@ export function ActionCard({
               <tr key={i}>
                 <td>{line.product}</td>
                 <td className="text-right tabular-nums">{line.quantity}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+      {addresses(action).length > 0 && (
+        <table className="w-full text-left">
+          <thead className="text-muted-foreground">
+            <tr>
+              <th className="font-normal">{t("fields.addressType")}</th>
+              <th className="font-normal">{t("fields.address")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {addresses(action).map((address) => (
+              <tr key={address.type} className="align-top">
+                <td className="pr-3">{t(`addressTypes.${address.type}`)}</td>
+                <td className="break-words">{addressLine(address)}</td>
               </tr>
             ))}
           </tbody>
