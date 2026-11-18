@@ -1,0 +1,164 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "47f57d34-e9bf-487d-967e-6084df03b0f1",
+  "prevIds": [
+    "e0702863-5c7c-4cd1-a90d-3a191e5b7d5c"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "sales",
+        "user_group_permission"
+      ],
+      "writes": [
+        "s|tbl|sales.user_group_permission",
+        "n|tbl|sales.user_group_permission",
+        "e|tbl|sales.user_group_permission",
+        "n|rel|sales.user_group_permission",
+        "n|type|sales.user_group_permission",
+        "n|rel|sales.user_group_permission_pkey"
+      ],
+      "reads": [
+        "n|sch|sales"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "sales",
+        "user_group",
+        "all_users"
+      ],
+      "writes": [
+        "s|col|sales.user_group.all_users",
+        "n|col|sales.user_group.all_users",
+        "e|col|sales.user_group.all_users"
+      ],
+      "reads": [
+        "n|tbl|sales.user_group",
+        "n|sch|sales"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "user_group_permission"
+      ],
+      "writes": [
+        "s|fk|sales.user_group_permission.user_group_permission_group_id_user_group_id_fkey",
+        "n|fk|sales.user_group_permission.user_group_permission_group_id_user_group_id_fkey",
+        "e|fk|sales.user_group_permission.user_group_permission_group_id_user_group_id_fkey",
+        "n|con|sales.user_group_permission.user_group_permission_group_id_user_group_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.user_group_permission",
+        "n|sch|sales",
+        "n|tbl|sales.user_group",
+        "n|sch|sales",
+        "n|col|sales.user_group_permission.group_id",
+        "n|col|sales.user_group.id",
+        "e|uniqueness|sales.user_group.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "name": "user_group_permission",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "user_group",
+        "name": "all_users",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "user_group_permission",
+        "name": "group_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "user_group_permission",
+        "name": "permission",
+        "type": "varchar(100)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "user_group_permission",
+        "name": "user_group_permission_group_id_user_group_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "group_id"
+        ],
+        "schemaTo": "sales",
+        "tableTo": "user_group",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "user_group_permission",
+        "name": "user_group_permission_pkey",
+        "columns": [
+          "group_id",
+          "permission"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    }
+  ]
+}

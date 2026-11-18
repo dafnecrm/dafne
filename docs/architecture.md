@@ -37,6 +37,52 @@ the session carries it as `user.apps` (e.g. `{ sales: "admin" }`).
 
 - A new user gets the apps in `DEFAULT_APPS` (e.g. `sales`).
 - Global admins (`role: admin`) can use every app.
+- Super-admins (`role: super-admin`) have every admin permission, plus the
+  settings above them (the [AI assistant](assistant.md)'s providers,
+  models and agents, `@SuperAdmin()`). Only a super-admin grants the role
+  or changes a super-admin (`superAdminGuard`, `@dafne/auth-options`).
+  The first one comes from `SUPER_ADMIN_EMAILS` (apps/auth), applied on
+  startup to users who exist.
+
+## User groups
+
+`@dafne/backend-user-groups` (`/user-groups`, admins) keeps named groups of
+users (`user_group`, `user_group_member`, sales schema): generic, not tied
+to a feature. They carry [permissions](#permissions) and decide who can use
+an [AI agent](assistant.md#who-can-use-an-agent). If another app needs them,
+the tables move to `core`.
+
+## Permissions
+
+What a user may **write** (create, edit, delete, plus actions such as an
+order's status) comes from their groups' permissions; reading stays open
+to every user of the app. Admins (global, or `admin` in the app) can do
+everything.
+
+- The catalog is `PERMISSIONS` in `packages/contracts/src/permissions.ts`
+  (subject → actions, stored as `"Customer.create"`).
+- Groups hold them (`user_group_permission`), managed by admins in
+  Admin → Accesso → Gruppi di utenti. The "Tutti gli utenti" group
+  (`all_users`) applies to everyone: the migration gave it every permission,
+  so nothing changed on day one.
+- Both sides build the same [CASL](https://casl.js.org) ability from
+  `{ admin, permissions }` (`abilityFor`, `@dafne/permissions`):
+  - **backend**: `@Can('create', 'Customer')` on a route
+    (`@dafne/backend-user-groups`; the controller's module imports
+    `UserGroupsModule`) answers 403 without the permission.
+    `PermissionsService` caches each user's permissions for a minute; any
+    write to a group drops them;
+  - **frontend**: the `(app)` layout passes `GET /me/permissions` to
+    `<PermissionsProvider>`; `<Can I="create" a="Customer">` (or `useCan`)
+    from `@dafne/frontend-permissions` hides what the user can't do.
+- Code that writes without going through a controller checks it itself: the
+  AI assistant leaves out the tools the user isn't allowed and checks again
+  on confirmation; an order's status changed through `PUT` needs
+  `changeStatus`.
+
+To protect a new action: add it to `PERMISSIONS`, its labels to
+`userGroups.permissions` (frontend), `@Can` on the route, `<Can>` on the
+button.
 
 ## Sessions in the apps' APIs: `@dafne/backend-session`
 
@@ -58,7 +104,7 @@ If `apps/auth` is unreachable the answer is **503**, not "signed out".
 
 Decorators, with the same shape as `@thallesp/nestjs-better-auth`'s:
 `@Session()`, `@AllowAnonymous()`, `@OptionalAuth()`, `@Roles(['admin'])`
-(the user's role in this app).
+(the user's role in this app), `@SuperAdmin()` (global super-admins only).
 
 ## Frontend ↔ backend: contracts
 

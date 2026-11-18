@@ -4,6 +4,7 @@ import type { UserSession } from './session.types.js';
 export const ALLOW_ANONYMOUS = 'dafne:allow-anonymous';
 export const OPTIONAL_AUTH = 'dafne:optional-auth';
 export const ROLES = 'dafne:roles';
+export const SUPER_ADMIN = 'dafne:super-admin';
 
 /** The request's session (set by SessionGuard). */
 export const Session = createParamDecorator(
@@ -22,3 +23,9 @@ export const OptionalAuth = () => SetMetadata(OPTIONAL_AUTH, true);
  * global admins.
  */
 export const Roles = (roles: string[]) => SetMetadata(ROLES, roles);
+
+/**
+ * Only global super-admins (`user.role`): app roles and plain admins don't
+ * count. For settings above admin's, e.g. the AI assistant's.
+ */
+export const SuperAdmin = () => SetMetadata(SUPER_ADMIN, true);

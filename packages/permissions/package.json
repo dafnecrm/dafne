@@ -1,0 +1,26 @@
+{
+  "name": "@dafne/permissions",
+  "version": "0.0.1",
+  "description": "What users can do (CASL abilities from user groups' permissions), shared by the backend and the frontend",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@casl/ability": "catalog:",
+    "@dafne/contracts": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "nx": {
+    "tags": [
+      "scope:shared"
+    ]
+  }
+}

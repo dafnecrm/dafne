@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { useTranslations } from "next-intl";
 import { PlusIcon } from "lucide-react";
 import type { Metadata } from "next";
+import { Can } from "@dafne/frontend-permissions";
 import Link from "next/link";
 import { Suspense } from "react";
 import {
@@ -35,10 +36,13 @@ export default function ActivitiesPage({
         <PageContentTitle>{t("activities.title")}</PageContentTitle>
         <PageContentDescription>{t("common.listHint")}</PageContentDescription>
         <PageContentAction>
-          <Button nativeButton={false} render={<Link href="/activities/new" />}>
-            <PlusIcon data-icon="inline-start" />
-            {t("activities.new")}
-          </Button>
+          {/* Only for who may create one; the API checks it too. */}
+          <Can I="create" a="Activity">
+            <Button nativeButton={false} render={<Link href="/activities/new" />}>
+              <PlusIcon data-icon="inline-start" />
+              {t("activities.new")}
+            </Button>
+          </Can>
         </PageContentAction>
       </PageContentHeader>
       <PageContentBody>

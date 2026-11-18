@@ -3,6 +3,7 @@
 import { revalidateLogic } from "@tanstack/react-form-nextjs";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { Can } from "@dafne/frontend-permissions";
 import { Button } from "@dafne/frontend-ui/components/button";
 import { FieldGroup } from "@dafne/frontend-ui/components/field";
 import { setServerError } from "@dafne/frontend-forms/client";
@@ -108,13 +109,25 @@ export function SalesOrderForm({
               )}
             </form.AppField>
             <form.AppField name="status">
-              {(field) => <field.SelectField
-                label={t("salesOrders.fields.status")}
-                options={statusOptions}>
-                  <InputGroupAddon>
-                    <TagIcon />
-                  </InputGroupAddon>
-              </field.SelectField>}
+              {(field) => {
+                const status = (disabled: boolean) => (
+                  <field.SelectField
+                    label={t("salesOrders.fields.status")}
+                    options={statusOptions}
+                    disabled={disabled}
+                  >
+                    <InputGroupAddon>
+                      <TagIcon />
+                    </InputGroupAddon>
+                  </field.SelectField>
+                );
+                // Changing it needs its own permission (the API checks it too).
+                return (
+                  <Can I="changeStatus" a="SalesOrder" fallback={status(true)}>
+                    {status(false)}
+                  </Can>
+                );
+              }}
             </form.AppField>
 
             <form.AppField name="notes">

@@ -2,7 +2,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthService as BetterAuthService } from '@thallesp/nestjs-better-auth';
 import { isAPIError } from 'better-auth/api';
-import type { CreateUserBody } from '@dafne/contracts';
+import { isSuperAdmin, SUPER_ADMIN_ROLE, type CreateUserBody } from '@dafne/contracts';
 import type { Auth } from './auth.js';
 
 /**
@@ -23,6 +23,36 @@ export class AuthService implements OnModuleInit {
   /** The migrator (@dafne/backend-migrator) has created the tables before the app starts. */
   async onModuleInit() {
     await this.createAdminUser();
+    await this.promoteSuperAdmins();
+  }
+
+  /**
+   * Gives the super-admin role to the users in SUPER_ADMIN_EMAILS
+   * (comma-separated) who exist and don't have it yet: the first
+   * super-admin can't be made from the UI, since only a super-admin grants
+   * it. Missing users are skipped (they get it on a later start).
+   */
+  async promoteSuperAdmins() {
+    const emails = (this.config.get<string>('SUPER_ADMIN_EMAILS') ?? '')
+      .split(',')
+      .map((email) => email.trim().toLowerCase())
+      .filter(Boolean);
+    if (!emails.length) {
+      return;
+    }
+    const { internalAdapter } = await this.betterAuth.instance.$context;
+    for (const email of emails) {
+      const found = await internalAdapter.findUserByEmail(email);
+      if (!found) {
+        this.logger.warn(`SUPER_ADMIN_EMAILS: no user ${email} yet`);
+        continue;
+      }
+      if (isSuperAdmin((found.user as { role?: string | null }).role)) {
+        continue;
+      }
+      await internalAdapter.updateUser(found.user.id, { role: SUPER_ADMIN_ROLE });
+      this.logger.log(`User ${email} is now a super-admin`);
+    }
   }
 
   /**

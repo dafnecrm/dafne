@@ -1,0 +1,38 @@
+{
+  "name": "@dafne/frontend-permissions",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./server": "./src/server.ts"
+  },
+  "scripts": {
+    "lint": "eslint src",
+    "test": "vitest run --passWithNoTests"
+  },
+  "peerDependencies": {
+    "next": "catalog:",
+    "react": "catalog:"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "eslint": "catalog:",
+    "next": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "nx": {
+    "tags": [
+      "scope:frontend"
+    ]
+  },
+  "dependencies": {
+    "@dafne/contracts": "workspace:*",
+    "@dafne/frontend-api": "workspace:*",
+    "@dafne/permissions": "workspace:*"
+  },
+  "description": "What the signed-in user can do (their groups' permissions), to hide what they can't: <Can>, useCan, and the server loader"
+}

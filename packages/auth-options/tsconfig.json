@@ -8,5 +8,12 @@
     "tsBuildInfoFile": "out-tsc/tsconfig.tsbuildinfo",
     "types": ["vitest/globals"]
   },
-  "include": ["src"]
+  "include": [
+    "src"
+  ],
+  "references": [
+    {
+      "path": "../contracts"
+    }
+  ]
 }

@@ -218,6 +218,9 @@ export class SalesOrdersService
           })
           .returning({ id: salesOrder.id });
 
+        await this.insertSalesOrderItems(tx, id, body.items);
+
+        // After the items, as in update: the guards see the order as saved.
         if (body.status) {
           await this.stateMachine.transition(id, body.status, { tx, user: actor });
         }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { Can } from "@dafne/frontend-permissions";
 import {
   EllipsisVerticalIcon,
   EyeIcon,
@@ -57,19 +58,23 @@ export function ActivityTableActions({
             {t("viewDetails")}
           </DropdownMenuItem>
           {ACTIVITY_STATUSES_ALLOW_EDIT.includes(activity.status) && (
-            <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
-              <PencilIcon />
-              {t("edit")}
-            </DropdownMenuItem>
+            <Can I="update" a="Activity">
+              <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
+                <PencilIcon />
+                {t("edit")}
+              </DropdownMenuItem>
+            </Can>
           )}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            variant="destructive"
-            onClick={() => setDeleting(true)}
-          >
-            <Trash2Icon />
-            {t("delete")}
-          </DropdownMenuItem>
+          <Can I="delete" a="Activity">
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={() => setDeleting(true)}
+            >
+              <Trash2Icon />
+              {t("delete")}
+            </DropdownMenuItem>
+          </Can>
         </DropdownMenuContent>
       </DropdownMenu>
       {/* Outside the menu, which closes when an item is clicked. */}

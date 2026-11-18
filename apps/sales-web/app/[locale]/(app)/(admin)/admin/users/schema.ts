@@ -20,6 +20,7 @@ export const userSchema = formSchema<UserFormValues>()(createUserBodySchema);
 export const ROLE_OPTIONS = [
   { value: "user", label: "users.role.user" },
   { value: "admin", label: "users.role.admin" },
+  { value: "super-admin", label: "users.role.super-admin" },
 ] satisfies { value: UserRole; label: MessageKey }[];
 
 export const userFormOpts = formOptions({

@@ -74,37 +74,47 @@ function Brand() {
  * routes such as /users/[id], so it's read behind a Suspense boundary; until
  * then the sections show with no active page.
  */
-export function NavSections({ admin = false }: { admin?: boolean }) {
+export function NavSections({
+  admin = false,
+  superAdmin = false,
+}: {
+  admin?: boolean;
+  /** Also the super-admins' sections, groups and pages. */
+  superAdmin?: boolean;
+}) {
   return (
-    <Suspense fallback={<Sections admin={admin} pathname={null} />}>
-      <ActiveSections admin={admin} />
+    <Suspense fallback={<Sections admin={admin} superAdmin={superAdmin} pathname={null} />}>
+      <ActiveSections admin={admin} superAdmin={superAdmin} />
     </Suspense>
   );
 }
 
-function ActiveSections({ admin }: { admin: boolean }) {
-  return <Sections admin={admin} pathname={usePathname()} />;
+function ActiveSections({ admin, superAdmin }: { admin: boolean; superAdmin: boolean }) {
+  return <Sections admin={admin} superAdmin={superAdmin} pathname={usePathname()} />;
 }
 
 function Sections({
   admin,
+  superAdmin,
   pathname,
 }: {
   admin: boolean;
+  superAdmin: boolean;
   pathname: string | null;
 }) {
   const t = useTranslations("nav");
+  const visible = (entry: { superAdminOnly?: boolean }) => !entry.superAdminOnly || superAdmin;
   const items: NavItem[] = NAV_SECTIONS.filter(
-    (section) => !section.hidden && !!section.adminOnly === admin,
+    (section) => !section.hidden && !!section.adminOnly === admin && visible(section),
   ).map((section) => ({
     label: t(section.title),
     icon: section.icon,
-    children: section.items.map((entry) =>
+    children: section.items.filter(visible).map((entry) =>
       isNavGroup(entry)
         ? {
             label: t(entry.title),
             icon: entry.icon,
-            children: entry.items.map((item) => ({
+            children: entry.items.filter(visible).map((item) => ({
               label: t(item.title),
               url: item.href,
               icon: item.icon,

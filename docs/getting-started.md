@@ -61,7 +61,9 @@ pnpm dafne dev            # starts @dafne/auth, @dafne/sales-api, @dafne/sales-w
 | `@dafne/auth`    | <http://localhost:3001> |
 
 On startup `apps/auth` creates the admin user from `ADMIN_EMAIL` /
-`ADMIN_PASSWORD`: sign in with it on the frontend.
+`ADMIN_PASSWORD`: sign in with it on the frontend. To set up the AI
+assistant, put your email in `SUPER_ADMIN_EMAILS` (apps/auth) and see
+[the AI assistant](assistant.md).
 
 `dafne dev` runs the migrations before the APIs (`migrate:dev`), and skips
 them with a warning when `MIGRATIONS_DATABASE_URL` isn't set.

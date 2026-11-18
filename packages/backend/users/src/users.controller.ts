@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Get, Param, Post, Query } from '@nestjs/common';
 import { Session, Roles } from '@thallesp/nestjs-better-auth';
 import type { UserSession } from '@thallesp/nestjs-better-auth';
 import { ZodValidationPipe } from '@dafne/backend-common';
@@ -6,7 +6,10 @@ import type { CrudController } from '@dafne/backend-crud';
 import { USERS_RESOURCE } from '@dafne/backend-auth';
 import { ChangelogService } from '@dafne/backend-changelog';
 import {
+  ADMIN_ROLES,
   createUserBodySchema,
+  isSuperAdmin,
+  msg,
   listChangesQuerySchema,
   listUsersQuerySchema,
   type ChangesList,
@@ -19,7 +22,8 @@ import {
 import { UsersService } from './users.service.js';
 
 /**
- * Users: list, get and create, and their change log, for admins (Better
+ * Users: list, get and create, and their change log, for admins and
+ * super-admins (Better
  * Auth's session, in apps/auth). No update or delete yet; `me` is the
  * signed-in user.
  */
@@ -42,7 +46,7 @@ export class UsersController
   }
 
   @Get()
-  @Roles(['admin'])
+  @Roles([...ADMIN_ROLES])
   async list(
     @Query(new ZodValidationPipe(listUsersQuerySchema)) query: ListUsersQuery,
   ): Promise<UsersList> {
@@ -50,10 +54,17 @@ export class UsersController
   }
 
   @Post()
-  @Roles(['admin'])
+  @Roles([...ADMIN_ROLES])
   async create(
     @Body(new ZodValidationPipe(createUserBodySchema)) body: CreateUserBody,
+    // Only the role matters here (Better Auth's session or the CRUD interface's).
+    @Session() session: { user: { role?: string | string[] | null } },
   ): Promise<UserDetail> {
+    // Only a super-admin grants super-admin (Better Auth's own endpoints
+    // are checked by the auth options' superAdminGuard).
+    if (isSuperAdmin(body.role) && !isSuperAdmin(session.user.role)) {
+      throw new ForbiddenException(msg('users.role.superAdminRequired'));
+    }
     return this.usersService.create(body);
   }
 
@@ -62,7 +73,7 @@ export class UsersController
    * ban, verification), newest first. 404 if they don't exist.
    */
   @Get(':id/changes')
-  @Roles(['admin'])
+  @Roles([...ADMIN_ROLES])
   async changes(
     @Param('id') id: string,
     @Query(new ZodValidationPipe(listChangesQuerySchema)) query: ListChangesQuery,
@@ -73,7 +84,7 @@ export class UsersController
 
   /** Declared last so it doesn't catch /users/me. */
   @Get(':id')
-  @Roles(['admin'])
+  @Roles([...ADMIN_ROLES])
   async get(@Param('id') id: string): Promise<UserDetail> {
     return this.usersService.get(id);
   }

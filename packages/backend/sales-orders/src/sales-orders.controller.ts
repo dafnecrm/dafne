@@ -1,4 +1,5 @@
 import {
+  ForbiddenException,
   Body,
   Controller,
   Delete,
@@ -10,10 +11,13 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
+import { Can, PermissionsService } from '@dafne/backend-user-groups';
+import type { SessionUser } from '@dafne/backend-session';
 import { Session } from '@dafne/backend-session';
 import type { UserSession } from '@dafne/backend-session';
 import { IdPipe, ZodValidationPipe } from '@dafne/backend-common';
 import {
+  msg,
   listChangesQuerySchema,
   type ChangesList,
   type ListChangesQuery,
@@ -47,6 +51,7 @@ export class SalesOrdersController
   constructor(
     private readonly salesOrdersService: SalesOrdersService,
     private readonly changelog: ChangelogService,
+    private readonly permissions: PermissionsService,
   ) {}
 
   @Get()
@@ -81,24 +86,42 @@ export class SalesOrdersController
   }
 
   @Post()
-  create(
+  @Can('create', 'SalesOrder')
+  async create(
     @Body(new ZodValidationPipe(salesOrderBodySchema)) body: SalesOrderBody,
     @Session() session: UserSession,
   ): Promise<SalesOrderDetail> {
+    // Born in draft: another status is a status change.
+    if (body.status && body.status !== 'draft') {
+      await this.requireChangeStatus(session.user);
+    }
     return this.salesOrdersService.create(body, session.user);
   }
 
   @Put(':id')
-  update(
+  @Can('update', 'SalesOrder')
+  async update(
     @Param('id', IdPipe) id: number,
     @Body(new ZodValidationPipe(salesOrderBodySchema)) body: SalesOrderBody,
     @Session() session: UserSession,
   ): Promise<SalesOrderDetail> {
+    // The form sends the status too: changing it needs changeStatus.
+    if (body.status && body.status !== (await this.salesOrdersService.get(id)).status) {
+      await this.requireChangeStatus(session.user);
+    }
     return this.salesOrdersService.update(id, body, session.user);
+  }
+
+  /** 403 unless the user may change orders' status (POST :id/status's permission). */
+  private async requireChangeStatus(user: SessionUser) {
+    if (!(await this.permissions.abilityFor(user)).can('changeStatus', 'SalesOrder')) {
+      throw new ForbiddenException(msg('permissions.forbidden'));
+    }
   }
 
   /** Moves the sales order to another status (see SALES_ORDER_STATES). */
   @Post(':id/status')
+  @Can('changeStatus', 'SalesOrder')
   @HttpCode(HttpStatus.OK)
   changeSalesOrderStatus(
     @Param('id', IdPipe) id: number,
@@ -110,6 +133,7 @@ export class SalesOrdersController
 
   /** Logical delete. */
   @Delete(':id')
+  @Can('delete', 'SalesOrder')
   @HttpCode(HttpStatus.NO_CONTENT)
   async delete(
     @Param('id', IdPipe) id: number,

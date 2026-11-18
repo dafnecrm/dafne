@@ -10,6 +10,7 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
+import { Can } from '@dafne/backend-user-groups';
 import { Session } from '@dafne/backend-session';
 import type { UserSession } from '@dafne/backend-session';
 import { IdPipe, ZodValidationPipe } from '@dafne/backend-common';
@@ -70,6 +71,7 @@ export class ProductsController
   }
 
   @Post()
+  @Can('create', 'Product')
   create(
     @Body(new ZodValidationPipe(productBodySchema)) body: ProductBody,
     @Session() session: UserSession,
@@ -78,6 +80,7 @@ export class ProductsController
   }
 
   @Put(':id')
+  @Can('update', 'Product')
   update(
     @Param('id', IdPipe) id: number,
     @Body(new ZodValidationPipe(productBodySchema)) body: ProductBody,
@@ -88,6 +91,7 @@ export class ProductsController
 
   /** Logical delete. */
   @Delete(':id')
+  @Can('delete', 'Product')
   @HttpCode(HttpStatus.NO_CONTENT)
   async delete(
     @Param('id', IdPipe) id: number,

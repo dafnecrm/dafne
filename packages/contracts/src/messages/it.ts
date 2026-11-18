@@ -48,6 +48,7 @@ export const it: ContractMessages = {
     firstname: { required: 'Inserisci il nome' },
     lastname: { required: 'Inserisci il cognome' },
     email: { taken: 'Esiste già un utente con questa email' },
+    role: { superAdminRequired: 'Solo un super-admin può assegnare il ruolo super-admin' },
   },
   database: {
     duplicate: 'Esiste già un record con questi dati',
@@ -105,4 +106,52 @@ export const it: ContractMessages = {
       required: 'Inserisci la descrizione'
     },
   },
+  assistantProviders: {
+    notFound: 'Provider IA non trovato',
+    name: { required: 'Inserisci il nome' },
+    kind: { required: 'Scegli il tipo' },
+    baseUrl: {
+      invalid: 'Inserisci un URL che inizi con http:// o https://',
+      required: "Inserisci l'URL del server (es. http://localhost:11434/v1 per Ollama)",
+    },
+    apiKeyEnv: { invalid: "Usa il nome di una variabile d'ambiente, es. ANTHROPIC_API_KEY" },
+  },
+  assistantModels: {
+    notFound: 'Modello IA non trovato',
+    providerId: { required: 'Scegli il provider' },
+    modelId: { required: "Inserisci l'id del modello" },
+    label: { required: "Inserisci l'etichetta" },
+  },
+  assistantAgents: {
+    notFound: 'Agente IA non trovato',
+    name: { required: 'Inserisci il nome' },
+    systemPrompt: { required: 'Inserisci le istruzioni' },
+    defaultModelId: { required: 'Scegli il modello predefinito' },
+    groupIds: { required: 'Scegli almeno un gruppo' },
+  },
+  permissions: {
+    unknown: 'Permesso sconosciuto',
+    forbidden: 'Non hai il permesso di farlo',
+  },
+  assistant: {
+    tools: { unknown: 'Strumento sconosciuto' },
+    agent: { required: 'Scegli un agente', unavailable: 'Questo agente non è disponibile' },
+    model: {
+      required: 'Scegli un modello',
+      unavailable: 'Questo modello non è disponibile',
+      notAllowed: 'Questo agente non permette di cambiare modello',
+      none: 'Questo agente non ha un modello: chiedi a un super-admin di impostarlo',
+    },
+    provider: {
+      unavailable: 'Il provider IA non è raggiungibile in questo momento',
+      missingKey: 'Il provider IA non ha una chiave API configurata',
+    },
+    message: { required: 'Scrivi un messaggio', tooLong: 'Il messaggio è troppo lungo' },
+    conversation: { notFound: 'Conversazione non trovata' },
+    action: { notFound: 'Azione non trovata', notPending: 'Questa azione è già stata decisa' },
+    rateLimited: 'Troppi messaggi: attendi qualche minuto',
+    failed: "L'assistente non è riuscito a rispondere: riprova",
+    noAnswer: "L'assistente non ha risposto: prova a chiedere in altro modo",
+  },
+  userGroups: { notFound: 'Gruppo non trovato', name: { required: 'Inserisci il nome' } },
 };

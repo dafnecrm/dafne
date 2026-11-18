@@ -1,11 +1,9 @@
 import { z } from 'zod';
 import { pageQuery, requiredText, SORT_DIRECTIONS, type Page } from './common.ts';
 import { msg } from './messages/index.ts';
+import { USER_ROLES } from './roles.ts';
 
 /* ---------- Requests ---------- */
-
-export const USER_ROLES = ['user', 'admin'] as const;
-export type UserRole = (typeof USER_ROLES)[number];
 
 /**
  * First and last name: max 127 each, so Better Auth's `name` ("first

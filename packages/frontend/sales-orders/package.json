@@ -25,9 +25,10 @@
     "@dafne/frontend-api": "workspace:*",
     "@dafne/frontend-changelog": "workspace:*",
     "@dafne/frontend-customers": "workspace:*",
-    "@dafne/frontend-products": "workspace:*",
     "@dafne/frontend-data-table": "workspace:*",
     "@dafne/frontend-forms": "workspace:*",
+    "@dafne/frontend-permissions": "workspace:*",
+    "@dafne/frontend-products": "workspace:*",
     "@dafne/frontend-ui": "workspace:*",
     "@tanstack/react-form-nextjs": "catalog:",
     "lucide-react": "catalog:"

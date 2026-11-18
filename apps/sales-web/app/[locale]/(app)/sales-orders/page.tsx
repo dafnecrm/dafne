@@ -1,5 +1,6 @@
 import { PlusIcon } from "lucide-react";
 import type { Metadata } from "next";
+import { Can } from "@dafne/frontend-permissions";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { getTranslations } from "next-intl/server";
@@ -35,13 +36,16 @@ export default function SalesOrdersPage({
         <PageContentTitle>{t("salesOrders.title")}</PageContentTitle>
         <PageContentDescription>{t("common.listHint")}</PageContentDescription>
         <PageContentAction>
-          <Button
-            nativeButton={false}
-            render={<Link href={`${salesOrdersTable.path}/new`} />}
-          >
-            <PlusIcon data-icon="inline-start" />
-            {t("salesOrders.new")}
-          </Button>
+          {/* Only for who may create one; the API checks it too. */}
+          <Can I="create" a="SalesOrder">
+            <Button
+              nativeButton={false}
+              render={<Link href={`${salesOrdersTable.path}/new`} />}
+            >
+              <PlusIcon data-icon="inline-start" />
+              {t("salesOrders.new")}
+            </Button>
+          </Can>
         </PageContentAction>
       </PageContentHeader>
       <PageContentBody>

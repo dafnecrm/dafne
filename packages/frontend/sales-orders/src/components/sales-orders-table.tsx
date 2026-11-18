@@ -2,6 +2,7 @@
 
 import { PackageIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { Can } from "@dafne/frontend-permissions";
 import { useCallback, useMemo } from "react";
 import {
   createDataTableColumnHelper,
@@ -198,14 +199,16 @@ export function SalesOrdersTable({
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
-            <Button variant="outline">
-              <Link
-                href={`${config.path}/new`}
-                className="flex items-center gap-2"
-              >
-                {t("salesOrders.create")}
-              </Link>
-            </Button>
+            <Can I="create" a="SalesOrder">
+              <Button variant="outline">
+                <Link
+                  href={`${config.path}/new`}
+                  className="flex items-center gap-2"
+                >
+                  {t("salesOrders.create")}
+                </Link>
+              </Button>
+            </Can>
           </EmptyContent>
         </Empty>
       }

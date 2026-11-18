@@ -10,6 +10,11 @@ import { ACTIVITIES_MESSAGES } from "@dafne/frontend-activities";
 import { PRODUCTS_MESSAGES } from "@dafne/frontend-products";
 import { SALES_ORDERS_MESSAGES } from "@dafne/frontend-sales-orders";
 import { SALES_ORDER_TYPES_MESSAGES } from "@dafne/frontend-sales-orders/sales-order-types";
+import { ASSISTANT_PROVIDERS_MESSAGES } from "@dafne/frontend-assistant/assistant-providers";
+import { ASSISTANT_MODELS_MESSAGES } from "@dafne/frontend-assistant/assistant-models";
+import { ASSISTANT_CHAT_MESSAGES } from "@dafne/frontend-assistant/chat";
+import { ASSISTANT_AGENTS_MESSAGES } from "@dafne/frontend-assistant/assistant-agents";
+import { USER_GROUPS_MESSAGES } from "@dafne/frontend-user-groups";
 
 /**
  * The locale of the current render. Server Components read the [locale]
@@ -49,6 +54,12 @@ export default getRequestConfig(async ({ locale, requestLocale }) => {
       salesOrderTypes: SALES_ORDER_TYPES_MESSAGES[resolved],
       // History sheet texts, shipped by @dafne/frontend-changelog.
       changelog: CHANGELOG_MESSAGES[resolved],
+      assistantProviders: ASSISTANT_PROVIDERS_MESSAGES[resolved],
+      assistantModels: ASSISTANT_MODELS_MESSAGES[resolved],
+      assistantAgents: ASSISTANT_AGENTS_MESSAGES[resolved],
+      // The assistant panel, shipped by @dafne/frontend-assistant.
+      assistantChat: ASSISTANT_CHAT_MESSAGES[resolved],
+      userGroups: USER_GROUPS_MESSAGES[resolved],
     },
   };
 });

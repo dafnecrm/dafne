@@ -1,0 +1,84 @@
+/**
+ * The assistant panel's texts in English. The source of truth: it.ts must
+ * have the same keys, and the apps merge them under `assistantChat`.
+ */
+export const en = {
+  open: "AI assistant",
+  title: "AI assistant",
+  description: "Ask about customers, orders, activities and products. Changes are only proposals until you confirm them.",
+  newConversation: "New conversation",
+  conversations: "Conversations",
+  noConversations: "No conversations yet",
+  untitled: "Conversation",
+  delete: "Delete conversation",
+  agent: "Agent",
+  model: "Model",
+  local: "local",
+  noAgents: "The assistant isn't set up yet: a super-admin must enable an agent and a model.",
+  placeholder: "E.g. How many open orders does Rossi Srl have?",
+  send: "Send",
+  stop: "Stop",
+  thinking: "Thinking…",
+  error: "Something went wrong: try again.",
+  examples: {
+    title: "Try asking",
+    items: {
+      count: "How many open orders does Rossi Srl have?",
+      create: "Create the customer Rossi Srl, email info@rossi.it",
+      activity: "Remind me to call Rossi Srl tomorrow",
+    },
+  },
+  tools: {
+    search_customers: "Searching customers",
+    get_customer: "Reading the customer",
+    list_sales_orders: "Reading the orders",
+    get_sales_order: "Reading the order",
+    list_activities: "Reading the activities",
+    get_activity: "Reading the activity",
+    list_products: "Reading the products",
+    get_product: "Reading the product",
+    propose_create_customer: "Preparing a new customer",
+    propose_update_customer: "Preparing a customer change",
+    propose_create_activity: "Preparing an activity",
+    propose_close_activity: "Preparing to close an activity",
+    propose_change_sales_order_status: "Preparing an order status change",
+    propose_create_sales_order: "Preparing a sales order",
+  },
+  fields: {
+    type: "Type",
+    name: "Name",
+    email: "Email",
+    phone: "Phone",
+    vatNumber: "VAT number",
+    fiscalCode: "Fiscal code",
+    birthDate: "Birth date",
+    notes: "Notes",
+    dueDate: "Due date",
+    status: "Status",
+    customer: "Customer",
+    orderType: "Type",
+    product: "Product",
+    quantity: "Quantity",
+  },
+  action: {
+    title: {
+      propose_create_customer: "New customer",
+      propose_update_customer: "Change customer",
+      propose_create_activity: "New activity",
+      propose_close_activity: "Close activity",
+      propose_change_sales_order_status: "Change order status",
+      propose_create_sales_order: "New sales order",
+    },
+    confirm: "Confirm",
+    reject: "Discard",
+    confirmed: "Done",
+    rejected: "Discarded",
+    failed: "Not done: {error}",
+    open: "Open",
+    from: "from {from}",
+  },
+};
+
+/** The shape every language must have: same keys, any text. */
+type Shape<T> = { [K in keyof T]: T[K] extends string ? string : Shape<T[K]> };
+export type AssistantChatMessages = Shape<typeof en>;

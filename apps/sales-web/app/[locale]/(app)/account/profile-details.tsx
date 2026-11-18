@@ -1,5 +1,6 @@
 "use client";
 
+import { isGlobalAdmin } from "@dafne/contracts";
 import { useTranslations } from "next-intl";
 import { CalendarPlusIcon, MailIcon, ShieldIcon, UserIcon } from "lucide-react";
 import { Detail, DetailSection } from "@dafne/frontend-ui/components/detail";
@@ -48,7 +49,7 @@ export function ProfileDetails({ user }: { user: User }) {
             )}
           </Detail>
           <Detail icon={ShieldIcon} label={t("users.fields.role")}>
-            <Badge variant={role === "admin" ? "default" : "secondary"}>
+            <Badge variant={isGlobalAdmin(role) ? "default" : "secondary"}>
               {t.has(`users.role.${role}` as never)
                 ? t(`users.role.${role}` as "users.role.user")
                 : role}

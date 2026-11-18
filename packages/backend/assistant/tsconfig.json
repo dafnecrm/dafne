@@ -1,0 +1,45 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "out-tsc",
+    "tsBuildInfoFile": "out-tsc/tsconfig.tsbuildinfo",
+    "types": ["node", "vitest/globals"]
+  },
+  "include": ["src"],
+  "references": [
+    {
+      "path": "../../permissions"
+    },
+    {
+      "path": "../user-groups"
+    },
+    {
+      "path": "../session"
+    },
+    {
+      "path": "../sales-orders"
+    },
+    {
+      "path": "../products"
+    },
+    {
+      "path": "../database"
+    },
+    {
+      "path": "../customers"
+    },
+    {
+      "path": "../common"
+    },
+    {
+      "path": "../activities"
+    },
+    {
+      "path": "../../contracts"
+    },
+    {
+      "path": "../crud"
+    }
+  ]
+}

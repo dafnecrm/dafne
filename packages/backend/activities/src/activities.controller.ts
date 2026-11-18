@@ -11,6 +11,7 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
+import { Can } from '@dafne/backend-user-groups';
 import { Session } from '@dafne/backend-session';
 import type { UserSession } from '@dafne/backend-session';
 import { IdPipe, ZodValidationPipe } from '@dafne/backend-common';
@@ -53,6 +54,7 @@ export class ActivitiesController
   }
 
   @Post()
+  @Can('create', 'Activity')
   create(
     @Body(new ZodValidationPipe(activityBodySchema)) body: ActivityBody,
     @Session() session: UserSession,
@@ -61,6 +63,7 @@ export class ActivitiesController
   }
 
   @Put(':id')
+  @Can('update', 'Activity')
   update(
     @Param('id', IdPipe) id: number,
     @Body(new ZodValidationPipe(activityBodySchema)) body: ActivityBody,
@@ -71,6 +74,7 @@ export class ActivitiesController
 
   /** Logical delete. */
   @Delete(':id')
+  @Can('delete', 'Activity')
   @HttpCode(HttpStatus.NO_CONTENT)
   async delete(
     @Param('id', IdPipe) id: number,
@@ -80,6 +84,7 @@ export class ActivitiesController
   }
 
   @Patch(':id/close')
+  @Can('close', 'Activity')
   async completeActivity(
     @Param('id', IdPipe) id: number,
     @Session() session: UserSession,
@@ -88,6 +93,7 @@ export class ActivitiesController
   }
 
   @Patch(':id/reopen')
+  @Can('close', 'Activity')
   async reopenActivity(@Param('id', IdPipe) id: number) {
     return this.activitiesService.reopenActivity(id);
   }

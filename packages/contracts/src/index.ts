@@ -9,6 +9,8 @@
 export * from './common.ts';
 export * from './messages/index.ts';
 export * from './customers.ts';
+export * from './roles.ts';
+export * from './permissions.ts';
 export * from './users.ts';
 export * from './activities.ts';
 export * from './geo.ts';
@@ -17,3 +19,8 @@ export * from './products.ts';
 export * from './sales-orders.ts';
 export * from './sales-order-types.ts';
 export * from './changelog.ts';
+export * from './assistant.ts';
+export * from './assistant-providers.ts';
+export * from './assistant-models.ts';
+export * from './assistant-agents.ts';
+export * from './user-groups.ts';

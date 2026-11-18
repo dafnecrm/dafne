@@ -3,6 +3,8 @@ const AUTH_ERROR_CODES = {
   USER_ALREADY_EXISTS: "userExists",
   USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL: "userExists",
   INVALID_AVATAR: "invalidAvatar",
+  // changePassword: the current password is wrong.
+  INVALID_PASSWORD: "wrongPassword",
 } as const;
 
 export interface AuthError {

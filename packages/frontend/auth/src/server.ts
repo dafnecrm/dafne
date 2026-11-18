@@ -1,6 +1,7 @@
 import { createAuthClient } from "better-auth/client";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { cache } from "react";
 import type { User } from "./client.ts";
 import { authPlugins } from "./plugins.ts";
@@ -39,6 +40,9 @@ export function createSessionHelpers({
       return null;
     }
 
+    // Request time only: Better Auth's client reads Date.now() before the
+    // call, which Next refuses while prerendering (headers() isn't enough).
+    await connection();
     const { data, error } = await serverAuthClient.getSession({
       fetchOptions: { headers: { cookie, origin: appUrl }, cache: "no-store" },
     });

@@ -2,6 +2,7 @@
 
 import {
   ChevronsUpDownIcon,
+  KeyRoundIcon,
   LanguagesIcon,
   LogOutIcon,
   UserIcon,
@@ -128,6 +129,17 @@ export function NavUser({ user }: { user: NavUserProps }) {
             >
               <UserIcon />
               {t("account")}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              render={
+                <Link
+                  href="/account/password"
+                  onClick={() => setOpenMobile(false)}
+                />
+              }
+            >
+              <KeyRoundIcon />
+              {t("changePassword")}
             </DropdownMenuItem>
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>

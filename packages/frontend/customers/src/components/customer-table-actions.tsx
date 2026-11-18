@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { Can } from "@dafne/frontend-permissions";
 import {
   CopyIcon,
   EllipsisVerticalIcon,
@@ -56,10 +57,12 @@ export function CustomerTableActions({
             <UserRoundIcon />
             {t("viewDetails")}
           </DropdownMenuItem>
-          <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
-            <PencilIcon />
-            {t("edit")}
-          </DropdownMenuItem>
+          <Can I="update" a="Customer">
+            <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
+              <PencilIcon />
+              {t("edit")}
+            </DropdownMenuItem>
+          </Can>
           {email && (
             <>
               <DropdownMenuSeparator />
@@ -71,14 +74,16 @@ export function CustomerTableActions({
               </DropdownMenuItem>
             </>
           )}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            variant="destructive"
-            onClick={() => setDeleting(true)}
-          >
-            <Trash2Icon />
-            {t("delete")}
-          </DropdownMenuItem>
+          <Can I="delete" a="Customer">
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={() => setDeleting(true)}
+            >
+              <Trash2Icon />
+              {t("delete")}
+            </DropdownMenuItem>
+          </Can>
         </DropdownMenuContent>
       </DropdownMenu>
       {/* Outside the menu, which closes when an item is clicked. */}

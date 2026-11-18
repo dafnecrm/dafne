@@ -3,7 +3,7 @@ import {
   ContactIcon,
   HouseIcon,
   UserIcon,
-  UsersIcon, type LucideIcon,
+  UsersIcon, ServerIcon, CpuIcon, BotIcon, UsersRoundIcon, type LucideIcon,
   ListClockIcon,
   GroceriesIcon,
   PackageIcon,
@@ -12,6 +12,7 @@ import {
   ShieldIcon,
   KeyRoundIcon,
   LayoutDashboardIcon,
+  SparklesIcon,
 } from "lucide-react";
 
 /**
@@ -28,6 +29,8 @@ export interface NavItem {
   href: string;
   /** Shown when the sidebar is minimized to a rail. */
   icon: LucideIcon;
+  /** Only shown to super-admins (e.g. the AI assistant's settings). */
+  superAdminOnly?: boolean;
 }
 
 /** A group of pages inside a section (the sidebar's third level). */
@@ -36,6 +39,8 @@ export interface NavGroup {
   /** Shown for the group when the sidebar is minimized to a rail. */
   icon?: LucideIcon;
   items: NavItem[];
+  /** Only shown to super-admins (e.g. the AI assistant's settings). */
+  superAdminOnly?: boolean;
 }
 
 export interface NavSection {
@@ -47,6 +52,8 @@ export interface NavSection {
   icon?: LucideIcon;
   /** Only shown to users with the `admin` role. */
   adminOnly?: boolean;
+  /** Only shown to super-admins. */
+  superAdminOnly?: boolean;
   /** Only used to show breadcrumb. */
   hidden?: boolean;
 }
@@ -64,9 +71,9 @@ export const NAV_SECTIONS: NavSection[] = [
     href: "#",
     icon: BriefcaseBusinessIcon,
     items: [
-      { 
-        title: "customers", 
-        href: "/customers", 
+      {
+        title: "customers",
+        href: "/customers",
         icon: ContactIcon,
       },
       { title: "activities", href: "/activities", icon: ListClockIcon },
@@ -77,7 +84,11 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     title: "account",
     href: "/account",
-    items: [{ title: "account", href: "/account", icon: UserIcon }],
+    // Most specific first: "/account/password" also matches "/account".
+    items: [
+      { title: "changePassword", href: "/account/password", icon: KeyRoundIcon },
+      { title: "account", href: "/account", icon: UserIcon },
+    ],
     hidden: true,
   },
   // Admin
@@ -97,7 +108,20 @@ export const NAV_SECTIONS: NavSection[] = [
       {
         title: "access",
         icon: KeyRoundIcon,
-        items: [{ title: "users", href: "/admin/users", icon: UsersIcon }],
+        items: [
+          { title: "users", href: "/admin/users", icon: UsersIcon },
+          { title: "userGroups", href: "/admin/user-groups", icon: UsersRoundIcon },
+        ],
+      },
+      {
+        title: "assistant",
+        icon: SparklesIcon,
+        superAdminOnly: true,
+        items: [
+          { title: "assistantAgents", href: "/admin/assistant-agents", icon: BotIcon },
+          { title: "assistantModels", href: "/admin/assistant-models", icon: CpuIcon },
+          { title: "assistantProviders", href: "/admin/assistant-providers", icon: ServerIcon },
+        ],
       },
     ],
   },

@@ -16,6 +16,8 @@ import { GeoModule } from '@dafne/backend-geo';
 import { ProductsModule } from '@dafne/backend-products';
 import { SessionModule } from '@dafne/backend-session';
 import { SalesOrdersModule, SalesOrderTypesModule } from '@dafne/backend-sales-orders';
+import { AssistantModule, AssistantProvidersModule, AssistantModelsModule, AssistantAgentsModule } from '@dafne/backend-assistant';
+import { UserGroupsModule } from '@dafne/backend-user-groups';
 
 @Module({
   imports: [
@@ -47,6 +49,11 @@ import { SalesOrdersModule, SalesOrderTypesModule } from '@dafne/backend-sales-o
     SessionModule.forRoot({ app: 'sales' }),
     SalesOrdersModule,
     SalesOrderTypesModule,
+    AssistantModule,
+    AssistantProvidersModule,
+    AssistantModelsModule,
+    AssistantAgentsModule,
+    UserGroupsModule,
   ],
   controllers: [ApiController],
   providers: [
