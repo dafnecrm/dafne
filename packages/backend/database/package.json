@@ -26,6 +26,7 @@
   },
   "devDependencies": {
     "@dafne/backend-migrator": "workspace:*",
+    "@dafne/contracts": "workspace:*",
     "@swc/core": "catalog:",
     "@types/node": "catalog:",
     "@types/pg": "catalog:",

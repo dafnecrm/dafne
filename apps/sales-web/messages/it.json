@@ -17,7 +17,13 @@
     "account": "Account",
     "orders": "Ordini di vendita",
     "crm": "CRM",
-    "salesOrderTypes": "Sales order types"
+    "salesOrderTypes": "Sales order types",
+    "assistantProviders": "Provider IA",
+    "assistantModels": "Modelli IA",
+    "assistantAgents": "Agenti IA",
+    "assistant": "Assistente IA",
+    "userGroups": "Gruppi di utenti",
+    "changePassword": "Cambia password"
   },
   "breadcrumb": {
     "new": "Nuovo",
@@ -34,7 +40,8 @@
       "label": "Menu account",
       "account": "Account",
       "language": "Lingua",
-      "signOut": "Esci"
+      "signOut": "Esci",
+      "changePassword": "Cambia password"
     },
     "title": "Account",
     "description": "I dati del tuo account.",
@@ -50,6 +57,22 @@
       "upload": "Carica una foto",
       "remove": "Rimuovi foto",
       "input": "Immagine avatar"
+    },
+    "password": {
+      "title": "Cambia password",
+      "description": "Scegli una nuova password per il tuo account.",
+      "changed": "La password è stata cambiata.",
+      "submit": "Cambia password",
+      "fields": {
+        "current": "Password attuale",
+        "new": "Nuova password",
+        "confirm": "Conferma nuova password",
+        "revokeOtherSessions": "Esci dagli altri dispositivi"
+      },
+      "validation": {
+        "current": "Inserisci la password attuale",
+        "mismatch": "Le password non coincidono"
+      }
     }
   },
   "common": {
@@ -188,6 +211,7 @@
     },
     "role": {
       "admin": "Amministratore",
+      "super-admin": "Super amministratore",
       "user": "Utente"
     },
     "status": {
@@ -238,7 +262,8 @@
       "invalidCredentials": "Email o password non validi.",
       "tooManyAttempts": "Troppi tentativi. Attendi un momento e riprova.",
       "userExists": "Esiste già un account con questa email.",
-      "invalidAvatar": "Questa immagine non può essere usata. Scegli un'immagine PNG, JPEG o WebP."
+      "invalidAvatar": "Questa immagine non può essere usata. Scegli un'immagine PNG, JPEG o WebP.",
+      "wrongPassword": "La password attuale non è corretta."
     },
     "signIn": {
       "meta": "Accedi",

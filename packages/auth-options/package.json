@@ -11,6 +11,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@dafne/contracts": "workspace:*",
     "better-auth": "catalog:",
     "zod": "catalog:"
   },

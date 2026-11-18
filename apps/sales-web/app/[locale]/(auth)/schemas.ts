@@ -1,5 +1,6 @@
 import { formOptions } from "@tanstack/react-form-nextjs";
 import { z } from "zod";
+import { newPasswordSchema } from "@/lib/password";
 
 // Validation for the sign-in and sign-up forms.
 
@@ -26,12 +27,7 @@ export const signUpSchema = z.object({
     .min(1, { error: "auth.validation.lastname" })
     .max(127),
   email,
-  password: z
-    .string()
-    .max(128) // backend limit
-    .regex(/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}$/, {
-      error: "auth.validation.passwordRules",
-    }),
+  password: newPasswordSchema,
 });
 
 export type SignInValues = z.infer<typeof signInSchema>;

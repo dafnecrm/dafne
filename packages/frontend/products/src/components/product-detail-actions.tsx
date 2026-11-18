@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { Can } from "@dafne/frontend-permissions";
 import {
   EllipsisVerticalIcon,
   PencilIcon,
@@ -52,22 +53,26 @@ export function ProductDetailActions({
           <EllipsisVerticalIcon />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
-            <PencilIcon />
-            {t("edit")}
-          </DropdownMenuItem>
+          <Can I="update" a="Product">
+            <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
+              <PencilIcon />
+              {t("edit")}
+            </DropdownMenuItem>
+          </Can>
           <DropdownMenuItem onClick={() => setHistory(true)}>
             <HistoryIcon />
             {tChangelog("open")}
           </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            variant="destructive"
-            onClick={() => setDeleting(true)}
-          >
-            <Trash2Icon />
-            {t("delete")}
-          </DropdownMenuItem>
+          <Can I="delete" a="Product">
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={() => setDeleting(true)}
+            >
+              <Trash2Icon />
+              {t("delete")}
+            </DropdownMenuItem>
+          </Can>
         </DropdownMenuContent>
       </DropdownMenu>
       <ProductChangelogSheet

@@ -18,10 +18,15 @@ import { useResetOnLeave } from "@dafne/frontend-forms/client";
 import { createUser } from "./actions";
 import { ROLE_OPTIONS, userFormOpts, userSchema } from "./schema";
 
-/** Creates a user (admins only). Saving opens the new user's page. */
-export function UserForm() {
+/**
+ * Creates a user (admins only). Saving opens the new user's page. Only a
+ * super-admin is offered the super-admin role (the backend checks it too).
+ */
+export function UserForm({ canGrantSuperAdmin }: { canGrantSuperAdmin: boolean }) {
   const t = useTranslations();
-  const roleOptions = useOptionLabels(ROLE_OPTIONS);
+  const roleOptions = useOptionLabels(
+    ROLE_OPTIONS.filter((option) => canGrantSuperAdmin || option.value !== "super-admin"),
+  );
   const form = useAppForm({
     ...userFormOpts,
     // Validate on submit, then on every change.

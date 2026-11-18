@@ -21,13 +21,16 @@
       "path": "../ui"
     },
     {
+      "path": "../products"
+    },
+    {
+      "path": "../permissions"
+    },
+    {
       "path": "../forms"
     },
     {
       "path": "../data-table"
-    },
-    {
-      "path": "../products"
     },
     {
       "path": "../customers"

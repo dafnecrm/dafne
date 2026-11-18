@@ -10,7 +10,7 @@ import {
   PageContentTitle,
 } from "@dafne/frontend-ui/components/page-content";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
-import { isAdmin, requireUser } from "@/lib/session";
+import { isAdmin, isSuperAdmin, requireUser } from "@/lib/session";
 import { NotAllowed } from "../not-allowed";
 import { UserForm } from "../user-form";
 
@@ -39,9 +39,10 @@ export default function NewUserPage() {
 
 /** The form for admins; the backend checks the role again on save. */
 async function AdminOnlyForm() {
-  if (!isAdmin(await requireUser())) {
+  const user = await requireUser();
+  if (!isAdmin(user)) {
     const t = await getTranslations("users.notAllowed");
     return <NotAllowed>{t("create")}</NotAllowed>;
   }
-  return <UserForm />;
+  return <UserForm canGrantSuperAdmin={isSuperAdmin(user)} />;
 }

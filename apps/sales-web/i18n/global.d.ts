@@ -8,6 +8,11 @@ import type { SalesOrdersMessages } from "@dafne/frontend-sales-orders";
 import type en from "../messages/en.json";
 import type { routing } from "./routing";
 import type { SalesOrderTypesMessages } from "@dafne/frontend-sales-orders/sales-order-types";
+import type { AssistantProvidersMessages } from "@dafne/frontend-assistant/assistant-providers";
+import type { AssistantModelsMessages } from "@dafne/frontend-assistant/assistant-models";
+import type { AssistantChatMessages } from "@dafne/frontend-assistant/chat";
+import type { AssistantAgentsMessages } from "@dafne/frontend-assistant/assistant-agents";
+import type { UserGroupsMessages } from "@dafne/frontend-user-groups";
 
 /**
  * Typed messages: t("customers.title") only compiles if the key exists in
@@ -28,6 +33,11 @@ declare module "next-intl" {
       salesOrders: SalesOrdersMessages;
       salesOrderTypes: SalesOrderTypesMessages;
       changelog: ChangelogMessages;
+      assistantProviders: AssistantProvidersMessages;
+      assistantModels: AssistantModelsMessages;
+      assistantAgents: AssistantAgentsMessages;
+      assistantChat: AssistantChatMessages;
+      userGroups: UserGroupsMessages;
     };
   }
 }

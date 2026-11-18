@@ -7,7 +7,8 @@ import {
   type ExecutionContext,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { ALLOW_ANONYMOUS, OPTIONAL_AUTH, ROLES } from './decorators.js';
+import { isGlobalAdmin, isSuperAdmin } from '@dafne/contracts';
+import { ALLOW_ANONYMOUS, OPTIONAL_AUTH, ROLES, SUPER_ADMIN } from './decorators.js';
 import { SessionClient } from './session.client.js';
 import type { UserSession } from './session.types.js';
 
@@ -28,7 +29,7 @@ interface SessionRequest {
  * Global guard: every route needs a session from apps/auth, for a user who
  * can use this app (`app` in their apps, or a global admin), unless it's
  * marked @AllowAnonymous() or @OptionalAuth(). @Roles() narrows it to the
- * user's role in this app.
+ * user's role in this app, @SuperAdmin() to global super-admins.
  */
 @Injectable()
 export class SessionGuard implements CanActivate {
@@ -47,6 +48,7 @@ export class SessionGuard implements CanActivate {
     const anonymous = this.reflector.getAllAndOverride<boolean>(ALLOW_ANONYMOUS, targets);
     const optional = this.reflector.getAllAndOverride<boolean>(OPTIONAL_AUTH, targets);
     const roles = this.reflector.getAllAndOverride<string[] | undefined>(ROLES, targets);
+    const superAdmin = this.reflector.getAllAndOverride<boolean>(SUPER_ADMIN, targets);
 
     const request = context.switchToHttp().getRequest<SessionRequest>();
     const cookie = request.headers.cookie;
@@ -60,12 +62,16 @@ export class SessionGuard implements CanActivate {
     }
 
     const { user } = session;
-    const admin = user.role === 'admin';
+    // Admins and super-admins see every app, with every role in it.
+    const admin = isGlobalAdmin(user.role);
     const appRole = user.apps?.[this.app];
     if (!admin && !appRole && !anonymous) {
       throw new ForbiddenException(`No access to ${this.app}.`);
     }
     if (roles?.length && !admin && !(appRole && roles.includes(appRole))) {
+      throw new ForbiddenException();
+    }
+    if (superAdmin && !isSuperAdmin(user.role)) {
       throw new ForbiddenException();
     }
 

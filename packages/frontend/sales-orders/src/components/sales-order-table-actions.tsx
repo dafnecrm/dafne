@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { Can } from "@dafne/frontend-permissions";
 import { useState } from "react";
 import { Button } from "@dafne/frontend-ui/components/button";
 import {
@@ -58,18 +59,22 @@ export function SalesOrderTableActions({
             <EyeIcon />
             {t("common.viewDetails")}
           </DropdownMenuItem>
-          <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
-            <PencilIcon />
-            {t("common.edit")}
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            variant="destructive"
-            onClick={() => setDeleting(true)}
-          >
-            <Trash2Icon />
-            {t("common.delete")}
-          </DropdownMenuItem>
+          <Can I="update" a="SalesOrder">
+            <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
+              <PencilIcon />
+              {t("common.edit")}
+            </DropdownMenuItem>
+          </Can>
+          <Can I="delete" a="SalesOrder">
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={() => setDeleting(true)}
+            >
+              <Trash2Icon />
+              {t("common.delete")}
+            </DropdownMenuItem>
+          </Can>
         </DropdownMenuContent>
       </DropdownMenu>
       {/* Outside the menu, which closes when an item is clicked. */}

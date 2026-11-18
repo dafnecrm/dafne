@@ -20,6 +20,7 @@
     "@dafne/frontend-data-table": "workspace:*",
     "@dafne/frontend-forms": "workspace:*",
     "@dafne/frontend-geo": "workspace:*",
+    "@dafne/frontend-permissions": "workspace:*",
     "@dafne/frontend-ui": "workspace:*",
     "@tanstack/react-form-nextjs": "catalog:",
     "lucide-react": "catalog:",

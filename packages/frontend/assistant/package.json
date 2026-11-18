@@ -1,0 +1,62 @@
+{
+  "name": "@dafne/frontend-assistant",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./assistant-providers": "./src/assistant-providers/index.ts",
+    "./assistant-providers/actions": "./src/assistant-providers/actions.ts",
+    "./assistant-providers/schema": "./src/assistant-providers/schema.ts",
+    "./assistant-providers/server": "./src/assistant-providers/server.ts",
+    "./assistant-providers/components/*": "./src/assistant-providers/components/*.tsx",
+    "./assistant-models": "./src/assistant-models/index.ts",
+    "./assistant-models/actions": "./src/assistant-models/actions.ts",
+    "./assistant-models/schema": "./src/assistant-models/schema.ts",
+    "./assistant-models/server": "./src/assistant-models/server.ts",
+    "./assistant-models/components/*": "./src/assistant-models/components/*.tsx",
+    "./assistant-agents": "./src/assistant-agents/index.ts",
+    "./assistant-agents/actions": "./src/assistant-agents/actions.ts",
+    "./assistant-agents/schema": "./src/assistant-agents/schema.ts",
+    "./assistant-agents/server": "./src/assistant-agents/server.ts",
+    "./assistant-agents/components/*": "./src/assistant-agents/components/*.tsx",
+    "./chat": "./src/chat/messages/index.ts",
+    "./chat/actions": "./src/chat/actions.ts",
+    "./chat/server": "./src/chat/server.ts",
+    "./chat/components/*": "./src/chat/components/*.tsx"
+  },
+  "scripts": {
+    "lint": "eslint src",
+    "test": "vitest run --passWithNoTests"
+  },
+  "peerDependencies": {
+    "next": "catalog:",
+    "react": "catalog:",
+    "next-intl": "catalog:"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "eslint": "catalog:",
+    "next": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "next-intl": "catalog:"
+  },
+  "nx": {
+    "tags": [
+      "scope:frontend"
+    ]
+  },
+  "dependencies": {
+    "@dafne/contracts": "workspace:*",
+    "@dafne/frontend-api": "workspace:*",
+    "@dafne/frontend-data-table": "workspace:*",
+    "@dafne/frontend-forms": "workspace:*",
+    "@dafne/frontend-ui": "workspace:*",
+    "@tanstack/react-form-nextjs": "catalog:",
+    "lucide-react": "catalog:",
+    "zod": "catalog:"
+  }
+}

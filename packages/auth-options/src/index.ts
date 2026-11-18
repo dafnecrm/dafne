@@ -2,6 +2,9 @@ import type { BetterAuthOptions } from 'better-auth';
 import { APIError } from 'better-auth/api';
 import { admin } from 'better-auth/plugins';
 import { z } from 'zod';
+import { adminPluginOptions, superAdminGuard } from './super-admin.ts';
+
+export { isEscalation } from './super-admin.ts';
 
 /*
  * Better Auth options that don't depend on the database or the environment.
@@ -56,7 +59,9 @@ function assertValidImage(image: unknown) {
 }
 
 export const authOptions = {
-  plugins: [admin()],
+  plugins: [admin(adminPluginOptions)],
+  // Only super-admins grant super-admin or touch a super-admin.
+  hooks: { before: superAdminGuard },
   advanced: {
     database: {
       joins: true,

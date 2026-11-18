@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { Can } from "@dafne/frontend-permissions";
 import {
   CircleOffIcon,
   EllipsisVerticalIcon,
@@ -49,31 +50,39 @@ export function ActivityDetailActions({ activity }: { activity: ActivityRef }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           {ACTIVITY_STATUSES_ALLOW_EDIT.includes(activity.status) && (
-            <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
-              <PencilIcon />
-              {t("common.edit")}
-            </DropdownMenuItem>
+            <Can I="update" a="Activity">
+              <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
+                <PencilIcon />
+                {t("common.edit")}
+              </DropdownMenuItem>
+            </Can>
           )}
           {ACTIVITY_STATUSES_ALLOW_REOPEN.includes(activity.status) && (
-            <DropdownMenuItem onClick={() => setDialog("reopen")}>
-              <RotateCcwIcon />
-              {t("activities.reopen")}
-            </DropdownMenuItem>
+            <Can I="close" a="Activity">
+              <DropdownMenuItem onClick={() => setDialog("reopen")}>
+                <RotateCcwIcon />
+                {t("activities.reopen")}
+              </DropdownMenuItem>
+            </Can>
           )}
           {ACTIVITY_STATUSES_ALLOW_CLOSE.includes(activity.status) && (
-            <DropdownMenuItem onClick={() => setDialog("close")}>
-              <CircleOffIcon />
-              {t("activities.close")}
-            </DropdownMenuItem>
+            <Can I="close" a="Activity">
+              <DropdownMenuItem onClick={() => setDialog("close")}>
+                <CircleOffIcon />
+                {t("activities.close")}
+              </DropdownMenuItem>
+            </Can>
           )}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            variant="destructive"
-            onClick={() => setDialog("delete")}
-          >
-            <Trash2Icon />
-            {t("common.delete")}
-          </DropdownMenuItem>
+          <Can I="delete" a="Activity">
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={() => setDialog("delete")}
+            >
+              <Trash2Icon />
+              {t("common.delete")}
+            </DropdownMenuItem>
+          </Can>
         </DropdownMenuContent>
       </DropdownMenu>
       {/* Outside the menu, which closes when an item is clicked. */}

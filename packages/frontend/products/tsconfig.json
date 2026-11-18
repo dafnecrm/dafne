@@ -21,6 +21,9 @@
       "path": "../ui"
     },
     {
+      "path": "../permissions"
+    },
+    {
       "path": "../forms"
     },
     {

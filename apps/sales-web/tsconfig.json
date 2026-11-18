@@ -5,6 +5,7 @@
     "sync": {
       "ignoredDependencies": [
         "@dafne/contracts",
+        "@dafne/permissions",
         "@dafne/frontend-auth",
         "@dafne/frontend-api",
         "@dafne/frontend-ui",
@@ -15,7 +16,10 @@
         "@dafne/frontend-activities",
         "@dafne/frontend-products",
         "@dafne/frontend-sales-orders",
-        "@dafne/frontend-changelog"
+        "@dafne/frontend-changelog",
+        "@dafne/frontend-assistant",
+        "@dafne/frontend-user-groups",
+        "@dafne/frontend-permissions"
       ]
     }
   },

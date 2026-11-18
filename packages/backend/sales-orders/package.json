@@ -17,12 +17,14 @@
     "@dafne/backend-database": "workspace:*",
     "@dafne/backend-fsm": "workspace:*",
     "@dafne/backend-session": "workspace:*",
+    "@dafne/backend-user-groups": "workspace:*",
     "@dafne/contracts": "workspace:*",
     "@nestjs/common": "catalog:",
     "@nestjs/drizzle": "catalog:",
     "drizzle-orm": "catalog:"
   },
   "devDependencies": {
+    "@dafne/permissions": "workspace:*",
     "@nestjs/testing": "catalog:",
     "@swc/core": "catalog:",
     "@types/node": "catalog:",

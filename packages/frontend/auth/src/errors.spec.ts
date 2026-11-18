@@ -8,6 +8,9 @@ describe("authErrorKey", () => {
     expect(authErrorKey({ status: 401, code: "INVALID_AVATAR" })).toBe(
       "auth.errors.invalidAvatar",
     );
+    expect(authErrorKey({ status: 400, code: "INVALID_PASSWORD" })).toBe(
+      "auth.errors.wrongPassword",
+    );
   });
 
   it("maps 401 and 429", () => {

@@ -1,0 +1,53 @@
+{
+  "name": "@dafne/backend-assistant",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "oxlint -c ../.oxlintrc.json --type-aware src",
+    "test": "vitest run --passWithNoTests",
+    "eval": "vitest run -c vitest.eval.config.ts"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "catalog:",
+    "@ai-sdk/openai": "catalog:",
+    "@ai-sdk/openai-compatible": "catalog:",
+    "@dafne/backend-activities": "workspace:*",
+    "@dafne/backend-common": "workspace:*",
+    "@dafne/backend-crud": "workspace:*",
+    "@dafne/backend-customers": "workspace:*",
+    "@dafne/backend-database": "workspace:*",
+    "@dafne/backend-products": "workspace:*",
+    "@dafne/backend-sales-orders": "workspace:*",
+    "@dafne/backend-session": "workspace:*",
+    "@dafne/backend-user-groups": "workspace:*",
+    "@dafne/contracts": "workspace:*",
+    "@dafne/permissions": "workspace:*",
+    "@nestjs/cache-manager": "catalog:",
+    "@nestjs/common": "catalog:",
+    "@nestjs/config": "catalog:",
+    "@nestjs/drizzle": "catalog:",
+    "ai": "catalog:",
+    "drizzle-orm": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@nestjs/testing": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/express": "catalog:",
+    "@types/node": "catalog:",
+    "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:",
+    "typescript": "catalog:",
+    "unplugin-swc": "catalog:",
+    "vitest": "catalog:"
+  },
+  "nx": {
+    "tags": [
+      "scope:backend"
+    ]
+  }
+}

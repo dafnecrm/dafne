@@ -17,7 +17,13 @@
     "account": "Account",
     "orders": "Sales orders",
     "crm": "CRM",
-    "salesOrderTypes": "Sales order types"
+    "salesOrderTypes": "Sales order types",
+    "assistantProviders": "AI providers",
+    "assistantModels": "AI models",
+    "assistantAgents": "AI agents",
+    "assistant": "AI assistant",
+    "userGroups": "User groups",
+    "changePassword": "Change password"
   },
   "breadcrumb": {
     "new": "New",
@@ -34,7 +40,8 @@
       "label": "Account menu",
       "account": "Account",
       "language": "Language",
-      "signOut": "Sign out"
+      "signOut": "Sign out",
+      "changePassword": "Change password"
     },
     "title": "Account",
     "description": "Your account details.",
@@ -50,6 +57,22 @@
       "upload": "Upload a photo",
       "remove": "Remove photo",
       "input": "Avatar image"
+    },
+    "password": {
+      "title": "Change password",
+      "description": "Pick a new password for your account.",
+      "changed": "Your password has been changed.",
+      "submit": "Change password",
+      "fields": {
+        "current": "Current password",
+        "new": "New password",
+        "confirm": "Confirm new password",
+        "revokeOtherSessions": "Sign out of other devices"
+      },
+      "validation": {
+        "current": "Enter your current password",
+        "mismatch": "The passwords don't match"
+      }
     }
   },
   "common": {
@@ -188,6 +211,7 @@
     },
     "role": {
       "admin": "Admin",
+      "super-admin": "Super-admin",
       "user": "User"
     },
     "status": {
@@ -238,7 +262,8 @@
       "invalidCredentials": "Invalid email or password.",
       "tooManyAttempts": "Too many attempts. Please wait a moment and try again.",
       "userExists": "An account with this email already exists.",
-      "invalidAvatar": "This image can't be used. Pick a PNG, JPEG or WebP image."
+      "invalidAvatar": "This image can't be used. Pick a PNG, JPEG or WebP image.",
+      "wrongPassword": "The current password is wrong."
     },
     "signIn": {
       "meta": "Sign in",

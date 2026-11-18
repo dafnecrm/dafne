@@ -51,6 +51,7 @@ export const en = {
     firstname: { required: 'Enter the first name' },
     lastname: { required: 'Enter the last name' },
     email: { taken: 'A user with this email already exists' },
+    role: { superAdminRequired: 'Only a super-admin can grant the super-admin role' },
   },
   database: {
     duplicate: 'A record with these data already exists',
@@ -108,6 +109,54 @@ export const en = {
       required: 'Enter the type description'
     },
   },
+  assistantProviders: {
+    notFound: 'AI provider not found',
+    name: { required: 'Enter the name' },
+    kind: { required: 'Choose the kind' },
+    baseUrl: {
+      invalid: 'Enter a URL starting with http:// or https://',
+      required: 'Enter the server URL (e.g. http://localhost:11434/v1 for Ollama)',
+    },
+    apiKeyEnv: { invalid: 'Use the name of an environment variable, e.g. ANTHROPIC_API_KEY' },
+  },
+  assistantModels: {
+    notFound: 'AI model not found',
+    providerId: { required: 'Choose the provider' },
+    modelId: { required: 'Enter the model id' },
+    label: { required: 'Enter the label' },
+  },
+  assistantAgents: {
+    notFound: 'AI agent not found',
+    name: { required: 'Enter the name' },
+    systemPrompt: { required: 'Enter the instructions' },
+    defaultModelId: { required: 'Choose the default model' },
+    groupIds: { required: 'Choose at least one group' },
+  },
+  permissions: {
+    unknown: 'Unknown permission',
+    forbidden: "You don't have permission to do this",
+  },
+  assistant: {
+    tools: { unknown: 'Unknown tool' },
+    agent: { required: 'Choose an agent', unavailable: 'This agent is not available' },
+    model: {
+      required: 'Choose a model',
+      unavailable: 'This model is not available',
+      notAllowed: "This agent doesn't allow switching model",
+      none: 'This agent has no model: ask a super-admin to set one',
+    },
+    provider: {
+      unavailable: 'The AI provider is not reachable right now',
+      missingKey: 'The AI provider has no API key configured',
+    },
+    message: { required: 'Write a message', tooLong: 'The message is too long' },
+    conversation: { notFound: 'Conversation not found' },
+    action: { notFound: 'Action not found', notPending: 'This action was already decided' },
+    rateLimited: 'Too many messages: wait a few minutes',
+    failed: 'The assistant could not answer: try again',
+    noAnswer: 'The assistant gave no answer: try asking in other words',
+  },
+  userGroups: { notFound: 'User group not found', name: { required: 'Enter the name' } },
 };
 
 /** The shape every language must have: same keys, any text. */

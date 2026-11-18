@@ -7,6 +7,9 @@ import {
 } from "@/components/page-breadcrumb";
 import { LeaveGuardProvider } from "@dafne/frontend-forms/leave-guard";
 import { ThemeToggle } from "@dafne/frontend-ui/components/theme-toggle";
+import { AssistantButton } from "@/components/assistant-button";
+import { PermissionsProvider } from "@dafne/frontend-permissions";
+import { loadMyPermissions } from "@dafne/frontend-permissions/server";
 import { Separator } from "@dafne/frontend-ui/components/separator";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import {
@@ -14,7 +17,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@dafne/frontend-ui/components/sidebar";
-import { getCurrentUser, isAdmin, requireUser } from "@/lib/session";
+import { getCurrentUser, isAdmin, isSuperAdmin, requireUser } from "@/lib/session";
 
 /** Layout for pages that need a signed-in user. */
 export default function AppLayout({ children }: { children: ReactNode }) {
@@ -43,12 +46,18 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               className="mr-2 data-vertical:h-4 data-vertical:self-auto"
             />
             <PageBreadcrumb />
-            <ThemeToggle className="ml-auto" />
+            <div className="ml-auto flex items-center gap-1">
+              <AssistantButton />
+              <ThemeToggle />
+            </div>
           </header>
-          {/* Asks before leaving a form with unsaved changes (useResetOnLeave). */}
-          <LeaveGuardProvider>
-            <div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>
-          </LeaveGuardProvider>
+          {/* What the user can do (<Can>): the promise, not awaited. */}
+          <PermissionsProvider permissions={loadMyPermissions()}>
+            {/* Asks before leaving a form with unsaved changes (useResetOnLeave). */}
+            <LeaveGuardProvider>
+              <div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>
+            </LeaveGuardProvider>
+          </PermissionsProvider>
         </BreadcrumbProvider>
       </SidebarInset>
     </SidebarProvider>
@@ -70,10 +79,11 @@ function UserSkeleton() {
 
 /** Admin-only sidebar sections; nothing for other users. */
 async function AdminNav() {
-  if (!isAdmin(await getCurrentUser())) {
+  const user = await getCurrentUser();
+  if (!isAdmin(user)) {
     return null;
   }
-  return <NavSections admin />;
+  return <NavSections admin superAdmin={isSuperAdmin(user)} />;
 }
 
 async function SidebarUser() {

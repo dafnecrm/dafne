@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
   // Workspace packages ship TypeScript sources.
   transpilePackages: [
     "@dafne/contracts",
+    "@dafne/permissions",
     "@dafne/frontend-auth",
     "@dafne/frontend-api",
     "@dafne/frontend-ui",
@@ -24,6 +25,9 @@ const nextConfig: NextConfig = {
     "@dafne/frontend-products",
     "@dafne/frontend-sales-orders",
     "@dafne/frontend-changelog",
+    "@dafne/frontend-assistant",
+    "@dafne/frontend-user-groups",
+    "@dafne/frontend-permissions",
   ],
   cacheComponents: true,
   experimental: {

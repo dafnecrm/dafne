@@ -12,6 +12,9 @@
       "path": "../../contracts"
     },
     {
+      "path": "../user-groups"
+    },
+    {
       "path": "../session"
     },
     {

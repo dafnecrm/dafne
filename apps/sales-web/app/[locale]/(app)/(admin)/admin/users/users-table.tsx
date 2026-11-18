@@ -1,5 +1,6 @@
 "use client";
 
+import { isGlobalAdmin } from "@dafne/contracts";
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -95,7 +96,7 @@ function useUserColumns() {
           cell: (info) => {
             const role = info.getValue() ?? "user";
             return (
-              <Badge variant={role === "admin" ? "default" : "secondary"}>
+              <Badge variant={isGlobalAdmin(role) ? "default" : "secondary"}>
                 {t.has(`role.${role}` as never)
                   ? t(`role.${role}` as "role.user")
                   : role}

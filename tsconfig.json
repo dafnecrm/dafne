@@ -57,6 +57,9 @@
       "path": "./packages/auth-options"
     },
     {
+      "path": "./packages/permissions"
+    },
+    {
       "path": "./packages/backend/migrator"
     },
     {
@@ -100,6 +103,21 @@
     },
     {
       "path": "./packages/frontend/changelog"
+    },
+    {
+      "path": "./packages/backend/assistant"
+    },
+    {
+      "path": "./packages/frontend/assistant"
+    },
+    {
+      "path": "./packages/backend/user-groups"
+    },
+    {
+      "path": "./packages/frontend/user-groups"
+    },
+    {
+      "path": "./packages/frontend/permissions"
     }
   ]
 }

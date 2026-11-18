@@ -1,0 +1,2203 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "c6f1f8c0-ade0-433b-b13a-6d6cd4d21f84",
+  "prevIds": [
+    "fb763c4c-1499-4928-9373-366d7067eb70"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "sales",
+        "assistant_agent"
+      ],
+      "writes": [
+        "s|tbl|sales.assistant_agent",
+        "n|tbl|sales.assistant_agent",
+        "e|tbl|sales.assistant_agent",
+        "n|rel|sales.assistant_agent",
+        "n|type|sales.assistant_agent",
+        "n|rel|sales.assistant_agent_pkey",
+        "n|rel|sales.assistant_agent_name_key"
+      ],
+      "reads": [
+        "n|sch|sales"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "sales",
+        "assistant_action"
+      ],
+      "writes": [
+        "s|tbl|sales.assistant_action",
+        "n|tbl|sales.assistant_action",
+        "e|tbl|sales.assistant_action",
+        "n|rel|sales.assistant_action",
+        "n|type|sales.assistant_action",
+        "n|rel|sales.assistant_action_pkey"
+      ],
+      "reads": [
+        "n|sch|sales"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "sales",
+        "assistant_conversation"
+      ],
+      "writes": [
+        "s|tbl|sales.assistant_conversation",
+        "n|tbl|sales.assistant_conversation",
+        "e|tbl|sales.assistant_conversation",
+        "n|rel|sales.assistant_conversation",
+        "n|type|sales.assistant_conversation",
+        "n|rel|sales.assistant_conversation_pkey"
+      ],
+      "reads": [
+        "n|sch|sales"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "sales",
+        "assistant_message"
+      ],
+      "writes": [
+        "s|tbl|sales.assistant_message",
+        "n|tbl|sales.assistant_message",
+        "e|tbl|sales.assistant_message",
+        "n|rel|sales.assistant_message",
+        "n|type|sales.assistant_message",
+        "n|rel|sales.assistant_message_pkey"
+      ],
+      "reads": [
+        "n|sch|sales"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "sales",
+        "assistant_model"
+      ],
+      "writes": [
+        "s|tbl|sales.assistant_model",
+        "n|tbl|sales.assistant_model",
+        "e|tbl|sales.assistant_model",
+        "n|rel|sales.assistant_model",
+        "n|type|sales.assistant_model",
+        "n|rel|sales.assistant_model_pkey"
+      ],
+      "reads": [
+        "n|sch|sales"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "sales",
+        "assistant_provider"
+      ],
+      "writes": [
+        "s|tbl|sales.assistant_provider",
+        "n|tbl|sales.assistant_provider",
+        "e|tbl|sales.assistant_provider",
+        "n|rel|sales.assistant_provider",
+        "n|type|sales.assistant_provider",
+        "n|rel|sales.assistant_provider_pkey",
+        "n|rel|sales.assistant_provider_name_key"
+      ],
+      "reads": [
+        "n|sch|sales"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "sales",
+        "assistant_agent",
+        "assistant_agent_deletedAt_idx"
+      ],
+      "writes": [
+        "s|idx|sales.assistant_agent_deletedAt_idx",
+        "n|idx|sales.assistant_agent_deletedAt_idx",
+        "e|idx|sales.assistant_agent_deletedAt_idx",
+        "n|rel|sales.assistant_agent_deletedAt_idx"
+      ],
+      "reads": [
+        "n|tbl|sales.assistant_agent",
+        "n|sch|sales",
+        "n|col|sales.assistant_agent.deleted_at"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "sales",
+        "assistant_agent",
+        "assistant_agent_defaultModelId_idx"
+      ],
+      "writes": [
+        "s|idx|sales.assistant_agent_defaultModelId_idx",
+        "n|idx|sales.assistant_agent_defaultModelId_idx",
+        "e|idx|sales.assistant_agent_defaultModelId_idx",
+        "n|rel|sales.assistant_agent_defaultModelId_idx"
+      ],
+      "reads": [
+        "n|tbl|sales.assistant_agent",
+        "n|sch|sales",
+        "n|col|sales.assistant_agent.default_model_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "sales",
+        "assistant_action",
+        "assistant_action_conversationId_idx"
+      ],
+      "writes": [
+        "s|idx|sales.assistant_action_conversationId_idx",
+        "n|idx|sales.assistant_action_conversationId_idx",
+        "e|idx|sales.assistant_action_conversationId_idx",
+        "n|rel|sales.assistant_action_conversationId_idx"
+      ],
+      "reads": [
+        "n|tbl|sales.assistant_action",
+        "n|sch|sales",
+        "n|col|sales.assistant_action.conversation_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "sales",
+        "assistant_conversation",
+        "assistant_conversation_userId_idx"
+      ],
+      "writes": [
+        "s|idx|sales.assistant_conversation_userId_idx",
+        "n|idx|sales.assistant_conversation_userId_idx",
+        "e|idx|sales.assistant_conversation_userId_idx",
+        "n|rel|sales.assistant_conversation_userId_idx"
+      ],
+      "reads": [
+        "n|tbl|sales.assistant_conversation",
+        "n|sch|sales",
+        "n|col|sales.assistant_conversation.user_id",
+        "n|col|sales.assistant_conversation.updated_at"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "sales",
+        "assistant_message",
+        "assistant_message_conversationId_idx"
+      ],
+      "writes": [
+        "s|idx|sales.assistant_message_conversationId_idx",
+        "n|idx|sales.assistant_message_conversationId_idx",
+        "e|idx|sales.assistant_message_conversationId_idx",
+        "n|rel|sales.assistant_message_conversationId_idx"
+      ],
+      "reads": [
+        "n|tbl|sales.assistant_message",
+        "n|sch|sales",
+        "n|col|sales.assistant_message.conversation_id",
+        "n|col|sales.assistant_message.id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "sales",
+        "assistant_model",
+        "assistant_model_deletedAt_idx"
+      ],
+      "writes": [
+        "s|idx|sales.assistant_model_deletedAt_idx",
+        "n|idx|sales.assistant_model_deletedAt_idx",
+        "e|idx|sales.assistant_model_deletedAt_idx",
+        "n|rel|sales.assistant_model_deletedAt_idx"
+      ],
+      "reads": [
+        "n|tbl|sales.assistant_model",
+        "n|sch|sales",
+        "n|col|sales.assistant_model.deleted_at"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "sales",
+        "assistant_model",
+        "assistant_model_providerId_idx"
+      ],
+      "writes": [
+        "s|idx|sales.assistant_model_providerId_idx",
+        "n|idx|sales.assistant_model_providerId_idx",
+        "e|idx|sales.assistant_model_providerId_idx",
+        "n|rel|sales.assistant_model_providerId_idx"
+      ],
+      "reads": [
+        "n|tbl|sales.assistant_model",
+        "n|sch|sales",
+        "n|col|sales.assistant_model.provider_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "sales",
+        "assistant_provider",
+        "assistant_provider_deletedAt_idx"
+      ],
+      "writes": [
+        "s|idx|sales.assistant_provider_deletedAt_idx",
+        "n|idx|sales.assistant_provider_deletedAt_idx",
+        "e|idx|sales.assistant_provider_deletedAt_idx",
+        "n|rel|sales.assistant_provider_deletedAt_idx"
+      ],
+      "reads": [
+        "n|tbl|sales.assistant_provider",
+        "n|sch|sales",
+        "n|col|sales.assistant_provider.deleted_at"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "assistant_agent"
+      ],
+      "writes": [
+        "s|fk|sales.assistant_agent.assistant_agent_default_model_id_assistant_model_id_fkey",
+        "n|fk|sales.assistant_agent.assistant_agent_default_model_id_assistant_model_id_fkey",
+        "e|fk|sales.assistant_agent.assistant_agent_default_model_id_assistant_model_id_fkey",
+        "n|con|sales.assistant_agent.assistant_agent_default_model_id_assistant_model_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.assistant_agent",
+        "n|sch|sales",
+        "n|tbl|sales.assistant_model",
+        "n|sch|sales",
+        "n|col|sales.assistant_agent.default_model_id",
+        "n|col|sales.assistant_model.id",
+        "e|uniqueness|sales.assistant_model.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "assistant_agent"
+      ],
+      "writes": [
+        "s|fk|sales.assistant_agent.assistant_agent_created_by_id_user_id_fkey",
+        "n|fk|sales.assistant_agent.assistant_agent_created_by_id_user_id_fkey",
+        "e|fk|sales.assistant_agent.assistant_agent_created_by_id_user_id_fkey",
+        "n|con|sales.assistant_agent.assistant_agent_created_by_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.assistant_agent",
+        "n|sch|sales",
+        "n|tbl|auth.user",
+        "n|sch|auth",
+        "n|col|sales.assistant_agent.created_by_id",
+        "n|col|auth.user.id",
+        "e|uniqueness|auth.user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "assistant_agent"
+      ],
+      "writes": [
+        "s|fk|sales.assistant_agent.assistant_agent_updated_by_id_user_id_fkey",
+        "n|fk|sales.assistant_agent.assistant_agent_updated_by_id_user_id_fkey",
+        "e|fk|sales.assistant_agent.assistant_agent_updated_by_id_user_id_fkey",
+        "n|con|sales.assistant_agent.assistant_agent_updated_by_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.assistant_agent",
+        "n|sch|sales",
+        "n|tbl|auth.user",
+        "n|sch|auth",
+        "n|col|sales.assistant_agent.updated_by_id",
+        "n|col|auth.user.id",
+        "e|uniqueness|auth.user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "assistant_action"
+      ],
+      "writes": [
+        "s|fk|sales.assistant_action.assistant_action_conversation_id_assistant_conversation_id_fkey",
+        "n|fk|sales.assistant_action.assistant_action_conversation_id_assistant_conversation_id_fkey",
+        "e|fk|sales.assistant_action.assistant_action_conversation_id_assistant_conversation_id_fkey",
+        "n|con|sales.assistant_action.assistant_action_conversation_id_assistant_conversation_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.assistant_action",
+        "n|sch|sales",
+        "n|tbl|sales.assistant_conversation",
+        "n|sch|sales",
+        "n|col|sales.assistant_action.conversation_id",
+        "n|col|sales.assistant_conversation.id",
+        "e|uniqueness|sales.assistant_conversation.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "assistant_conversation"
+      ],
+      "writes": [
+        "s|fk|sales.assistant_conversation.assistant_conversation_user_id_user_id_fkey",
+        "n|fk|sales.assistant_conversation.assistant_conversation_user_id_user_id_fkey",
+        "e|fk|sales.assistant_conversation.assistant_conversation_user_id_user_id_fkey",
+        "n|con|sales.assistant_conversation.assistant_conversation_user_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.assistant_conversation",
+        "n|sch|sales",
+        "n|tbl|auth.user",
+        "n|sch|auth",
+        "n|col|sales.assistant_conversation.user_id",
+        "n|col|auth.user.id",
+        "e|uniqueness|auth.user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "assistant_conversation"
+      ],
+      "writes": [
+        "s|fk|sales.assistant_conversation.assistant_conversation_agent_id_assistant_agent_id_fkey",
+        "n|fk|sales.assistant_conversation.assistant_conversation_agent_id_assistant_agent_id_fkey",
+        "e|fk|sales.assistant_conversation.assistant_conversation_agent_id_assistant_agent_id_fkey",
+        "n|con|sales.assistant_conversation.assistant_conversation_agent_id_assistant_agent_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.assistant_conversation",
+        "n|sch|sales",
+        "n|tbl|sales.assistant_agent",
+        "n|sch|sales",
+        "n|col|sales.assistant_conversation.agent_id",
+        "n|col|sales.assistant_agent.id",
+        "e|uniqueness|sales.assistant_agent.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "assistant_conversation"
+      ],
+      "writes": [
+        "s|fk|sales.assistant_conversation.assistant_conversation_model_id_assistant_model_id_fkey",
+        "n|fk|sales.assistant_conversation.assistant_conversation_model_id_assistant_model_id_fkey",
+        "e|fk|sales.assistant_conversation.assistant_conversation_model_id_assistant_model_id_fkey",
+        "n|con|sales.assistant_conversation.assistant_conversation_model_id_assistant_model_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.assistant_conversation",
+        "n|sch|sales",
+        "n|tbl|sales.assistant_model",
+        "n|sch|sales",
+        "n|col|sales.assistant_conversation.model_id",
+        "n|col|sales.assistant_model.id",
+        "e|uniqueness|sales.assistant_model.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "assistant_message"
+      ],
+      "writes": [
+        "s|fk|sales.assistant_message.assistant_message_wmFaFM0VgVln_fkey",
+        "n|fk|sales.assistant_message.assistant_message_wmFaFM0VgVln_fkey",
+        "e|fk|sales.assistant_message.assistant_message_wmFaFM0VgVln_fkey",
+        "n|con|sales.assistant_message.assistant_message_wmFaFM0VgVln_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.assistant_message",
+        "n|sch|sales",
+        "n|tbl|sales.assistant_conversation",
+        "n|sch|sales",
+        "n|col|sales.assistant_message.conversation_id",
+        "n|col|sales.assistant_conversation.id",
+        "e|uniqueness|sales.assistant_conversation.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "assistant_message"
+      ],
+      "writes": [
+        "s|fk|sales.assistant_message.assistant_message_model_id_assistant_model_id_fkey",
+        "n|fk|sales.assistant_message.assistant_message_model_id_assistant_model_id_fkey",
+        "e|fk|sales.assistant_message.assistant_message_model_id_assistant_model_id_fkey",
+        "n|con|sales.assistant_message.assistant_message_model_id_assistant_model_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.assistant_message",
+        "n|sch|sales",
+        "n|tbl|sales.assistant_model",
+        "n|sch|sales",
+        "n|col|sales.assistant_message.model_id",
+        "n|col|sales.assistant_model.id",
+        "e|uniqueness|sales.assistant_model.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "assistant_model"
+      ],
+      "writes": [
+        "s|fk|sales.assistant_model.assistant_model_provider_id_assistant_provider_id_fkey",
+        "n|fk|sales.assistant_model.assistant_model_provider_id_assistant_provider_id_fkey",
+        "e|fk|sales.assistant_model.assistant_model_provider_id_assistant_provider_id_fkey",
+        "n|con|sales.assistant_model.assistant_model_provider_id_assistant_provider_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.assistant_model",
+        "n|sch|sales",
+        "n|tbl|sales.assistant_provider",
+        "n|sch|sales",
+        "n|col|sales.assistant_model.provider_id",
+        "n|col|sales.assistant_provider.id",
+        "e|uniqueness|sales.assistant_provider.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "assistant_model"
+      ],
+      "writes": [
+        "s|fk|sales.assistant_model.assistant_model_created_by_id_user_id_fkey",
+        "n|fk|sales.assistant_model.assistant_model_created_by_id_user_id_fkey",
+        "e|fk|sales.assistant_model.assistant_model_created_by_id_user_id_fkey",
+        "n|con|sales.assistant_model.assistant_model_created_by_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.assistant_model",
+        "n|sch|sales",
+        "n|tbl|auth.user",
+        "n|sch|auth",
+        "n|col|sales.assistant_model.created_by_id",
+        "n|col|auth.user.id",
+        "e|uniqueness|auth.user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "assistant_model"
+      ],
+      "writes": [
+        "s|fk|sales.assistant_model.assistant_model_updated_by_id_user_id_fkey",
+        "n|fk|sales.assistant_model.assistant_model_updated_by_id_user_id_fkey",
+        "e|fk|sales.assistant_model.assistant_model_updated_by_id_user_id_fkey",
+        "n|con|sales.assistant_model.assistant_model_updated_by_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.assistant_model",
+        "n|sch|sales",
+        "n|tbl|auth.user",
+        "n|sch|auth",
+        "n|col|sales.assistant_model.updated_by_id",
+        "n|col|auth.user.id",
+        "e|uniqueness|auth.user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "assistant_provider"
+      ],
+      "writes": [
+        "s|fk|sales.assistant_provider.assistant_provider_created_by_id_user_id_fkey",
+        "n|fk|sales.assistant_provider.assistant_provider_created_by_id_user_id_fkey",
+        "e|fk|sales.assistant_provider.assistant_provider_created_by_id_user_id_fkey",
+        "n|con|sales.assistant_provider.assistant_provider_created_by_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.assistant_provider",
+        "n|sch|sales",
+        "n|tbl|auth.user",
+        "n|sch|auth",
+        "n|col|sales.assistant_provider.created_by_id",
+        "n|col|auth.user.id",
+        "e|uniqueness|auth.user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "assistant_provider"
+      ],
+      "writes": [
+        "s|fk|sales.assistant_provider.assistant_provider_updated_by_id_user_id_fkey",
+        "n|fk|sales.assistant_provider.assistant_provider_updated_by_id_user_id_fkey",
+        "e|fk|sales.assistant_provider.assistant_provider_updated_by_id_user_id_fkey",
+        "n|con|sales.assistant_provider.assistant_provider_updated_by_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.assistant_provider",
+        "n|sch|sales",
+        "n|tbl|auth.user",
+        "n|sch|auth",
+        "n|col|sales.assistant_provider.updated_by_id",
+        "n|col|auth.user.id",
+        "e|uniqueness|auth.user.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "name": "assistant_agent",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "name": "assistant_action",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "name": "assistant_conversation",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "name": "assistant_message",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "name": "assistant_model",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "name": "assistant_provider",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_agent",
+        "name": "id",
+        "type": "serial",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_agent",
+        "name": "name",
+        "type": "varchar(100)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_agent",
+        "name": "description",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_agent",
+        "name": "system_prompt",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_agent",
+        "name": "tools",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'[]'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_agent",
+        "name": "default_model_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_agent",
+        "name": "allow_model_override",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "true",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_agent",
+        "name": "enabled",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_agent",
+        "name": "created_at",
+        "type": "timestamp(3) with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_agent",
+        "name": "updated_at",
+        "type": "timestamp(3) with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_agent",
+        "name": "deleted_at",
+        "type": "timestamp(3) with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_agent",
+        "name": "created_by_id",
+        "type": "varchar(36)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_agent",
+        "name": "updated_by_id",
+        "type": "varchar(36)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_action",
+        "name": "id",
+        "type": "serial",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_action",
+        "name": "conversation_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_action",
+        "name": "tool_call_id",
+        "type": "varchar(100)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_action",
+        "name": "kind",
+        "type": "varchar(100)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_action",
+        "name": "payload",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_action",
+        "name": "status",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'pending'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_action",
+        "name": "result",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_action",
+        "name": "created_at",
+        "type": "timestamp(3) with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_action",
+        "name": "decided_at",
+        "type": "timestamp(3) with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_conversation",
+        "name": "id",
+        "type": "serial",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_conversation",
+        "name": "user_id",
+        "type": "varchar(36)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_conversation",
+        "name": "agent_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_conversation",
+        "name": "model_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_conversation",
+        "name": "title",
+        "type": "varchar(200)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_conversation",
+        "name": "created_at",
+        "type": "timestamp(3) with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_conversation",
+        "name": "updated_at",
+        "type": "timestamp(3) with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_message",
+        "name": "id",
+        "type": "serial",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_message",
+        "name": "conversation_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_message",
+        "name": "role",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_message",
+        "name": "content",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_message",
+        "name": "note",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_message",
+        "name": "model_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_message",
+        "name": "created_at",
+        "type": "timestamp(3) with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_model",
+        "name": "id",
+        "type": "serial",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_model",
+        "name": "provider_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_model",
+        "name": "model_id",
+        "type": "varchar(200)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_model",
+        "name": "label",
+        "type": "varchar(200)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_model",
+        "name": "supports_tools",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "true",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_model",
+        "name": "options",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_model",
+        "name": "enabled",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_model",
+        "name": "created_at",
+        "type": "timestamp(3) with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_model",
+        "name": "updated_at",
+        "type": "timestamp(3) with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_model",
+        "name": "deleted_at",
+        "type": "timestamp(3) with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_model",
+        "name": "created_by_id",
+        "type": "varchar(36)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_model",
+        "name": "updated_by_id",
+        "type": "varchar(36)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_provider",
+        "name": "id",
+        "type": "serial",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_provider",
+        "name": "name",
+        "type": "varchar(100)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_provider",
+        "name": "kind",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_provider",
+        "name": "base_url",
+        "type": "varchar(500)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_provider",
+        "name": "api_key_env",
+        "type": "varchar(100)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_provider",
+        "name": "enabled",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_provider",
+        "name": "created_at",
+        "type": "timestamp(3) with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_provider",
+        "name": "updated_at",
+        "type": "timestamp(3) with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_provider",
+        "name": "deleted_at",
+        "type": "timestamp(3) with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_provider",
+        "name": "created_by_id",
+        "type": "varchar(36)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_provider",
+        "name": "updated_by_id",
+        "type": "varchar(36)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_agent",
+        "name": "assistant_agent_deletedAt_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "deleted_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_agent",
+        "name": "assistant_agent_defaultModelId_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "default_model_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_action",
+        "name": "assistant_action_conversationId_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "conversation_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_conversation",
+        "name": "assistant_conversation_userId_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "user_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "updated_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_message",
+        "name": "assistant_message_conversationId_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "conversation_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_model",
+        "name": "assistant_model_deletedAt_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "deleted_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_model",
+        "name": "assistant_model_providerId_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "provider_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_provider",
+        "name": "assistant_provider_deletedAt_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "deleted_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_agent",
+        "name": "assistant_agent_default_model_id_assistant_model_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "default_model_id"
+        ],
+        "schemaTo": "sales",
+        "tableTo": "assistant_model",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_agent",
+        "name": "assistant_agent_created_by_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "created_by_id"
+        ],
+        "schemaTo": "auth",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_agent",
+        "name": "assistant_agent_updated_by_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "updated_by_id"
+        ],
+        "schemaTo": "auth",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_action",
+        "name": "assistant_action_conversation_id_assistant_conversation_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "conversation_id"
+        ],
+        "schemaTo": "sales",
+        "tableTo": "assistant_conversation",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_conversation",
+        "name": "assistant_conversation_user_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "user_id"
+        ],
+        "schemaTo": "auth",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_conversation",
+        "name": "assistant_conversation_agent_id_assistant_agent_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "agent_id"
+        ],
+        "schemaTo": "sales",
+        "tableTo": "assistant_agent",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_conversation",
+        "name": "assistant_conversation_model_id_assistant_model_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "model_id"
+        ],
+        "schemaTo": "sales",
+        "tableTo": "assistant_model",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_message",
+        "name": "assistant_message_wmFaFM0VgVln_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "conversation_id"
+        ],
+        "schemaTo": "sales",
+        "tableTo": "assistant_conversation",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_message",
+        "name": "assistant_message_model_id_assistant_model_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "model_id"
+        ],
+        "schemaTo": "sales",
+        "tableTo": "assistant_model",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_model",
+        "name": "assistant_model_provider_id_assistant_provider_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "provider_id"
+        ],
+        "schemaTo": "sales",
+        "tableTo": "assistant_provider",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_model",
+        "name": "assistant_model_created_by_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "created_by_id"
+        ],
+        "schemaTo": "auth",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_model",
+        "name": "assistant_model_updated_by_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "updated_by_id"
+        ],
+        "schemaTo": "auth",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_provider",
+        "name": "assistant_provider_created_by_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "created_by_id"
+        ],
+        "schemaTo": "auth",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_provider",
+        "name": "assistant_provider_updated_by_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "updated_by_id"
+        ],
+        "schemaTo": "auth",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_agent",
+        "name": "assistant_agent_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_action",
+        "name": "assistant_action_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_conversation",
+        "name": "assistant_conversation_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_message",
+        "name": "assistant_message_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_model",
+        "name": "assistant_model_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_provider",
+        "name": "assistant_provider_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_agent",
+        "name": "assistant_agent_name_key",
+        "nameExplicit": false,
+        "columns": [
+          "name"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "assistant_provider",
+        "name": "assistant_provider_name_key",
+        "nameExplicit": false,
+        "columns": [
+          "name"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    }
+  ]
+}

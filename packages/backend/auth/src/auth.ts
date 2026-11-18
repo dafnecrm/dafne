@@ -5,6 +5,7 @@ import { appAccess, authSchema, type AuthDatabase } from '@dafne/backend-databas
 import { Resend } from 'resend';
 import { localeFrom } from '@dafne/backend-common';
 import { authOptions } from '@dafne/auth-options';
+import { isGlobalAdmin } from '@dafne/contracts';
 import type { UserChangelog } from './user-changelog.js';
 
 /** The verification email, by language. */
@@ -82,7 +83,7 @@ export function createAuth(db: AuthDatabase, options: CreateAuthOptions) {
           // A new user (sign-up or created by an admin) gets the default apps.
           after: async (user, context) => {
             await options.changelog?.('create', user, context);
-            const role = (user as { role?: string | null }).role === 'admin' ? 'admin' : 'user';
+            const role = isGlobalAdmin((user as { role?: string | null }).role) ? 'admin' : 'user';
             const apps = options.defaultApps ?? [];
             if (!apps.length) {
               return;

@@ -9,6 +9,11 @@ import * as countries from './tables/countries.js';
 import * as products from './tables/products.js';
 import * as salesOrders from './tables/sales-orders.js';
 import * as salesOrderTypes from './tables/sales-order-types.js';
+import * as assistantProviders from './tables/assistant-providers.js';
+import * as assistantModels from './tables/assistant-models.js';
+import * as assistantAgents from './tables/assistant-agents.js';
+import * as assistantConversations from './tables/assistant-conversations.js';
+import * as userGroups from './tables/user-groups.js';
 
 const authTables = { ...auth };
 const { customerRelations, ...customerTables } = customers;
@@ -17,8 +22,12 @@ const { countryRelations, ...countryTables } = countries;
 const { productRelations, ...productTables } = products;
 const { salesOrderRelations, salesOrderItemRelations, ...salesOrderTables } = salesOrders;
 const { salesOrderTypeRelations, ...salesOrderTypeTables } = salesOrderTypes;
+const { assistantProviderRelations, ...assistantProviderTables } = assistantProviders;
+const { assistantModelRelations, ...assistantModelTables } = assistantModels;
+const { assistantAgentRelations, ...assistantAgentTables } = assistantAgents;
+const { userGroupRelations, ...userGroupTables } = userGroups;
 
-export const schema = { ...authTables, ...customerTables, ...activityTables, ...countryTables, ...productTables, ...salesOrderTables, ...salesOrderTypeTables };
+export const schema = { ...authTables, ...customerTables, ...activityTables, ...countryTables, ...productTables, ...salesOrderTables, ...salesOrderTypeTables, ...assistantProviderTables, ...assistantModelTables, ...assistantAgentTables, ...assistantConversations, ...userGroupTables };
 
 // Tables plus the relations defined next to them.
 export const relations = mergeRelations(
@@ -30,6 +39,10 @@ export const relations = mergeRelations(
   salesOrderRelations,
   salesOrderItemRelations,
   salesOrderTypeRelations,
+  assistantProviderRelations,
+  assistantModelRelations,
+  assistantAgentRelations,
+  userGroupRelations,
 );
 
 export type Database = import('drizzle-orm/node-postgres').NodePgDatabase<typeof relations>;

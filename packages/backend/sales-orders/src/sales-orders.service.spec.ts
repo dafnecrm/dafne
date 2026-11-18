@@ -189,6 +189,25 @@ describe('SalesOrdersService', () => {
       expect(stateMachine.transition).not.toHaveBeenCalled();
     });
 
+    it('inserts its items with the new order id', async () => {
+      await service.create(
+        body({
+          customerId: 1,
+          typeId: 'T1',
+          items: [
+            { productId: 4, quantity: 10, position: 1 },
+            { productId: 3, quantity: 9, position: 2 },
+          ],
+        }),
+        u1,
+      );
+
+      expect(insert.values.mock.calls[1][0]).toEqual([
+        { orderId: 1, productId: 4, quantity: 10, position: 1 },
+        { orderId: 1, productId: 3, quantity: 9, position: 2 },
+      ]);
+    });
+
     it('inserts it in draft and moves it to the status through the state machine', async () => {
       await service.create(body({ customerId: 1, typeId: 'T1', status: 'open' }), u1);
 

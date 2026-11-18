@@ -6,7 +6,7 @@ import { AuthService } from './auth.service.js';
 
 describe('AuthService', () => {
   const api = { createUser: vi.fn(), sendVerificationEmail: vi.fn() };
-  const internalAdapter = { updateUserByEmail: vi.fn() };
+  const internalAdapter = { updateUserByEmail: vi.fn(), findUserByEmail: vi.fn(), updateUser: vi.fn() };
   const instance = { $context: Promise.resolve({ internalAdapter }) };
   let env: Record<string, string>;
 
@@ -70,6 +70,25 @@ describe('AuthService', () => {
     expect(internalAdapter.updateUserByEmail).toHaveBeenCalledWith('admin@example.com', {
       emailVerified: true,
     });
+  });
+
+  it('promotes the users in SUPER_ADMIN_EMAILS who exist and are not super-admins', async () => {
+    env = { SUPER_ADMIN_EMAILS: 'Ada@example.com, boss@example.com,ghost@example.com' };
+    internalAdapter.findUserByEmail.mockImplementation(async (email: string) => {
+      if (email === 'ada@example.com') {
+        return { user: { id: 'u1', role: 'admin' } };
+      }
+      if (email === 'boss@example.com') {
+        return { user: { id: 'u2', role: 'super-admin' } };
+      }
+      return null;
+    });
+    const service = await createService();
+
+    await service.promoteSuperAdmins();
+
+    expect(internalAdapter.updateUser).toHaveBeenCalledTimes(1);
+    expect(internalAdapter.updateUser).toHaveBeenCalledWith('u1', { role: 'super-admin' });
   });
 
   it('skips when ADMIN_EMAIL or ADMIN_PASSWORD is missing', async () => {

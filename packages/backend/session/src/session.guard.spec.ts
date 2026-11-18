@@ -1,6 +1,6 @@
 import { ForbiddenException, UnauthorizedException, type ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { ALLOW_ANONYMOUS, OPTIONAL_AUTH, ROLES } from './decorators.js';
+import { ALLOW_ANONYMOUS, OPTIONAL_AUTH, ROLES, SUPER_ADMIN } from './decorators.js';
 import type { SessionClient } from './session.client.js';
 import { SessionGuard } from './session.guard.js';
 import type { UserSession } from './session.types.js';
@@ -44,6 +44,20 @@ describe('SessionGuard', () => {
     await expect(member.guard.canActivate(member.context)).rejects.toBeInstanceOf(ForbiddenException);
     const appAdmin = setup(session({ sales: 'admin' }), { [ROLES]: ['admin'] });
     await expect(appAdmin.guard.canActivate(appAdmin.context)).resolves.toBe(true);
+  });
+
+  it('gives super-admins every admin permission', async () => {
+    const superAdmin = setup(session({}, 'super-admin'), { [ROLES]: ['admin'] });
+    await expect(superAdmin.guard.canActivate(superAdmin.context)).resolves.toBe(true);
+  });
+
+  it('lets only global super-admins through @SuperAdmin()', async () => {
+    const superAdmin = setup(session({}, 'super-admin'), { [SUPER_ADMIN]: true });
+    await expect(superAdmin.guard.canActivate(superAdmin.context)).resolves.toBe(true);
+    for (const s of [session({}, 'admin'), session({ sales: 'admin' }), session({ sales: 'super-admin' })]) {
+      const { guard, context } = setup(s, { [SUPER_ADMIN]: true });
+      await expect(guard.canActivate(context)).rejects.toBeInstanceOf(ForbiddenException);
+    }
   });
 
   it('allows anonymous and optional routes without a session', async () => {

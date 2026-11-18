@@ -58,6 +58,12 @@
     },
     {
       "path": "../../packages/backend/activities"
+    },
+    {
+      "path": "../../packages/backend/assistant"
+    },
+    {
+      "path": "../../packages/backend/user-groups"
     }
   ]
 }
