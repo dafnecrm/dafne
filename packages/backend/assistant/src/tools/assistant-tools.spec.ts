@@ -64,8 +64,78 @@ describe('AssistantTools', () => {
     const input = { type: 'company', name: 'Rossi Srl', email: 'info@rossi.it' };
 
     await expect(run(set.propose_create_customer, input)).resolves.toMatchObject({ proposed: true, actionId: 7 });
-    expect(propose).toHaveBeenCalledWith('propose_create_customer', 'call-1', { body: input });
+    expect(propose).toHaveBeenCalledWith('propose_create_customer', 'call-1', { body: { ...input, addresses: [] } });
     expect(customers.create).not.toHaveBeenCalled();
+  });
+
+  it('proposes a new customer with its addresses, in Italy unless said otherwise', async () => {
+    const { tools, propose } = setup();
+    const set = tools.build(['propose_create_customer'], { conversationId: 1, locale: 'it', propose, ability: everything });
+
+    await run(set.propose_create_customer, {
+      type: 'company',
+      name: 'Rossi Srl',
+      email: 'info@rossi.it',
+      addresses: [
+        { type: 'head_office', street: 'Via Roma 1', city: 'Milano', postalCode: '20100', region: 'MI' },
+        { type: 'shipping', street: 'Rue de Rivoli 2', city: 'Paris', countryCode: 'FR' },
+      ],
+    });
+    expect(propose).toHaveBeenCalledWith('propose_create_customer', 'call-1', {
+      body: expect.objectContaining({
+        addresses: [
+          { type: 'head_office', street: 'Via Roma 1', city: 'Milano', postalCode: '20100', region: 'MI', countryCode: 'IT' },
+          { type: 'shipping', street: 'Rue de Rivoli 2', city: 'Paris', postalCode: null, region: null, countryCode: 'FR' },
+        ],
+      }),
+    });
+  });
+
+  it('refuses two addresses of the same type', async () => {
+    const { tools, propose } = setup();
+    const set = tools.build(['propose_create_customer'], { conversationId: 1, locale: 'it', propose, ability: everything });
+
+    const result = await run(set.propose_create_customer, {
+      type: 'company',
+      name: 'Rossi Srl',
+      email: 'info@rossi.it',
+      addresses: [
+        { type: 'billing', street: 'Via Roma 1', city: 'Milano' },
+        { type: 'billing', street: 'Via Po 3', city: 'Torino' },
+      ],
+    });
+    expect(result).toMatchObject({ proposed: false });
+    expect((result as { error: string }).error).toContain('addresses.1.type');
+    expect(propose).not.toHaveBeenCalled();
+  });
+
+  it('adds and replaces addresses by type, keeping the others', async () => {
+    const { tools, customers, propose } = setup();
+    const address = (type: string, street: string) => ({
+      id: 1, type, street, city: 'Milano', postalCode: null, region: null, countryCode: 'IT',
+    });
+    customers.get.mockResolvedValue({
+      id: 5, type: 'company', name: 'Rossi Srl', email: 'info@rossi.it', phone: null, birthDate: null,
+      fiscalCode: null, vatNumber: null, notes: null,
+      addresses: [address('head_office', 'Via Roma 1'), address('billing', 'Via Verdi 2')],
+    });
+    const set = tools.build(['propose_update_customer'], { conversationId: 1, locale: 'it', propose, ability: everything });
+
+    await run(set.propose_update_customer, {
+      id: 5,
+      changes: {
+        addresses: [
+          { type: 'shipping', street: 'Via Po 3', city: 'Torino' },
+          { type: 'billing', street: 'Via Manzoni 4', city: 'Milano' },
+        ],
+      },
+    });
+    const payload = propose.mock.calls[0]![2] as { body: { addresses: { type: string; street: string }[] } };
+    expect(payload.body.addresses.map(({ type, street }) => [type, street])).toEqual([
+      ['head_office', 'Via Roma 1'],
+      ['billing', 'Via Manzoni 4'],
+      ['shipping', 'Via Po 3'],
+    ]);
   });
 
   it("refuses a proposal the contract rejects, telling the model why", async () => {

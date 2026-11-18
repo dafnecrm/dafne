@@ -58,6 +58,15 @@ export const it: AssistantChatMessages = {
     orderType: "Tipo",
     product: "Prodotto",
     quantity: "Quantità",
+    address: "Indirizzo",
+    addressType: "Tipo indirizzo",
+  },
+  addressTypes: {
+    residence: "Residenza",
+    domicile: "Domicilio",
+    head_office: "Sede legale",
+    shipping: "Spedizione",
+    billing: "Fatturazione",
   },
   action: {
     title: {

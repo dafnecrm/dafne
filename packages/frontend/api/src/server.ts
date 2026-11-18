@@ -1,5 +1,6 @@
 import { getLocale } from "next-intl/server";
 import { headers } from "next/headers";
+import { connection } from "next/server";
 import { BackendError, errorMessage, type BackendErrorBody } from "./errors.ts";
 
 export { BackendError } from "./errors.ts";
@@ -32,6 +33,10 @@ export function authFetch(path: string, init: RequestInit = {}) {
 }
 
 async function fetchFrom(baseUrl: string, path: string, init: RequestInit) {
+  // Request time only: a call may start outside any Suspense boundary (the
+  // layout's loadMyPermissions()), and the fetch reads the clock, which Next
+  // refuses while prerendering (headers() isn't enough).
+  await connection();
   const requestHeaders = new Headers(init.headers);
   const cookie = (await headers()).get("cookie");
   if (cookie) {

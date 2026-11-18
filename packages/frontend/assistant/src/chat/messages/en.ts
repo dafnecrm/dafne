@@ -59,6 +59,15 @@ export const en = {
     orderType: "Type",
     product: "Product",
     quantity: "Quantity",
+    address: "Address",
+    addressType: "Address type",
+  },
+  addressTypes: {
+    residence: "Residence",
+    domicile: "Domicile",
+    head_office: "Head office",
+    shipping: "Shipping",
+    billing: "Billing",
   },
   action: {
     title: {
