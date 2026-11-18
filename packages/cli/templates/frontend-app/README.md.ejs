@@ -10,5 +10,6 @@ pnpm dafne dev @dafne/auth @dafne/<%= a.kebab %>   # plus its API
 pnpm dafne g frontend-resource invoice --app <%= a.kebab %>
 ```
 
-It runs on http://localhost:<%= port %>: add that URL to `TRUSTED_ORIGINS`
-of `apps/auth`.
+`dafne dev` serves it at https://<%= a.kebab %>.dafne.localhost (next dev on
+port <%= port %>), which `apps/auth` trusts through `AUTH_ALLOWED_HOSTS`
+(`*.dafne.localhost`).

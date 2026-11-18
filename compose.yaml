@@ -1,0 +1,52 @@
+# Development services: PostgreSQL and Redis.
+#
+#   docker compose up -d      # start (data kept in named volumes): or `pnpm dafne services up`
+#   docker compose down       # stop
+#   docker compose down -v    # stop and delete the data
+#
+# They are reached as db.dafne.localhost and redis.dafne.localhost:
+# *.localhost resolves to this machine by itself (no hosts file), and the
+# ports are published on the loopback only, not to the network.
+# DAFNE_DB_PORT / DAFNE_REDIS_PORT change them (e.g. next to Postgres.app).
+# `pnpm dafne dev` starts them by itself, `pnpm dafne services up | down`
+# alone; on a new server dafne dev also creates the database and migrates.
+name: dafne
+
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      # The server's superuser: ADMIN_DATABASE_URL of packages/backend/migrator/.env.
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: postgres
+    ports:
+      - "127.0.0.1:${DAFNE_DB_PORT:-5432}:5432"
+      - "[::1]:${DAFNE_DB_PORT:-5432}:5432"
+    volumes:
+      # Postgres 18 images keep their data under /var/lib/postgresql/18.
+      - db:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    image: redis:8-alpine
+    ports:
+      - "127.0.0.1:${DAFNE_REDIS_PORT:-6379}:6379"
+      - "[::1]:${DAFNE_REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  db:
+  redis:

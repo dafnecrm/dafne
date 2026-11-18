@@ -4,6 +4,9 @@
   "description": "",
   "author": "",
   "private": true,
+  "dafne": {
+    "dev": { "host": "sales-api", "port": 3000 }
+  },
   "license": "UNLICENSED",
   "type": "module",
   "scripts": {

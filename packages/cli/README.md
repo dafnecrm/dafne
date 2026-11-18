@@ -138,7 +138,10 @@ They run the targets of `@dafne/backend-migrator` (see its README).
 ## Running tasks
 
 ```sh
-dafne dev                            # @dafne/auth, @dafne/sales-api and @dafne/sales-web in watch mode
+dafne dev                            # @dafne/auth, @dafne/sales-api and @dafne/sales-web in watch mode, at https://<app>.dafne.localhost
+dafne dev --no-proxy                 # without the dev proxy (localhost:<port> only)
+dafne dev --no-services              # without starting PostgreSQL and Redis (compose.yaml)
+dafne services up | down | status | logs   # PostgreSQL and Redis alone
 dafne dev @dafne/worker              # given projects
 dafne test                           # every project; or dafne test @dafne/backend-customers
 dafne build | lint | typecheck [projects...]

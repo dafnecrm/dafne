@@ -23,7 +23,18 @@ const VERIFY_EMAIL = {
 
 export interface CreateAuthOptions {
   secret: string;
+  /**
+   * The public URL in the email links: a frontend (it proxies /api/auth
+   * here). With `allowedHosts`, only the fallback for calls without a
+   * request.
+   */
   baseURL?: string;
+  /**
+   * The frontends' hosts (wildcards allowed, e.g. `*.dafne.localhost`):
+   * each request's base URL is its own frontend's, so every app's email
+   * links go back to it. They are trusted origins too.
+   */
+  allowedHosts?: string[];
   trustedOrigins?: string[];
   resendApiKey?: string;
   /**
@@ -46,14 +57,30 @@ async function userApps(db: AuthDatabase, userId: string): Promise<UserApps> {
   return Object.fromEntries(rows.map((row) => [row.app, row.role]));
 }
 
+/**
+ * The base URL: fixed (`baseURL`), or with `allowedHosts` the host of each
+ * request. The frontends proxy /api/auth here, so the host comes from
+ * their `x-forwarded-host` (trusted only when it is an allowed host).
+ */
+export function baseURLOptions(baseURL: string | undefined, allowedHosts: string[] = []) {
+  if (!allowedHosts.length) {
+    return { baseURL, trustedProxyHeaders: false };
+  }
+  return {
+    baseURL: { allowedHosts, fallback: baseURL, protocol: 'auto' as const },
+    trustedProxyHeaders: true,
+  };
+}
+
 /** The Better Auth instance: the shared options plus database and environment. */
 export function createAuth(db: AuthDatabase, options: CreateAuthOptions) {
   // The schema CLI passes no API key, and the Resend constructor throws without one.
   const resend = options.resendApiKey ? new Resend(options.resendApiKey) : undefined;
+  const { baseURL, trustedProxyHeaders } = baseURLOptions(options.baseURL, options.allowedHosts);
   return betterAuth({
     ...authOptions,
     secret: options.secret,
-    baseURL: options.baseURL,
+    baseURL,
     trustedOrigins: options.trustedOrigins,
     database: drizzleAdapter(db, {
       provider: 'pg',
@@ -61,6 +88,7 @@ export function createAuth(db: AuthDatabase, options: CreateAuthOptions) {
     }),
     advanced: {
       ...authOptions.advanced,
+      trustedProxyHeaders,
       crossSubDomainCookies: options.cookieDomain
         ? { enabled: true, domain: options.cookieDomain }
         : undefined,

@@ -12,8 +12,14 @@ browser ──► sales-web ──/api/auth/*──► apps/auth ──► auth 
 
 - The frontends proxy `/api/auth/*` here, so the session cookie
   (`dafne.session_token`) is theirs. With `COOKIE_DOMAIN` (e.g.
-  `cliente.it`) it belongs to the parent domain, so the apps under it
-  share the sign-in.
+  `cliente.it`, or `dafne.localhost` in development) it belongs to the
+  parent domain, so the apps under it share the sign-in.
+- **Several frontends:** `AUTH_ALLOWED_HOSTS` lists their hosts (e.g.
+  `sales.cliente.it,service.cliente.it`, or `*.dafne.localhost`). Each
+  request's base URL is then its own frontend's (from the
+  `x-forwarded-host` of their proxy), so the email links go back to the
+  app that asked. Those hosts are trusted origins too. `BETTER_AUTH_URL`
+  is the fallback, for calls with no request.
 - The apps' APIs don't run Better Auth: `@dafne/backend-session` asks this
   service for the session of each cookie, with the user's apps
   (`user.apps`, e.g. `{ sales: "admin" }`).
@@ -25,7 +31,7 @@ browser ──► sales-web ──/api/auth/*──► apps/auth ──► auth 
 ```sh
 cp .env.example .env          # then fill it in
 pnpm dafne db migrate         # creates/migrates the auth schema (and the others)
-pnpm nx dev @dafne/auth       # http://localhost:3001; `pnpm dafne dev` starts it with the CRM
+pnpm nx dev @dafne/auth       # http://localhost:3001; `pnpm dafne dev` starts it with the CRM, at https://auth.dafne.localhost
 ```
 
 On startup it creates the admin from `ADMIN_EMAIL` / `ADMIN_PASSWORD`.

@@ -28,7 +28,8 @@ const customer: CustomerDetail = await res.json();
 
 `BACKEND_URL` (default `http://localhost:3000`), `AUTH_URL` (default
 `http://localhost:3001`) and `APP_URL` (default
-`http://localhost:4000`, must be in the backend's `TRUSTED_ORIGINS`).
+`https://sales-web.dafne.localhost`, the host `dafne dev` serves; it must be
+one of `apps/auth`'s `AUTH_ALLOWED_HOSTS` or `TRUSTED_ORIGINS`).
 
 ## Tasks
 

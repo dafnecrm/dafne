@@ -2,6 +2,9 @@
   "name": "@dafne/<%= a.kebab %>",
   "version": "0.1.0",
   "private": true,
+  "dafne": {
+    "dev": { "host": "<%= a.kebab %>", "port": <%= port %> }
+  },
   "scripts": {
     "dev": "next dev --port <%= port %>",
     "build": "next build",

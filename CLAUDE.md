@@ -21,11 +21,17 @@ keep it in line when these rules change. Each project has its own
 ## Commands (from the root)
 
 - `pnpm install`: installs every project (one `pnpm-lock.yaml`, here).
+- PostgreSQL 18 and Redis for development are in `compose.yaml`, at
+  `db.dafne.localhost:5432` and `redis.dafne.localhost:6379`: `pnpm dafne
+  dev` starts them (`--no-services` not), `pnpm dafne services up | down |
+  status | logs` handles them alone.
 - `pnpm build | test | lint | typecheck`: `nx run-many` over all projects.
 - `pnpm affected`: lint, typecheck, test and build only what changed.
 - `pnpm nx <target> <project>`, e.g. `pnpm nx test @dafne/sales-api`.
 - `pnpm dafne dev` starts `@dafne/auth`, `@dafne/sales-api` and `@dafne/sales-web`
-  (migrating first, with `MIGRATIONS_DATABASE_URL`); `pnpm dafne db
+  (migrating first, with `MIGRATIONS_DATABASE_URL`), each at
+  `https://<app>.dafne.localhost` (its dev proxy; the app's `dafne.dev` in
+  its package.json); `pnpm dafne db
   create` creates the database and its owner, `pnpm dafne db migrate |
   generate` handles the migrations.
 - `pnpm dafne <command>` runs the CLI from source (e.g. `pnpm dafne dev`,

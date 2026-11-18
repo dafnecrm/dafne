@@ -48,7 +48,7 @@ export default async function frontendAppGenerator(tree: Tree, options: Frontend
       next: [
         'pnpm install   # installs the app and links it',
         `cp ${dir}/.env.example ${dir}/.env   # BACKEND_URL: the app's API`,
-        `Add http://localhost:${port} to TRUSTED_ORIGINS of apps/auth`,
+        `It runs at http://${a.kebab}.dafne.localhost (next dev on port ${port}): in AUTH_ALLOWED_HOSTS of apps/auth`,
         `pnpm dafne dev @dafne/auth @dafne/${a.kebab}   # plus its API`,
         `pnpm dafne g frontend-resource <name> --app ${a.kebab}`,
       ],

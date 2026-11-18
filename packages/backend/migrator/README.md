@@ -44,7 +44,10 @@ pnpm dafne db generate [package]       # drizzle-kit generate
   (`DATABASE_URL`). Set it in the environment or in this package's `.env`
   (ignored by git).
 - `migrate:dev` (`dafne dev` runs it before the API) skips with a warning
-  when `MIGRATIONS_DATABASE_URL` isn't set.
+  when `MIGRATIONS_DATABASE_URL` isn't set, and with `ADMIN_DATABASE_URL`
+  creates the database and its owner first when they're missing
+  (`--create`, `ensureDatabase`: what `db create` does). `migrate` never
+  creates them.
 - In production, either the apps migrate on startup (below), or a deploy
   step runs `migrate` before the apps are updated.
 - `generate` (a schema package's `migration:generate`) runs drizzle-kit

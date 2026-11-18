@@ -8,6 +8,9 @@ import { createAuth } from './auth.js';
 import { AuthService } from './auth.service.js';
 import { userChangelog } from './user-changelog.js';
 
+/** A comma-separated variable as a list (empty items dropped). */
+const list = (value: string | undefined) => value?.split(',').map((item) => item.trim()).filter(Boolean) ?? [];
+
 @Module({
   imports: [
     AuthDatabaseModule,
@@ -18,10 +21,15 @@ import { userChangelog } from './user-changelog.js';
         auth: createAuth(db, {
           secret: config.getOrThrow<string>('BETTER_AUTH_SECRET'),
           baseURL: config.get<string>('BETTER_AUTH_URL'),
-          trustedOrigins: config.get<string>('TRUSTED_ORIGINS')?.split(','),
+          // DEV_AUTH_ALLOWED_HOSTS: the hosts `dafne dev` serves (with the port it got).
+          allowedHosts: [
+            ...list(config.get<string>('AUTH_ALLOWED_HOSTS')),
+            ...list(config.get<string>('DEV_AUTH_ALLOWED_HOSTS')),
+          ],
+          trustedOrigins: list(config.get<string>('TRUSTED_ORIGINS')),
           resendApiKey: config.getOrThrow<string>('RESEND_API_KEY'),
           cookieDomain: config.get<string>('COOKIE_DOMAIN') || undefined,
-          defaultApps: config.get<string>('DEFAULT_APPS')?.split(',').filter(Boolean) ?? [],
+          defaultApps: list(config.get<string>('DEFAULT_APPS')),
           changelog: userChangelog(changelog, db),
         }),
       }),

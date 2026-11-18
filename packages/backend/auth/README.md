@@ -29,8 +29,10 @@ Read from `apps/auth/.env` (see `.env.example`):
 | Variable                        |                                              |
 | ------------------------------- | -------------------------------------------- |
 | `BETTER_AUTH_SECRET`            | required                                     |
-| `BETTER_AUTH_URL`               | public URL used in email links: the frontend |
-| `TRUSTED_ORIGINS`               | comma-separated, must include the frontend   |
+| `AUTH_ALLOWED_HOSTS`            | the frontends' hosts (wildcards allowed): each request's email links go back to its own |
+| `DEV_AUTH_ALLOWED_HOSTS`        | set by `dafne dev`: the hosts its proxy serves |
+| `BETTER_AUTH_URL`               | public URL in email links: a frontend (the fallback with `AUTH_ALLOWED_HOSTS`) |
+| `TRUSTED_ORIGINS`               | comma-separated, other origins allowed (the allowed hosts already are) |
 | `RESEND_API_KEY`                | required, for the verification emails        |
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD` | the admin created on startup                 |
 | `COOKIE_DOMAIN`                 | parent domain of the apps (shared sign-in)   |

@@ -13,7 +13,7 @@
   },
   "scripts": {
     "migrate": "node src/main.ts",
-    "migrate:dev": "node src/main.ts --optional",
+    "migrate:dev": "node src/main.ts --optional --create",
     "create-database": "node src/create-main.ts",
     "lint": "oxlint -c ../.oxlintrc.json --type-aware src",
     "test": "vitest run"

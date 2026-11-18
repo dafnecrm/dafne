@@ -11,12 +11,35 @@
   pnpm@12.16.1 self-update`. Dependencies allowed to run install scripts are
   listed in `allowBuilds` (`pnpm-workspace.yaml`): `pnpm install` fails on a
   new one until `pnpm approve-builds` adds it.
-- **PostgreSQL** (≥ 15): one database, `dafne`, with a schema per app
-  (`auth`, `sales`, …). `pnpm dafne db create` creates it (see First run).
-  For development, e.g.
-  `docker run -d --name dafne-pg -e POSTGRES_PASSWORD=secret -p 5432:5432 postgres:18`.
+- **PostgreSQL** (≥ 15; 18 in development): one database, `dafne`, with a
+  schema per app (`auth`, `sales`, …). `pnpm dafne db create` creates it
+  (see First run).
 - **Redis** (optional): the API's cache. Without `REDIS_URL` the cache is in
   memory.
+
+For development, `compose.yaml` runs both (Docker, or
+[OrbStack](https://orbstack.dev) on macOS, which uses less memory than
+Docker Desktop), and **`pnpm dafne dev` starts them by itself** before the
+apps. They keep running after it stops, with the data in volumes:
+
+```sh
+pnpm dafne services up       # start them without the apps
+pnpm dafne services status   # ports and health
+pnpm dafne services down     # stop them (-v: and delete the data)
+```
+
+Without Docker, or with a port another server holds, `dafne dev` starts
+nothing and the apps use what their `.env` points to; `--no-services`
+skips them.
+
+They answer at `db.dafne.localhost:5432` (superuser `postgres` / `secret`)
+and `redis.dafne.localhost:6379`, the hosts of the `.env.example` files.
+`*.localhost` resolves to this machine by itself, and the ports are
+published on the loopback only. Another PostgreSQL (e.g. Postgres.app) or
+Redis on those ports must be stopped first, or the containers moved:
+`DAFNE_DB_PORT=5433 DAFNE_REDIS_PORT=6380 docker compose up -d`, with the
+same ports in the URLs. A local server works too: `db.dafne.localhost`
+reaches it as well.
 
 ## Install
 
@@ -33,15 +56,16 @@ copy:
 
 | File                                 | Main variables                                                                                                                                                                     |
 | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/auth/.env`                     | `PORT` (3001), `DATABASE_URL` (on `dafne`), `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `TRUSTED_ORIGINS`, `COOKIE_DOMAIN`, `DEFAULT_APPS`, `ADMIN_EMAIL` / `ADMIN_PASSWORD`, `RESEND_API_KEY` |
+| `apps/auth/.env`                     | `PORT` (3001), `DATABASE_URL` (on `dafne`), `BETTER_AUTH_SECRET`, `AUTH_ALLOWED_HOSTS`, `BETTER_AUTH_URL`, `TRUSTED_ORIGINS`, `COOKIE_DOMAIN`, `DEFAULT_APPS`, `ADMIN_EMAIL` / `ADMIN_PASSWORD`, `RESEND_API_KEY` |
 | `apps/sales-api/.env`                  | `PORT` (3000), `DATABASE_URL` (on `dafne`), `AUTH_URL`, `REDIS_URL`                                                                                                             |
-| `apps/sales-web/.env`                  | `BACKEND_URL`, `AUTH_URL`, `APP_URL` (4000)                                                                                                                                        |
-| `packages/backend/migrator/.env`     | `MIGRATIONS_DATABASE_URL`: the `dafne` database, with the user that owns it; `ADMIN_DATABASE_URL`: a superuser, only for `db create`                                               |
+| `apps/sales-web/.env`                  | `BACKEND_URL`, `AUTH_URL`, `APP_URL` (`https://sales-web.dafne.localhost`)                                                                                                          |
+| `packages/backend/migrator/.env`     | `MIGRATIONS_DATABASE_URL`: the `dafne` database, with the user that owns it; `ADMIN_DATABASE_URL`: a superuser, to create the database (`db create`, and `dafne dev` when it's missing)                                               |
 
-The apps connect with their own, limited roles (`DATABASE_URL`). Only
-the migrator uses the privileged one. See
-[Databases and migrations](databases.md) for the grants the apps' roles need
-(in development, every URL can use the same `dafne` user).
+In development every URL uses the same `dafne` user, the database's
+owner, which `pnpm dafne db create` makes. In production the apps connect
+with their own, limited roles (`DATABASE_URL`), and only the migrator uses
+the owner: see [Databases and migrations](databases.md#roles-and-grants)
+for those roles and their grants.
 
 The backend apps also have `MIGRATE_ON_START` / `MIGRATIONS_DATABASE_URL`:
 leave them off in development, where `dafne dev` migrates first.
@@ -49,16 +73,38 @@ leave them off in development, where `dafne dev` migrates first.
 ## First run
 
 ```sh
-pnpm dafne db create      # the dafne database and user (from MIGRATIONS_DATABASE_URL), as ADMIN_DATABASE_URL
-pnpm dafne db migrate     # creates the schemas and applies every migration
-pnpm dafne dev            # starts @dafne/auth, @dafne/sales-api, @dafne/sales-web
+pnpm dafne dev            # PostgreSQL and Redis, the database, the migrations, then the apps
 ```
 
-| App              | URL                     |
-| ---------------- | ----------------------- |
-| `@dafne/sales-web` | <http://localhost:4000> |
-| `@dafne/sales-api` | <http://localhost:3000> |
-| `@dafne/auth`    | <http://localhost:3001> |
+On the first run `dafne dev` starts the services of `compose.yaml`,
+creates the `dafne` database and its owner (from
+`MIGRATIONS_DATABASE_URL`, as the superuser of `ADMIN_DATABASE_URL`),
+applies every migration, then starts `@dafne/auth`, `@dafne/sales-api` and
+`@dafne/sales-web`. The same steps one by one, e.g. on your own server:
+
+```sh
+pnpm dafne services up    # PostgreSQL and Redis (or your own server)
+pnpm dafne db create      # the dafne database and user (from MIGRATIONS_DATABASE_URL), as ADMIN_DATABASE_URL
+pnpm dafne db migrate     # creates the schemas and applies every migration
+```
+
+| App                | URL                                | Port |
+| ------------------ | ---------------------------------- | ---- |
+| `@dafne/sales-web` | <https://sales-web.dafne.localhost> | 4000 |
+| `@dafne/sales-api` | <https://sales-api.dafne.localhost> | 3000 |
+| `@dafne/auth`      | <https://auth.dafne.localhost>      | 3001 |
+
+`dafne dev` serves each app at `https://<app>.dafne.localhost` through a
+small proxy of its own, on port 443 (port 80 redirects there).
+`*.localhost` resolves to this machine by itself: no hosts file. The
+certificate comes from [mkcert](https://github.com/FiloSottile/mkcert)
+(`brew install mkcert`, then `mkcert -install` once); without it the
+proxy serves `http://` on port 80. <https://dafne.localhost> lists the
+running apps. The apps still answer on
+`localhost:<port>` too (see [CLI](cli.md#the-dev-proxy)). The session
+cookie belongs to `dafne.localhost` (`COOKIE_DOMAIN`), so every app shares
+the sign-in, and sign-in works on the `*.dafne.localhost` URLs, not on
+`localhost:4000`.
 
 On startup `apps/auth` creates the admin user from `ADMIN_EMAIL` /
 `ADMIN_PASSWORD`: sign in with it on the frontend. To set up the AI

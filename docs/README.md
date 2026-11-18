@@ -32,8 +32,7 @@ Planned work that isn't implemented yet is in [ROADMAP.md](../ROADMAP.md).
 pnpm install
 cp apps/auth/.env.example apps/auth/.env           # and the same for sales-api, sales-web
 cp packages/backend/migrator/.env.example packages/backend/migrator/.env
-pnpm dafne db migrate                              # creates and migrates every schema
-pnpm dafne dev                                     # auth (3001), sales-api (3000), sales-web (4000)
+pnpm dafne dev                                     # PostgreSQL, Redis, database, migrations, then https://sales-web.dafne.localhost…
 ```
 
 Details in [Getting started](getting-started.md).

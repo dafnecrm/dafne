@@ -23,6 +23,9 @@ const nextConfig: NextConfig = {
   partialPrefetching: true,
   // Keep the dev badge off the sidebar's user menu (bottom-left).
   devIndicators: { position: "bottom-right" },
+  // `dafne dev` serves the apps at https://<app>.dafne.localhost: next dev
+  // only serves its dev assets and HMR to the origins listed here.
+  allowedDevOrigins: ["*.dafne.localhost"],
   // Better Auth runs in apps/auth (shared by the apps); the browser calls it
   // on this origin, so there's no CORS and its session cookies belong to the
   // frontend (to the parent domain with COOKIE_DOMAIN in apps/auth).

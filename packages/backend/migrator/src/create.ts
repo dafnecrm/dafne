@@ -132,3 +132,36 @@ export async function createDatabase({
     await client.end();
   }
 }
+
+/** Postgres errors that mean the database or its role isn't there yet. */
+const MISSING = new Set([
+  '3D000', // invalid_catalog_name: no such database
+  '28000', // invalid_authorization_specification: no such role (trust/peer)
+  '28P01', // invalid_password: also what a missing role gets with password auth
+]);
+
+/**
+ * Creates the database of `url` and its owner when connecting to it fails
+ * because they're missing (`db create`, as the superuser of `adminUrl`).
+ * Returns whether it created something. Any other error is left to the
+ * caller, which fails on it when it connects.
+ */
+export async function ensureDatabase({
+  adminUrl,
+  url,
+  log = () => {},
+}: Pick<CreateDatabaseOptions, 'adminUrl' | 'url' | 'log'>): Promise<boolean> {
+  const client = new pg.Client({ connectionString: url });
+  try {
+    await client.connect();
+    return false;
+  } catch (error) {
+    if (!MISSING.has((error as { code?: string }).code ?? '')) {
+      return false;
+    }
+  } finally {
+    await client.end().catch(() => {});
+  }
+  const result = await createDatabase({ adminUrl, url, log });
+  return result.role === 'created' || result.database === 'created';
+}
