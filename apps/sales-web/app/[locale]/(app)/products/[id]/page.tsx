@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { ArrowLeftIcon } from "lucide-react";
+import { ArrowLeftIcon, PlusIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -57,6 +57,15 @@ async function ProductProfile({
           >
             <ArrowLeftIcon data-icon="inline-start" />
             {t("all")}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            nativeButton={false}
+            render={<Link href={`${productsTable.path}/new`} />}
+          >
+            <PlusIcon data-icon="inline-start" />
+            {t("new")}
           </Button>
           <ProductDetailActions product={product} path={productsTable.path} />
         </PageContentAction>
