@@ -16,6 +16,7 @@ import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { SalesOrderDetails } from "@dafne/frontend-sales-orders/components/sales-order-detail";
 import { SalesOrderDetailActions } from "@dafne/frontend-sales-orders/components/sales-order-detail-actions";
 import { customersTable } from "@/lib/customers-table";
+import { productsTable } from "@/lib/products-table";
 import { salesOrdersTable } from "@/lib/sales-orders-table";
 import { loadSalesOrder } from "./load-sales-order";
 
@@ -69,6 +70,7 @@ async function SalesOrderProfile({
         <SalesOrderDetails
           salesOrder={salesOrder}
           customersPath={customersTable.path}
+          productsPath={productsTable.path}
         />
       </PageContentBody>
     </PageContent>

@@ -93,7 +93,7 @@ interface PricedItem {
   productId: number;
   uomId: string;
   quantity: number;
-  price: string;
+  price: number;
 }
 
 /** Quantities are numeric(18,6): the base one is rounded to that scale. */
@@ -258,10 +258,17 @@ export class SalesOrdersService
   }
 
   /**
-   * Replaces a sales order's fields; `actor` is the editor. Throws 404
-   * if the sales order doesn't exist or is deleted.
+   * Replaces a sales order's fields; `actor` is the editor. Unchanged items
+   * keep their price, unless `reprice`: then every item is priced anew from
+   * its product's price. Throws 404 if the sales order doesn't exist or is
+   * deleted.
    */
-  async update(id: number, body: SalesOrderBody, actor: Actor): Promise<SalesOrderDetail> {
+  async update(
+    id: number,
+    body: SalesOrderBody,
+    actor: Actor,
+    { reprice = false }: { reprice?: boolean } = {},
+  ): Promise<SalesOrderDetail> {
     return this.hooks.update({ id, body, actor }, async ({ tx, body }) => {
       const result = await tx
         .update(salesOrder)
@@ -279,17 +286,20 @@ export class SalesOrdersService
         throw new NotFoundException(msg('salesOrders.notFound'));
       }
 
-      // The items are written again: unchanged ones keep their price.
-      const previous = await tx
-        .select({
-          position: salesOrderItem.position,
-          productId: salesOrderItem.productId,
-          uomId: salesOrderItem.uomId,
-          quantity: salesOrderItem.quantity,
-          price: salesOrderItem.price,
-        })
-        .from(salesOrderItem)
-        .where(eq(salesOrderItem.orderId, id));
+      // The items are written again: unchanged ones keep their price, but
+      // when repricing (no previous items, so none is kept).
+      const previous = reprice
+        ? []
+        : await tx
+            .select({
+              position: salesOrderItem.position,
+              productId: salesOrderItem.productId,
+              uomId: salesOrderItem.uomId,
+              quantity: salesOrderItem.quantity,
+              price: salesOrderItem.price,
+            })
+            .from(salesOrderItem)
+            .where(eq(salesOrderItem.orderId, id));
       await tx.delete(salesOrderItem).where(eq(salesOrderItem.orderId, id));
       await this.insertSalesOrderItems(tx, id, body.items, previous);
       

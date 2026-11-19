@@ -197,7 +197,7 @@ describe('ProductsService', () => {
     it('lists the base unit, then the product units that still convert', async () => {
       findFirst.mockResolvedValue({
         uomId: 'pc',
-        price: '2.50',
+        price: 2.5,
         uom: { id: 'pc', name: 'piece' },
         units: [
           { uomId: 'box', uom: { id: 'box', name: 'box' } },
@@ -208,8 +208,8 @@ describe('ProductsService', () => {
       conversions.factorsFrom.mockResolvedValue(new Map([['box', 12], ['dz', 12]]));
 
       await expect(service.units(1)).resolves.toEqual([
-        { uomId: 'pc', uom: { id: 'pc', name: 'piece' }, factor: 1, source: 'base', price: '2.500000' },
-        { uomId: 'box', uom: { id: 'box', name: 'box' }, factor: 12, source: 'product', price: '30.000000' },
+        { uomId: 'pc', uom: { id: 'pc', name: 'piece' }, factor: 1, source: 'base', price: 2.5 },
+        { uomId: 'box', uom: { id: 'box', name: 'box' }, factor: 12, source: 'product', price: 30 },
       ]);
       expect(conversions.factorsFrom).toHaveBeenCalledWith('pc', db);
     });

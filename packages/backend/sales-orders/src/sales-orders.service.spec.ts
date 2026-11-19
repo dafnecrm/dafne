@@ -77,8 +77,8 @@ describe('SalesOrdersService', () => {
     findFirst.mockResolvedValue(found);
     // Every product is sold by the piece, and by the box of 12.
     products.units.mockResolvedValue([
-      { uomId: 'pc', uom: { id: 'pc', name: 'piece' }, factor: 1, source: 'base', price: '2.500000' },
-      { uomId: 'box', uom: { id: 'box', name: 'box' }, factor: 12, source: 'product', price: '30.000000' },
+      { uomId: 'pc', uom: { id: 'pc', name: 'piece' }, factor: 1, source: 'base', price: 2.5 },
+      { uomId: 'box', uom: { id: 'box', name: 'box' }, factor: 12, source: 'product', price: 30 },
     ]);
 
     const module: TestingModule = await Test.createTestingModule({
@@ -211,8 +211,8 @@ describe('SalesOrdersService', () => {
       );
 
       expect(insert.values.mock.calls[1][0]).toEqual([
-        { orderId: 1, productId: 4, quantity: 10, uomId: 'pc', baseQuantity: 10, price: '25.00', position: 1 },
-        { orderId: 1, productId: 3, quantity: 9, uomId: 'pc', baseQuantity: 9, price: '22.50', position: 2 },
+        { orderId: 1, productId: 4, quantity: 10, uomId: 'pc', baseQuantity: 10, price: 25, position: 1 },
+        { orderId: 1, productId: 3, quantity: 9, uomId: 'pc', baseQuantity: 9, price: 22.5, position: 2 },
       ]);
     });
 
@@ -227,7 +227,7 @@ describe('SalesOrdersService', () => {
       );
 
       expect(insert.values.mock.calls[1][0]).toEqual([
-        { orderId: 1, productId: 4, quantity: 2.5, uomId: 'box', baseQuantity: 30, price: '75.00', position: 1 },
+        { orderId: 1, productId: 4, quantity: 2.5, uomId: 'box', baseQuantity: 30, price: 75, position: 1 },
       ]);
       expect(products.units).toHaveBeenCalledWith(4, db);
     });
@@ -280,8 +280,8 @@ describe('SalesOrdersService', () => {
     it('keeps the price of an unchanged item, and prices a changed one anew', async () => {
       // The items as saved, priced when the product cost 2.00.
       select.where.mockResolvedValueOnce([
-        { position: 1, productId: 4, uomId: 'pc', quantity: 10, price: '20.00' },
-        { position: 2, productId: 3, uomId: 'pc', quantity: 9, price: '18.00' },
+        { position: 1, productId: 4, uomId: 'pc', quantity: 10, price: 20 },
+        { position: 2, productId: 3, uomId: 'pc', quantity: 9, price: 18 },
       ]);
 
       await service.update(
@@ -298,8 +298,30 @@ describe('SalesOrdersService', () => {
       );
 
       expect(insert.values.mock.calls[0][0]).toEqual([
-        { orderId: 1, productId: 4, quantity: 10, uomId: 'pc', baseQuantity: 10, price: '20.00', position: 1 },
-        { orderId: 1, productId: 3, quantity: 1, uomId: 'box', baseQuantity: 12, price: '30.00', position: 2 },
+        { orderId: 1, productId: 4, quantity: 10, uomId: 'pc', baseQuantity: 10, price: 20, position: 1 },
+        { orderId: 1, productId: 3, quantity: 1, uomId: 'box', baseQuantity: 12, price: 30, position: 2 },
+      ]);
+    });
+
+    it('reprices every item when asked, unchanged ones too', async () => {
+      await service.update(
+        1,
+        body({
+          customerId: 1,
+          typeId: 'T1',
+          items: [
+            { productId: 4, quantity: 10, uomId: 'pc', position: 1 },
+            { productId: 3, quantity: 1, uomId: 'box', position: 2 },
+          ],
+        }),
+        u2,
+        { reprice: true },
+      );
+
+      // The saved items aren't even read: none keeps its price.
+      expect(insert.values.mock.calls[0][0]).toEqual([
+        { orderId: 1, productId: 4, quantity: 10, uomId: 'pc', baseQuantity: 10, price: 25, position: 1 },
+        { orderId: 1, productId: 3, quantity: 1, uomId: 'box', baseQuantity: 12, price: 30, position: 2 },
       ]);
     });
 

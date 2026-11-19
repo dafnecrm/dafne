@@ -26,14 +26,17 @@ import { formatCurrency } from "@dafne/frontend-ui/lib/currencies";
 
 /**
  * The details of a sales order: its fields, then who created and updated it.
- * The customer links to `<customersPath>/<id>`, the app's customer page.
+ * The customer links to `<customersPath>/<id>`, the app's customer page,
+ * the items' products to `<productsPath>/<id>`.
  */
 export function SalesOrderDetails({
   salesOrder,
   customersPath,
+  productsPath,
 }: {
   salesOrder: SalesOrderDetail;
   customersPath: string;
+  productsPath: string;
 }) {
   const t = useTranslations();
   const optionLabel = useOptionLabel();
@@ -60,7 +63,7 @@ export function SalesOrderDetails({
         </Detail>
         <Detail icon={EuroIcon} label={t("salesOrders.totalPrice")}>
           {formatCurrency(salesOrder.items.reduce((total, item) => {
-            total += Number(item.price);
+            total += item.price;
             return total;
           }, 0), locale)}
         </Detail>
@@ -83,6 +86,7 @@ export function SalesOrderDetails({
             basePrice: item.product.price,
           }))}
           bordered={false}
+          productsPath={productsPath}
         />
       </DetailSection>
       <DetailSection

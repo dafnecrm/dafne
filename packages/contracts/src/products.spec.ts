@@ -14,11 +14,18 @@ describe('productBodySchema', () => {
       productBodySchema.parse({ name: '  Acme  ', price: '1.00', uomId: ' pc ' }),
     ).toEqual({
       name: 'Acme',
-      price: '1.00',
+      price: 1,
       description: null,
       uomId: 'pc',
       units: [],
     });
+  });
+
+  it('reads the price as a number, from a number or a decimal as text', () => {
+    expect(productBodySchema.parse({ name: 'Acme', price: 2.5, uomId: 'pc' }).price).toBe(2.5);
+    expect(productBodySchema.parse({ name: 'Acme', price: ' 2.50 ', uomId: 'pc' }).price).toBe(2.5);
+    expect(failedFields({ name: 'Acme', price: '2,50', uomId: 'pc' })).toEqual(['price']);
+    expect(failedFields({ name: 'Acme', price: '', uomId: 'pc' })).toEqual(['price']);
   });
 
   it('rejects a blank name', () => {

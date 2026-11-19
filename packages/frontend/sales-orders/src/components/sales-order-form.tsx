@@ -14,7 +14,7 @@ import { salesOrderFormOpts, salesOrderSchema, STATUS_OPTIONS } from "../schema.
 import type { SalesOrderDetail } from "../types.ts";
 import { DetailSection } from "@dafne/frontend-ui/components/detail";
 import { SalesOrderItemTable } from "./sales-order-items-table.tsx";
-import { PencilIcon, TagIcon, Trash2Icon } from "lucide-react";
+import { EllipsisVerticalIcon, PencilIcon, TagIcon, Trash2Icon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { SalesOrderItemSheet, type SalesOrderItemUnit } from "./sales-order-item-sheet.tsx";
 import type { ProductOption } from "@dafne/frontend-products/actions";
@@ -22,6 +22,7 @@ import { useOptionLabels } from "@dafne/frontend-ui/hooks/use-option-labels";
 import { InputGroupAddon } from "@dafne/frontend-ui/components/input-group";
 import { useSearchParams } from "next/navigation";
 import { multiplyDecimal } from "@dafne/contracts";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@dafne/frontend-ui/components/dropdown-menu";
 
 
 /**
@@ -46,9 +47,11 @@ export function SalesOrderForm({
     // Validate on submit, then on every change.
     validationLogic: revalidateLogic(),
     validators: { onDynamic: salesOrderSchema },
-    onSubmit: async ({ value, formApi }) => {
+    // "Save changes and update prices" submits with reprice: true.
+    onSubmitMeta: { reprice: false } as { reprice: boolean },
+    onSubmit: async ({ value, meta, formApi }) => {
       // Redirects on success, so only an error comes back.
-      const result = await saveSalesOrder(salesOrder?.id ?? null, value, path);
+      const result = await saveSalesOrder(salesOrder?.id ?? null, value, path, meta);
       if (result?.error) {
         setServerError(formApi, result.error);
       }
@@ -217,28 +220,42 @@ export function SalesOrderForm({
                         basePrice: picked?.basePrice ?? savedProduct(item.productId)?.price,
                         price:
                           saved?.price ??
-                          (picked?.basePrice && baseQuantity != null
+                          (picked?.basePrice != null && baseQuantity != null
                             ? multiplyDecimal(picked.basePrice, baseQuantity, 2)
                             : undefined),
                       };
                     })}
                     rowActions={(item, i) => (
                       <>
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          onClick={() =>
-                            setSalesOrderItemSheet({
-                              open: true,
-                              index: i,
-                            })
-                          }
-                        >
-                          <PencilIcon />
-                        </Button>
-                        <Button variant="ghost" size="icon-sm" onClick={() => items.removeValue(i)}>
-                          <Trash2Icon />
-                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger render={
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
+                              aria-label={t("common.actionsFor", {
+                                name: `${t("salesOrders.items.singular")} ${item.position}`,
+                              })}
+                            />
+                          }>
+                            <EllipsisVerticalIcon />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            <DropdownMenuItem onClick={() =>
+                              setSalesOrderItemSheet({
+                                open: true,
+                                index: i,
+                              })
+                            }>
+                              <PencilIcon />
+                              {t("salesOrders.items.edit")}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem variant="destructive" onClick={() => items.removeValue(i)}>
+                              <Trash2Icon />
+                              {t("salesOrders.items.delete")}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </>
                     )}
                   />
@@ -294,6 +311,13 @@ export function SalesOrderForm({
             >
               {t("common.cancel")}
             </Button>
+            {salesOrder?.items.some(item => item.product.price != null &&
+              item.baseQuantity != null &&
+              multiplyDecimal(item.product.price, item.baseQuantity, 2) !== item.price) && <form.SubmitButton
+                variant="destructive"
+                label={t("salesOrders.saveChangesAndUpdatePrices")}
+                submitMeta={{ reprice: true }}
+              />}
             <form.SubmitButton
               label={t(
                 salesOrder ? "common.saveChanges" : "salesOrders.create",

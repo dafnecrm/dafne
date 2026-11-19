@@ -28,7 +28,7 @@ export function productFormOpts(product?: ProductDetail) {
     defaultValues: {
       name: product?.name ?? "",
       description: product?.description ?? "",
-      price: product?.price ?? "",
+      price: product?.price != null ? String(product.price) : "",
       uomId: product?.uomId ?? "",
       units:
         product?.units.map(({ uomId }) => ({ uomId })) ?? [],

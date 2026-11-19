@@ -35,9 +35,9 @@ describe('optionalUuid', () => {
 
 describe('multiplyDecimal', () => {
   it('multiplies a decimal and rounds it to the scale', () => {
-    expect(multiplyDecimal('2.50', 12, 2)).toBe('30.00');
-    expect(multiplyDecimal('12.00', 0.001, 6)).toBe('0.012000');
-    expect(multiplyDecimal('1.005', 1, 2)).toBe('1.01');
-    expect(multiplyDecimal('-3.10', 2, 2)).toBe('-6.20');
+    expect(multiplyDecimal(2.5, 12, 2)).toBe(30);
+    expect(multiplyDecimal(12, 0.001, 6)).toBe(0.012);
+    expect(multiplyDecimal(1.005, 1, 2)).toBe(1.01);
+    expect(multiplyDecimal(-3.1, 2, 2)).toBe(-6.2);
   });
 });

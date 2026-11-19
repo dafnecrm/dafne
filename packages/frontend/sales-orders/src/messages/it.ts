@@ -35,18 +35,23 @@ export const it: SalesOrdersMessages = {
     typeId: "Type id"
   },
   items: {
-    add: "Aggiungi riga",
-    edit: "Modifica riga",
-    savedWith: "La riga viene salvata con l'ordine di vendita.",
-    loading: "Caricamento della riga…",
-    notFound: "La riga non esiste più.",
-    loadError: "Impossibile caricare la riga. Riprova.",
+    add: "Aggiungi",
+    edit: "Modifica",
+    delete: "Elimina",
+    save: "Aggiorna",
+    singular: "Linea ordine",
+    plural: "Linee ordine",
+    savedWith: "La linea viene salvata con l'ordine di vendita.",
+    loading: "Caricamento della linea…",
+    notFound: "La linea non esiste più.",
+    loadError: "Impossibile caricare la linea. Riprova.",
     none: "Nessun item creato.",
     noneDetail: "Nessun item è stato ancora creato.",
-    positionTaken: "Un'altra riga ha già questa posizione",
+    positionTaken: "Un'altra linea ha già questa posizione",
     pickProductFirst: "Scegli prima il prodotto",
     inBaseUnit: "= {quantity} {unit}",
     priceEach: "{price} al {unit}",
+    priceNeedsRecaulation: "Il prezzo deve essere ricalcolato.",
     fields: {
       position: "Posizione",
       productId: "Prodotto",
@@ -54,9 +59,7 @@ export const it: SalesOrdersMessages = {
       uomId: "Unità",
       baseQuantity: "Nell'unità di base",
       basePrice: "Prezzo unitario",
-      price: "Prezzo",
-      add: "Aggiungi",
-      save: "Salva",
+      price: "Prezzo"
     },
   },
   status: { draft: "Draft", open: "Open", completed: "Completed", cancelled: "Cancelled", rejected: "Rejected" },
@@ -75,4 +78,5 @@ export const it: SalesOrdersMessages = {
       description: "Questo cliente non ha ancora ordini di vendita.",
     },
   },
+  saveChangesAndUpdatePrices: "Salva le modifiche e aggiorna i prezzi"
 };

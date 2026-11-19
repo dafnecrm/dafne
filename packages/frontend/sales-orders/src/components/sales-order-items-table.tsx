@@ -11,10 +11,13 @@ import {
   EmptyMedia,
   EmptyTitle
 } from "@dafne/frontend-ui/components/empty";
-import { MapPinIcon } from "lucide-react";
+import { CircleAlertIcon, MapPinIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import { multiplyDecimal } from "@dafne/contracts";
 import { formatCurrency } from "@dafne/frontend-ui/lib/currencies";
 import { type ReactNode, useMemo } from "react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@dafne/frontend-ui/components/tooltip";
+import Link from "next/link";
 
 /**
  * A row: an item of the saved order (`SalesOrderDetailItem`) or of the
@@ -31,41 +34,53 @@ export interface SalesOrderItemRow {
   baseQuantity?: number;
   baseUomId?: string;
   /** The product's price, of one base unit (not converted), when known. */
-  basePrice?: string;
+  basePrice?: number;
   /** The item's price (the product's × the base quantity), when known. */
-  price?: string;
+  price?: number;
 }
 
 const col = createDataTableColumnHelper<SalesOrderItemRow>();
 
-function useSalesOrderItemColumns() {
-  const t = useTranslations("salesOrders.items.fields");
+/** The columns; with `productsPath`, the product links to `<productsPath>/<id>`. */
+function useSalesOrderItemColumns({ productsPath }: { productsPath?: string }) {
+  const t = useTranslations();
   const locale = useLocale();
   return useMemo(
     () =>
       col.columns([
         col.accessor("position", {
-          header: t("position"),
+          header: t("salesOrders.items.fields.position"),
           cell: ({ row }) => row.original.position,
         }),
         col.accessor((item) => item.product?.name ?? item.productId, {
           id: "products",
-          header: t("productId"),
+          header: t("salesOrders.items.fields.productId"),
+          cell: ({ row, getValue }) =>
+            productsPath && row.original.productId != null ? (
+              <Link
+                href={`${productsPath}/${encodeURIComponent(row.original.productId)}`}
+                className="hover:underline"
+              >
+                {getValue()}
+              </Link>
+            ) : (
+              getValue()
+            ),
         }),
         col.accessor("quantity", {
-          header: t("quantity"),
+          header: t("salesOrders.items.fields.quantity"),
           cell: ({ row }) =>
             [row.original.quantity, row.original.uomId].filter((part) => part != null && part !== "").join(" "),
         }),
         col.accessor("baseQuantity", {
-          header: t("baseQuantity"),
+          header: t("salesOrders.items.fields.baseQuantity"),
           cell: ({ row }) =>
             row.original.baseQuantity == null
               ? "—"
               : `${row.original.baseQuantity} ${row.original.baseUomId ?? ""}`.trim(),
         }),
         col.accessor("basePrice", {
-          header: t("basePrice"),
+          header: t("salesOrders.items.fields.basePrice"),
           meta: { className: "text-right" },
           cell: ({ row }) =>
             row.original.basePrice == null
@@ -73,32 +88,51 @@ function useSalesOrderItemColumns() {
               : `${formatCurrency(row.original.basePrice, locale)} / ${row.original.baseUomId ?? ""}`.trim(),
         }),
         col.accessor("price", {
-          header: t("price"),
-          meta: { className: "text-right" },
-          cell: ({ row }) =>
-            row.original.price == null ? "—" : formatCurrency(row.original.price, locale),
+          header: t("salesOrders.items.fields.price"),
+          meta: { className: "flex items-center justify-end gap-2" },
+          cell: ({ row }) => row.original.price == null
+            ? "—"
+            : <>
+              {/* The kept price differs from today's (the product's price changed). */}
+              {row.original.basePrice != null &&
+                row.original.baseQuantity != null &&
+                multiplyDecimal(row.original.basePrice, row.original.baseQuantity, 2) !== row.original.price && (
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <CircleAlertIcon className="size-4 text-destructive" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {t("salesOrders.items.priceNeedsRecaulation")}
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              {formatCurrency(row.original.price, locale)}
+            </>
         }),
       ]),
-    [t, locale],
+    [t, locale, productsPath],
   );
 }
 
 /**
- * A sales order's items.
+ * A sales order's items. With `productsPath` (the app's products list),
+ * each product links to its page.
  */
 export function SalesOrderItemTable({
   items,
   rowActions,
   emptyContent,
-  bordered = true
+  bordered = true,
+  productsPath
 }: {
   items: SalesOrderItemRow[];
   rowActions?: (row: SalesOrderItemRow, index: number) => ReactNode;
-    emptyContent?: ReactNode;
-  bordered?: boolean
+  emptyContent?: ReactNode;
+  bordered?: boolean;
+  productsPath?: string
 }) {
   const t = useTranslations();
-  const columns = useSalesOrderItemColumns();
+  const columns = useSalesOrderItemColumns({ productsPath });
   const params: TableParams = {
     filters: {},
     page: 1,

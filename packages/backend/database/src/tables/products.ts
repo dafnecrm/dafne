@@ -24,7 +24,7 @@ export const product = salesSchema.table(
     name: varchar('name', { length: 255 }).notNull(),
     /** @api detail @form editor */
     description: text('description'),
-    price: decimal('price', { precision: 10, scale: 2 }).notNull(),
+    price: decimal('price', { precision: 10, scale: 2, mode: 'number' }).notNull(),
     /** The base unit: sales order quantities are converted to it. */
     uomId: varchar('uom_id', { length: 10 })
       .notNull()

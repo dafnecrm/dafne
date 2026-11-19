@@ -121,12 +121,12 @@ export const optionalUuid = (error: ContractMessageKey) =>
   optionalText(z.guid({ error }));
 
 /**
- * A decimal (as text, like prices) times a number, rounded to `scale`
- * digits and given back as text: a sales order item's price is its
- * product's price × its unit's factor ("2.50" × 12 → "30.00" with scale 2).
+ * A decimal (like a price) times a number, rounded to `scale` digits: a
+ * sales order item's price is its product's price × its unit's factor
+ * (2.5 × 12 → 30 with scale 2).
  */
-export function multiplyDecimal(value: string, by: number, scale: number): string {
-  const product = Number(value) * by;
+export function multiplyDecimal(value: number, by: number, scale: number): number {
+  const product = value * by;
   // toFixed rounds 1.005 down (binary float): nudge by a tiny epsilon first.
-  return (product + Math.sign(product) * Number.EPSILON * Math.abs(product)).toFixed(scale);
+  return Number((product + Math.sign(product) * Number.EPSILON * Math.abs(product)).toFixed(scale));
 }

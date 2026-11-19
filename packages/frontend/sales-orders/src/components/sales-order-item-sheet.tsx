@@ -40,7 +40,7 @@ export interface SalesOrderItemUnit {
   factor: number;
   baseUomId: string;
   /** The product's price, of one base unit, when known. */
-  basePrice?: string;
+  basePrice?: number;
 }
 
 /**
@@ -279,8 +279,8 @@ function ItemForm({
           <form.SubmitButton
             label={t(
               item
-                ? "salesOrders.items.fields.save"
-                : "salesOrders.items.fields.add",
+                ? "salesOrders.items.save"
+                : "salesOrders.items.add",
             )}
           />
           <SheetClose render={<Button type="button" variant="outline" />}>

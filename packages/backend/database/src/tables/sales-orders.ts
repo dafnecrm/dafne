@@ -94,7 +94,7 @@ export const salesOrderItem = salesSchema.table(
      * The item's price: the product's price (of its base unit) × the base
      * quantity, when the item was set. @api output
      */
-    price: numeric('price', { precision: 14, scale: 2 }).notNull(),
+    price: numeric('price', { precision: 14, scale: 2, mode: 'number' }).notNull(),
     /** Chosen by the user, not the list's order. @api input */
     position: integer('position').notNull(),
   },

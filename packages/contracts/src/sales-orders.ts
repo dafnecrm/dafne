@@ -52,6 +52,18 @@ export const salesOrderBodySchema = z.strictObject({
     }),
 });
 
+/**
+ * Query of PUT /sales-orders/:id: `reprice=true` prices every item anew,
+ * from its product's price today (otherwise unchanged items keep theirs).
+ */
+export const updateSalesOrderQuerySchema = z.strictObject({
+  reprice: z
+    .enum(['true', 'false'])
+    .optional()
+    .transform((value) => value === 'true'),
+});
+export type UpdateSalesOrderQuery = z.output<typeof updateSalesOrderQuerySchema>;
+
 /** Body of POST /sales-orders/:id/status: the status to move the order to. */
 export const salesOrderStatusBodySchema = z.strictObject({
   status: z.enum(SALES_ORDER_STATUSES, { error: msg('salesOrders.status.required') }),
@@ -142,7 +154,7 @@ export interface SalesOrderDetailItem {
     /** The product's base unit. */
     uom: UomSummary,
     /** The product's price, of one base unit (today's: the item's is in `price`). */
-    price: string,
+    price: number,
   };
   /** In `uom`. */
   quantity: number;
@@ -152,9 +164,9 @@ export interface SalesOrderDetailItem {
   baseQuantity: number;
   /**
    * The item's price: the product's price × the base quantity, as it was
-   * when the item was set (decimal, as text).
+   * when the item was set (rounded to 2 decimals).
    */
-  price: string;
+  price: number;
 }
 export interface SalesOrderDetail extends ListedSalesOrder {
   notes: string | null;
@@ -175,6 +187,6 @@ export interface SalesOrderItem {
   quantity: number;
   uomId: string;
   baseQuantity: number;
-  price: string;
+  price: number;
   position: number;
 }

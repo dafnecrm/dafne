@@ -30,9 +30,14 @@ export const productBodySchema = z
   .strictObject({
     name: requiredText(255, msg('products.name.required')),
     description: optionalText(z.string().max(65535)),
-    price: z
-      .string()
-      .regex(/^-?\d+(\.\d+)?$/, { error: msg('common.number.invalid') }),
+    /** A number, or a decimal as text (a form's input): a number either way. */
+    price: z.union(
+      [
+        z.number(),
+        z.string().trim().regex(/^-?\d+(\.\d+)?$/).transform(Number),
+      ],
+      { error: msg('common.number.invalid') },
+    ),
     /** The base unit: sales order quantities are converted to it. */
     uomId: uomId(msg('products.uomId.required')),
     units: z.array(productUnitBodySchema).max(100).default([]),
@@ -96,7 +101,7 @@ export type ListProductsQuery = z.output<typeof listProductsQuerySchema>;
 export interface ListedProduct {
   id: number;
   name: string;
-  price: string;
+  price: number;
   /** The base unit. */
   uomId: string;
   createdAt: Date;
@@ -143,6 +148,6 @@ export type ProductSaleUnitSource = 'base' | 'product';
  */
 export interface ProductSaleUnit extends ProductUnit {
   source: ProductSaleUnitSource;
-  /** The price of one of this unit: the product's price × `factor` (decimal, as text). */
-  price: string;
+  /** The price of one of this unit: the product's price × `factor` (6 decimals). */
+  price: number;
 }
