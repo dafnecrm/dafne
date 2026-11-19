@@ -1,4 +1,4 @@
-import { optionalUuid, requiredUuid } from './common.ts';
+import { multiplyDecimal, optionalUuid, requiredUuid } from './common.ts';
 import { msg } from './messages/index.ts';
 
 const UUID = '0193f1e2-7c4a-7b3d-9e8f-1a2b3c4d5e6f';
@@ -30,5 +30,14 @@ describe('optionalUuid', () => {
   it('takes a uuid and rejects anything else', () => {
     expect(schema.parse(UUID)).toBe(UUID);
     expect(schema.safeParse('abc').success).toBe(false);
+  });
+});
+
+describe('multiplyDecimal', () => {
+  it('multiplies a decimal and rounds it to the scale', () => {
+    expect(multiplyDecimal(2.5, 12, 2)).toBe(30);
+    expect(multiplyDecimal(12, 0.001, 6)).toBe(0.012);
+    expect(multiplyDecimal(1.005, 1, 2)).toBe(1.01);
+    expect(multiplyDecimal(-3.1, 2, 2)).toBe(-6.2);
   });
 });

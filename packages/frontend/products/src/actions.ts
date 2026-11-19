@@ -4,8 +4,8 @@ import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { BackendError, backendFetch } from "@dafne/frontend-api/server";
 import { productSchema, type ProductFormValues } from "./schema.ts";
-import type { ListedProduct, ProductDetail } from "./types.ts";
-import { getProduct, listProducts, listProductChanges } from "./server.ts";
+import type { ListedProduct, ProductDetail, ProductSaleUnit } from "./types.ts";
+import { getProduct, listProducts, listProductChanges, listProductSaleUnits } from "./server.ts";
 import type { ChangesPage } from "@dafne/frontend-changelog";
 
 /*
@@ -122,6 +122,24 @@ export async function getProductOption(
   } catch (error) {
     if (error instanceof BackendError && error.status === 404) {
       return null;
+    }
+    throw error;
+  }
+}
+
+/**
+ * The units product `id` can be sold in (its base unit first), each with
+ * how many of the base unit one of them is, for a sales order item; [] when
+ * the product doesn't exist or was deleted.
+ */
+export async function getProductSaleUnits(
+  id: number,
+): Promise<ProductSaleUnit[]> {
+  try {
+    return await listProductSaleUnits(id);
+  } catch (error) {
+    if (error instanceof BackendError && error.status === 404) {
+      return [];
     }
     throw error;
   }

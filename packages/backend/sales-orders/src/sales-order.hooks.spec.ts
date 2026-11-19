@@ -33,8 +33,8 @@ describe('SalesOrderIsDraftHook', () => {
       customerId: 1,
       typeId: 'STD',
       items: [
-        { position: 1, productId: 10, quantity: 2, product: { id: 10, name: 'A' } },
-        { position: 2, productId: 11, quantity: 1, product: { id: 11, name: 'B' } },
+        { position: 1, productId: 10, quantity: 2, uomId: 'pc', product: { id: 10, name: 'A', uom: { id: 'pc', name: 'piece' } } },
+        { position: 2, productId: 11, quantity: 1, uomId: 'box', product: { id: 11, name: 'B', uom: { id: 'kg', name: 'kilogram' } } },
       ],
     }) as unknown as SalesOrderDetail;
 
@@ -43,8 +43,8 @@ describe('SalesOrderIsDraftHook', () => {
     customerId: 1,
     typeId: 'STD',
     items: [
-      { position: 1, productId: 10, quantity: 2 },
-      { position: 2, productId: 11, quantity: 1 },
+      { position: 1, productId: 10, quantity: 2, uomId: 'pc' },
+      { position: 2, productId: 11, quantity: 1, uomId: 'box' },
     ],
     ...changes,
   });
@@ -76,11 +76,18 @@ describe('SalesOrderIsDraftHook', () => {
     expect(run('open', { items: [...body().items].reverse() })).toBeUndefined();
   });
 
+  it('reads an item without a unit as in its product base unit', () => {
+    const [first, second] = body().items;
+    expect(run('open', { items: [{ ...first, uomId: null }, second] })).toBeUndefined();
+    expect(run('open', { items: [first, { ...second, uomId: null }] })).toBe('salesOrders.status.mustBeDraft');
+  });
+
   it.each<[string, Partial<SalesOrderBody>]>([
     ['customerId', { customerId: 2 }],
     ['typeId', { typeId: 'X' }],
-    ['an item quantity', { items: [{ position: 1, productId: 10, quantity: 3 }, { position: 2, productId: 11, quantity: 1 }] }],
-    ['an item product', { items: [{ position: 1, productId: 12, quantity: 2 }, { position: 2, productId: 11, quantity: 1 }] }],
+    ['an item quantity', { items: [{ position: 1, productId: 10, quantity: 3, uomId: 'pc' }, { position: 2, productId: 11, quantity: 1, uomId: 'box' }] }],
+    ['an item product', { items: [{ position: 1, productId: 12, quantity: 2, uomId: 'pc' }, { position: 2, productId: 11, quantity: 1, uomId: 'box' }] }],
+    ['an item unit', { items: [{ position: 1, productId: 10, quantity: 2, uomId: 'dz' }, { position: 2, productId: 11, quantity: 1, uomId: 'box' }] }],
     ['the items', { items: [] }],
   ])('rejects a change of %s when not a draft', (_, changes) => {
     expect(run('open', changes)).toBe('salesOrders.status.mustBeDraft');

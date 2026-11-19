@@ -1,0 +1,61 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "6f610790-9b8a-407f-9cc6-9df251344040",
+  "prevIds": [
+    "12962cd7-3122-4f49-bb8e-026d77568654"
+  ],
+  "footprints": [
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "sales",
+        "sales_order_item",
+        "total"
+      ],
+      "writes": [
+        "s|col|sales.sales_order_item.total",
+        "n|col|sales.sales_order_item.total",
+        "e|col|sales.sales_order_item.total"
+      ],
+      "reads": [
+        "n|tbl|sales.sales_order_item",
+        "n|sch|sales"
+      ]
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "sales",
+        "sales_order_item",
+        "price"
+      ],
+      "writes": [
+        "s|colprop|sales.sales_order_item.price.type",
+        "s|colprop|sales.sales_order_item.price.default"
+      ],
+      "reads": [
+        "n|tbl|sales.sales_order_item",
+        "n|sch|sales",
+        "n|col|sales.sales_order_item.price"
+      ],
+      "sqlHash": "00a8c87a3c945984"
+    }
+  ],
+  "deltas": [
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"sales\",\"sales_order_item\",\"total\"]"
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"sales\",\"sales_order_item\",\"price\"]",
+      "set": {
+        "type": "numeric(14,2)"
+      }
+    }
+  ]
+}

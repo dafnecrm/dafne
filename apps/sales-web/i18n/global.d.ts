@@ -13,6 +13,8 @@ import type { AssistantModelsMessages } from "@dafne/frontend-assistant/assistan
 import type { AssistantChatMessages } from "@dafne/frontend-assistant/chat";
 import type { AssistantAgentsMessages } from "@dafne/frontend-assistant/assistant-agents";
 import type { UserGroupsMessages } from "@dafne/frontend-user-groups";
+import type { UomsMessages } from "@dafne/frontend-products/uoms";
+import type { UomConversionsMessages } from "@dafne/frontend-products/uom-conversions";
 
 /**
  * Typed messages: t("customers.title") only compiles if the key exists in
@@ -38,6 +40,8 @@ declare module "next-intl" {
       assistantAgents: AssistantAgentsMessages;
       assistantChat: AssistantChatMessages;
       userGroups: UserGroupsMessages;
+      uoms: UomsMessages;
+      uomConversions: UomConversionsMessages;
     };
   }
 }

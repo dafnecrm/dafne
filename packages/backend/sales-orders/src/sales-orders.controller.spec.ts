@@ -22,6 +22,14 @@ function setup(permissions: string[]) {
 }
 
 describe('SalesOrdersController status permission', () => {
+  it('passes ?reprice to the service, false when missing', async () => {
+    const { controller, service } = setup(['SalesOrder.update']);
+    await controller.update(1, body('draft'), session, { reprice: true });
+    expect(service.update).toHaveBeenLastCalledWith(1, body('draft'), session.user, { reprice: true });
+    await controller.update(1, body('draft'), session);
+    expect(service.update).toHaveBeenLastCalledWith(1, body('draft'), session.user, { reprice: false });
+  });
+
   it('lets update keep the status without changeStatus', async () => {
     const { controller, service } = setup(['SalesOrder.update']);
     await controller.update(1, body('draft'), session);

@@ -1,6 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useLocale } from "next-intl";
+import { multiplyDecimal } from "@dafne/contracts";
+import { formatCurrency } from "@dafne/frontend-ui/lib/currencies";
 import { useTranslations } from "next-intl";
 import {
   Sheet,
@@ -17,15 +20,37 @@ import {
   type SalesOrderItemFormValues,
 } from "../schema.ts";
 import { useAppForm } from "./form-hook.ts";
-import { revalidateLogic } from "@tanstack/react-form-nextjs";
+import { revalidateLogic, useStore } from "@tanstack/react-form-nextjs";
 import { FieldGroup } from "@dafne/frontend-ui/components/field";
 import { Button } from "@dafne/frontend-ui/components/button";
-import type { ProductOption } from "@dafne/frontend-products/actions";
+import {
+  getProductSaleUnits,
+  type ProductOption,
+} from "@dafne/frontend-products/actions";
+import type { ProductSaleUnit } from "@dafne/frontend-products";
+import { InputGroupAddon } from "@dafne/frontend-ui/components/input-group";
+import { RulerIcon } from "lucide-react";
 
-/** What saving gives back: the item, plus the product when one was picked here. */
+/**
+ * An item's unit as the order's table shows it: the unit, how many of the
+ * product's base unit one of it is, and the base unit.
+ */
+export interface SalesOrderItemUnit {
+  uomId: string;
+  factor: number;
+  baseUomId: string;
+  /** The product's price, of one base unit, when known. */
+  basePrice?: number;
+}
+
+/**
+ * What saving gives back: the item, plus the product when one was picked
+ * here, and its unit when the product's units were loaded.
+ */
 type OnSave = (
   salesOrderItem: SalesOrderItemFormValues,
   product?: ProductOption,
+  unit?: SalesOrderItemUnit,
 ) => void;
 
 /**
@@ -63,8 +88,8 @@ export function SalesOrderItemSheet({
           item={item ?? undefined}
           product={product}
           takenPositions={takenPositions}
-          onSave={(value, product) => {
-            onSave(value, product);
+          onSave={(value, product, unit) => {
+            onSave(value, product, unit);
             onOpenChange(false);
           }}
         />
@@ -86,14 +111,65 @@ function ItemForm({
   onSave: OnSave;
 }) {
   const t = useTranslations();
+  const locale = useLocale();
   // The product last picked in the combobox, so the order's table can show its name.
   const [product, setProduct] = useState(itemProduct);
+  // The units the product is sold in (its base unit first), with their
+  // factors, as last loaded for `productId`.
+  const [loaded, setLoaded] = useState<{
+    productId: number;
+    units: ProductSaleUnit[];
+  } | null>(null);
   const form = useAppForm({
     defaultValues: item ?? salesOrderItem(),
     validationLogic: revalidateLogic(),
     validators: { onDynamic: salesOrderItemSchema },
-    onSubmit: ({ value }) => onSave(value, product),
+    onSubmit: ({ value }) => {
+      const unit = units.find((candidate) => candidate.uomId === value.uomId);
+      onSave(
+        value,
+        product,
+        unit && {
+          uomId: unit.uomId,
+          factor: unit.factor,
+          baseUomId: units[0].uomId,
+          basePrice: units[0].price,
+        },
+      );
+    },
   });
+  const productId = useStore(form.store, (state) => state.values.productId);
+  const units = loaded && loaded.productId === productId ? loaded.units : [];
+
+  // Load the product's units when it changes; a unit it isn't sold in
+  // becomes its base unit.
+  useEffect(() => {
+    if (productId == null) {
+      return;
+    }
+    let current = true;
+    getProductSaleUnits(productId).then(
+      (units) => {
+        if (!current) {
+          return;
+        }
+        setLoaded({ productId, units });
+        const chosen = form.getFieldValue("uomId");
+        if (units.length && !units.some((unit) => unit.uomId === chosen)) {
+          form.setFieldValue("uomId", units[0].uomId);
+        }
+      },
+      () => current && setLoaded({ productId, units: [] }),
+    );
+    return () => {
+      current = false;
+    };
+  }, [productId, form]);
+
+  const unitOptions = units.map((unit) => ({
+    value: unit.uomId,
+    label: `${unit.uomId} · ${unit.uom.name}`,
+  }));
 
   return (
     <form
@@ -132,20 +208,79 @@ function ItemForm({
               />
             )}
           </form.AppField>
-          <form.AppField name="quantity">
-            {(field) => (
-              <field.NumberField
-                label={t("salesOrders.items.fields.quantity")}
-              />
-            )}
-          </form.AppField>
+          <div className="grid grid-cols-2 items-start gap-2">
+            <form.AppField name="quantity">
+              {(field) => (
+                <field.NumberField
+                  label={t("salesOrders.items.fields.quantity")}
+                  min={0}
+                  step="any"
+                />
+              )}
+            </form.AppField>
+            <form.AppField name="uomId">
+              {(field) => (
+                <field.SelectField
+                  label={t("salesOrders.items.fields.uomId")}
+                  options={unitOptions}
+                  disabled={productId == null}
+                >
+                  <InputGroupAddon>
+                    <RulerIcon />
+                  </InputGroupAddon>
+                </field.SelectField>
+              )}
+            </form.AppField>
+          </div>
+          <form.Subscribe
+            selector={(state) => [state.values.quantity, state.values.uomId] as const}
+          >
+            {([quantity, uomId]) => {
+              const unit = units.find((candidate) => candidate.uomId === uomId);
+              if (productId == null) {
+                return (
+                  <p className="text-muted-foreground text-sm">
+                    {t("salesOrders.items.pickProductFirst")}
+                  </p>
+                );
+              }
+              if (!unit) {
+                return null;
+              }
+              const baseQuantity = quantity == null ? null : Math.round(quantity * unit.factor * 1e6) / 1e6;
+              return (
+                <div className="text-muted-foreground flex flex-col gap-1 text-sm">
+                  {/* The quantity in the base unit, for another unit. */}
+                  {baseQuantity != null && unit.source !== "base" && (
+                    <p>
+                      {t("salesOrders.items.inBaseUnit", {
+                        quantity: baseQuantity,
+                        unit: units[0].uomId,
+                      })}
+                    </p>
+                  )}
+                  <p>
+                    {t("salesOrders.items.priceEach", {
+                      price: formatCurrency(units[0].price, locale),
+                      unit: units[0].uomId,
+                    })}
+                    {baseQuantity != null &&
+                      ` · ${t("salesOrders.items.fields.price")}: ${formatCurrency(
+                        multiplyDecimal(units[0].price, baseQuantity, 2),
+                        locale,
+                      )}`}
+                  </p>
+                </div>
+              );
+            }}
+          </form.Subscribe>
         </FieldGroup>
         <SheetFooter>
           <form.SubmitButton
             label={t(
               item
-                ? "salesOrders.items.fields.save"
-                : "salesOrders.items.fields.add",
+                ? "salesOrders.items.save"
+                : "salesOrders.items.add",
             )}
           />
           <SheetClose render={<Button type="button" variant="outline" />}>

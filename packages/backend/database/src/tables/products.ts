@@ -1,6 +1,8 @@
 import { defineRelationsPart } from 'drizzle-orm';
 import {
   index,
+  integer,
+  primaryKey,
   timestamp,
   varchar,
   text,
@@ -9,6 +11,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { salesSchema } from './sales.js';
 import { user } from '../auth.js';
+import { uom } from './uoms.js';
 
 /**
  * A product managed by the users. Deletion is logical: `deletedAt` is
@@ -21,7 +24,11 @@ export const product = salesSchema.table(
     name: varchar('name', { length: 255 }).notNull(),
     /** @api detail @form editor */
     description: text('description'),
-    price: decimal('price', { precision: 10, scale: 2 }).notNull(),
+    price: decimal('price', { precision: 10, scale: 2, mode: 'number' }).notNull(),
+    /** The base unit: sales order quantities are converted to it. */
+    uomId: varchar('uom_id', { length: 10 })
+      .notNull()
+      .references(() => uom.id, { onDelete: 'restrict' }),
     createdAt: timestamp('created_at', { precision: 3, withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -43,11 +50,43 @@ export const product = salesSchema.table(
   (table) => [
     index('product_deletedAt_idx').on(table.deletedAt),
     index('product_name_idx').on(table.name),
+    index('product_uomId_idx').on(table.uomId),
   ],
 );
 
-export const productRelations = defineRelationsPart({ user, product }, (r) => ({
+/**
+ * A unit a product can also be sold in, besides its base unit: one its base
+ * unit converts to (uom_conversion gives the factor). Replaced with the
+ * product.
+ */
+export const productUom = salesSchema.table(
+  'product_uom',
+  {
+    productId: integer('product_id')
+      .notNull()
+      .references(() => product.id, { onDelete: 'cascade' }),
+    uomId: varchar('uom_id', { length: 10 })
+      .notNull()
+      .references(() => uom.id, { onDelete: 'restrict' }),
+  },
+  (table) => [
+    primaryKey({ columns: [table.productId, table.uomId] }),
+    index('product_uom_uomId_idx').on(table.uomId),
+  ],
+);
+
+export const productRelations = defineRelationsPart({ user, product, productUom, uom }, (r) => ({
   product: {
+    uom: r.one.uom({
+      from: r.product.uomId,
+      to: r.uom.id,
+      optional: false,
+      alias: 'productUom',
+    }),
+    units: r.many.productUom({
+      from: r.product.id,
+      to: r.productUom.productId,
+    }),
     createdBy: r.one.user({
       from: r.product.createdById,
       to: r.user.id,
@@ -57,6 +96,19 @@ export const productRelations = defineRelationsPart({ user, product }, (r) => ({
       from: r.product.updatedById,
       to: r.user.id,
       alias: 'productUpdatedBy',
+    }),
+  },
+  productUom: {
+    product: r.one.product({
+      from: r.productUom.productId,
+      to: r.product.id,
+      optional: false,
+    }),
+    uom: r.one.uom({
+      from: r.productUom.uomId,
+      to: r.uom.id,
+      optional: false,
+      alias: 'productUnitUom',
     }),
   },
 }));

@@ -1,7 +1,7 @@
 import type { SessionUser } from '@dafne/backend-session';
 import { schema } from '@dafne/backend-database';
 import { getDrizzleToken } from '@nestjs/drizzle';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { and, asc, desc, eq, isNull } from 'drizzle-orm';
 import { salesOrderBodySchema, type SalesOrderBodyInput } from '@dafne/contracts';
@@ -9,6 +9,7 @@ import { getStateMachineToken } from '@dafne/backend-fsm';
 import { SalesOrdersService } from './sales-orders.service.js';
 import { SALES_ORDER_STATE_MACHINE } from './sales-order.states.js';
 import { CrudHooksRegistry, type Actor } from '@dafne/backend-crud';
+import { ProductsService } from '@dafne/backend-products';
 
 /** A signed-in user, as the services get it; only the id matters here. */
 const actor = (id: string) => ({ id }) as Actor;
@@ -52,6 +53,7 @@ describe('SalesOrdersService', () => {
   };
   const found = { id: 1, name: 'Acme' };
   const stateMachine = { transition: vi.fn() };
+  const products = { units: vi.fn() };
 
   beforeEach(async () => {
     vi.resetAllMocks();
@@ -73,6 +75,11 @@ describe('SalesOrdersService', () => {
     remove.where.mockResolvedValue({ rowCount: 0 });
     db.transaction.mockImplementation((callback: (tx: typeof db) => unknown) => callback(db));
     findFirst.mockResolvedValue(found);
+    // Every product is sold by the piece, and by the box of 12.
+    products.units.mockResolvedValue([
+      { uomId: 'pc', uom: { id: 'pc', name: 'piece' }, factor: 1, source: 'base', price: 2.5 },
+      { uomId: 'box', uom: { id: 'box', name: 'box' }, factor: 12, source: 'product', price: 30 },
+    ]);
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -80,6 +87,7 @@ describe('SalesOrdersService', () => {
         { provide: getDrizzleToken(), useValue: db },
         CrudHooksRegistry,
         { provide: getStateMachineToken(SALES_ORDER_STATE_MACHINE), useValue: stateMachine },
+        { provide: ProductsService, useValue: products },
       ],
     }).compile();
 
@@ -203,9 +211,49 @@ describe('SalesOrdersService', () => {
       );
 
       expect(insert.values.mock.calls[1][0]).toEqual([
-        { orderId: 1, productId: 4, quantity: 10, position: 1 },
-        { orderId: 1, productId: 3, quantity: 9, position: 2 },
+        { orderId: 1, productId: 4, quantity: 10, uomId: 'pc', baseQuantity: 10, price: 25, position: 1 },
+        { orderId: 1, productId: 3, quantity: 9, uomId: 'pc', baseQuantity: 9, price: 22.5, position: 2 },
       ]);
+    });
+
+    it('converts the quantity of an item in another unit to the base unit', async () => {
+      await service.create(
+        body({
+          customerId: 1,
+          typeId: 'T1',
+          items: [{ productId: 4, quantity: 2.5, uomId: 'box', position: 1 }],
+        }),
+        u1,
+      );
+
+      expect(insert.values.mock.calls[1][0]).toEqual([
+        { orderId: 1, productId: 4, quantity: 2.5, uomId: 'box', baseQuantity: 30, price: 75, position: 1 },
+      ]);
+      expect(products.units).toHaveBeenCalledWith(4, db);
+    });
+
+    it('refuses a unit the product is not sold in', async () => {
+      await expect(
+        service.create(
+          body({
+            customerId: 1,
+            typeId: 'T1',
+            items: [{ productId: 4, quantity: 1, uomId: 'kg', position: 1 }],
+          }),
+          u1,
+        ),
+      ).rejects.toMatchObject({ response: { message: ['items.0.uomId: salesOrders.items.uomId.notConvertible'] } });
+    });
+
+    it('refuses a product that does not exist', async () => {
+      products.units.mockRejectedValue(new NotFoundException());
+
+      await expect(
+        service.create(
+          body({ customerId: 1, typeId: 'T1', items: [{ productId: 99, quantity: 1, position: 1 }] }),
+          u1,
+        ),
+      ).rejects.toBeInstanceOf(BadRequestException);
     });
 
     it('inserts it in draft and moves it to the status through the state machine', async () => {
@@ -227,6 +275,54 @@ describe('SalesOrdersService', () => {
       expect(update.where).toHaveBeenCalledWith(
         and(eq(salesOrder.id, 1), notDeleted),
       );
+    });
+
+    it('keeps the price of an unchanged item, and prices a changed one anew', async () => {
+      // The items as saved, priced when the product cost 2.00.
+      select.where.mockResolvedValueOnce([
+        { position: 1, productId: 4, uomId: 'pc', quantity: 10, price: 20 },
+        { position: 2, productId: 3, uomId: 'pc', quantity: 9, price: 18 },
+      ]);
+
+      await service.update(
+        1,
+        body({
+          customerId: 1,
+          typeId: 'T1',
+          items: [
+            { productId: 4, quantity: 10, uomId: 'pc', position: 1 },
+            { productId: 3, quantity: 1, uomId: 'box', position: 2 },
+          ],
+        }),
+        u2,
+      );
+
+      expect(insert.values.mock.calls[0][0]).toEqual([
+        { orderId: 1, productId: 4, quantity: 10, uomId: 'pc', baseQuantity: 10, price: 20, position: 1 },
+        { orderId: 1, productId: 3, quantity: 1, uomId: 'box', baseQuantity: 12, price: 30, position: 2 },
+      ]);
+    });
+
+    it('reprices every item when asked, unchanged ones too', async () => {
+      await service.update(
+        1,
+        body({
+          customerId: 1,
+          typeId: 'T1',
+          items: [
+            { productId: 4, quantity: 10, uomId: 'pc', position: 1 },
+            { productId: 3, quantity: 1, uomId: 'box', position: 2 },
+          ],
+        }),
+        u2,
+        { reprice: true },
+      );
+
+      // The saved items aren't even read: none keeps its price.
+      expect(insert.values.mock.calls[0][0]).toEqual([
+        { orderId: 1, productId: 4, quantity: 10, uomId: 'pc', baseQuantity: 10, price: 25, position: 1 },
+        { orderId: 1, productId: 3, quantity: 1, uomId: 'box', baseQuantity: 12, price: 30, position: 2 },
+      ]);
     });
 
     it('changes the status through the state machine, after the items', async () => {

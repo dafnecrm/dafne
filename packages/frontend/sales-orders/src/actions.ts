@@ -36,13 +36,16 @@ async function errorMessage(error: unknown) {
 
 /**
  * Creates a sales order (no `id`) or replaces one, then opens its page
- * (`<path>/<id>`, `path` being the app's sales orders list). Returns an
- * error message when it fails.
+ * (`<path>/<id>`, `path` being the app's sales orders list). `reprice`
+ * (replacing only) prices every item anew from its product's price, instead
+ * of keeping the price of unchanged items. Returns an error message when it
+ * fails.
  */
 export async function saveSalesOrder(
   id: number | null,
   values: SalesOrderFormValues,
   path: string,
+  options?: { reprice?: boolean },
 ): Promise<ActionError> {
   // Any POST can call this: only redirect within the app.
   if (!/^\/[\w/-]*$/.test(path)) {
@@ -56,7 +59,10 @@ export async function saveSalesOrder(
   let savedId: number;
   try {
     const res = await backendFetch(
-      id ? `/sales-orders/${encodeURIComponent(id)}` : "/sales-orders",
+      id
+        ? // Any POST can call this: only a real true reprices.
+          `/sales-orders/${encodeURIComponent(id)}${options?.reprice === true ? "?reprice=true" : ""}`
+        : "/sales-orders",
       {
         method: id ? "PUT" : "POST",
         body: JSON.stringify(parsed.data),

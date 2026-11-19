@@ -1,7 +1,7 @@
 import { backendFetch } from "@dafne/frontend-api/server";
 import type { TableFilters, TableSort } from "@dafne/frontend-data-table";
 import { PRODUCTS_DEFAULT_SORT } from "./products-table.ts";
-import type { ProductDetail, ProductsList } from "./types.ts";
+import type { ProductDetail, ProductSaleUnit, ProductsList } from "./types.ts";
 import type { ChangesPage } from "@dafne/frontend-changelog";
 
 /*
@@ -15,6 +15,15 @@ import type { ChangesPage } from "@dafne/frontend-changelog";
  */
 export async function getProduct(id: string): Promise<ProductDetail> {
   const res = await backendFetch(`/products/${encodeURIComponent(id)}`);
+  return res.json();
+}
+
+/**
+ * Calls the backend's GET /products/:id/uoms: the units the product is sold
+ * in. Throws a BackendError with status 404 when it doesn't exist.
+ */
+export async function listProductSaleUnits(id: number): Promise<ProductSaleUnit[]> {
+  const res = await backendFetch(`/products/${encodeURIComponent(id)}/uoms`);
   return res.json();
 }
 

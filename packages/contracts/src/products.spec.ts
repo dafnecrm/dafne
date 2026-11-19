@@ -11,21 +11,54 @@ function failedFields(body: unknown) {
 describe('productBodySchema', () => {
   it('trims values', () => {
     expect(
-      productBodySchema.parse({ name: '  Acme  ', price: '1.00' }),
+      productBodySchema.parse({ name: '  Acme  ', price: '1.00', uomId: ' pc ' }),
     ).toEqual({
       name: 'Acme',
-      price: '1.00',
+      price: 1,
       description: null,
+      uomId: 'pc',
+      units: [],
     });
   });
 
+  it('reads the price as a number, from a number or a decimal as text', () => {
+    expect(productBodySchema.parse({ name: 'Acme', price: 2.5, uomId: 'pc' }).price).toBe(2.5);
+    expect(productBodySchema.parse({ name: 'Acme', price: ' 2.50 ', uomId: 'pc' }).price).toBe(2.5);
+    expect(failedFields({ name: 'Acme', price: '2,50', uomId: 'pc' })).toEqual(['price']);
+    expect(failedFields({ name: 'Acme', price: '', uomId: 'pc' })).toEqual(['price']);
+  });
+
   it('rejects a blank name', () => {
-    expect(failedFields({ name: '   ', price: '1.00' })).toEqual(['name']);
+    expect(failedFields({ name: '   ', price: '1.00', uomId: 'pc' })).toEqual(['name']);
+  });
+
+  it('requires the base unit', () => {
+    expect(failedFields({ name: 'Acme', price: '1.00' })).toEqual(['uomId']);
+  });
+
+  it('reads the units, without factors', () => {
+    expect(
+      productBodySchema.parse({ name: 'Acme', price: '1.00', uomId: 'pc', units: [{ uomId: ' box ' }] }).units,
+    ).toEqual([{ uomId: 'box' }]);
+    expect(
+      failedFields({ name: 'Acme', price: '1.00', uomId: 'pc', units: [{ uomId: 'box', factor: 12 }] }),
+    ).toEqual(['units.0']);
+  });
+
+  it('rejects the base unit and a unit twice', () => {
+    expect(
+      failedFields({
+        name: 'Acme',
+        price: '1.00',
+        uomId: 'pc',
+        units: [{ uomId: 'pc' }, { uomId: 'pack' }, { uomId: 'pack' }],
+      }),
+    ).toEqual(['units.0.uomId', 'units.2.uomId']);
   });
 
   it('rejects unknown properties such as deletedAt', () => {
     expect(
-      failedFields({ name: 'Acme', deletedAt: '2026-01-01', price: '1.00' }),
+      failedFields({ name: 'Acme', deletedAt: '2026-01-01', price: '1.00', uomId: 'pc' }),
     ).toEqual(['unrecognized_keys']);
   });
 });

@@ -23,7 +23,9 @@
     "assistantAgents": "AI agents",
     "assistant": "AI assistant",
     "userGroups": "User groups",
-    "changePassword": "Change password"
+    "changePassword": "Change password",
+    "uoms": "Units of measure",
+    "uomConversions": "Conversions"
   },
   "breadcrumb": {
     "new": "New",

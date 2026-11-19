@@ -18,6 +18,9 @@
       "path": "../session"
     },
     {
+      "path": "../products"
+    },
+    {
       "path": "../fsm"
     },
     {

@@ -26,6 +26,8 @@ import {
   type SalesOrderStatusBody,
   listSalesOrdersQuerySchema,
   type SalesOrderBody,
+  updateSalesOrderQuerySchema,
+  type UpdateSalesOrderQuery,
   type SalesOrderDetail,
   type SalesOrderDetailItem,
   type SalesOrdersList,
@@ -104,12 +106,14 @@ export class SalesOrdersController
     @Param('id', IdPipe) id: number,
     @Body(new ZodValidationPipe(salesOrderBodySchema)) body: SalesOrderBody,
     @Session() session: UserSession,
+    // ?reprice=true: every item gets its product's price of today.
+    @Query(new ZodValidationPipe(updateSalesOrderQuerySchema)) query?: UpdateSalesOrderQuery,
   ): Promise<SalesOrderDetail> {
     // The form sends the status too: changing it needs changeStatus.
     if (body.status && body.status !== (await this.salesOrdersService.get(id)).status) {
       await this.requireChangeStatus(session.user);
     }
-    return this.salesOrdersService.update(id, body, session.user);
+    return this.salesOrdersService.update(id, body, session.user, { reprice: query?.reprice ?? false });
   }
 
   /** 403 unless the user may change orders' status (POST :id/status's permission). */

@@ -3,8 +3,18 @@ import { productBodySchema, type ProductBody } from "@dafne/contracts";
 import { formSchema } from "@dafne/frontend-forms";
 import type { ProductDetail } from "./types.ts";
 
-/** Form values: every field is text, "" when blank. Keys follow the contract. */
-export type ProductFormValues = Record<keyof ProductBody, string>;
+/** A unit the product is also sold in ("" until one is chosen). */
+export interface ProductUnitFormValues {
+  uomId: string;
+}
+
+/**
+ * Form values: every field is text, "" when blank, but the units. Keys
+ * follow the contract.
+ */
+export type ProductFormValues = Record<Exclude<keyof ProductBody, "units">, string> & {
+  units: ProductUnitFormValues[];
+};
 
 /**
  * The form validates with the backend's own schema (same rules and
@@ -18,7 +28,10 @@ export function productFormOpts(product?: ProductDetail) {
     defaultValues: {
       name: product?.name ?? "",
       description: product?.description ?? "",
-      price: product?.price ?? "",
+      price: product?.price != null ? String(product.price) : "",
+      uomId: product?.uomId ?? "",
+      units:
+        product?.units.map(({ uomId }) => ({ uomId })) ?? [],
     } satisfies ProductFormValues as ProductFormValues,
   });
 }

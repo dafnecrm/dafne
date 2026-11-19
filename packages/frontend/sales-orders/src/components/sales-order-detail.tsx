@@ -8,8 +8,9 @@ import {
   ContactIcon,
   BoxesLinkedIcon,
   TagIcon,
+  EuroIcon,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Detail, DetailSection } from "@dafne/frontend-ui/components/detail";
 import { LocalDate } from "@dafne/frontend-ui/components/local-date";
 import type { SalesOrderDetail } from "../types.ts";
@@ -19,22 +20,27 @@ import { SalesOrderItemTable } from "./sales-order-items-table.tsx";
 import { SALES_ORDER_STATUS_OPTIONS } from "../sales-orders-table.ts";
 import { useOptionLabel } from "@dafne/frontend-ui/hooks/use-option-labels";
 import CopyButton from "@dafne/frontend-ui/components/copy-button";
+import { formatCurrency } from "@dafne/frontend-ui/lib/currencies";
 
 /** @dafne-ignore: customerId, typeId */
 
 /**
  * The details of a sales order: its fields, then who created and updated it.
- * The customer links to `<customersPath>/<id>`, the app's customer page.
+ * The customer links to `<customersPath>/<id>`, the app's customer page,
+ * the items' products to `<productsPath>/<id>`.
  */
 export function SalesOrderDetails({
   salesOrder,
   customersPath,
+  productsPath,
 }: {
   salesOrder: SalesOrderDetail;
   customersPath: string;
+  productsPath: string;
 }) {
   const t = useTranslations();
   const optionLabel = useOptionLabel();
+  const locale = useLocale()
   return (
     <>
       <DetailSection
@@ -55,6 +61,12 @@ export function SalesOrderDetails({
         <Detail icon={TagIcon} label={t("salesOrders.fields.status")}>
           {optionLabel(SALES_ORDER_STATUS_OPTIONS, salesOrder.status)}
         </Detail>
+        <Detail icon={EuroIcon} label={t("salesOrders.totalPrice")}>
+          {formatCurrency(salesOrder.items.reduce((total, item) => {
+            total += item.price;
+            return total;
+          }, 0), locale)}
+        </Detail>
         <Detail icon={TextIcon} label={t("salesOrders.fields.notes")} wide>
           {salesOrder.notes ? (
             <TextEditorContent
@@ -67,7 +79,15 @@ export function SalesOrderDetails({
         </Detail>
       </DetailSection>
       <DetailSection title={t("salesOrders.sections.items")}>
-        <SalesOrderItemTable items={salesOrder.items} bordered={false} />
+        <SalesOrderItemTable
+          items={salesOrder.items.map((item) => ({
+            ...item,
+            baseUomId: item.product.uom.id,
+            basePrice: item.product.price,
+          }))}
+          bordered={false}
+          productsPath={productsPath}
+        />
       </DetailSection>
       <DetailSection
         title={t("common.record.title")}

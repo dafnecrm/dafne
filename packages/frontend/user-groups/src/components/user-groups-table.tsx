@@ -53,7 +53,17 @@ function useUserGroupColumns(path: string) {
             </Link>
           ),
         }),
-        col.accessor("name", { header: t("userGroups.fields.name") }),
+        col.accessor("name", { 
+          header: t("userGroups.fields.name"),
+          cell: ({ row }) => (
+            <Link
+              href={`${path}/${encodeURIComponent(row.original.id)}`}
+              className="font-medium underline-offset-4 hover:underline"
+            >
+              {row.original.name}
+            </Link>
+          ),
+        }),
         col.accessor("description", {
           header: t("userGroups.fields.description"),
           cell: (info) => info.getValue() ?? "—",

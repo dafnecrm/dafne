@@ -14,6 +14,8 @@ export const PERMISSIONS = {
   Customer: ['create', 'update', 'delete'],
   Activity: ['create', 'update', 'delete', 'close'],
   Product: ['create', 'update', 'delete'],
+  Uom: ['create', 'update', 'delete'],
+  UomConversion: ['create', 'update', 'delete'],
   SalesOrder: ['create', 'update', 'delete', 'changeStatus'],
 } as const;
 

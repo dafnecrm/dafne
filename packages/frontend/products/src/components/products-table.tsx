@@ -69,6 +69,9 @@ function useProductColumns(path: string) {
           header: t("price"),
           cell: (info) => formatCurrency(info.getValue(), locale),
         }),
+        col.accessor("uomId", {
+          header: t("uomId"),
+        }),
         col.accessor("createdAt", {
           header: t("createdAt"),
           meta: { className: "text-right" },

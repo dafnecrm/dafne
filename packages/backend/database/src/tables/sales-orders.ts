@@ -2,6 +2,7 @@ import { defineRelationsPart } from 'drizzle-orm';
 import {
   index,
   integer,
+  numeric,
   timestamp,
   varchar,
   text,
@@ -13,6 +14,7 @@ import { user } from '../auth.js';
 import { customer } from './customers.js';
 import { product } from './products.js';
 import { salesOrderType } from './sales-order-types.ts';
+import { uom } from './uoms.js';
 
 /**
  * A sales order managed by the users. Deletion is logical: `deletedAt` is
@@ -72,13 +74,34 @@ export const salesOrderItem = salesSchema.table(
     productId: integer('product_id')
       .notNull()
       .references(() => product.id, { onDelete: 'cascade' }),
-    quantity: integer('quantity').notNull(),
+    /** In `uomId`, the unit the user picked. */
+    quantity: numeric('quantity', {
+      precision: 18,
+      scale: 6,
+      mode: 'number',
+    }).notNull(),
+    /** The product's base unit, or one that converts to it. */
+    uomId: varchar('uom_id', { length: 10 })
+      .notNull()
+      .references(() => uom.id, { onDelete: 'restrict' }),
+    /** The quantity in the product's base unit, computed on save. @api output */
+    baseQuantity: numeric('base_quantity', {
+      precision: 18,
+      scale: 6,
+      mode: 'number',
+    }).notNull(),
+    /**
+     * The item's price: the product's price (of its base unit) × the base
+     * quantity, when the item was set. @api output
+     */
+    price: numeric('price', { precision: 14, scale: 2, mode: 'number' }).notNull(),
     /** Chosen by the user, not the list's order. @api input */
     position: integer('position').notNull(),
   },
   (table) => [
     primaryKey({ columns: [table.orderId, table.position] }),
     index('sales_order_item_productId_idx').on(table.productId),
+    index('sales_order_item_uomId_idx').on(table.uomId),
   ],
 );
 
@@ -124,7 +147,7 @@ export const salesOrderRelations = defineRelationsPart(
 );
 
 export const salesOrderItemRelations = defineRelationsPart(
-  { salesOrder, salesOrderItem, product },
+  { salesOrder, salesOrderItem, product, uom },
   (r) => ({
     salesOrderItem: {
       salesOrder: r.one.salesOrder({
@@ -137,6 +160,12 @@ export const salesOrderItemRelations = defineRelationsPart(
         from: r.salesOrderItem.productId,
         to: r.product.id,
         optional: false,
+      }),
+      uom: r.one.uom({
+        from: r.salesOrderItem.uomId,
+        to: r.uom.id,
+        optional: false,
+        alias: 'salesOrderItemUom',
       }),
     },
   }),

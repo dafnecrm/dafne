@@ -12,8 +12,8 @@ import type { SalesOrderDetail } from "./types.ts";
 import { type SalesOrdersMessageKey } from "./messages/index.ts";
 
 /**
- * Form values: every field is text, "" when blank, except the item's
- * numbers (`NumberField`, `ProductSelectField`: a number, null when blank).
+ * Form values: every field is text, "" when blank (an item's `uomId`: its
+ * product's base unit), except the item's numbers (`NumberField`, `ProductSelectField`: a number, null when blank).
  * Keys follow the contract.
  */
 export type SalesOrderItemFormValues = Record<
@@ -60,6 +60,7 @@ export function salesOrderFormOpts(salesOrder?: SalesOrderDetail, defaults?: { c
           position: item.position,
           productId: item.productId,
           quantity: item.quantity,
+          uomId: item.uomId,
         })) ?? [],
       status: salesOrder?.status ?? "draft",
     } satisfies SalesOrderFormValues as SalesOrderFormValues,
@@ -77,4 +78,6 @@ export const salesOrderItem = (
   position: item?.position ?? null,
   productId: item?.productId ?? null,
   quantity: item?.quantity ?? null,
+  // "" until a product is picked: then its base unit.
+  uomId: item?.uomId ?? "",
 });
