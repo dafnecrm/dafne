@@ -125,7 +125,7 @@ export function readTools(deps: ToolDeps): Record<ReadToolName, Tool> {
           type: o.type.description,
           notes: clip(o.notes),
           createdAt: day(o.createdAt),
-          items: o.items.map((i) => ({ position: i.position, product: i.product, quantity: i.quantity })),
+          items: o.items.map((i) => ({ position: i.position, product: i.product, quantity: i.quantity, unit: i.uomId, price: i.price })),
         };
       },
     }),

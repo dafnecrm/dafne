@@ -40,11 +40,18 @@ export class SalesOrderIsDraftHook implements CrudHook<number, SalesOrderBody, S
     if (!previous || !body || previous.status === 'draft') {
       return;
     }
+    // An item without a unit is in its product's base unit: the previous
+    // items say which one (a product they don't have is a change anyway).
+    const baseUnits = new Map(previous.items.map((item) => [item.productId, item.product.uom.id]));
+    const items = body.items.map((item) => ({
+      ...item,
+      uomId: item.uomId ?? baseUnits.get(item.productId) ?? null,
+    }));
     const changed = Object.keys(
       diff(
         snapshot(previous, SALES_ORDER_CHANGELOG),
         // The body has the same fields (items without the product's name): snapshot maps them alike.
-        snapshot(body as unknown as SalesOrderDetail, SALES_ORDER_CHANGELOG),
+        snapshot({ ...body, items } as unknown as SalesOrderDetail, SALES_ORDER_CHANGELOG),
       ),
     );
     if (changed.some((field) => !EDITABLE_WHEN_NOT_DRAFT.has(field))) {

@@ -78,7 +78,20 @@ are written by its CLI, then moved into the auth schema
   key to another table is `integer('<name>_id')`. The exceptions: the
   tables of the `auth` schema (Better Auth's text ids, and `app_access`),
   so the `created_by_id` / `updated_by_id` keys to `auth.user` are text,
-  and `country`, whose key is its ISO 3166-1 code.
+  `country`, whose key is its ISO 3166-1 code, and the codes the users
+  pick (in the body, 409 when taken): `sales_order_type` and `uom` (a unit
+  of measure's symbol, `kg`).
+- Units of measure: every product has one (`product.uom_id`, its base
+  unit). Conversions are a resource of their own (`uom_conversion`,
+  `/uom-conversions`), the same for every product: 1 `to` = `factor` ×
+  `from` (g → kg: 1000), between units of the same kind, one live row per
+  pair whichever its direction (`uom_conversion_pair_idx`). A product
+  selects the other units it is sold in (`product_uom`): only units its
+  base unit has a conversion with, either way, not through other units
+  (`UomConversionsService.factorsFrom`). A sales order item keeps its
+  `quantity` in its `uom_id` (the base unit, or one of the product's) and
+  the `base_quantity` in the base unit, computed on save
+  (`GET /products/:id/uoms` lists a product's units with their factors).
 - In the API an id is a number: `@Param('id', IdPipe) id: number`
   (`@dafne/backend-common`, a 404 for anything that isn't a positive
   integer), `requiredId` / `optionalId` (`@dafne/contracts`) for a key in a

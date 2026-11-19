@@ -5,7 +5,10 @@
   "author": "",
   "private": true,
   "dafne": {
-    "dev": { "host": "sales-api", "port": 3000 }
+    "dev": {
+      "host": "sales-api",
+      "port": 3000
+    }
   },
   "license": "UNLICENSED",
   "type": "module",
@@ -45,6 +48,7 @@
     "@dafne/backend-products": "workspace:*",
     "@dafne/backend-sales-orders": "workspace:*",
     "@dafne/backend-session": "workspace:*",
+    "@dafne/backend-uom": "workspace:*",
     "@dafne/backend-user-groups": "workspace:*",
     "@dafne/contracts": "workspace:*",
     "@keyv/redis": "^6.1.0",

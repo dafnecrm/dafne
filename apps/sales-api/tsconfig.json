@@ -58,6 +58,9 @@
     },
     {
       "path": "../../packages/backend/user-groups"
+    },
+    {
+      "path": "../../packages/backend/uom"
     }
   ]
 }

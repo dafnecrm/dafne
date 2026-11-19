@@ -5,7 +5,7 @@ import {
   HistoryIcon,
   UserPenIcon,
   UserPlusIcon,
-  TextIcon, BanknoteIcon
+  TextIcon, BanknoteIcon, RulerIcon, ArrowRightLeftIcon
 } from "lucide-react";
 import CopyButton from "@dafne/frontend-ui/components/copy-button";
 import { Detail, DetailSection } from "@dafne/frontend-ui/components/detail";
@@ -26,6 +26,9 @@ export function ProductDetails({ product }: { product: ProductDetail }) {
         <Detail icon={BanknoteIcon} label={t("products.fields.price")}>
           <Currency value={product.price} />
         </Detail>
+        <Detail icon={RulerIcon} label={t("products.fields.uomId")}>
+          {product.uom.id} · {product.uom.name}
+        </Detail>
         <Detail icon={TextIcon} label={t("products.fields.description")} wide>
           {product.description ? (
             <TextEditorContent
@@ -36,6 +39,22 @@ export function ProductDetails({ product }: { product: ProductDetail }) {
             "—"
           )}
         </Detail>
+      </DetailSection>
+      <DetailSection title={t("products.sections.units")}>
+        {product.units.length === 0 && (
+          <p className="text-muted-foreground text-sm">
+            {t("products.units.none")}
+          </p>
+        )}
+        {product.units.map((unit) => (
+          <Detail key={unit.uomId} icon={ArrowRightLeftIcon} label={unit.uom.name}>
+            {t("products.units.equals", {
+              unit: unit.uomId,
+              factor: unit.factor,
+              base: product.uomId,
+            })}
+          </Detail>
+        ))}
       </DetailSection>
       <DetailSection title={t("common.record.title")} defaultOpen={false}>
         <Detail icon={FingerprintIcon} label={t("products.fields.id")}>

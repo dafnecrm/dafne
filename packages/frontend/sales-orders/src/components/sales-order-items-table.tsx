@@ -12,7 +12,8 @@ import {
   EmptyTitle
 } from "@dafne/frontend-ui/components/empty";
 import { MapPinIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { formatCurrency } from "@dafne/frontend-ui/lib/currencies";
 import { type ReactNode, useMemo } from "react";
 
 /**
@@ -23,13 +24,23 @@ export interface SalesOrderItemRow {
   position: number | null;
   productId: number | null;
   quantity: number | null;
+  /** The quantity's unit; "" or null for the product's base unit. */
+  uomId?: string | null;
   product?: { name: string };
+  /** The quantity in the product's base unit, when known. */
+  baseQuantity?: number;
+  baseUomId?: string;
+  /** The product's price, of one base unit (not converted), when known. */
+  basePrice?: string;
+  /** The item's price (the product's × the base quantity), when known. */
+  price?: string;
 }
 
 const col = createDataTableColumnHelper<SalesOrderItemRow>();
 
 function useSalesOrderItemColumns() {
   const t = useTranslations("salesOrders.items.fields");
+  const locale = useLocale();
   return useMemo(
     () =>
       col.columns([
@@ -43,10 +54,32 @@ function useSalesOrderItemColumns() {
         }),
         col.accessor("quantity", {
           header: t("quantity"),
-          cell: ({ row }) => row.original.quantity,
+          cell: ({ row }) =>
+            [row.original.quantity, row.original.uomId].filter((part) => part != null && part !== "").join(" "),
+        }),
+        col.accessor("baseQuantity", {
+          header: t("baseQuantity"),
+          cell: ({ row }) =>
+            row.original.baseQuantity == null
+              ? "—"
+              : `${row.original.baseQuantity} ${row.original.baseUomId ?? ""}`.trim(),
+        }),
+        col.accessor("basePrice", {
+          header: t("basePrice"),
+          meta: { className: "text-right" },
+          cell: ({ row }) =>
+            row.original.basePrice == null
+              ? "—"
+              : `${formatCurrency(row.original.basePrice, locale)} / ${row.original.baseUomId ?? ""}`.trim(),
+        }),
+        col.accessor("price", {
+          header: t("price"),
+          meta: { className: "text-right" },
+          cell: ({ row }) =>
+            row.original.price == null ? "—" : formatCurrency(row.original.price, locale),
         }),
       ]),
-    [t],
+    [t, locale],
   );
 }
 

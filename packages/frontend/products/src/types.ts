@@ -9,3 +9,4 @@ export type ListedProduct = Json<contracts.ListedProduct>;
 export type ProductsList = Json<contracts.ProductsList>;
 export type ProductUser = Json<contracts.ProductUser>;
 export type ProductDetail = Json<contracts.ProductDetail>;
+export type ProductSaleUnit = Json<contracts.ProductSaleUnit>;

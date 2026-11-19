@@ -16,11 +16,12 @@ import { DetailSection } from "@dafne/frontend-ui/components/detail";
 import { SalesOrderItemTable } from "./sales-order-items-table.tsx";
 import { PencilIcon, TagIcon, Trash2Icon } from "lucide-react";
 import { useMemo, useState } from "react";
-import { SalesOrderItemSheet } from "./sales-order-item-sheet.tsx";
+import { SalesOrderItemSheet, type SalesOrderItemUnit } from "./sales-order-item-sheet.tsx";
 import type { ProductOption } from "@dafne/frontend-products/actions";
 import { useOptionLabels } from "@dafne/frontend-ui/hooks/use-option-labels";
 import { InputGroupAddon } from "@dafne/frontend-ui/components/input-group";
 import { useSearchParams } from "next/navigation";
+import { multiplyDecimal } from "@dafne/contracts";
 
 
 /**
@@ -39,7 +40,7 @@ export function SalesOrderForm({
   const customerIdFromParams = searchParams.get('customerId');
 
   const statusOptions = useOptionLabels(STATUS_OPTIONS);
-  
+
   const form = useAppForm({
     ...salesOrderFormOpts(salesOrder, { customerId: customerIdFromParams }),
     // Validate on submit, then on every change.
@@ -69,10 +70,37 @@ export function SalesOrderForm({
   const [pickedProducts, setPickedProducts] = useState(
     () => new Map<number, ProductOption>(),
   );
+  const savedProduct = (productId: number | null) =>
+    productId == null ? undefined : savedProducts.get(productId);
   const productOf = (productId: number | null) =>
     productId == null
       ? undefined
       : (pickedProducts.get(productId) ?? savedProducts.get(productId));
+
+  // The factors of the items' units, by product and unit, so the table can
+  // show the base quantity: from the saved items, then from the sheet.
+  const unitKey = (productId: number | null, uomId: string) => `${productId}:${uomId}`;
+  const savedUnits = useMemo(
+    () =>
+      new Map(
+        salesOrder?.items.map((item) => [
+          unitKey(item.productId, item.uomId),
+          {
+            uomId: item.uomId,
+            factor: item.baseQuantity / item.quantity,
+            baseUomId: item.product.uom.id,
+          } satisfies SalesOrderItemUnit,
+        ]),
+      ),
+    [salesOrder],
+  );
+  const [pickedUnits, setPickedUnits] = useState(
+    () => new Map<string, SalesOrderItemUnit>(),
+  );
+  const unitOf = (productId: number | null, uomId: string) => {
+    const key = unitKey(productId, uomId);
+    return pickedUnits.get(key) ?? savedUnits.get(key);
+  };
 
   const [salesOrderItemSheet, setSalesOrderItemSheet] = useState<{
     open: boolean;
@@ -141,93 +169,122 @@ export function SalesOrderForm({
 
           </DetailSection>
 
-          {salesOrder && (
-            // Not mode="array": that re-renders only when its array version
-            // changes, and reset() (on leaving the page) zeroes it, so new
-            // values could be missed. The table follows every value instead.
-            <form.AppField name="items">
-              {(items) => (
-                <>
-                  <DetailSection
-                    title={t("salesOrders.sections.items")}
-                    groupClassName="flex"
-                    actions={<Button
-                      variant="outline"
-                      size="xs"
-                      onClick={() =>
-                        setSalesOrderItemSheet({
-                          open: true,
-                          index: null,
-                        })
-                      }
-                    >
-                      {t("salesOrders.items.add")}
-                    </Button>}
+          {/**
+           * Not mode="array": that re-renders only when its array version
+           * changes, and reset() (on leaving the page) zeroes it, so new
+           * values could be missed. The table follows every value instead. 
+           */}
+          <form.AppField name="items">
+            {(items) => (
+              <>
+                <DetailSection
+                  title={t("salesOrders.sections.items")}
+                  groupClassName="flex"
+                  actions={<Button
+                    variant="outline"
+                    size="xs"
+                    onClick={() =>
+                      setSalesOrderItemSheet({
+                        open: true,
+                        index: null,
+                      })
+                    }
                   >
-                    <SalesOrderItemTable
-                      items={items.state.value.map((item) => ({
+                    {t("salesOrders.items.add")}
+                  </Button>}
+                >
+                  <SalesOrderItemTable
+                    items={items.state.value.map((item) => {
+                      const unit = unitOf(item.productId, item.uomId);
+                      const baseQuantity =
+                        unit && item.quantity != null
+                          ? Math.round(item.quantity * unit.factor * 1e6) / 1e6
+                          : undefined;
+                      // As the backend does: an item saved as it is keeps its price.
+                      const saved = salesOrder?.items.find(
+                        (old) =>
+                          old.position === item.position &&
+                          old.productId === item.productId &&
+                          old.uomId === item.uomId &&
+                          old.quantity === item.quantity,
+                      );
+                      const picked = pickedUnits.get(unitKey(item.productId, item.uomId));
+                      return {
                         ...item,
                         product: productOf(item.productId),
-                      }))}
-                      rowActions={(item, i) => (
-                        <>
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            onClick={() =>
-                              setSalesOrderItemSheet({
-                                open: true,
-                                index: i,
-                              })
-                            }
-                          >
-                            <PencilIcon />
-                          </Button>
-                          <Button variant="ghost" size="icon-sm" onClick={() => items.removeValue(i)}>
-                            <Trash2Icon />
-                          </Button>
-                        </>
-                      )}
-                    />
-                  </DetailSection>
-                  <SalesOrderItemSheet
-                    open={salesOrderItemSheet.open}
-                    takenPositions={items.state.value
-                      .filter((_, i) => i !== salesOrderItemSheet.index)
-                      .map((item) => item.position)}
-                    item={
-                      salesOrderItemSheet.index === null
-                        ? null
-                        : items.state.value[salesOrderItemSheet.index]
-                    }
-                    product={
-                      salesOrderItemSheet.index === null
-                        ? undefined
-                        : productOf(
-                          items.state.value[salesOrderItemSheet.index]
-                            .productId,
-                        )
-                    }
-                    onOpenChange={(open) =>
-                      setSalesOrderItemSheet((item) => ({ ...item, open }))
-                    }
-                    onSave={(item, product) => {
-                      if (product) {
-                        setPickedProducts((picked) =>
-                          new Map(picked).set(product.id, product),
-                        );
-                      }
-                      if (salesOrderItemSheet.index === null) {
-                        items.pushValue(item);
-                      } else {
-                        items.replaceValue(salesOrderItemSheet.index, item);
-                      }
-                    }}
+                        baseQuantity,
+                        baseUomId: unit?.baseUomId,
+                        basePrice: picked?.basePrice ?? savedProduct(item.productId)?.price,
+                        price:
+                          saved?.price ??
+                          (picked?.basePrice && baseQuantity != null
+                            ? multiplyDecimal(picked.basePrice, baseQuantity, 2)
+                            : undefined),
+                      };
+                    })}
+                    rowActions={(item, i) => (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() =>
+                            setSalesOrderItemSheet({
+                              open: true,
+                              index: i,
+                            })
+                          }
+                        >
+                          <PencilIcon />
+                        </Button>
+                        <Button variant="ghost" size="icon-sm" onClick={() => items.removeValue(i)}>
+                          <Trash2Icon />
+                        </Button>
+                      </>
+                    )}
                   />
-                </>
-              )}
-            </form.AppField>
-          )}
+                </DetailSection>
+                <SalesOrderItemSheet
+                  open={salesOrderItemSheet.open}
+                  takenPositions={items.state.value
+                    .filter((_, i) => i !== salesOrderItemSheet.index)
+                    .map((item) => item.position)}
+                  item={
+                    salesOrderItemSheet.index === null
+                      ? null
+                      : items.state.value[salesOrderItemSheet.index]
+                  }
+                  product={
+                    salesOrderItemSheet.index === null
+                      ? undefined
+                      : productOf(
+                        items.state.value[salesOrderItemSheet.index]
+                          .productId,
+                      )
+                  }
+                  onOpenChange={(open) =>
+                    setSalesOrderItemSheet((item) => ({ ...item, open }))
+                  }
+                  onSave={(item, product, unit) => {
+                    if (product) {
+                      setPickedProducts((picked) =>
+                        new Map(picked).set(product.id, product),
+                      );
+                    }
+                    if (unit) {
+                      setPickedUnits((picked) =>
+                        new Map(picked).set(unitKey(item.productId, unit.uomId), unit),
+                      );
+                    }
+                    if (salesOrderItemSheet.index === null) {
+                      items.pushValue(item);
+                    } else {
+                      items.replaceValue(salesOrderItemSheet.index, item);
+                    }
+                  }}
+                />
+              </>
+            )}
+          </form.AppField>
 
           <div className="flex justify-end gap-2">
             <Button

@@ -16,6 +16,7 @@
     "@dafne/backend-crud": "workspace:*",
     "@dafne/backend-database": "workspace:*",
     "@dafne/backend-fsm": "workspace:*",
+    "@dafne/backend-products": "workspace:*",
     "@dafne/backend-session": "workspace:*",
     "@dafne/backend-user-groups": "workspace:*",
     "@dafne/contracts": "workspace:*",

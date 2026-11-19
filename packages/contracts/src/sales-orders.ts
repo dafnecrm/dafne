@@ -10,12 +10,20 @@ import {
   type Page,
 } from './common.ts';
 import { msg } from './messages/index.ts';
+import type { UomSummary } from './uoms.ts';
 
 /* ---------- Requests ---------- */
 
+/**
+ * An item: `quantity` is in `uomId`, the product's base unit when left out,
+ * or a unit the product converts to (GET /products/:id/uoms).
+ */
 export const salesOrderItemBodySchema = z.strictObject({
   productId: requiredId(msg('salesOrders.items.productId.required')),
-  quantity: requiredNumber(msg('salesOrders.items.quantity.required')),
+  quantity: requiredNumber(msg('salesOrders.items.quantity.required')).positive({
+    error: msg('salesOrders.items.quantity.positive'),
+  }),
+  uomId: optionalText(z.string().max(10)),
   position: requiredInt(msg('salesOrders.items.position.required')),
 });
 
@@ -130,9 +138,23 @@ export interface SalesOrderDetailItem {
   productId: number;
   product: {
     id: number,
-    name: string
+    name: string,
+    /** The product's base unit. */
+    uom: UomSummary,
+    /** The product's price, of one base unit (today's: the item's is in `price`). */
+    price: string,
   };
+  /** In `uom`. */
   quantity: number;
+  uomId: string;
+  uom: UomSummary;
+  /** The quantity in the product's base unit. */
+  baseQuantity: number;
+  /**
+   * The item's price: the product's price × the base quantity, as it was
+   * when the item was set (decimal, as text).
+   */
+  price: string;
 }
 export interface SalesOrderDetail extends ListedSalesOrder {
   notes: string | null;
@@ -151,5 +173,8 @@ export interface SalesOrderDetail extends ListedSalesOrder {
 export interface SalesOrderItem {
   productId: number;
   quantity: number;
+  uomId: string;
+  baseQuantity: number;
+  price: string;
   position: number;
 }

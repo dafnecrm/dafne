@@ -9,7 +9,17 @@
     "./actions": "./src/actions.ts",
     "./schema": "./src/schema.ts",
     "./server": "./src/server.ts",
-    "./components/*": "./src/components/*.tsx"
+    "./components/*": "./src/components/*.tsx",
+    "./uoms": "./src/uoms/index.ts",
+    "./uoms/actions": "./src/uoms/actions.ts",
+    "./uoms/schema": "./src/uoms/schema.ts",
+    "./uoms/server": "./src/uoms/server.ts",
+    "./uoms/components/*": "./src/uoms/components/*.tsx",
+    "./uom-conversions": "./src/uom-conversions/index.ts",
+    "./uom-conversions/actions": "./src/uom-conversions/actions.ts",
+    "./uom-conversions/schema": "./src/uom-conversions/schema.ts",
+    "./uom-conversions/server": "./src/uom-conversions/server.ts",
+    "./uom-conversions/components/*": "./src/uom-conversions/components/*.tsx"
   },
   "scripts": {
     "lint": "eslint src",

@@ -1,0 +1,81 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "12962cd7-3122-4f49-bb8e-026d77568654",
+  "prevIds": [
+    "1a973e4f-36ba-462e-9f32-a3a10e8a4581"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "sales",
+        "sales_order_item",
+        "price"
+      ],
+      "writes": [
+        "s|col|sales.sales_order_item.price",
+        "n|col|sales.sales_order_item.price",
+        "e|col|sales.sales_order_item.price"
+      ],
+      "reads": [
+        "n|tbl|sales.sales_order_item",
+        "n|sch|sales"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "sales",
+        "sales_order_item",
+        "total"
+      ],
+      "writes": [
+        "s|col|sales.sales_order_item.total",
+        "n|col|sales.sales_order_item.total",
+        "e|col|sales.sales_order_item.total"
+      ],
+      "reads": [
+        "n|tbl|sales.sales_order_item",
+        "n|sch|sales"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "sales_order_item",
+        "name": "price",
+        "type": "numeric(18,6)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "sales_order_item",
+        "name": "total",
+        "type": "numeric(14,2)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    }
+  ]
+}

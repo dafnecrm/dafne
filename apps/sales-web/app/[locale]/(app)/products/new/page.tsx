@@ -8,7 +8,10 @@ import {
   PageContentHeader,
   PageContentTitle,
 } from "@dafne/frontend-ui/components/page-content";
+import { Suspense } from "react";
+import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { ProductForm } from "@dafne/frontend-products/components/product-form";
+import { listUomOptions } from "@dafne/frontend-products/uoms/server";
 import { productsTable } from "@/lib/products-table";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -25,8 +28,15 @@ export default function NewProductPage() {
         <PageContentDescription>{t("newDescription")}</PageContentDescription>
       </PageContentHeader>
       <PageContentBody>
-        <ProductForm path={productsTable.path} />
+        {/* The units are read per request. */}
+        <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+          <NewProduct />
+        </Suspense>
       </PageContentBody>
     </PageContent>
   );
+}
+
+async function NewProduct() {
+  return <ProductForm units={await listUomOptions()} path={productsTable.path} />;
 }

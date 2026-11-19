@@ -10,11 +10,14 @@ import {
   type SalesOrderDetailItem,
   type SalesOrdersList,
   type ListSalesOrdersQuery,
+  type ProductSaleUnit,
   msg,
+  multiplyDecimal,
   SalesOrderItemBody,
 } from '@dafne/contracts';
 import { PostgresErrorCode, rethrowPostgresError } from '@dafne/backend-common';
 import { InjectStateMachine, StateMachine } from '@dafne/backend-fsm';
+import { ProductsService } from '@dafne/backend-products';
 import type { SessionUser } from '@dafne/backend-session';
 import type { SalesOrderStatus } from '@dafne/contracts';
 import { SALES_ORDER_STATE_MACHINE } from './sales-order.states.js';
@@ -51,6 +54,9 @@ const notDeleted = isNull(salesOrder.deletedAt);
 /** Only the user's ID and name, for "created by" / "updated by". */
 const userSummary = { columns: { id: true, name: true } } as const;
 
+/** Only the unit's ID and name. */
+const uomSummary = { columns: { id: true, name: true } } as const;
+
 /** Only the customer's ID and name, for "customer". */
 const customerSummary = { columns: { id: true, name: true } } as const;
 
@@ -74,7 +80,24 @@ const rethrowConstraint = rethrowPostgresError([
     constraint: /product_id/,
     error: () => new BadRequestException([`items: ${msg('salesOrders.items.productId.notFound')}`]),
   },
+  {
+    code: PostgresErrorCode.FOREIGN_KEY_VIOLATION,
+    constraint: /uom_id/,
+    error: () => new BadRequestException([`items: ${msg('salesOrders.items.uomId.notFound')}`]),
+  },
 ]);
+
+/** An item as saved, with its price: one that comes back unchanged keeps it. */
+interface PricedItem {
+  position: number;
+  productId: number;
+  uomId: string;
+  quantity: number;
+  price: string;
+}
+
+/** Quantities are numeric(18,6): the base one is rounded to that scale. */
+const roundQuantity = (value: number) => Math.round(value * 1e6) / 1e6;
 
 @Injectable()
 export class SalesOrdersService
@@ -97,6 +120,7 @@ export class SalesOrdersService
     @InjectStateMachine(SALES_ORDER_STATE_MACHINE)
     private readonly stateMachine: StateMachine<SalesOrderStatus, number>,
     registry: CrudHooksRegistry,
+    private readonly products: ProductsService,
   ) {
     this.hooks = registry.for(SALES_ORDERS_RESOURCE, { db, load: (id, tx) => this.get(id, tx) });
   }
@@ -165,9 +189,10 @@ export class SalesOrdersService
         customer: customerSummary,
         type: { columns: { id: true, description: true } },
         items: {
-          columns: { orderId: false, quantity: true, position: true, productId: true },
+          columns: { orderId: false },
           with: {
-            product: { columns: { id: true, name: true } },
+            product: { columns: { id: true, name: true, price: true }, with: { uom: uomSummary } },
+            uom: uomSummary,
           },
         },
       },
@@ -188,7 +213,10 @@ export class SalesOrdersService
     const found = await this.db.query.salesOrderItem.findFirst({
       where: { orderId, position, salesOrder: { deletedAt: { isNull: true } } },
       columns: { orderId: false },
-      with: { product: { columns: { id: true, name: true } } },
+      with: {
+        product: { columns: { id: true, name: true, price: true }, with: { uom: uomSummary } },
+        uom: uomSummary,
+      },
     });
     if (!found) {
       throw new NotFoundException(msg('salesOrders.items.notFound'));
@@ -251,8 +279,19 @@ export class SalesOrdersService
         throw new NotFoundException(msg('salesOrders.notFound'));
       }
 
+      // The items are written again: unchanged ones keep their price.
+      const previous = await tx
+        .select({
+          position: salesOrderItem.position,
+          productId: salesOrderItem.productId,
+          uomId: salesOrderItem.uomId,
+          quantity: salesOrderItem.quantity,
+          price: salesOrderItem.price,
+        })
+        .from(salesOrderItem)
+        .where(eq(salesOrderItem.orderId, id));
       await tx.delete(salesOrderItem).where(eq(salesOrderItem.orderId, id));
-      await this.insertSalesOrderItems(tx, id, body.items);
+      await this.insertSalesOrderItems(tx, id, body.items, previous);
       
       // After the items: the guards see the order as saved.
       if (body.status) {
@@ -288,17 +327,70 @@ export class SalesOrdersService
     return this.get(id);
   }
 
-  async insertSalesOrderItems(tx: Transaction, salesOrderId: number, items: SalesOrderItemBody[]) {
+  /**
+   * Inserts the items of an order. Each quantity is in the item's unit (the
+   * product's base unit when left out), which must be one the product is
+   * sold in: its base quantity and price (the product's price × the base
+   * quantity) are computed from it. An item of `previous` with the same
+   * position, product, unit and quantity keeps its price, so saving an
+   * order again doesn't reprice it. 400 when the product doesn't exist or can't be sold in that
+   * unit.
+   */
+  async insertSalesOrderItems(
+    tx: Transaction,
+    salesOrderId: number,
+    items: SalesOrderItemBody[],
+    previous: PricedItem[] = [],
+  ) {
     if (!items.length) {
       return;
     }
-    await tx.insert(schema.salesOrderItem).values(
-      items.map((item) => ({
+    // Each product's units, read once however many items have it.
+    const units = new Map<number, Promise<ProductSaleUnit[] | null>>();
+    const unitsOf = (productId: number) => {
+      let found = units.get(productId);
+      if (!found) {
+        found = this.products.units(productId, tx).catch((error: unknown) => {
+          if (error instanceof NotFoundException) {
+            return null;
+          }
+          throw error;
+        });
+        units.set(productId, found);
+      }
+      return found;
+    };
+
+    const rows = [];
+    for (const [index, item] of items.entries()) {
+      const productUnits = await unitsOf(item.productId);
+      if (!productUnits) {
+        throw new BadRequestException([`items.${index}.productId: ${msg('salesOrders.items.productId.notFound')}`]);
+      }
+      // The base unit comes first.
+      const unit = item.uomId ? productUnits.find((candidate) => candidate.uomId === item.uomId) : productUnits[0];
+      if (!unit) {
+        throw new BadRequestException([`items.${index}.uomId: ${msg('salesOrders.items.uomId.notConvertible')}`]);
+      }
+      const baseQuantity = roundQuantity(item.quantity * unit.factor);
+      const kept = previous.find(
+        (old) =>
+          old.position === item.position &&
+          old.productId === item.productId &&
+          old.uomId === unit.uomId &&
+          old.quantity === item.quantity,
+      );
+      rows.push({
         orderId: salesOrderId,
         productId: item.productId,
         quantity: item.quantity,
+        uomId: unit.uomId,
+        baseQuantity,
+        // The base unit (its price, the product's) comes first.
+        price: kept?.price ?? multiplyDecimal(productUnits[0].price, baseQuantity, 2),
         position: item.position,
-      })),
-    );
+      });
+    }
+    await tx.insert(schema.salesOrderItem).values(rows);
   }
 }

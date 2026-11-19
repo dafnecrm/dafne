@@ -42,6 +42,17 @@ export const it: ContractMessages = {
   products: {
     notFound: 'Prodotto non trovato',
     name: { required: 'Inserisci il nome' },
+    uomId: { required: "Scegli l'unità di misura", notFound: "Scegli un'unità di misura dall'elenco" },
+    units: {
+      uomId: {
+        required: "Scegli l'unità",
+        base: "L'unità di base è già un'unità del prodotto",
+        duplicate: 'Due unità sono uguali',
+        notFound: "Scegli un'unità dall'elenco",
+        notConvertible: "L'unità di base non ha una conversione verso questa unità",
+      },
+    },
+    used: 'Il prodotto è utilizzato.',
   },
   users: {
     notFound: 'Utente non trovato',
@@ -81,7 +92,11 @@ export const it: ContractMessages = {
         required: 'Inserisci il prodotto',
         notFound: 'Scegli un prodotto esistente'
       },
-      quantity: { required: 'Inserisci la quantità' },
+      quantity: { required: 'Inserisci la quantità', positive: 'La quantità deve essere maggiore di zero' },
+      uomId: {
+        notFound: "Scegli un'unità di misura dall'elenco",
+        notConvertible: 'Il prodotto non si vende in questa unità',
+      },
       enterAtLeastOneItem: 'Inserisci almeno un articolo',
     },
     typeId: {
@@ -154,4 +169,19 @@ export const it: ContractMessages = {
     noAnswer: "L'assistente non ha risposto: prova a chiedere in altro modo",
   },
   userGroups: { notFound: 'Gruppo non trovato', name: { required: 'Inserisci il nome' } },
+  uoms: {
+    notFound: 'Unità di misura non trovata',
+    id: { required: 'Inserisci il simbolo', taken: 'Questo simbolo è già in uso' },
+    name: { required: 'Inserisci il nome' },
+    kind: { required: 'Scegli il tipo' },
+    factor: { required: 'Inserisci il fattore', positive: 'Il fattore deve essere maggiore di zero' },
+  },
+  uomConversions: {
+    notFound: 'Conversione non trovata',
+    fromUomId: { required: "Scegli l'unità" },
+    toUomId: { required: "Scegli l'unità", self: "Un'unità non può convertirsi in sé stessa" },
+    uomNotFound: "Scegli un'unità dall'elenco",
+    otherKind: 'Le due unità devono essere dello stesso tipo',
+    taken: 'Queste due unità hanno già una conversione',
+  },
 };

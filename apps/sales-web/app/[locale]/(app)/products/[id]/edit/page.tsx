@@ -12,6 +12,7 @@ import {
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { ProductForm } from "@dafne/frontend-products/components/product-form";
 import { productsTable } from "@/lib/products-table";
+import { listUomOptions } from "@dafne/frontend-products/uoms/server";
 import { loadProduct } from "../load-product";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -32,7 +33,8 @@ export default function EditProductPage({
 async function EditProduct({
   params,
 }: Pick<PageProps<"/[locale]/products/[id]/edit">, "params">) {
-  const product = await loadProduct((await params).id);
+  const { id } = await params;
+  const [product, units] = await Promise.all([loadProduct(id), listUomOptions()]);
   const t = await getTranslations();
 
   return (
@@ -50,7 +52,7 @@ async function EditProduct({
         </PageContentDescription>
       </PageContentHeader>
       <PageContentBody>
-        <ProductForm product={product} path={productsTable.path} />
+        <ProductForm product={product} units={units} path={productsTable.path} />
       </PageContentBody>
     </PageContent>
   );

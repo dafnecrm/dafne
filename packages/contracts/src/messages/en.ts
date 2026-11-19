@@ -45,6 +45,17 @@ export const en = {
   products: {
     notFound: 'Product not found',
     name: { required: 'Enter the name' },
+    uomId: { required: 'Choose the unit of measure', notFound: 'Choose a unit of measure from the list' },
+    units: {
+      uomId: {
+        required: 'Choose the unit',
+        base: 'The base unit is already a unit of the product',
+        duplicate: 'Two units are the same',
+        notFound: 'Choose a unit from the list',
+        notConvertible: 'The base unit has no conversion to this unit',
+      },
+    },
+    used: 'Product is used.',
   },
   users: {
     notFound: 'User not found',
@@ -84,7 +95,11 @@ export const en = {
         required: 'Enter the product id',
         notFound: 'Choose a product from the list'
       },
-      quantity: { required: 'Enter the quantity' },
+      quantity: { required: 'Enter the quantity', positive: 'The quantity must be greater than zero' },
+      uomId: {
+        notFound: 'Choose a unit of measure from the list',
+        notConvertible: "The product can't be sold in this unit",
+      },
       enterAtLeastOneItem: 'Enter at least one item',
     },
     typeId: {
@@ -157,6 +172,21 @@ export const en = {
     noAnswer: 'The assistant gave no answer: try asking in other words',
   },
   userGroups: { notFound: 'User group not found', name: { required: 'Enter the name' } },
+  uoms: {
+    notFound: 'Unit of measure not found',
+    id: { required: 'Enter the symbol', taken: 'This symbol is already in use' },
+    name: { required: 'Enter the name' },
+    kind: { required: 'Choose the kind' },
+    factor: { required: 'Enter the factor', positive: 'The factor must be greater than zero' },
+  },
+  uomConversions: {
+    notFound: 'Conversion not found',
+    fromUomId: { required: 'Choose the unit' },
+    toUomId: { required: 'Choose the unit', self: 'A unit cannot convert to itself' },
+    uomNotFound: 'Choose a unit from the list',
+    otherKind: 'Both units must be of the same kind',
+    taken: 'These two units already have a conversion',
+  },
 };
 
 /** The shape every language must have: same keys, any text. */

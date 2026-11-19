@@ -25,6 +25,15 @@ describe('salesOrderBodySchema', () => {
     expect(failedFields({ customerId: 1, items: [item(null)], typeId: 'T1' })).toEqual(['items.0.position']);
   });
 
+  it('takes an item unit (blank: the base one) and a positive quantity', () => {
+    const item = { position: 1, productId: 1, quantity: '2.5', uomId: ' box ' };
+    expect(salesOrderBodySchema.parse({ customerId: 1, items: [item], typeId: 'T1' }).items).toEqual([
+      { position: 1, productId: 1, quantity: 2.5, uomId: 'box' },
+    ]);
+    expect(salesOrderBodySchema.parse({ customerId: 1, items: [{ ...item, uomId: '' }], typeId: 'T1' }).items[0].uomId).toBeNull();
+    expect(failedFields({ customerId: 1, items: [{ ...item, quantity: 0 }], typeId: 'T1' })).toEqual(['items.0.quantity']);
+  });
+
   it('takes the customer id as a number or as text, and nothing else', () => {
     expect(salesOrderBodySchema.parse({ customerId: 7, typeId: 'T1' }).customerId).toBe(7);
     for (const customerId of ['', 'abc', '1.5', '0', -1]) {

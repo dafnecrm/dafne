@@ -22,6 +22,7 @@ import {
   type ChangesList,
   type ProductBody,
   type ProductDetail,
+  type ProductSaleUnit,
   type ProductsList,
   type ListProductsQuery,
 } from '@dafne/contracts';
@@ -58,6 +59,16 @@ export class ProductsController
   @Get(':id')
   get(@Param('id', IdPipe) id: number): Promise<ProductDetail> {
     return this.productsService.get(id);
+  }
+
+  /**
+   * The units the product can be sold in, each with how many of its base
+   * unit one of them is (the base unit first). 404 if it doesn't exist or
+   * is deleted.
+   */
+  @Get(':id/uoms')
+  units(@Param('id', IdPipe) id: number): Promise<ProductSaleUnit[]> {
+    return this.productsService.units(id);
   }
 
   /** The changes of a product, newest first. 404 if it doesn't exist or is deleted. */

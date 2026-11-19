@@ -24,13 +24,23 @@ export const en = {
   notFound: "This product no longer exists.",
   sections: {
     details: "Details",
+    units: "Units",
   },
   fields: {
     name: "Name",
     price: "Price",
     description: "Description",
+    uomId: "Unit of measure",
     createdAt: "Added",
     id: "ID",
+  },
+  units: {
+    hint: "Units the product is also sold in besides its unit of measure: the ones it has a conversion with (Products › Conversions).",
+    add: "Add unit",
+    remove: "Remove unit",
+    uomId: "Unit",
+    none: "No units of its own.",
+    equals: "1 {unit} = {factor} {base}",
   },
 };
 

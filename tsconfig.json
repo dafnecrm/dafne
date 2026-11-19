@@ -118,6 +118,9 @@
     },
     {
       "path": "./packages/frontend/permissions"
+    },
+    {
+      "path": "./packages/backend/uom"
     }
   ]
 }

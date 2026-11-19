@@ -9,5 +9,9 @@ export const PRODUCTS_RESOURCE = 'products';
  * logged (`map` logs a field otherwise than as it is, e.g. a list sorted).
  */
 export const PRODUCT_CHANGELOG: ChangelogOptions<ProductDetail> = {
-  fields: ['name', 'description', 'price'],
+  fields: ['name', 'description', 'price', 'uomId', 'units'],
+  map: {
+    // The product's own data: its units' ids, sorted (factors are the conversions').
+    units: (units) => units.map(({ uomId }) => uomId).sort(),
+  },
 };

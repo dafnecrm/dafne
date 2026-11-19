@@ -1,0 +1,1100 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "3b156cef-be6c-46a9-a137-c6a4b309d726",
+  "prevIds": [
+    "47f57d34-e9bf-487d-967e-6084df03b0f1"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "sales",
+        "product_uom"
+      ],
+      "writes": [
+        "s|tbl|sales.product_uom",
+        "n|tbl|sales.product_uom",
+        "e|tbl|sales.product_uom",
+        "n|rel|sales.product_uom",
+        "n|type|sales.product_uom",
+        "n|rel|sales.product_uom_pkey"
+      ],
+      "reads": [
+        "n|sch|sales"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "sales",
+        "uom"
+      ],
+      "writes": [
+        "s|tbl|sales.uom",
+        "n|tbl|sales.uom",
+        "e|tbl|sales.uom",
+        "n|rel|sales.uom",
+        "n|type|sales.uom",
+        "n|rel|sales.uom_pkey"
+      ],
+      "reads": [
+        "n|sch|sales"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "sales",
+        "uom_conversion"
+      ],
+      "writes": [
+        "s|tbl|sales.uom_conversion",
+        "n|tbl|sales.uom_conversion",
+        "e|tbl|sales.uom_conversion",
+        "n|rel|sales.uom_conversion",
+        "n|type|sales.uom_conversion",
+        "n|rel|sales.uom_conversion_pkey"
+      ],
+      "reads": [
+        "n|sch|sales"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "sales",
+        "product",
+        "uom_id"
+      ],
+      "writes": [
+        "s|col|sales.product.uom_id",
+        "n|col|sales.product.uom_id",
+        "e|col|sales.product.uom_id"
+      ],
+      "reads": [
+        "n|tbl|sales.product",
+        "n|sch|sales"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "sales",
+        "sales_order_item",
+        "uom_id"
+      ],
+      "writes": [
+        "s|col|sales.sales_order_item.uom_id",
+        "n|col|sales.sales_order_item.uom_id",
+        "e|col|sales.sales_order_item.uom_id"
+      ],
+      "reads": [
+        "n|tbl|sales.sales_order_item",
+        "n|sch|sales"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "sales",
+        "sales_order_item",
+        "base_quantity"
+      ],
+      "writes": [
+        "s|col|sales.sales_order_item.base_quantity",
+        "n|col|sales.sales_order_item.base_quantity",
+        "e|col|sales.sales_order_item.base_quantity"
+      ],
+      "reads": [
+        "n|tbl|sales.sales_order_item",
+        "n|sch|sales"
+      ]
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "sales",
+        "sales_order_item",
+        "quantity"
+      ],
+      "writes": [
+        "s|colprop|sales.sales_order_item.quantity.type",
+        "s|colprop|sales.sales_order_item.quantity.default"
+      ],
+      "reads": [
+        "n|tbl|sales.sales_order_item",
+        "n|sch|sales",
+        "n|col|sales.sales_order_item.quantity"
+      ],
+      "sqlHash": "57571cb706aff8fd"
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "sales",
+        "product",
+        "product_uomId_idx"
+      ],
+      "writes": [
+        "s|idx|sales.product_uomId_idx",
+        "n|idx|sales.product_uomId_idx",
+        "e|idx|sales.product_uomId_idx",
+        "n|rel|sales.product_uomId_idx"
+      ],
+      "reads": [
+        "n|tbl|sales.product",
+        "n|sch|sales",
+        "n|col|sales.product.uom_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "sales",
+        "product_uom",
+        "product_uom_uomId_idx"
+      ],
+      "writes": [
+        "s|idx|sales.product_uom_uomId_idx",
+        "n|idx|sales.product_uom_uomId_idx",
+        "e|idx|sales.product_uom_uomId_idx",
+        "n|rel|sales.product_uom_uomId_idx"
+      ],
+      "reads": [
+        "n|tbl|sales.product_uom",
+        "n|sch|sales",
+        "n|col|sales.product_uom.uom_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "sales",
+        "sales_order_item",
+        "sales_order_item_uomId_idx"
+      ],
+      "writes": [
+        "s|idx|sales.sales_order_item_uomId_idx",
+        "n|idx|sales.sales_order_item_uomId_idx",
+        "e|idx|sales.sales_order_item_uomId_idx",
+        "n|rel|sales.sales_order_item_uomId_idx"
+      ],
+      "reads": [
+        "n|tbl|sales.sales_order_item",
+        "n|sch|sales",
+        "n|col|sales.sales_order_item.uom_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "sales",
+        "uom",
+        "uom_deletedAt_idx"
+      ],
+      "writes": [
+        "s|idx|sales.uom_deletedAt_idx",
+        "n|idx|sales.uom_deletedAt_idx",
+        "e|idx|sales.uom_deletedAt_idx",
+        "n|rel|sales.uom_deletedAt_idx"
+      ],
+      "reads": [
+        "n|tbl|sales.uom",
+        "n|sch|sales",
+        "n|col|sales.uom.deleted_at"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "sales",
+        "uom_conversion",
+        "uom_conversion_toUomId_idx"
+      ],
+      "writes": [
+        "s|idx|sales.uom_conversion_toUomId_idx",
+        "n|idx|sales.uom_conversion_toUomId_idx",
+        "e|idx|sales.uom_conversion_toUomId_idx",
+        "n|rel|sales.uom_conversion_toUomId_idx"
+      ],
+      "reads": [
+        "n|tbl|sales.uom_conversion",
+        "n|sch|sales",
+        "n|col|sales.uom_conversion.to_uom_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "product"
+      ],
+      "writes": [
+        "s|fk|sales.product.product_uom_id_uom_id_fkey",
+        "n|fk|sales.product.product_uom_id_uom_id_fkey",
+        "e|fk|sales.product.product_uom_id_uom_id_fkey",
+        "n|con|sales.product.product_uom_id_uom_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.product",
+        "n|sch|sales",
+        "n|tbl|sales.uom",
+        "n|sch|sales",
+        "n|col|sales.product.uom_id",
+        "n|col|sales.uom.id",
+        "e|uniqueness|sales.uom.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "product_uom"
+      ],
+      "writes": [
+        "s|fk|sales.product_uom.product_uom_product_id_product_id_fkey",
+        "n|fk|sales.product_uom.product_uom_product_id_product_id_fkey",
+        "e|fk|sales.product_uom.product_uom_product_id_product_id_fkey",
+        "n|con|sales.product_uom.product_uom_product_id_product_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.product_uom",
+        "n|sch|sales",
+        "n|tbl|sales.product",
+        "n|sch|sales",
+        "n|col|sales.product_uom.product_id",
+        "n|col|sales.product.id",
+        "e|uniqueness|sales.product.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "product_uom"
+      ],
+      "writes": [
+        "s|fk|sales.product_uom.product_uom_uom_id_uom_id_fkey",
+        "n|fk|sales.product_uom.product_uom_uom_id_uom_id_fkey",
+        "e|fk|sales.product_uom.product_uom_uom_id_uom_id_fkey",
+        "n|con|sales.product_uom.product_uom_uom_id_uom_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.product_uom",
+        "n|sch|sales",
+        "n|tbl|sales.uom",
+        "n|sch|sales",
+        "n|col|sales.product_uom.uom_id",
+        "n|col|sales.uom.id",
+        "e|uniqueness|sales.uom.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "sales_order_item"
+      ],
+      "writes": [
+        "s|fk|sales.sales_order_item.sales_order_item_uom_id_uom_id_fkey",
+        "n|fk|sales.sales_order_item.sales_order_item_uom_id_uom_id_fkey",
+        "e|fk|sales.sales_order_item.sales_order_item_uom_id_uom_id_fkey",
+        "n|con|sales.sales_order_item.sales_order_item_uom_id_uom_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.sales_order_item",
+        "n|sch|sales",
+        "n|tbl|sales.uom",
+        "n|sch|sales",
+        "n|col|sales.sales_order_item.uom_id",
+        "n|col|sales.uom.id",
+        "e|uniqueness|sales.uom.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "uom"
+      ],
+      "writes": [
+        "s|fk|sales.uom.uom_created_by_id_user_id_fkey",
+        "n|fk|sales.uom.uom_created_by_id_user_id_fkey",
+        "e|fk|sales.uom.uom_created_by_id_user_id_fkey",
+        "n|con|sales.uom.uom_created_by_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.uom",
+        "n|sch|sales",
+        "n|tbl|auth.user",
+        "n|sch|auth",
+        "n|col|sales.uom.created_by_id",
+        "n|col|auth.user.id",
+        "e|uniqueness|auth.user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "uom"
+      ],
+      "writes": [
+        "s|fk|sales.uom.uom_updated_by_id_user_id_fkey",
+        "n|fk|sales.uom.uom_updated_by_id_user_id_fkey",
+        "e|fk|sales.uom.uom_updated_by_id_user_id_fkey",
+        "n|con|sales.uom.uom_updated_by_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.uom",
+        "n|sch|sales",
+        "n|tbl|auth.user",
+        "n|sch|auth",
+        "n|col|sales.uom.updated_by_id",
+        "n|col|auth.user.id",
+        "e|uniqueness|auth.user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "uom_conversion"
+      ],
+      "writes": [
+        "s|fk|sales.uom_conversion.uom_conversion_from_uom_id_uom_id_fkey",
+        "n|fk|sales.uom_conversion.uom_conversion_from_uom_id_uom_id_fkey",
+        "e|fk|sales.uom_conversion.uom_conversion_from_uom_id_uom_id_fkey",
+        "n|con|sales.uom_conversion.uom_conversion_from_uom_id_uom_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.uom_conversion",
+        "n|sch|sales",
+        "n|tbl|sales.uom",
+        "n|sch|sales",
+        "n|col|sales.uom_conversion.from_uom_id",
+        "n|col|sales.uom.id",
+        "e|uniqueness|sales.uom.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "uom_conversion"
+      ],
+      "writes": [
+        "s|fk|sales.uom_conversion.uom_conversion_to_uom_id_uom_id_fkey",
+        "n|fk|sales.uom_conversion.uom_conversion_to_uom_id_uom_id_fkey",
+        "e|fk|sales.uom_conversion.uom_conversion_to_uom_id_uom_id_fkey",
+        "n|con|sales.uom_conversion.uom_conversion_to_uom_id_uom_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.uom_conversion",
+        "n|sch|sales",
+        "n|tbl|sales.uom",
+        "n|sch|sales",
+        "n|col|sales.uom_conversion.to_uom_id",
+        "n|col|sales.uom.id",
+        "e|uniqueness|sales.uom.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "name": "product_uom",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "name": "uom",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "name": "uom_conversion",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "product",
+        "name": "uom_id",
+        "type": "varchar(10)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "product_uom",
+        "name": "product_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "product_uom",
+        "name": "uom_id",
+        "type": "varchar(10)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "product_uom",
+        "name": "factor",
+        "type": "numeric(20,10)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "sales_order_item",
+        "name": "uom_id",
+        "type": "varchar(10)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "sales_order_item",
+        "name": "base_quantity",
+        "type": "numeric(18,6)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "uom",
+        "name": "id",
+        "type": "varchar(10)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "uom",
+        "name": "name",
+        "type": "varchar(100)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "uom",
+        "name": "description",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "uom",
+        "name": "kind",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "uom",
+        "name": "created_at",
+        "type": "timestamp(3) with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "uom",
+        "name": "updated_at",
+        "type": "timestamp(3) with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "uom",
+        "name": "deleted_at",
+        "type": "timestamp(3) with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "uom",
+        "name": "created_by_id",
+        "type": "varchar(36)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "uom",
+        "name": "updated_by_id",
+        "type": "varchar(36)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "uom_conversion",
+        "name": "from_uom_id",
+        "type": "varchar(10)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "uom_conversion",
+        "name": "to_uom_id",
+        "type": "varchar(10)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "uom_conversion",
+        "name": "factor",
+        "type": "numeric(20,10)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "product",
+        "name": "product_uomId_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "uom_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "product_uom",
+        "name": "product_uom_uomId_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "uom_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "sales_order_item",
+        "name": "sales_order_item_uomId_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "uom_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "uom",
+        "name": "uom_deletedAt_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "deleted_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "uom_conversion",
+        "name": "uom_conversion_toUomId_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "to_uom_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "product",
+        "name": "product_uom_id_uom_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "uom_id"
+        ],
+        "schemaTo": "sales",
+        "tableTo": "uom",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "RESTRICT",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "product_uom",
+        "name": "product_uom_product_id_product_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "product_id"
+        ],
+        "schemaTo": "sales",
+        "tableTo": "product",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "product_uom",
+        "name": "product_uom_uom_id_uom_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "uom_id"
+        ],
+        "schemaTo": "sales",
+        "tableTo": "uom",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "RESTRICT",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "sales_order_item",
+        "name": "sales_order_item_uom_id_uom_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "uom_id"
+        ],
+        "schemaTo": "sales",
+        "tableTo": "uom",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "RESTRICT",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "uom",
+        "name": "uom_created_by_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "created_by_id"
+        ],
+        "schemaTo": "auth",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "uom",
+        "name": "uom_updated_by_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "updated_by_id"
+        ],
+        "schemaTo": "auth",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "uom_conversion",
+        "name": "uom_conversion_from_uom_id_uom_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "from_uom_id"
+        ],
+        "schemaTo": "sales",
+        "tableTo": "uom",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "uom_conversion",
+        "name": "uom_conversion_to_uom_id_uom_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "to_uom_id"
+        ],
+        "schemaTo": "sales",
+        "tableTo": "uom",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "product_uom",
+        "name": "product_uom_pkey",
+        "columns": [
+          "product_id",
+          "uom_id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "uom_conversion",
+        "name": "uom_conversion_pkey",
+        "columns": [
+          "from_uom_id",
+          "to_uom_id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "uom",
+        "name": "uom_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "product_uom",
+        "name": "product_uom_factor_positive",
+        "value": "\"factor\" > 0",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "uom_conversion",
+        "name": "uom_conversion_factor_positive",
+        "value": "\"factor\" > 0",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "uom_conversion",
+        "name": "uom_conversion_distinct",
+        "value": "\"from_uom_id\" <> \"to_uom_id\"",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"sales\",\"sales_order_item\",\"quantity\"]",
+      "set": {
+        "type": "numeric(18,6)"
+      }
+    }
+  ]
+}

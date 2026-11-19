@@ -1,13 +1,16 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { PERMISSION_KEYS } from '@dafne/contracts';
 
-// The migration that gives "Tutti gli utenti" every permission lists them
-// by hand: it must list every one the catalog had then.
-describe('group-permissions migration', () => {
+// "Tutti gli utenti" has every permission: the group-permissions migration
+// gave it the catalog of then, and each permission added since comes with
+// a migration that gives it too.
+describe('permission seeds', () => {
   it('seeds every permission of the catalog', () => {
     const dir = new URL('../migrations/', import.meta.url);
-    const folder = readdirSync(dir).find((name) => name.endsWith('_group-permissions'))!;
-    const sql = readFileSync(new URL(`${folder}/migration.sql`, dir), 'utf8');
+    const sql = readdirSync(dir)
+      .filter((name) => /^\d{14}_/.test(name))
+      .map((folder) => readFileSync(new URL(`${folder}/migration.sql`, dir), 'utf8'))
+      .join('\n');
     for (const key of PERMISSION_KEYS) {
       expect(sql).toContain(`'${key}'`);
     }

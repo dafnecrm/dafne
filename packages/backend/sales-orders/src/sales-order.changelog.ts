@@ -14,7 +14,7 @@ export const SALES_ORDER_CHANGELOG: ChangelogOptions<SalesOrderDetail> = {
     // The order's own data, by position: not the product's name.
     items: (items) =>
       items
-        .map(({ position, productId, quantity }) => ({ position, productId, quantity }))
+        .map(({ position, productId, quantity, uomId }) => ({ position, productId, quantity, uomId }))
         .sort((a, b) => a.position - b.position),
   },
 };
