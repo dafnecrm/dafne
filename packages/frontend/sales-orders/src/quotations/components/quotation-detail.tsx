@@ -17,7 +17,6 @@ import { useLocale, useTranslations } from "next-intl";
 import CopyButton from "@dafne/frontend-ui/components/copy-button";
 import { Detail, DetailSection } from "@dafne/frontend-ui/components/detail";
 import { LocalDate } from "@dafne/frontend-ui/components/local-date";
-import { TextEditorContent } from "@dafne/frontend-ui/components/text-editor";
 import { useOptionLabel } from "@dafne/frontend-ui/hooks/use-option-labels";
 import { formatCurrency } from "@dafne/frontend-ui/lib/currencies";
 import { SalesOrderItemTable } from "../../components/sales-order-items-table.tsx";
@@ -91,7 +90,7 @@ export function QuotationDetails({
         )}
         <Detail icon={TextIcon} label={t("quotations.fields.notes")} wide>
           {quotation.notes ? (
-            <TextEditorContent html={quotation.notes} className="font-normal" />
+            <span className="font-normal whitespace-pre-wrap">{quotation.notes}</span>
           ) : (
             "—"
           )}

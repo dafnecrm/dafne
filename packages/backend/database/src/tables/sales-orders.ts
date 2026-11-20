@@ -26,12 +26,16 @@ export const salesOrder = salesSchema.table(
   'sales_order',
   {
     id: serial('id').primaryKey(),
+    /**
+     * Sent by the form, but moved by the state machine, never written
+     * by the insert or update. @api nosave
+     */
     status: text('status', {
       enum: ['draft', 'open', 'completed', 'cancelled', 'rejected'],
     })
       .default('draft')
       .notNull(),
-    /** @api detail @form editor */
+    /** @api detail */
     notes: text('notes'),
     customerId: integer('customer_id')
       .notNull()
@@ -41,7 +45,7 @@ export const salesOrder = salesSchema.table(
       .references(() => salesOrderType.id, { onDelete: 'restrict' }),
     /**
      * The quotation it was made from, when accepted; null for an order
-     * entered on its own. @api output
+     * entered on its own. @api readonly detail
      */
     quotationId: integer('quotation_id').references(() => quotation.id, {
       onDelete: 'restrict',
@@ -91,11 +95,14 @@ export const salesOrderItem = salesSchema.table(
       scale: 6,
       mode: 'number',
     }).notNull(),
-    /** The product's base unit, or one that converts to it. */
+    /**
+     * The product's base unit, or one that converts to it: the base unit
+     * when the body leaves it out. @api optional
+     */
     uomId: varchar('uom_id', { length: 10 })
       .notNull()
       .references(() => uom.id, { onDelete: 'restrict' }),
-    /** The quantity in the product's base unit, computed on save. @api output */
+    /** The quantity in the product's base unit, computed on save. @api readonly */
     baseQuantity: numeric('base_quantity', {
       precision: 18,
       scale: 6,
@@ -103,7 +110,7 @@ export const salesOrderItem = salesSchema.table(
     }).notNull(),
     /**
      * The item's price: the product's price (of its base unit) × the base
-     * quantity, when the item was set. @api output
+     * quantity, when the item was set. @api readonly
      */
     price: numeric('price', { precision: 14, scale: 2, mode: 'number' }).notNull(),
     /** Chosen by the user, not the list's order. @api input */

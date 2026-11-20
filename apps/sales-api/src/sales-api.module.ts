@@ -19,6 +19,7 @@ import { SalesOrdersModule, SalesOrderTypesModule, QuotationsModule } from '@daf
 import { AssistantModule, AssistantProvidersModule, AssistantModelsModule, AssistantAgentsModule } from '@dafne/backend-assistant';
 import { UomsModule, UomConversionsModule } from '@dafne/backend-uom';
 import { PermissionsModule } from '@dafne/backend-permissions';
+import { DocumentsModule } from '@dafne/backend-documents';
 
 @Module({
   imports: [
@@ -58,6 +59,7 @@ import { PermissionsModule } from '@dafne/backend-permissions';
     UomConversionsModule,
     PermissionsModule,
     QuotationsModule,
+    DocumentsModule,
   ],
   controllers: [ApiController],
   providers: [

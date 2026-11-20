@@ -3,7 +3,7 @@
 Calls the Nest API (`apps/sales-api`) from the frontend's server. Ships
 TypeScript sources, compiled by Next. Relative imports end in `.ts`.
 
-- `.`: `BackendError` (status + message) and `errorMessage`; no Next imports,
+- `.`: `BackendError` (status, message and the error's `body`) and `errorMessage`; no Next imports,
   safe in client code.
 - `./server`: `backendFetch(path, init)` (and `authFetch`, the same for
   `apps/auth`: `AUTH_URL`) (forwards the browser's cookies,

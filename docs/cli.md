@@ -340,7 +340,9 @@ from the API are removed, hand-written validation and members that aren't
 columns are kept (and listed). Then the service's queries (list select,
 detail columns, insert, update) and the sample bodies of the specs.
 `/** @api <tag> */` above a column decides where it goes: `internal`,
-`readonly`, `writeonly`, `detail`, `filter`, `nofilter`, `sort`, `nosort`.
+`readonly`, `writeonly`, `detail`, `filter`, `nofilter`, `sort`, `nosort`,
+`input`, `optional`, `nosave` (each in [Column tags](column-tags.md), with
+the defaults and `@form plain | editor`).
 The `id` is always a filter and a sort field, and every key to another
 record (`customerId`) a filter: these match exactly (`?id=12`,
 `?customerId=3`; `EXACT_FILTERS` in the service, which the sync keeps in
@@ -450,7 +452,7 @@ so there is no hosts file to edit.
 ### Development services
 
 Before the apps (and the migrations they run first), `dafne dev` starts
-the services of `compose.yaml`, PostgreSQL 18 and Redis 8
+the services of `compose.yaml`, PostgreSQL 18, Redis 8 and Gotenberg 8
 (`src/core/dev-services.ts`: `docker compose up -d --wait`, which returns
 at once when they run already). They keep running after `dafne dev`
 stops. Without Docker, or when a port is held by another server (e.g.
@@ -460,11 +462,12 @@ their `.env` points to. `--no-services` skips them.
 ```sh
 dafne services up              # start them, wait until healthy
 dafne services status          # ports and health
-dafne services logs [db|redis] # follow the logs
+dafne services logs [db|redis|gotenberg] # follow the logs
 dafne services down [-v]       # stop them (-v: and delete the data)
 ```
 
-`DAFNE_DB_PORT` / `DAFNE_REDIS_PORT` move them off 5432 / 6379.
+`DAFNE_DB_PORT` / `DAFNE_REDIS_PORT` / `DAFNE_GOTENBERG_PORT` move them
+off 5432 / 6379 / 3100.
 
 | Option            | Meaning                                                   |
 | ----------------- | --------------------------------------------------------- |

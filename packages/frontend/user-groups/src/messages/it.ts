@@ -30,7 +30,7 @@ export const it: UserGroupsMessages = {
   },
   permissions: {
     hint: "Cosa possono fare i suoi membri, oltre a leggere. Gli admin possono comunque fare tutto.",
-    subjects: { Customer: "Clienti", Activity: "Attività", Product: "Prodotti", Uom: "Unità di misura", UomConversion: "Conversioni di unità", SalesOrder: "Ordini di vendita", Quotation: "Offerte" },
+    subjects: { Customer: "Clienti", Activity: "Attività", Product: "Prodotti", Uom: "Unità di misura", UomConversion: "Conversioni di unità", SalesOrder: "Ordini di vendita", Quotation: "Offerte", DocumentTemplate: "Modelli di documento" },
     actions: { create: "Creare", update: "Modificare", delete: "Eliminare", close: "Chiudere / riaprire", changeStatus: "Cambiare stato" },
     selectAll: "Seleziona tutti",
     selectNone: "Deseleziona tutti",

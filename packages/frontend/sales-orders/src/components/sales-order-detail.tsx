@@ -15,7 +15,6 @@ import { useLocale, useTranslations } from "next-intl";
 import { Detail, DetailSection } from "@dafne/frontend-ui/components/detail";
 import { LocalDate } from "@dafne/frontend-ui/components/local-date";
 import type { SalesOrderDetail } from "../types.ts";
-import { TextEditorContent } from "@dafne/frontend-ui/components/text-editor";
 import Link from "next/link";
 import { SalesOrderItemTable } from "./sales-order-items-table.tsx";
 import { SALES_ORDER_STATUS_OPTIONS } from "../sales-orders-table.ts";
@@ -87,10 +86,9 @@ export function SalesOrderDetails({
         )}
         <Detail icon={TextIcon} label={t("salesOrders.fields.notes")} wide>
           {salesOrder.notes ? (
-            <TextEditorContent
-              html={salesOrder.notes}
-              className="font-normal"
-            />
+            <span className="font-normal whitespace-pre-wrap">
+              {salesOrder.notes}
+            </span>
           ) : (
             "—"
           )}

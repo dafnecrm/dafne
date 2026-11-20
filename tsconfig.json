@@ -127,6 +127,9 @@
     },
     {
       "path": "./packages/frontend/users"
+    },
+    {
+      "path": "./packages/backend/documents"
     }
   ]
 }

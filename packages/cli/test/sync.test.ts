@@ -148,6 +148,34 @@ describe('syncContract', () => {
     expect(report.unknown).toEqual(['ListedActivity: legacy']);
   });
 
+  it('makes an @api optional column nullable in the body only, and keeps it so', () => {
+    const table = activityTable(`
+    /** @api optional */
+    unit: varchar('unit', { length: 10 }).notNull(),`);
+    const { content, report } = sync(table);
+    expect(content).toContain('unit: optionalText(z.string().max(10))');
+    // The response always has it: the service filled it.
+    expect(content).toMatch(/unit: string;/);
+    expect(report.required).toEqual([]);
+
+    const again = sync(table, content);
+    expect(again.report.added).toEqual([]);
+
+    // Without the tag the column is required again: the body is generated anew.
+    const untagged = sync(activityTable(`    unit: varchar('unit', { length: 10 }).notNull(),`), content);
+    expect(untagged.content).toContain("unit: requiredText(10, msg('activities.unit.required'))");
+    expect(untagged.report.added).toContain('body: unit (now required)');
+  });
+
+  it('keeps an @api nosave column in the body', () => {
+    const { content } = sync(
+      activityTable(`
+    /** @api nosave */
+    status: text('status', { enum: ['open', 'done'] }).notNull().default('open'),`),
+    );
+    expect(content).toMatch(/status: z\.enum\(ACTIVITY_STATUSES[^\n]*\.optional\(\)/);
+  });
+
   it('is idempotent', () => {
     const table = activityTable(`    type: text({ enum: ['email', 'phone'] }).notNull(),`);
     const once = sync(table).content;

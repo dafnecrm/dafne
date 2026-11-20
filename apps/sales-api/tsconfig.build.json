@@ -70,6 +70,9 @@
     },
     {
       "path": "../../packages/backend/permissions"
+    },
+    {
+      "path": "../../packages/backend/documents"
     }
   ]
 }

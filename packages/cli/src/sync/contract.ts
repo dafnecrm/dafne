@@ -1,7 +1,7 @@
 import { Node, type SourceFile, SyntaxKind } from 'ts-morph';
 import type { ResourceNames } from '../core/names.ts';
 import { editSource, ensureNamedImport } from '../wiring/ast.ts';
-import { bodyZod, enumNames, filterZod, responseType, rolesOf, type Roles } from './roles.ts';
+import { bodyNotNull, bodyZod, enumNames, filterZod, responseType, rolesOf, type Roles } from './roles.ts';
 import type { Column, TableInfo } from './table.ts';
 
 /*
@@ -99,7 +99,7 @@ export function syncContract(
     const merged = merge('body', objectMembers(object), wanted, isColumn, report, { known: relations, refresh: refreshBody });
     for (const name of [...merged.added, ...merged.refreshed]) {
       const column = table.columns.find((c) => c.key === name)!;
-      if (column.notNull && !column.hasDefault) {
+      if (bodyNotNull(column) && !column.hasDefault) {
         report.required.push(name);
       }
     }
@@ -196,7 +196,7 @@ export function syncChildContract(
     const merged = merge(name, objectMembers(object), wanted, isColumn, report, { refresh: refreshBody });
     for (const key of [...merged.added, ...merged.refreshed]) {
       const column = table.columns.find((c) => c.key === key)!;
-      if (column.notNull && !column.hasDefault) {
+      if (bodyNotNull(column) && !column.hasDefault) {
         report.required.push(`${s.camel}.${key}`);
       }
     }
@@ -430,20 +430,22 @@ const acceptsNull = (code: string) => /\boptional(Text|Date|Id|Uuid)\(|\.nullish
 
 /**
  * A body member whose nullability no longer matches its column (e.g. the
- * column became NOT NULL) is generated again, keeping its comments: any
- * other hand-written validation in it is lost, so the report says so.
+ * column became NOT NULL, or lost `@api optional`) is generated again,
+ * keeping its comments: any other hand-written validation in it is lost,
+ * so the report says so.
  */
 function refreshBody(member: Member, wanted: Wanted, report: SyncReport, where: string) {
   if (!wanted.column) {
     return undefined;
   }
   const { comments, code } = splitComments(member.text);
-  if (acceptsNull(code) === !wanted.column.notNull) {
+  const notNull = bodyNotNull(wanted.column);
+  if (acceptsNull(code) === !notNull) {
     return undefined;
   }
-  report.added.push(`${where}: ${member.name} (now ${wanted.column.notNull ? 'required' : 'optional'})`);
+  report.added.push(`${where}: ${member.name} (now ${notNull ? 'required' : 'optional'})`);
   report.warnings.push(
-    `${where}: ${member.name} was generated again because its column is now ${wanted.column.notNull ? 'NOT NULL' : 'nullable'}; add back any custom validation it had.`,
+    `${where}: ${member.name} was generated again because its column is now ${notNull ? 'NOT NULL' : 'nullable (or @api optional)'}; add back any custom validation it had.`,
   );
   return comments + wanted.text;
 }

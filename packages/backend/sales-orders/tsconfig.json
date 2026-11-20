@@ -12,19 +12,25 @@
       "path": "../../contracts"
     },
     {
-      "path": "../permissions"
-    },
-    {
       "path": "../session"
     },
     {
       "path": "../products"
     },
     {
+      "path": "../permissions"
+    },
+    {
       "path": "../fsm"
     },
     {
+      "path": "../documents"
+    },
+    {
       "path": "../database"
+    },
+    {
+      "path": "../customers"
     },
     {
       "path": "../crud"

@@ -26,6 +26,8 @@ export const API_TAGS = [
   'sort',
   'nosort',
   'input', // a child's position or key to its parent, sent in the body (the service sets it otherwise)
+  'optional', // a NOT NULL column the body may leave out or blank: the service fills it (e.g. a default unit)
+  'nosave', // in the body, but the service's insert and update don't write it: it saves it its own way (e.g. a state machine)
 ] as const;
 export type ApiTag = (typeof API_TAGS)[number];
 

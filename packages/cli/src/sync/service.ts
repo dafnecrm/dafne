@@ -1,7 +1,7 @@
 import { Node, type ObjectLiteralExpression, type SourceFile, SyntaxKind } from 'ts-morph';
 import type { ResourceNames } from '../core/names.ts';
 import { appendToList, editSource, ensureNamedImport, insertListElement, removeListElement } from '../wiring/ast.ts';
-import { exactFilter, exactFilterParse, rolesOf } from './roles.ts';
+import { exactFilter, exactFilterParse, rolesOf, savedFromBody } from './roles.ts';
 import type { TableInfo } from './table.ts';
 
 /*
@@ -11,7 +11,8 @@ import type { TableInfo } from './table.ts';
  * - get<S>: `findFirst({ columns: {...} })` leaves out (`key: false`) the
  *   columns that aren't in the response;
  * - create<S> / update<S>: `values({...})` / `set({...})` save the body's
- *   fields (`key: body.key`);
+ *   fields (`key: body.key`), but those tagged `@api nosave`; an object
+ *   that spreads the body (`...body`) saves them all already;
  * - EXACT_FILTERS: the filters matched exactly (the id and the keys to
  *   other records), with how their query param is parsed. A service from
  *   before EXACT_FILTERS (`field === 'id' ? eq(...) : ilike(...)`) gets it.
@@ -33,6 +34,11 @@ interface Section {
   optional?: boolean;
   /** The members this section manages: key → whether it belongs to it. */
   owns: (key: string, value: string) => boolean;
+  /**
+   * The variable whose spread (`...body`, `...row`) saves every field: with
+   * it in the object, nothing wanted is added.
+   */
+  spread?: string;
   /** Keys that should be there, in table order, with their text. */
   wanted: { key: string; text: string }[];
   label: string;
@@ -79,7 +85,8 @@ export function syncService(
     columns.filter(({ roles }) => pick(roles)).map(({ column }) => column.key);
 
   const listed = keys((r) => r.listed);
-  const body = keys((r) => r.body);
+  // What the insert and update write: the body's fields but `@api nosave`.
+  const body = columns.filter(({ column, roles }) => roles.body && savedFromBody(column)).map(({ column }) => column.key);
   // The primary key is set on create only: an update keeps the path's.
   const primary = new Set(table.columns.filter((c) => c.primaryKey).map((c) => c.key));
   const updatable = body.filter((key) => !primary.has(key));
@@ -121,6 +128,7 @@ export function syncService(
       method: 'create',
       locate: inMethod('create', callArgument('values')),
       owns: (key, value) => isColumn.has(key) && value === `body.${key}`,
+      spread: 'body',
       wanted: body.map((key) => ({ key, text: `${key}: body.${key}` })),
       label: 'insert values',
     },
@@ -128,6 +136,7 @@ export function syncService(
       method: 'update',
       locate: inMethod('update', callArgument('set')),
       owns: (key, value) => isColumn.has(key) && value === `body.${key}`,
+      spread: 'body',
       wanted: updatable.map((key) => ({ key, text: `${key}: body.${key}` })),
       label: 'update set',
     },
@@ -143,7 +152,8 @@ export function syncService(
  * - get<S>: `with: { <relation>: { columns: {...} } }` leaves out the
  *   columns that aren't in the response;
  * - the insert: `.insert(<child>).values(<list>.map((item…) => ({...})))`
- *   saves the body's fields (`key: item.key`).
+ *   saves the body's fields (`key: item.key`), but `@api nosave` ones; one
+ *   that spreads the item (`...item`) saves them all already.
  */
 export function syncChildService(
   path: string,
@@ -160,7 +170,7 @@ export function syncChildService(
   const keys = (pick: (r: ReturnType<typeof rolesOf>) => boolean) => child.columns.filter((c) => pick(roles(c))).map((c) => c.key);
   // Not in the response: left out of the relation's columns.
   const hidden = keys((r) => !r.listed && !r.detail);
-  const body = keys((r) => r.body);
+  const body = child.columns.filter((c) => roles(c).body && savedFromBody(c)).map((c) => c.key);
 
   // The arrow function inside `.insert(<child>).values(...)`, and its item.
   const insertMap = (file: SourceFile) => {
@@ -207,6 +217,7 @@ export function syncChildService(
             method: `insert ${child.variable}`,
             locate: (file: SourceFile) => insertMap(file)?.object,
             owns: (key: string, value: string) => value === `${item}.${key}`,
+            spread: item,
             wanted: body.map((key) => ({ key, text: `${key}: ${item}.${key}` })),
             label: 'values',
           },
@@ -322,6 +333,16 @@ function applySections(path: string, source: string, sections: Section[], report
           }
         }
       });
+    }
+
+    // `...body` (or `...item`) saves every field already: nothing to add.
+    const spreads = editSourceValue(path, source, (file) =>
+      locate(file)!
+        .getProperties()
+        .some((prop) => Node.isSpreadAssignment(prop) && prop.getExpression().getText() === section.spread),
+    );
+    if (section.spread && spreads) {
+      continue;
     }
 
     source = editSource(path, source, (file) => {

@@ -132,6 +132,7 @@ export const NAV_SECTIONS: NavSection[] = [
           { title: "assistantProviders", href: "/admin/assistant-providers", icon: ServerIcon },
         ],
       },
+      { title: "documentTemplates", href: "/document-templates", icon: FileTextIcon },
     ],
   },
 ];

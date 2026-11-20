@@ -52,6 +52,7 @@ Each project has one scope tag (see [Project boundaries](boundaries.md)).
 | `@dafne/backend-common`        | `ZodValidationPipe`, translated errors (`I18nExceptionFilter`), i18n helpers                        |
 | `@dafne/backend-notifications` | Notifications and emails (Resend)                                                                   |
 | `@dafne/backend-geo`           | Place search and countries                                                                          |
+| `@dafne/backend-documents`     | PDFs from the Word templates admins upload (docxtemplater, Gotenberg): see [Documents](documents.md) |
 | `@dafne/backend-crud`          | The interface every CRUD resource implements (`CrudController`, `CrudService`, `Actor`) and its write hooks (`CrudHooksModule.forFeature`) |
 | `@dafne/backend-changelog`     | Change log of CRUD resources (`ChangelogModule.forFeature`, `changelogTransitionHook`, `ChangelogService`) |
 | `@dafne/backend-fsm`           | State machines for a record's status (`FsmModule.forFeature`, `@InjectStateMachine()`): guards, pre/post hooks (per transition, or of every transition), one transaction |

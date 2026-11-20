@@ -65,7 +65,8 @@ applying it: dropping a column deletes its data.
 
 ## Sync the contract with the table
 
-After editing a table file by hand (a column added, an `@api` tag changed):
+After editing a table file by hand (a column added, an `@api` tag changed;
+the tags are in [Column tags](column-tags.md)):
 
 ```sh
 pnpm dafne sync contract invoices            # contract, service queries, specs

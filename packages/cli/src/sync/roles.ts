@@ -94,10 +94,20 @@ const msgKey = (names: ResourceNames, column: Column, rule: 'required' | 'invali
 const DATE_INVALID = "msg('common.date.invalid')";
 const NUMBER_INVALID = "msg('common.number.invalid')";
 
+/**
+ * Whether the body must carry a value for the column: a NOT NULL column,
+ * unless `@api optional` (the service fills it when the body leaves it
+ * out, so the body is nullable).
+ */
+export const bodyNotNull = (column: Column) => column.notNull && !column.tags.has('optional');
+
+/** Whether the service's insert and update write the body's value (not `@api nosave`). */
+export const savedFromBody = (column: Column) => !column.tags.has('nosave');
+
 /** Zod for the body: required, optional with a default, or nullable. */
 export function bodyZod(names: ResourceNames, column: Column): string {
-  const required = column.notNull && !column.hasDefault;
-  const optionalDefault = column.notNull && column.hasDefault;
+  const required = bodyNotNull(column) && !column.hasDefault;
+  const optionalDefault = bodyNotNull(column) && column.hasDefault;
   const required_ = msgKey(names, column, 'required');
 
   // A uuid (e.g. a key to a record with a uuid id): Postgres rejects anything else.

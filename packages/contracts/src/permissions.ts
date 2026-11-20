@@ -18,6 +18,7 @@ export const PERMISSIONS = {
   UomConversion: ['create', 'update', 'delete'],
   SalesOrder: ['create', 'update', 'delete', 'changeStatus'],
   Quotation: ['create', 'update', 'delete', 'changeStatus'],
+  DocumentTemplate: ['create', 'update', 'delete'],
 } as const;
 
 export type PermissionSubject = keyof typeof PERMISSIONS;
