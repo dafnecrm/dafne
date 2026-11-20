@@ -124,8 +124,11 @@ export class UsersService
           columns: { id: true, providerId: true, createdAt: true },
           orderBy: { createdAt: 'asc' },
         },
+        // Deleted groups are kept in the table, but hidden everywhere.
         groups: {
-          columns: { name: true }
+          columns: { name: true },
+          where: { deletedAt: { isNull: true } },
+          orderBy: { name: 'asc' },
         },
         sessions: {
           columns: {
