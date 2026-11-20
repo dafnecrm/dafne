@@ -11,8 +11,9 @@ import {
 } from "@dafne/frontend-ui/components/page-content";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { isAdmin, isSuperAdmin, requireUser } from "@/lib/session";
-import { NotAllowed } from "../not-allowed";
-import { UserForm } from "../user-form";
+import { NotAllowed } from "@dafne/frontend-users/components/not-allowed";
+import { UserForm } from "@dafne/frontend-users/components/user-form";
+import { usersTable } from "@/lib/users-table";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("users");
@@ -44,5 +45,5 @@ async function AdminOnlyForm() {
     const t = await getTranslations("users.notAllowed");
     return <NotAllowed>{t("create")}</NotAllowed>;
   }
-  return <UserForm canGrantSuperAdmin={isSuperAdmin(user)} />;
+  return <UserForm canGrantSuperAdmin={isSuperAdmin(user)} path={usersTable.path} />;
 }

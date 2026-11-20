@@ -3,7 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "dafne": {
-    "dev": { "host": "sales-web", "port": 4000 }
+    "dev": {
+      "host": "sales-web",
+      "port": 4000
+    }
   },
   "scripts": {
     "dev": "next dev --port 4000",
@@ -29,6 +32,7 @@
     "@dafne/frontend-sales-orders": "workspace:*",
     "@dafne/frontend-ui": "workspace:*",
     "@dafne/frontend-user-groups": "workspace:*",
+    "@dafne/frontend-users": "workspace:*",
     "@dafne/permissions": "workspace:*",
     "@tanstack/react-form-nextjs": "catalog:",
     "class-variance-authority": "catalog:",

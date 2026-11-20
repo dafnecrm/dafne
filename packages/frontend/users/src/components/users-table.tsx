@@ -1,7 +1,7 @@
 "use client";
 
 import { isGlobalAdmin } from "@dafne/contracts";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import {
@@ -12,7 +12,8 @@ import {
 import { LocalDate } from "@dafne/frontend-ui/components/local-date";
 import { Avatar, AvatarFallback, AvatarImage } from "@dafne/frontend-ui/components/avatar";
 import { Badge } from "@dafne/frontend-ui/components/badge";
-import type { ListedUser } from "@/lib/users";
+import type { ListedUser } from "../types.ts";
+import type { UsersTableConfig } from "../users-table.ts";
 import {
   CopyIcon,
   EllipsisVerticalIcon,
@@ -33,19 +34,21 @@ import {
   EmptyTitle,
 } from "@dafne/frontend-ui/components/empty";
 import type { TableParams } from "@dafne/frontend-data-table";
-import { usersTable } from "@/lib/users-table";
 
 /*
  * Columns of the users table. Column ids double as the backend's sort
- * fields, so they must match usersTable.sortable in lib/users-table.ts.
+ * fields, so they must match `sortable` in ../users-table.ts.
  */
 
 const col = createDataTableColumnHelper<ListedUser>();
 
 const empty = <span className="text-muted-foreground">—</span>;
 
-/** Translated per language; memoized, so the table sees the same columns on every render. */
-function useUserColumns() {
+/**
+ * Translated per language; memoized, so the table sees the same columns on
+ * every render. Names link to `<path>/<id>`, the detail page.
+ */
+function useUserColumns(path: string) {
   const t = useTranslations("users");
   return useMemo(
     () =>
@@ -63,7 +66,7 @@ function useUserColumns() {
                   </AvatarFallback>
                 </Avatar>
                 <Link
-                  href={`/admin/users/${encodeURIComponent(user.id)}`}
+                  href={`${path}/${encodeURIComponent(user.id)}`}
                   className="font-medium underline-offset-4 hover:underline"
                 >
                   {user.name}
@@ -123,12 +126,12 @@ function useUserColumns() {
           ),
         }),
       ]),
-    [t],
+    [t, path],
   );
 }
 
 /** Row actions of the users table, in a menu. */
-function UserTableActions({ user }: { user: ListedUser }) {
+function UserTableActions({ user, path }: { user: ListedUser; path: string }) {
   const t = useTranslations("common");
   return (
     <DropdownMenu>
@@ -145,7 +148,7 @@ function UserTableActions({ user }: { user: ListedUser }) {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem
-          render={<Link href={`/admin/users/${encodeURIComponent(user.id)}`} />}
+          render={<Link href={`${path}/${encodeURIComponent(user.id)}`} />}
         >
           <UserIcon />
           {t("viewDetails")}
@@ -161,30 +164,34 @@ function UserTableActions({ user }: { user: ListedUser }) {
   );
 }
 
-// Module scope, so the table sees the same function on every render.
-const userActions = (user: ListedUser) => <UserTableActions user={user} />;
-
 const getRowId = (user: ListedUser) => user.id;
 
-/** Users list; the server page passes one page of users. */
+/** Users list; the server page passes one page of users and the app's table config. */
 export function UsersTable({
   users,
   total,
   params,
+  config,
 }: {
   users: ListedUser[];
   total: number;
   params: TableParams;
+  config: UsersTableConfig;
 }) {
   const t = useTranslations("users");
   const describeFilters = useDescribeFilters();
-  const columns = useUserColumns();
+  const columns = useUserColumns(config.path);
+  // Memoized, so the table sees the same function on every render.
+  const userActions = useCallback(
+    (user: ListedUser) => <UserTableActions user={user} path={config.path} />,
+    [config.path],
+  );
   return (
     <DataTable
       columns={columns}
       data={users}
       getRowId={getRowId}
-      config={usersTable}
+      config={config}
       rowActions={userActions}
       params={params}
       total={total}
@@ -199,7 +206,7 @@ export function UsersTable({
             <EmptyDescription>
               {Object.keys(params.filters).length
                 ? t("empty.filtered", {
-                    filter: describeFilters(params.filters, usersTable.filters),
+                    filter: describeFilters(params.filters, config.filters),
                   })
                 : t("empty.none")}
             </EmptyDescription>

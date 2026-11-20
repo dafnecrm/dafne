@@ -28,7 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from "@dafne/frontend-ui/components/table";
-import type { UserDetail, UserSession } from "@/lib/users";
+import type { UserDetail, UserSession } from "../types.ts";
 
 /** The details of a user: profile, access, sign-in methods, sessions and record. */
 export function UserDetails({ user }: { user: UserDetail }) {
@@ -62,9 +62,17 @@ export function UserDetails({ user }: { user: UserDetail }) {
           </Badge>
         </Detail>
         <Detail icon={UsersIcon} label={t("users.fields.groups")}>
-          {user.groups?.map((groupName, i) => <Badge key={`usergroup-${i}`} variant="secondary">
-            {groupName}
-          </Badge>)}
+          {user.groups?.length ? (
+            <span className="flex flex-wrap gap-1">
+              {user.groups.map((groupName) => (
+                <Badge key={groupName} variant="secondary">
+                  {groupName}
+                </Badge>
+              ))}
+            </span>
+          ) : (
+            t("users.none")
+          )}
         </Detail>
       </DetailSection>
 
@@ -206,7 +214,6 @@ function UserSessions({ sessions }: { sessions: UserSession[] }) {
     </DetailSection>
   );
 }
-
 
 const BROWSERS: [RegExp, string][] = [
   [/Edg\//, "Edge"],

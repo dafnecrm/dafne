@@ -1,4 +1,3 @@
-import type { MessageKey } from "@dafne/frontend-ui/lib/message-key";
 import { formOptions } from "@tanstack/react-form-nextjs";
 import {
   createUserBodySchema,
@@ -6,6 +5,7 @@ import {
   type UserRole,
 } from "@dafne/contracts";
 import { formSchema } from "@dafne/frontend-forms";
+import type { UsersMessageKey } from "./messages/index.ts";
 
 /** Form values: text fields as strings, the role from ROLE_OPTIONS. */
 export type UserFormValues = Record<
@@ -21,7 +21,7 @@ export const ROLE_OPTIONS = [
   { value: "user", label: "users.role.user" },
   { value: "admin", label: "users.role.admin" },
   { value: "super-admin", label: "users.role.super-admin" },
-] satisfies { value: UserRole; label: MessageKey }[];
+] satisfies { value: UserRole; label: UsersMessageKey }[];
 
 export const userFormOpts = formOptions({
   defaultValues: {

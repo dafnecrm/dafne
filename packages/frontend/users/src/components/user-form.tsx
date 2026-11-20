@@ -15,14 +15,21 @@ import {
 import { FieldGroup } from "@dafne/frontend-ui/components/field";
 import { setServerError, useAppForm } from "@dafne/frontend-forms/client";
 import { useResetOnLeave } from "@dafne/frontend-forms/client";
-import { createUser } from "./actions";
-import { ROLE_OPTIONS, userFormOpts, userSchema } from "./schema";
+import { createUser } from "../actions.ts";
+import { ROLE_OPTIONS, userFormOpts, userSchema } from "../schema.ts";
 
 /**
- * Creates a user (admins only). Saving opens the new user's page. Only a
- * super-admin is offered the super-admin role (the backend checks it too).
+ * Creates a user (admins only). Saving opens the new user's page
+ * (`<path>/<id>`, `path` being the app's users list). Only a super-admin
+ * is offered the super-admin role (the backend checks it too).
  */
-export function UserForm({ canGrantSuperAdmin }: { canGrantSuperAdmin: boolean }) {
+export function UserForm({
+  canGrantSuperAdmin,
+  path,
+}: {
+  canGrantSuperAdmin: boolean;
+  path: string;
+}) {
   const t = useTranslations();
   const roleOptions = useOptionLabels(
     ROLE_OPTIONS.filter((option) => canGrantSuperAdmin || option.value !== "super-admin"),
@@ -34,7 +41,7 @@ export function UserForm({ canGrantSuperAdmin }: { canGrantSuperAdmin: boolean }
     validators: { onDynamic: userSchema },
     onSubmit: async ({ value, formApi }) => {
       // Redirects on success, so only an error comes back.
-      const result = await createUser(value);
+      const result = await createUser(value, path);
       if (result?.error) {
         setServerError(formApi, result.error);
       }
@@ -126,7 +133,7 @@ export function UserForm({ canGrantSuperAdmin }: { canGrantSuperAdmin: boolean }
             <Button
               variant="outline"
               nativeButton={false}
-              render={<Link href="/admin/users" />}
+              render={<Link href={path} />}
             >
               {t("common.cancel")}
             </Button>

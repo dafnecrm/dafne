@@ -17,10 +17,10 @@ import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { BackendError } from "@dafne/frontend-api";
 import { getTableParams } from "@dafne/frontend-data-table";
 import { isAdmin, requireUser } from "@/lib/session";
-import { listUsers } from "@/lib/users";
+import { NotAllowed } from "@dafne/frontend-users/components/not-allowed";
+import { UsersTable } from "@dafne/frontend-users/components/users-table";
+import { listUsers } from "@dafne/frontend-users/server";
 import { usersTable } from "@/lib/users-table";
-import { NotAllowed } from "./not-allowed";
-import { UsersTable } from "./users-table";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("users");
@@ -37,7 +37,7 @@ export default function UsersPage({
         <PageContentTitle>{t("title")}</PageContentTitle>
         <PageContentDescription>{t("listDescription")}</PageContentDescription>
         <PageContentAction>
-          <Button nativeButton={false} render={<Link href="/admin/users/new" />}>
+          <Button nativeButton={false} render={<Link href={`${usersTable.path}/new`} />}>
             <PlusIcon data-icon="inline-start" />
             {t("new")}
           </Button>
@@ -78,5 +78,5 @@ async function UsersList({
     throw error;
   }
 
-  return <UsersTable users={data.items} total={data.total} params={params} />;
+  return <UsersTable users={data.items} total={data.total} params={params} config={usersTable} />;
 }
