@@ -62,7 +62,7 @@ export function UserDetails({ user }: { user: UserDetail }) {
           </Badge>
         </Detail>
         <Detail icon={UsersIcon} label={t("users.fields.groups")}>
-          {user.groups?.map(groupName => <Badge variant="secondary">
+          {user.groups?.map((groupName, i) => <Badge key={`usergroup-${i}`} variant="secondary">
             {groupName}
           </Badge>)}
         </Detail>

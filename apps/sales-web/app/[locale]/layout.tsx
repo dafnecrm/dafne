@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { locale as rootLocale } from "next/root-params";
-import { Geist, Geist_Mono, Inter, Figtree } from "next/font/google";
+import { Geist, Geist_Mono, Figtree } from "next/font/google";
 import "../globals.css";
 import { TooltipProvider } from "@dafne/frontend-ui/components/tooltip";
 import { ThemeScript } from "@dafne/frontend-ui/components/theme-script";
