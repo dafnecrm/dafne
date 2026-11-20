@@ -8,7 +8,7 @@ import {
   type ChangeFieldConfig,
 } from "@dafne/frontend-changelog/components/changelog-sheet";
 import { Button } from "@dafne/frontend-ui/components/button";
-import { getUserChanges } from "./actions";
+import { getUserChanges } from "../actions.ts";
 
 /**
  * The user's change log (Better Auth's writes: profile, email, role, ban,

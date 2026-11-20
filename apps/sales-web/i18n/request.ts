@@ -15,6 +15,7 @@ import { ASSISTANT_MODELS_MESSAGES } from "@dafne/frontend-assistant/assistant-m
 import { ASSISTANT_CHAT_MESSAGES } from "@dafne/frontend-assistant/chat";
 import { ASSISTANT_AGENTS_MESSAGES } from "@dafne/frontend-assistant/assistant-agents";
 import { USER_GROUPS_MESSAGES } from "@dafne/frontend-user-groups";
+import { USERS_MESSAGES } from "@dafne/frontend-users";
 import { UOMS_MESSAGES } from "@dafne/frontend-products/uoms";
 import { UOM_CONVERSIONS_MESSAGES } from "@dafne/frontend-products/uom-conversions";
 
@@ -61,6 +62,8 @@ export default getRequestConfig(async ({ locale, requestLocale }) => {
       assistantAgents: ASSISTANT_AGENTS_MESSAGES[resolved],
       // The assistant panel, shipped by @dafne/frontend-assistant.
       assistantChat: ASSISTANT_CHAT_MESSAGES[resolved],
+      // User texts (also the account page's), shipped by @dafne/frontend-users.
+      users: USERS_MESSAGES[resolved],
       userGroups: USER_GROUPS_MESSAGES[resolved],
       uoms: UOMS_MESSAGES[resolved],
       uomConversions: UOM_CONVERSIONS_MESSAGES[resolved],

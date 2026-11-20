@@ -19,7 +19,8 @@
         "@dafne/frontend-changelog",
         "@dafne/frontend-assistant",
         "@dafne/frontend-user-groups",
-        "@dafne/frontend-permissions"
+        "@dafne/frontend-permissions",
+        "@dafne/frontend-users"
       ]
     }
   },

@@ -13,13 +13,14 @@ import type { AssistantModelsMessages } from "@dafne/frontend-assistant/assistan
 import type { AssistantChatMessages } from "@dafne/frontend-assistant/chat";
 import type { AssistantAgentsMessages } from "@dafne/frontend-assistant/assistant-agents";
 import type { UserGroupsMessages } from "@dafne/frontend-user-groups";
+import type { UsersMessages } from "@dafne/frontend-users";
 import type { UomsMessages } from "@dafne/frontend-products/uoms";
 import type { UomConversionsMessages } from "@dafne/frontend-products/uom-conversions";
 
 /**
  * Typed messages: t("customers.title") only compiles if the key exists in
  * messages/en.json (or, under `contracts`, in the backend's catalog, and
- * under `customers`, `activities`, `products`, `salesOrders`, `changelog` and `geo`, in their
+ * under `customers`, `activities`, `products`, `salesOrders`, `changelog`, `users` and `geo`, in their
  * @dafne/frontend-* libs).
  * messages/it.json is checked against en.json in i18n/messages.check.ts.
  */
@@ -39,6 +40,7 @@ declare module "next-intl" {
       assistantModels: AssistantModelsMessages;
       assistantAgents: AssistantAgentsMessages;
       assistantChat: AssistantChatMessages;
+      users: UsersMessages;
       userGroups: UserGroupsMessages;
       uoms: UomsMessages;
       uomConversions: UomConversionsMessages;

@@ -1,19 +1,13 @@
-import type * as contracts from "@dafne/contracts";
-import type { Json } from "@dafne/contracts";
 import { authFetch } from "@dafne/frontend-api/server";
 import type { ChangesPage } from "@dafne/frontend-changelog";
 import type { TableFilters, TableSort } from "@dafne/frontend-data-table";
-import { usersTable } from "./users-table";
+import type { UserDetail, UsersList } from "./types.ts";
+import { USERS_DEFAULT_SORT } from "./users-table.ts";
 
 /*
- * API types come from the backend's contracts (dates arrive as strings,
- * hence Json<...>), so they can't drift from what the backend returns.
+ * Reads, for server components (authFetch forwards the browser's cookies,
+ * so it only runs on the server). The users are apps/auth's.
  */
-export type ListedUser = Json<contracts.ListedUser>;
-export type UsersList = Json<contracts.UsersList>;
-export type UserAccount = Json<contracts.UserAccount>;
-export type UserSession = Json<contracts.UserActiveSession>;
-export type UserDetail = Json<contracts.UserDetail>;
 
 /**
  * Calls the backend's GET /users/:id (admins only). Throws a BackendError
@@ -49,7 +43,7 @@ export async function listUsers({
   limit,
   offset,
   filters = {},
-  sort = usersTable.defaultSort,
+  sort = USERS_DEFAULT_SORT,
 }: {
   limit: number;
   offset: number;

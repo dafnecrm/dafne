@@ -4,8 +4,9 @@ import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { BackendError, authFetch } from "@dafne/frontend-api/server";
 import type { ChangesPage } from "@dafne/frontend-changelog";
-import { listUserChanges, type UserDetail } from "@/lib/users";
-import { userSchema, type UserFormValues } from "./schema";
+import { userSchema, type UserFormValues } from "./schema.ts";
+import { listUserChanges } from "./server.ts";
+import type { UserDetail } from "./types.ts";
 
 /*
  * User mutations. The backend checks the session (forwarded by
@@ -34,10 +35,14 @@ async function errorMessage(error: unknown) {
 
 /**
  * Creates a user with the password the admin picked (the backend emails
- * them a verification link), then opens their page. Returns an error
- * message when it fails.
+ * them a verification link), then opens their page (`<path>/<id>`, `path`
+ * being the app's users list). Returns an error message when it fails.
  */
-export async function createUser(values: UserFormValues): Promise<ActionError> {
+export async function createUser(values: UserFormValues, path: string): Promise<ActionError> {
+  // Any POST can call this: only redirect within the app.
+  if (!/^\/[\w/-]*$/.test(path)) {
+    throw new Error(`Invalid path: ${path}`);
+  }
   const parsed = userSchema.safeParse(values);
   if (!parsed.success) {
     return { error: (await getTranslations())("common.errors.invalid") };
@@ -54,7 +59,7 @@ export async function createUser(values: UserFormValues): Promise<ActionError> {
     return { error: await errorMessage(error) };
   }
   // Outside the try: redirect works by throwing.
-  redirect(`/admin/users/${encodeURIComponent(id)}`);
+  redirect(`${path}/${encodeURIComponent(id)}`);
 }
 
 /**

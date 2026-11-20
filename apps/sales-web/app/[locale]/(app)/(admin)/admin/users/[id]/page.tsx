@@ -18,10 +18,11 @@ import { Button } from "@dafne/frontend-ui/components/button";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { BackendError } from "@dafne/frontend-api";
 import { isAdmin, requireUser } from "@/lib/session";
-import { getUser } from "@/lib/users";
-import { NotAllowed } from "../not-allowed";
-import { UserDetails } from "../user-detail";
-import { UserChangelogButton } from "../user-changelog";
+import { NotAllowed } from "@dafne/frontend-users/components/not-allowed";
+import { UserChangelogButton } from "@dafne/frontend-users/components/user-changelog";
+import { UserDetails } from "@dafne/frontend-users/components/user-detail";
+import { getUser } from "@dafne/frontend-users/server";
+import { usersTable } from "@/lib/users-table";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("users");
@@ -68,7 +69,7 @@ async function UserProfile({
   return (
     <PageContent>
       <BreadcrumbLabel
-        href={`/admin/users/${encodeURIComponent(user.id)}`}
+        href={`${usersTable.path}/${encodeURIComponent(user.id)}`}
         label={user.name}
       />
       <PageContentHeader>
@@ -89,7 +90,7 @@ async function UserProfile({
             size="sm"
             // Renders a link, not a <button>.
             nativeButton={false}
-            render={<Link href="/admin/users" />}
+            render={<Link href={usersTable.path} />}
           >
             <ArrowLeftIcon data-icon="inline-start" />
             {t("all")}

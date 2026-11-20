@@ -28,6 +28,7 @@ const nextConfig: NextConfig = {
     "@dafne/frontend-assistant",
     "@dafne/frontend-user-groups",
     "@dafne/frontend-permissions",
+    "@dafne/frontend-users",
   ],
   cacheComponents: true,
   experimental: {
