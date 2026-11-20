@@ -46,7 +46,8 @@ async function fetchFrom(baseUrl: string, path: string, init: RequestInit) {
   requestHeaders.set("origin", APP_URL);
   // The backend answers errors in this language.
   requestHeaders.set("accept-language", await getLocale());
-  if (init.body && !requestHeaders.has("content-type")) {
+  // JSON unless said otherwise; FormData sets its own (multipart, with its boundary).
+  if (init.body && !(init.body instanceof FormData) && !requestHeaders.has("content-type")) {
     requestHeaders.set("content-type", "application/json");
   }
 
@@ -58,7 +59,7 @@ async function fetchFrom(baseUrl: string, path: string, init: RequestInit) {
 
   if (!res.ok) {
     const body = (await res.json().catch(() => ({}))) as BackendErrorBody;
-    throw new BackendError(res.status, errorMessage(body, res.statusText));
+    throw new BackendError(res.status, errorMessage(body, res.statusText), body);
   }
 
   return res;

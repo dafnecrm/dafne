@@ -1,13 +1,14 @@
-# Development services: PostgreSQL and Redis.
+# Development services: PostgreSQL, Redis and Gotenberg (DOCX to PDF).
 #
 #   docker compose up -d      # start (data kept in named volumes): or `pnpm dafne services up`
 #   docker compose down       # stop
 #   docker compose down -v    # stop and delete the data
 #
-# They are reached as db.dafne.localhost and redis.dafne.localhost:
+# They are reached as db.dafne.localhost, redis.dafne.localhost and
+# gotenberg.dafne.localhost:
 # *.localhost resolves to this machine by itself (no hosts file), and the
 # ports are published on the loopback only, not to the network.
-# DAFNE_DB_PORT / DAFNE_REDIS_PORT change them (e.g. next to Postgres.app).
+# DAFNE_DB_PORT / DAFNE_REDIS_PORT / DAFNE_GOTENBERG_PORT change them (e.g. next to Postgres.app).
 # `pnpm dafne dev` starts them by itself, `pnpm dafne services up | down`
 # alone; on a new server dafne dev also creates the database and migrates.
 name: dafne
@@ -42,6 +43,20 @@ services:
       - redis:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  # Converts the documents filled from the uploaded Word templates
+  # (@dafne/backend-documents) to PDF: GOTENBERG_URL of apps/sales-api/.env.
+  gotenberg:
+    image: gotenberg/gotenberg:8
+    ports:
+      - "127.0.0.1:${DAFNE_GOTENBERG_PORT:-3100}:3000"
+      - "[::1]:${DAFNE_GOTENBERG_PORT:-3100}:3000"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:3000/health"]
       interval: 5s
       timeout: 3s
       retries: 10

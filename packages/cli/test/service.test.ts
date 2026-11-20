@@ -1,5 +1,6 @@
 import { resourceNames } from '../src/core/names.ts';
-import { syncService } from '../src/sync/service.ts';
+import { syncChildService, syncService } from '../src/sync/service.ts';
+import { childRoles } from '../src/sync/contract.ts';
 import { readTable } from '../src/sync/table.ts';
 import { renderBackend } from '../src/pieces/backend.ts';
 
@@ -58,6 +59,32 @@ describe('syncService', () => {
     ]);
   });
 
+  it('leaves @api nosave columns out of the insert and the update, and takes them out', () => {
+    const table = tableWith(`
+    /** @api nosave */
+    status: text('status', { enum: ['open', 'done'] }).notNull().default('open'),`);
+    const { content, report } = syncService('s.ts', service(), names, table);
+    // In the list (a response), never written from the body: a state machine moves it.
+    expect(content).toContain('status: activity.status');
+    expect(content).not.toContain('status: body.status');
+    expect(report.added).not.toContain('create insert values: status');
+
+    const written = content.replace('name: body.name,', 'name: body.name,\n            status: body.status,');
+    const again = syncService('s.ts', written, names, table);
+    expect(again.content).not.toContain('status: body.status');
+    expect(again.report.removed).toContain('create insert values: status');
+  });
+
+  it('adds nothing to an insert or update that spreads the body', () => {
+    // The generated service with its `name`, then spread by hand.
+    const spread = syncService('s.ts', service(), names, tableWith('')).content.replaceAll('name: body.name,', '...body,');
+    expect(spread).toContain('...body,');
+    const table = tableWith(`    type: text({ enum: ['email', 'phone'] }).notNull(),`);
+    const { content, report } = syncService('s.ts', spread, names, table);
+    expect(content).not.toContain('type: body.type');
+    expect(report.added.filter((line) => /insert values|update set/.test(line))).toEqual([]);
+  });
+
   it('is idempotent', () => {
     const table = tableWith(`    type: text({ enum: ['email', 'phone'] }).notNull(),`);
     const once = syncService('s.ts', service(), names, table).content;
@@ -100,5 +127,40 @@ describe('syncService', () => {
     expect(content).toMatch(/import \{[^}]*type Column[^}]*\} from 'drizzle-orm'/);
     expect(content.indexOf('const EXACT_FILTERS')).toBeLessThan(content.indexOf('const notDeleted'));
     expect(report.added).toContain('list: EXACT_FILTERS (activity)');
+  });
+});
+
+describe('syncChildService', () => {
+  const order = resourceNames('sales-order');
+  const items = readTable(
+    'sales-orders.ts',
+    `export const salesOrderItem = salesSchema.table('sales_order_item', {
+    orderId: integer('order_id').notNull().references(() => salesOrder.id, { onDelete: 'cascade' }),
+    productId: integer('product_id').notNull().references(() => product.id),
+    quantity: integer('quantity').notNull(),
+    /** @api readonly */
+    price: numeric('price', { precision: 14, scale: 2, mode: 'number' }).notNull(),
+  });`,
+    resourceNames('sales-order-item'),
+  );
+  const insert = (body: string) => `export class SalesOrdersService {
+  async insertItems(tx: Transaction, orderId: number, items: SalesOrderItemBody[]) {
+    await tx.insert(salesOrderItem).values(items.map((item) => (${body})));
+  }
+}
+`;
+  const run = (source: string) =>
+    syncChildService('s.ts', source, order, items, 'items', (c) => childRoles(c, 'salesOrder'));
+
+  it('saves the body fields of each item', () => {
+    const { content } = run(insert('{ orderId }'));
+    expect(content).toContain('{ productId: item.productId, quantity: item.quantity, orderId }');
+  });
+
+  it('adds nothing to an item spread into the insert', () => {
+    const source = insert('{ ...item, orderId }');
+    const { content, report } = run(source);
+    expect(content).toBe(source);
+    expect(report.added).toEqual([]);
   });
 });

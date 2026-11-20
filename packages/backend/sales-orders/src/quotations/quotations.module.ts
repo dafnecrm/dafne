@@ -1,5 +1,7 @@
 import { ChangelogModule } from '@dafne/backend-changelog';
 import { CrudHooksModule } from '@dafne/backend-crud';
+import { CustomersModule } from '@dafne/backend-customers';
+import { DocumentsModule } from '@dafne/backend-documents';
 import { DatabaseModule } from '@dafne/backend-database';
 import { FsmModule } from '@dafne/backend-fsm';
 import { PermissionsModule } from '@dafne/backend-permissions';
@@ -13,10 +15,12 @@ import { QuotationTransition } from './quotation.transition.js';
 import { QUOTATION_STATE_MACHINE, QUOTATION_STATES } from './quotation.states.js';
 import { QUOTATIONS_RESOURCE, QUOTATION_CHANGELOG, QuotationStatusChangelog } from './quotation.changelog.js';
 import { QuotationIsDraftHook } from './quotation.hooks.js';
+import { QuotationDocumentSource } from './quotation.document.js';
 
 /**
  * Quotations and their state machine: accepting one creates its sales
- * order (CreateSalesOrderFromQuotation, with SalesOrdersService).
+ * order (CreateSalesOrderFromQuotation, with SalesOrdersService). Their PDFs
+ * come from the templates admins upload (GET /documents/quotation/:id/pdf).
  */
 @Module({
   imports: [
@@ -41,9 +45,13 @@ import { QuotationIsDraftHook } from './quotation.hooks.js';
       imports: [ChangelogModule, SalesOrdersModule],
       post: [QuotationStatusChangelog],
     }),
+    // The PDF (QuotationDocumentSource): a quotation and its customer,
+    // filled into the template admins uploaded.
+    DocumentsModule,
+    CustomersModule,
   ],
   controllers: [QuotationsController],
-  providers: [QuotationsService],
+  providers: [QuotationsService, QuotationDocumentSource],
   exports: [QuotationsService],
 })
 export class QuotationsModule {}

@@ -18,6 +18,7 @@ import * as userGroups from './tables/user-groups.js';
 import * as uoms from './tables/uoms.js';
 import * as uomConversions from './tables/uom-conversions.js';
 import * as quotations from './tables/quotations.js';
+import * as documentTemplates from './tables/document-templates.js';
 
 const authTables = { ...auth };
 const { customerRelations, ...customerTables } = customers;
@@ -32,8 +33,9 @@ const { assistantAgentRelations, ...assistantAgentTables } = assistantAgents;
 const { uomRelations, ...uomTables } = uoms;
 const { uomConversionRelations, ...uomConversionTables } = uomConversions;
 const { quotationRelations, quotationItemRelations, ...quotationTables } = quotations;
+const { documentTemplateRelations, ...documentTemplateTables } = documentTemplates;
 
-export const schema = { ...authTables, ...customerTables, ...activityTables, ...countryTables, ...productTables, ...salesOrderTables, ...salesOrderTypeTables, ...assistantProviderTables, ...assistantModelTables, ...assistantAgentTables, ...assistantConversations, ...userGroups, ...uomTables, ...uomConversionTables, ...quotationTables };
+export const schema = { ...authTables, ...customerTables, ...activityTables, ...countryTables, ...productTables, ...salesOrderTables, ...salesOrderTypeTables, ...assistantProviderTables, ...assistantModelTables, ...assistantAgentTables, ...assistantConversations, ...userGroups, ...uomTables, ...uomConversionTables, ...quotationTables, ...documentTemplateTables };
 
 // Tables plus the relations defined next to them.
 export const relations = mergeRelations(
@@ -53,6 +55,7 @@ export const relations = mergeRelations(
   uomConversionRelations,
   quotationRelations,
   quotationItemRelations,
+  documentTemplateRelations,
 );
 
 export type Database = import('drizzle-orm/node-postgres').NodePgDatabase<typeof relations>;

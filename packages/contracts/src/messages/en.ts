@@ -206,6 +206,23 @@ export const en = {
       mustBeDraft: 'Only a draft quotation can be changed',
     },
   },
+  documentTemplates: {
+    notFound: 'Document template not found',
+    name: { required: 'Enter the name' },
+    resource: { required: 'Enter the resource', unknown: 'Documents cannot be made for this resource' },
+    file: {
+      missing: 'Upload a .docx file',
+      notDocx: 'The template must be a Word (.docx) file',
+      tooLarge: 'The template is larger than 5 MB',
+      invalid: 'The template has errors: fix them in Word and upload it again',
+      none: 'This template has no file yet',
+    },
+  },
+  documents: {
+    unknownResource: 'Documents cannot be made for this resource',
+    noTemplate: 'No template has been uploaded for this document yet',
+    conversionFailed: 'The PDF could not be created: try again later',
+  },
 };
 
 /** The shape every language must have: same keys, any text. */

@@ -116,7 +116,7 @@ export function QuotationForm({
             </form.AppField>
             <form.AppField name="notes">
               {(field) => (
-                <field.TextEditorField
+                <field.TextareaField
                   label={t("quotations.fields.notes")}
                   className="col-span-full"
                 />

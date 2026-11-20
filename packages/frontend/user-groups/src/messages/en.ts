@@ -32,7 +32,7 @@ export const en = {
   },
   permissions: {
     hint: "What its members can do, besides reading. Admins can do everything anyway.",
-    subjects: { Customer: "Customers", Activity: "Activities", Product: "Products", Uom: "Units of measure", UomConversion: "Unit conversions", SalesOrder: "Sales orders", Quotation: "Quotations" },
+    subjects: { Customer: "Customers", Activity: "Activities", Product: "Products", Uom: "Units of measure", UomConversion: "Unit conversions", SalesOrder: "Sales orders", Quotation: "Quotations", DocumentTemplate: "Document templates" },
     actions: { create: "Create", update: "Edit", delete: "Delete", close: "Close / reopen", changeStatus: "Change status" },
     selectAll: "Select all",
     selectNone: "Select none",

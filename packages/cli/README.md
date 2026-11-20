@@ -112,7 +112,9 @@ dafne sync frontend-resource orders          # form, list and detail follow the 
 spec) and `--dry-run`. It edits, it doesn't regenerate: hand-written
 validation and members that aren't columns stay. `/** @api <tag> */`
 above a column in the table decides where it goes (`internal`,
-`readonly`, `writeonly`, `detail`, `filter`, `nofilter`, `sort`, `nosort`).
+`readonly`, `writeonly`, `detail`, `filter`, `nofilter`, `sort`, `nosort`,
+`input`, `optional`, `nosave`; all of them, with `@form`, in
+[docs/column-tags.md](../../docs/column-tags.md)).
 The `id` is always a filter and a sort field, a key to another record
 (`customerId`) always a filter: both match exactly, unless tagged
 `nofilter` / `nosort`.

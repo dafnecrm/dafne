@@ -127,8 +127,11 @@ erasable syntax (no enums, namespaces or constructor parameter properties;
 - `src/fields/`: column types and builders (`spec.ts`), `--field` specs
   (`parse.ts`: `parseFieldSpec`, and `formatFieldSpec` back), table file
   edits (`table-file.ts`, `operations.ts`: `addField`).
-- `src/sync/`: reads a Drizzle table (`table.ts`), decides where each
-  column goes (`roles.ts`), merges into the contract (`contract.ts`), the
+- `src/sync/`: reads a Drizzle table (`table.ts`: the `@api` tags,
+  `API_TAGS`, and `@form`, each documented in `../../docs/column-tags.md`:
+  keep it in line when a tag changes), decides where each
+  column goes (`roles.ts`: `rolesOf`, `bodyNotNull` for `@api optional`,
+  `savedFromBody` for `@api nosave`), merges into the contract (`contract.ts`), the
   service (`service.ts`) and the specs' samples (`service-spec.ts`);
   `resource.ts` (`syncOne`) runs them all; `body.ts` reads a body schema.
   Frontend: `response.ts` reads a contract's responses, `form.ts`,

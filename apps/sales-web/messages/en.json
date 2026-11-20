@@ -26,7 +26,8 @@
     "changePassword": "Change password",
     "uoms": "Units of measure",
     "uomConversions": "Conversions",
-    "quotations": "Quotations"
+    "quotations": "Quotations",
+    "documentTemplates": "Document templates"
   },
   "breadcrumb": {
     "new": "New",
@@ -224,5 +225,63 @@
       "signIn": "Sign in",
       "backToSignIn": "Back to sign in"
     }
+  },
+  "documentTemplates": {
+    "title": "Document templates",
+    "singular": "Document template",
+    "new": "New document template",
+    "all": "All document templates",
+    "noun": "document templates",
+    "create": "Create document template",
+    "editMeta": "Edit document template",
+    "newDescription": "Name the template and pick what it is for. You upload the Word file on its page.",
+    "editDescription": "Saving replaces the template's details; its Word file stays.",
+    "empty": {
+      "title": "No document templates found",
+      "filtered": "No document template where {filter}.",
+      "none": "Add your first document template to get started."
+    },
+    "deleteDescription": "The document template will no longer be listed or editable.",
+    "notFound": "This document template no longer exists.",
+    "sections": {
+      "details": "Details"
+    },
+    "fields": {
+      "createdAt": "Added",
+      "id": "Template ID",
+      "name": "Name",
+      "resource": "Document",
+      "isDefault": "Default for this document",
+      "fileName": "Word file",
+      "size": "Size"
+    },
+    "resources": {
+      "quotation": "Quotation"
+    },
+    "file": {
+      "title": "Word file",
+      "none": "No file yet: upload the .docx made in Word.",
+      "upload": "Upload .docx",
+      "replace": "Replace .docx",
+      "download": "Download .docx",
+      "preview": "Preview PDF",
+      "uploading": "Uploading…",
+      "uploaded": "Template uploaded.",
+      "hint": "Up to 5 MB. It is checked with sample data before it is saved."
+    },
+    "placeholders": {
+      "title": "Tags you can use",
+      "description": "Write them in the Word file. <value></value> puts a value, <loop></loop> repeats a table row for each element, and filters format values, e.g. <filter></filter>.",
+      "loop": "Repeat for each element",
+      "none": "Pick a document to see its tags."
+    },
+    "errors": {
+      "tag": "Tag {tag}: {explanation}"
+    }
+  },
+  "documents": {
+    "pdf": "PDF",
+    "choose": "PDF with another template",
+    "defaultTemplate": "Default"
   }
 }

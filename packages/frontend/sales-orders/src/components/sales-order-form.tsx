@@ -111,7 +111,7 @@ export function SalesOrderForm({
 
             <form.AppField name="notes">
               {(field) => (
-                <field.TextEditorField
+                <field.TextareaField
                   label={t("salesOrders.fields.notes")}
                   className="col-span-full"
                 />

@@ -19,8 +19,10 @@ app's `README.md`.
 | [Project boundaries](boundaries.md)      | Scope tags, who may depend on whom, how it is enforced                            |
 | [Architecture](architecture.md)          | Apps, shared sign-in (`apps/auth`), sessions, app access, contracts               |
 | [Databases and migrations](databases.md) | One schema per app, `auth`, `core`, the migrator, deploy                           |
+| [Documents](documents.md)                | PDFs from Word templates admins upload: tags, API, Gotenberg, giving a resource documents |
 | [The AI assistant](assistant.md)        | Providers (Anthropic, Ollama…), models, agents, tools, confirmations, model eval |
 | [The `dafne` CLI](cli.md)                | Generators (`g backend-resource`, `g frontend-resource`, `g frontend-app`…), `remove backend-db-column`, `sync contract`, `sync frontend-resource`, `db` commands, task shortcuts |
+| [Column tags](column-tags.md)            | `@api` and `@form` in table files: the defaults, each tag, what the syncs leave alone |
 | [Recipes](workflows.md)                  | Step-by-step: add a resource and its pages, remove a column, sync the pages, a lib, an app, a frontend app or lib, a dependency |
 | [CI and contributing](contributing.md)   | Pull requests, CI checks, code owners, testing the CLI                            |
 

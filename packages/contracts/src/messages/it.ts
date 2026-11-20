@@ -203,4 +203,21 @@ export const it: ContractMessages = {
       mustBeDraft: 'Solo un\'offerta in bozza può essere modificata',
     },
   },
+  documentTemplates: {
+    notFound: 'Modello di documento non trovato',
+    name: { required: 'Inserisci il nome' },
+    resource: { required: 'Inserisci la risorsa', unknown: 'Per questa risorsa non si possono creare documenti' },
+    file: {
+      missing: 'Carica un file .docx',
+      notDocx: 'Il modello deve essere un file Word (.docx)',
+      tooLarge: 'Il modello supera i 5 MB',
+      invalid: 'Il modello contiene errori: correggili in Word e caricalo di nuovo',
+      none: 'Questo modello non ha ancora un file',
+    },
+  },
+  documents: {
+    unknownResource: 'Per questa risorsa non si possono creare documenti',
+    noTemplate: 'Non è ancora stato caricato un modello per questo documento',
+    conversionFailed: 'Non è stato possibile creare il PDF: riprova più tardi',
+  },
 };

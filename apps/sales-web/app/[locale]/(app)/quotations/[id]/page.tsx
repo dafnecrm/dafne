@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
+import { DocumentPdfButton } from "@/components/document-pdf-button";
 import { BreadcrumbLabel } from "@/components/page-breadcrumb";
 import {
   PageContent,
@@ -61,6 +62,10 @@ async function QuotationProfile({
             <ArrowLeftIcon data-icon="inline-start" />
             {t("quotations.all")}
           </Button>
+          {/* Only once a template is uploaded for quotations. */}
+          <Suspense fallback={null}>
+            <DocumentPdfButton resource="quotation" id={quotation.id} />
+          </Suspense>
           <QuotationDetailActions
             quotation={quotation}
             path={quotationsTable.path}

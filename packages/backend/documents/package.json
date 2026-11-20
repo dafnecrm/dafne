@@ -1,0 +1,45 @@
+{
+  "name": "@dafne/backend-documents",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "oxlint -c ../.oxlintrc.json --type-aware src",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@dafne/backend-common": "workspace:*",
+    "@dafne/backend-crud": "workspace:*",
+    "@dafne/backend-database": "workspace:*",
+    "@dafne/backend-permissions": "workspace:*",
+    "@dafne/backend-session": "workspace:*",
+    "@dafne/contracts": "workspace:*",
+    "@nestjs/common": "catalog:",
+    "@nestjs/config": "catalog:",
+    "@nestjs/core": "catalog:",
+    "@nestjs/drizzle": "catalog:",
+    "@nestjs/platform-express": "catalog:",
+    "angular-expressions": "catalog:",
+    "docxtemplater": "catalog:",
+    "drizzle-orm": "catalog:",
+    "pizzip": "catalog:"
+  },
+  "devDependencies": {
+    "@nestjs/testing": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/node": "catalog:",
+    "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:",
+    "typescript": "catalog:",
+    "unplugin-swc": "catalog:",
+    "vitest": "catalog:"
+  },
+  "nx": {
+    "tags": [
+      "scope:backend"
+    ]
+  }
+}

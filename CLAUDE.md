@@ -21,8 +21,9 @@ keep it in line when these rules change. Each project has its own
 ## Commands (from the root)
 
 - `pnpm install`: installs every project (one `pnpm-lock.yaml`, here).
-- PostgreSQL 18 and Redis for development are in `compose.yaml`, at
-  `db.dafne.localhost:5432` and `redis.dafne.localhost:6379`: `pnpm dafne
+- PostgreSQL 18, Redis and Gotenberg (DOCX to PDF) for development are in
+  `compose.yaml`, at `db.dafne.localhost:5432`, `redis.dafne.localhost:6379`
+  and `gotenberg.dafne.localhost:3100`: `pnpm dafne
   dev` starts them (`--no-services` not), `pnpm dafne services up | down |
   status | logs` handles them alone.
 - `pnpm build | test | lint | typecheck`: `nx run-many` over all projects.

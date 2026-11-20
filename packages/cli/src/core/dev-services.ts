@@ -4,7 +4,7 @@ import { connect } from 'node:net';
 import { join } from 'node:path';
 
 /*
- * The development services of compose.yaml (PostgreSQL, Redis), started
+ * The development services of compose.yaml (PostgreSQL, Redis, Gotenberg), started
  * by `dafne dev` before the apps: `docker compose up -d --wait`, which
  * returns at once when they run already. They keep running after dev
  * stops (data in volumes); `dafne services down` stops them. A service
@@ -30,6 +30,7 @@ export function devServices(env: NodeJS.ProcessEnv = process.env): DevService[] 
   return [
     { name: 'db', host: 'db.dafne.localhost', port: port('DAFNE_DB_PORT', 5432) },
     { name: 'redis', host: 'redis.dafne.localhost', port: port('DAFNE_REDIS_PORT', 6379) },
+    { name: 'gotenberg', host: 'gotenberg.dafne.localhost', port: port('DAFNE_GOTENBERG_PORT', 3100) },
   ];
 }
 

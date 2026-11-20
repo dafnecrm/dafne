@@ -16,8 +16,11 @@
   (see First run).
 - **Redis** (optional): the API's cache. Without `REDIS_URL` the cache is in
   memory.
+- **[Gotenberg](https://gotenberg.dev)** (8): converts the documents filled
+  from the uploaded Word templates to PDF (`GOTENBERG_URL`). Only the PDF
+  downloads need it.
 
-For development, `compose.yaml` runs both (Docker, or
+For development, `compose.yaml` runs all three (Docker, or
 [OrbStack](https://orbstack.dev) on macOS, which uses less memory than
 Docker Desktop), and **`pnpm dafne dev` starts them by itself** before the
 apps. They keep running after it stops, with the data in volumes:
@@ -32,8 +35,9 @@ Without Docker, or with a port another server holds, `dafne dev` starts
 nothing and the apps use what their `.env` points to; `--no-services`
 skips them.
 
-They answer at `db.dafne.localhost:5432` (superuser `postgres` / `secret`)
-and `redis.dafne.localhost:6379`, the hosts of the `.env.example` files.
+They answer at `db.dafne.localhost:5432` (superuser `postgres` / `secret`),
+`redis.dafne.localhost:6379` and `gotenberg.dafne.localhost:3100` (which
+converts documents to PDF), the hosts of the `.env.example` files.
 `*.localhost` resolves to this machine by itself, and the ports are
 published on the loopback only. Another PostgreSQL (e.g. Postgres.app) or
 Redis on those ports must be stopped first, or the containers moved:
