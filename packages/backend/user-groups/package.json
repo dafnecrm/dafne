@@ -1,10 +1,12 @@
 {
   "name": "@dafne/backend-user-groups",
   "version": "0.0.1",
+  "description": "The user groups and their members (auth schema), served by apps/auth",
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./version": "./src/permissions-version.ts"
   },
   "scripts": {
     "lint": "oxlint -c ../.oxlintrc.json --type-aware src",
@@ -13,14 +15,12 @@
   "dependencies": {
     "@dafne/backend-common": "workspace:*",
     "@dafne/backend-crud": "workspace:*",
-    "@dafne/backend-database": "workspace:*",
-    "@dafne/backend-session": "workspace:*",
+    "@dafne/backend-database-auth": "workspace:*",
     "@dafne/contracts": "workspace:*",
-    "@dafne/permissions": "workspace:*",
     "@nestjs/cache-manager": "catalog:",
     "@nestjs/common": "catalog:",
-    "@nestjs/core": "catalog:",
     "@nestjs/drizzle": "catalog:",
+    "@thallesp/nestjs-better-auth": "catalog:",
     "drizzle-orm": "catalog:"
   },
   "devDependencies": {

@@ -48,6 +48,7 @@
     "title": "Account",
     "description": "Your account details.",
     "memberSince": "Member since",
+    "noGroups": "No groups",
     "avatar": {
       "saveFailed": "Couldn't save your avatar. Please try again.",
       "wrongType": "Pick a PNG, JPEG, WebP or GIF image.",
@@ -209,7 +210,8 @@
       "lastActive": "Last active",
       "accounts": "Accounts",
       "createdAt": "Joined",
-      "id": "User ID"
+      "id": "User ID",
+      "groups": "Groups"
     },
     "role": {
       "admin": "Admin",

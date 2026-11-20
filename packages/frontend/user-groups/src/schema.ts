@@ -1,6 +1,12 @@
 import { formOptions } from "@tanstack/react-form-nextjs";
 import { z } from "zod";
-import { userGroupBodySchema, type Permission } from "@dafne/contracts";
+import {
+  groupPermissionsBodySchema,
+  userGroupBodySchema,
+  type GroupPermissionsBody,
+  type Permission,
+  type UserGroupBody,
+} from "@dafne/contracts";
 import type { UserOption } from "./actions.ts";
 import type { UserGroupDetail } from "./types.ts";
 
@@ -16,8 +22,9 @@ export interface UserGroupFormValues {
 }
 
 /**
- * Validates the values as the backend does (its own schema and messages),
- * the members as their ids: the output is the body to send.
+ * Validates the values as the backends do (their own schemas and messages),
+ * the members as their ids: the output is the two bodies to send, the
+ * group's (apps/auth) and its permissions (this app's API).
  */
 export const userGroupSchema = z
   .object({
@@ -26,17 +33,24 @@ export const userGroupSchema = z
     members: z.array(z.object({ id: z.string(), name: z.string(), email: z.string() })),
     permissions: z.array(z.string()),
   })
-  .transform(({ members, ...values }, ctx) => {
-    const body = userGroupBodySchema.safeParse({ ...values, memberIds: members.map((m) => m.id) });
-    if (body.success) {
-      return body.data;
+  .transform(({ members, permissions, ...values }, ctx) => {
+    const group = userGroupBodySchema.safeParse({ ...values, memberIds: members.map((m) => m.id) });
+    const granted = groupPermissionsBodySchema.safeParse({ permissions });
+    if (group.success && granted.success) {
+      return { group: group.data, permissions: granted.data };
     }
-    for (const issue of body.error.issues) {
+    for (const issue of [...(group.error?.issues ?? []), ...(granted.error?.issues ?? [])]) {
       const path = issue.path[0] === "memberIds" ? ["members"] : issue.path;
       ctx.addIssue({ code: "custom", message: issue.message, path: path as PropertyKey[] });
     }
     return z.NEVER;
-  }) as z.ZodType<z.output<typeof userGroupBodySchema>, UserGroupFormValues>;
+  }) as z.ZodType<UserGroupBodies, UserGroupFormValues>;
+
+/** What saving a group sends: to apps/auth, then to this app's API. */
+export interface UserGroupBodies {
+  group: UserGroupBody;
+  permissions: GroupPermissionsBody;
+}
 
 /** Form values for a new user group, or for editing `userGroup`. */
 export function userGroupFormOpts(userGroup?: UserGroupDetail) {

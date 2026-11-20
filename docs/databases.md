@@ -11,7 +11,7 @@ drizzle-kit.
 
 | Schema   | Owner                                         | What                                                  |
 | -------- | --------------------------------------------- | ----------------------------------------------------- |
-| `auth`   | `@dafne/backend-database-auth` (`apps/auth`)  | Users, sessions, accounts, verification, `app_access` |
+| `auth`   | `@dafne/backend-database-auth` (`apps/auth`)  | Users, sessions, accounts, verification, `app_access`, user groups and members |
 | `sales`  | `@dafne/backend-database` (`apps/sales-api`)  | The sales app's tables                                |
 | `<app>`  | the app's schema package                      | One per new app                                       |
 | `core`   | its own package (not created yet)             | Tables shared by several apps                         |
@@ -57,7 +57,7 @@ writes the foreign key with the schema (`REFERENCES "auth"."user"("id")`).
 
 drizzle-kit writes **every table its schema files export** into the
 package's migrations, `schemaFilter` notwithstanding. So the sales package
-re-exports `user` from `src/auth.ts`, outside `src/tables/` (the folder
+re-exports `user` (and `userGroup`, `userGroupMember`) from `src/auth.ts`, outside `src/tables/` (the folder
 drizzle-kit reads): the sales migrations never create `auth.user`.
 
 Better Auth's tables (`src/better-auth.ts` of `@dafne/backend-database-auth`)

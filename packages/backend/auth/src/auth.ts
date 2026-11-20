@@ -1,11 +1,12 @@
 import { drizzleAdapter } from '@better-auth/drizzle-adapter/relations-v2';
 import { betterAuth } from 'better-auth';
 import { customSession } from 'better-auth/plugins';
-import { appAccess, authSchema, type AuthDatabase } from '@dafne/backend-database-auth';
+import { appAccess, authSchema, userGroup, userGroupMember, type AuthDatabase } from '@dafne/backend-database-auth';
 import { Resend } from 'resend';
 import { localeFrom } from '@dafne/backend-common';
 import { authOptions } from '@dafne/auth-options';
 import { isGlobalAdmin } from '@dafne/contracts';
+import { and, eq, isNull } from 'drizzle-orm';
 import type { UserChangelog } from './user-changelog.js';
 
 /** The verification email, by language. */
@@ -58,6 +59,19 @@ async function userApps(db: AuthDatabase, userId: string): Promise<UserApps> {
 }
 
 /**
+ * The ids of the groups the user is a member of (not deleted). The
+ * all-users groups aren't here: they apply to whoever can use the app.
+ */
+async function userGroups(db: AuthDatabase, userId: string): Promise<number[]> {
+  const rows = await db
+    .select({ id: userGroupMember.groupId })
+    .from(userGroupMember)
+    .innerJoin(userGroup, eq(userGroup.id, userGroupMember.groupId))
+    .where(and(eq(userGroupMember.userId, userId), isNull(userGroup.deletedAt)));
+  return rows.map((row) => row.id).sort((a, b) => a - b);
+}
+
+/**
  * The base URL: fixed (`baseURL`), or with `allowedHosts` the host of each
  * request. The frontends proxy /api/auth here, so the host comes from
  * their `x-forwarded-host` (trusted only when it is an allowed host).
@@ -95,12 +109,16 @@ export function createAuth(db: AuthDatabase, options: CreateAuthOptions) {
     },
     plugins: [
       ...authOptions.plugins,
-      // The apps the user can use go with the session (user.apps), so each
-      // app's guard checks them without another query.
-      customSession(async ({ user, session }) => ({
-        user: { ...user, apps: await userApps(db, user.id) },
-        session,
-      })),
+      // The apps the user can use (user.apps) and their groups (user.groups)
+      // go with the session, so each app's guard and permissions read them
+      // without another query.
+      customSession(async ({ user, session }) => {
+        const [apps, groups] = await Promise.all([userApps(db, user.id), userGroups(db, user.id)]);
+        return {
+          user: { ...user, apps, groups },
+          session,
+        };
+      }),
     ],
     databaseHooks: {
       ...authOptions.databaseHooks,

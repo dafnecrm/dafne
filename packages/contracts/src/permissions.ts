@@ -40,6 +40,22 @@ export const permissionsSchema = z
   .nullish()
   .transform((permissions) => [...new Set(permissions ?? [])]);
 
+/**
+ * Body of PUT /user-groups/:id/permissions (the app's API): what a group's
+ * members can do in this app, the whole list (PUT replaces it).
+ */
+export const groupPermissionsBodySchema = z.strictObject({
+  permissions: permissionsSchema,
+});
+export type GroupPermissionsBody = z.output<typeof groupPermissionsBodySchema>;
+
+/** Response of GET and PUT /user-groups/:id/permissions. */
+export interface GroupPermissions {
+  groupId: number;
+  /** Sorted. */
+  permissions: Permission[];
+}
+
 /** Response of GET /me/permissions: what the signed-in user can do. */
 export interface MyPermissions {
   /** Admins (global or of the app): everything. */

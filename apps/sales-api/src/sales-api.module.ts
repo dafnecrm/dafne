@@ -17,8 +17,8 @@ import { ProductsModule } from '@dafne/backend-products';
 import { SessionModule } from '@dafne/backend-session';
 import { SalesOrdersModule, SalesOrderTypesModule } from '@dafne/backend-sales-orders';
 import { AssistantModule, AssistantProvidersModule, AssistantModelsModule, AssistantAgentsModule } from '@dafne/backend-assistant';
-import { UserGroupsModule } from '@dafne/backend-user-groups';
 import { UomsModule, UomConversionsModule } from '@dafne/backend-uom';
+import { PermissionsModule } from '@dafne/backend-permissions';
 
 @Module({
   imports: [
@@ -54,9 +54,9 @@ import { UomsModule, UomConversionsModule } from '@dafne/backend-uom';
     AssistantProvidersModule,
     AssistantModelsModule,
     AssistantAgentsModule,
-    UserGroupsModule,
     UomsModule,
     UomConversionsModule,
+    PermissionsModule,
   ],
   controllers: [ApiController],
   providers: [

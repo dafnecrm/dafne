@@ -1,0 +1,33 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "out-tsc",
+    "tsBuildInfoFile": "out-tsc/tsconfig.tsbuildinfo",
+    "types": ["node", "vitest/globals"]
+  },
+  "include": ["src"],
+  "references": [
+    {
+      "path": "../../permissions"
+    },
+    {
+      "path": "../../contracts"
+    },
+    {
+      "path": "../user-groups"
+    },
+    {
+      "path": "../session"
+    },
+    {
+      "path": "../database"
+    },
+    {
+      "path": "../crud"
+    },
+    {
+      "path": "../common"
+    }
+  ]
+}

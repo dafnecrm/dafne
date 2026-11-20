@@ -6,7 +6,7 @@ import { SessionGuard } from './session.guard.js';
 import type { UserSession } from './session.types.js';
 
 const session = (apps: Record<string, string>, role: string | null = null): UserSession => ({
-  user: { id: 'u1', name: 'Ada', email: 'ada@example.com', emailVerified: true, role, firstname: 'Ada', lastname: 'L', apps },
+  user: { id: 'u1', name: 'Ada', email: 'ada@example.com', emailVerified: true, role, firstname: 'Ada', lastname: 'L', apps, groups: [] },
   session: { id: 's1', userId: 'u1', expiresAt: '2030-01-01' },
 });
 

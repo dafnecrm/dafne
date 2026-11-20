@@ -1,15 +1,18 @@
-import { schema } from '@dafne/backend-database';
+import { authSchema as schema } from '@dafne/backend-database-auth';
 import { getDrizzleToken } from '@nestjs/drizzle';
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { and, asc, desc, eq, isNull } from 'drizzle-orm';
+import { and, asc, desc, eq, isNull, type SQL } from 'drizzle-orm';
+import { PgDialect } from 'drizzle-orm/pg-core';
 import { userGroupBodySchema, type UserGroupBodyInput } from '@dafne/contracts';
-import { CrudHooksRegistry, type Actor } from '@dafne/backend-crud';
-import { PermissionsService } from './permissions.service.js';
+import { PermissionsVersion } from './permissions-version.js';
 import { UserGroupsService } from './user-groups.service.js';
 
 /** A signed-in user, as the services get it; only the id matters here. */
-const actor = (id: string) => ({ id }) as Actor;
+const actor = (id: string) => ({ id });
+
+/** The SQL of a condition, to compare two of them. */
+const toSql = (condition: SQL | undefined) => new PgDialect().sqlToQuery(condition!);
 
 /** A body as the validation pipe hands it to the service. */
 const body = (input: UserGroupBodyInput) => userGroupBodySchema.parse(input);
@@ -32,12 +35,16 @@ describe('UserGroupsService', () => {
     limit: vi.fn(),
     offset: vi.fn(),
   };
-  // Stand-ins for insert().values().returning() and update().set().where()
+  // Stand-ins for insert().values().returning() and
+  // update().set().where()[.returning()]: awaiting where() gives the
+  // result (delete), returning() the updated rows (update).
   const insert = { values: vi.fn(), returning: vi.fn() };
-  const update = { set: vi.fn(), where: vi.fn() };
+  const update = { set: vi.fn(), where: vi.fn(), returning: vi.fn() };
+  let updated: { allUsers: boolean }[] = [];
+  let rowCount = 1;
   const remove = { where: vi.fn() };
   const findFirst = vi.fn();
-  const permissionsService = { invalidate: vi.fn() };
+  const permissionsVersion = { bump: vi.fn() };
   const db = {
     transaction: vi.fn(),
     select: vi.fn(),
@@ -69,15 +76,20 @@ describe('UserGroupsService', () => {
     insert.returning.mockResolvedValue([{ id: 1 }]);
     db.update.mockReturnValue(update);
     update.set.mockReturnValue(update);
-    update.where.mockResolvedValue({ rowCount: 1 });
+    updated = [{ allUsers: false }];
+    rowCount = 1;
+    update.where.mockReturnValue({
+      returning: update.returning,
+      then: (resolve: (value: unknown) => unknown) => resolve({ rowCount }),
+    });
+    update.returning.mockImplementation(async () => updated);
     findFirst.mockResolvedValue(found);
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UserGroupsService,
         { provide: getDrizzleToken(), useValue: db },
-        CrudHooksRegistry,
-        { provide: PermissionsService, useValue: permissionsService },
+        { provide: PermissionsVersion, useValue: permissionsVersion },
       ],
     }).compile();
 
@@ -117,6 +129,27 @@ describe('UserGroupsService', () => {
       expect(select.limit).toHaveBeenCalledWith(5);
       expect(select.offset).toHaveBeenCalledWith(10);
     });
+
+    it("lists a user's groups, with memberId", async () => {
+      await service.list({ memberId: 'u7' });
+
+      const { sql, params } = toSql(select.where.mock.calls[0][0]);
+      expect(sql).toContain('exists (select 1 from "auth"."user_group_member"');
+      expect(params).toContain('u7');
+    });
+  });
+
+  describe('ofMember', () => {
+    it("gives the user's groups that are not deleted, by name", async () => {
+      await expect(service.ofMember('u7')).resolves.toBe(members);
+
+      expect(select.from).toHaveBeenCalledWith(userGroup);
+      const { sql, params } = toSql(select.where.mock.calls[0][0]);
+      expect(sql).toContain('"auth"."user_group"."deleted_at" is null');
+      expect(sql).toContain('exists (select 1 from "auth"."user_group_member"');
+      expect(params).toContain('u7');
+      expect(select.orderBy).toHaveBeenCalledWith(asc(userGroup.name));
+    });
   });
 
   describe('get', () => {
@@ -154,21 +187,28 @@ describe('UserGroupsService', () => {
       // Only the group's row was written: no members to insert.
       expect(db.insert).not.toHaveBeenCalled();
     });
+
+    it("keeps an all-users group without members", async () => {
+      updated = [{ allUsers: true }];
+      await service.update(1, body({ name: 'Tutti', memberIds: ['u1'] }), actor('u1'));
+
+      expect(db.delete).toHaveBeenCalled();
+      expect(db.insert).not.toHaveBeenCalled();
+    });
   });
 
-  describe('permissions', () => {
-    it('saves the permissions of a group, and drops the cached ones', async () => {
-      insert.values.mockClear();
-      await service.create(body({ name: 'Commerciali', permissions: ['Customer.create'] }), actor('u1'));
-
-      expect(insert.values.mock.calls.at(-1)?.[0]).toEqual([{ groupId: 1, permission: 'Customer.create' }]);
-      expect(permissionsService.invalidate).toHaveBeenCalled();
-    });
-
-    it('drops the cached permissions on update and delete too', async () => {
+  describe("the apps' cached permissions", () => {
+    it('drop on create, update and delete', async () => {
+      await service.create(body({ name: 'Commerciali' }), actor('u1'));
       await service.update(1, body({ name: 'Commerciali' }), actor('u1'));
       await service.delete(1, actor('u1'));
-      expect(permissionsService.invalidate).toHaveBeenCalledTimes(2);
+      expect(permissionsVersion.bump).toHaveBeenCalledTimes(3);
+    });
+
+    it("don't drop when nothing was written", async () => {
+      rowCount = 0;
+      await expect(service.delete(1, actor('u1'))).rejects.toBeInstanceOf(NotFoundException);
+      expect(permissionsVersion.bump).not.toHaveBeenCalled();
     });
   });
 
@@ -201,7 +241,7 @@ describe('UserGroupsService', () => {
     });
 
     it('throws 404 when the user group is missing', async () => {
-      update.where.mockResolvedValue({ rowCount: 0 });
+      updated = [];
 
       await expect(
         service.update(999, body({ name: 'Name' }), actor('u2')),
@@ -223,7 +263,7 @@ describe('UserGroupsService', () => {
     });
 
     it('throws 404 when the user group is missing or already deleted', async () => {
-      update.where.mockResolvedValue({ rowCount: 0 });
+      rowCount = 0;
 
       await expect(service.delete(1, actor('u3'))).rejects.toBeInstanceOf(
         NotFoundException,

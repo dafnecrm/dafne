@@ -124,6 +124,9 @@ export class UsersService
           columns: { id: true, providerId: true, createdAt: true },
           orderBy: { createdAt: 'asc' },
         },
+        groups: {
+          columns: { name: true }
+        },
         sessions: {
           columns: {
             id: true,
@@ -151,6 +154,7 @@ export class UsersService
       // Expired sessions still count as activity, but aren't listed.
       lastActiveAt: sessions[0]?.updatedAt ?? null,
       sessions: sessions.filter((s) => s.expiresAt > now),
+      groups: found.groups.map(g => g.name)
     };
   }
 }

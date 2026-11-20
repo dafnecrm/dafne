@@ -44,10 +44,10 @@ async function UserGroupProfile({
     <PageContent>
       <BreadcrumbLabel
         href={`${userGroupsTable.path}/${encodeURIComponent(userGroup.id)}`}
-        label={`${t("userGroups.singular")} ${userGroup.id}`}
+        label={`${userGroup.name}`}
       />
       <PageContentHeader>
-        <PageContentTitle>{`${t("userGroups.singular")} ${userGroup.id}`}</PageContentTitle>
+        <PageContentTitle>{`${t("userGroups.singular")}: ${userGroup.name}`}</PageContentTitle>
         <PageContentAction className="flex flex-wrap justify-end gap-2">
           <Button
             variant="outline"

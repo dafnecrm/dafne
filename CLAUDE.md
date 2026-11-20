@@ -90,7 +90,8 @@ keep it in line when these rules change. Each project has its own
   `packages/frontend/eslint.config.mjs`) and `pnpm boundaries` (the whole
   project graph, in CI) enforce them.
 - **Database**: one PostgreSQL database per environment (`dafne`), one
-  schema per app (`sales`, `<app>`), plus `auth` (users, sessions),
+  schema per app (`sales`, `<app>`), plus `auth` (users, sessions, user
+  groups and their members; each app keeps its groups' permissions),
   `changelog` (the change log, written only by `@dafne/backend-changelog`,
   depending only on `auth`) and, once a second app needs a table, `core`.
   Names are fixed. A table is

@@ -2,10 +2,9 @@ import { getTranslations } from "next-intl/server";
 import { useTranslations } from "next-intl";
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { Card, CardContent, CardHeader } from "@dafne/frontend-ui/components/card";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
+import { getMyUserGroups } from "@dafne/frontend-user-groups/server";
 import { requireUser } from "@/lib/session";
-import { AvatarUpload } from "./avatar-upload";
 import { ProfileDetails } from "./profile-details";
 import {
   PageContent,
@@ -38,7 +37,7 @@ export default function AccountPage() {
 }
 
 async function Profile() {
-  const user = await requireUser();
+  const [user, groups] = await Promise.all([requireUser(), getMyUserGroups()]);
 
-  return <ProfileDetails user={user} />;
+  return <ProfileDetails user={user} groups={groups} />;
 }

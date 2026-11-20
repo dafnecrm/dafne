@@ -9,10 +9,7 @@
   "include": ["src"],
   "references": [
     {
-      "path": "../../permissions"
-    },
-    {
-      "path": "../user-groups"
+      "path": "../permissions"
     },
     {
       "path": "../session"
@@ -34,6 +31,9 @@
     },
     {
       "path": "../activities"
+    },
+    {
+      "path": "../../permissions"
     },
     {
       "path": "../../contracts"

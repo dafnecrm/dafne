@@ -364,12 +364,21 @@ importers:
       '@dafne/backend-migrator':
         specifier: workspace:*
         version: link:../../packages/backend/migrator
+      '@dafne/backend-user-groups':
+        specifier: workspace:*
+        version: link:../../packages/backend/user-groups
       '@dafne/backend-users':
         specifier: workspace:*
         version: link:../../packages/backend/users
       '@dafne/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@keyv/redis':
+        specifier: ^6.1.0
+        version: 6.1.0(keyv@6.1.0)
+      '@nestjs/cache-manager':
+        specifier: 'catalog:'
+        version: 12.0.2(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/core@12.3.2)(cache-manager@7.2.9)(keyv@6.1.0)(rxjs@7.8.2)
       '@nestjs/common':
         specifier: 'catalog:'
         version: 12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0)
@@ -391,9 +400,15 @@ importers:
       better-auth:
         specifier: 'catalog:'
         version: 1.7.12(drizzle-kit@1.0.0-rc.5(drizzle-orm@1.0.0-rc.5(@types/pg@8.23.1)(mysql2@3.24.6(@types/node@24.19.2))(pg@8.23.1)(zod@4.6.7)))(drizzle-orm@1.0.0-rc.5(@types/pg@8.23.1)(mysql2@3.24.6(@types/node@24.19.2))(pg@8.23.1)(zod@4.6.7))(mysql2@3.24.6(@types/node@24.19.2))(next@16.4.6(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@24.19.2)(babel-plugin-macros@3.1.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(pg@8.23.1)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(vitest@4.1.12)
+      cache-manager:
+        specifier: ^7.2.9
+        version: 7.2.9
       drizzle-orm:
         specifier: 'catalog:'
         version: 1.0.0-rc.5(@types/pg@8.23.1)(mysql2@3.24.6(@types/node@24.19.2))(pg@8.23.1)(zod@4.6.7)
+      keyv:
+        specifier: ^6.1.0
+        version: 6.1.0
       pg:
         specifier: 'catalog:'
         version: 8.23.1
@@ -500,6 +515,9 @@ importers:
       '@dafne/backend-migrator':
         specifier: workspace:*
         version: link:../../packages/backend/migrator
+      '@dafne/backend-permissions':
+        specifier: workspace:*
+        version: link:../../packages/backend/permissions
       '@dafne/backend-products':
         specifier: workspace:*
         version: link:../../packages/backend/products
@@ -770,12 +788,12 @@ importers:
       '@dafne/backend-database':
         specifier: workspace:*
         version: link:../database
+      '@dafne/backend-permissions':
+        specifier: workspace:*
+        version: link:../permissions
       '@dafne/backend-session':
         specifier: workspace:*
         version: link:../session
-      '@dafne/backend-user-groups':
-        specifier: workspace:*
-        version: link:../user-groups
       '@dafne/contracts':
         specifier: workspace:*
         version: link:../../contracts
@@ -840,6 +858,9 @@ importers:
       '@dafne/backend-database':
         specifier: workspace:*
         version: link:../database
+      '@dafne/backend-permissions':
+        specifier: workspace:*
+        version: link:../permissions
       '@dafne/backend-products':
         specifier: workspace:*
         version: link:../products
@@ -849,9 +870,6 @@ importers:
       '@dafne/backend-session':
         specifier: workspace:*
         version: link:../session
-      '@dafne/backend-user-groups':
-        specifier: workspace:*
-        version: link:../user-groups
       '@dafne/contracts':
         specifier: workspace:*
         version: link:../../contracts
@@ -1127,12 +1145,12 @@ importers:
       '@dafne/backend-database':
         specifier: workspace:*
         version: link:../database
+      '@dafne/backend-permissions':
+        specifier: workspace:*
+        version: link:../permissions
       '@dafne/backend-session':
         specifier: workspace:*
         version: link:../session
-      '@dafne/backend-user-groups':
-        specifier: workspace:*
-        version: link:../user-groups
       '@dafne/contracts':
         specifier: workspace:*
         version: link:../../contracts
@@ -1478,6 +1496,70 @@ importers:
         specifier: 'catalog:'
         version: 4.1.12(@types/node@24.19.2)(@vitest/coverage-v8@4.1.12)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.0))
 
+  packages/backend/permissions:
+    dependencies:
+      '@dafne/backend-common':
+        specifier: workspace:*
+        version: link:../common
+      '@dafne/backend-crud':
+        specifier: workspace:*
+        version: link:../crud
+      '@dafne/backend-database':
+        specifier: workspace:*
+        version: link:../database
+      '@dafne/backend-session':
+        specifier: workspace:*
+        version: link:../session
+      '@dafne/backend-user-groups':
+        specifier: workspace:*
+        version: link:../user-groups
+      '@dafne/contracts':
+        specifier: workspace:*
+        version: link:../../contracts
+      '@dafne/permissions':
+        specifier: workspace:*
+        version: link:../../permissions
+      '@nestjs/cache-manager':
+        specifier: 'catalog:'
+        version: 12.0.2(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/core@12.3.2)(cache-manager@7.2.9)(keyv@6.1.0)(rxjs@7.8.2)
+      '@nestjs/common':
+        specifier: 'catalog:'
+        version: 12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0)
+      '@nestjs/core':
+        specifier: 'catalog:'
+        version: 12.3.2(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/platform-express@12.3.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/drizzle':
+        specifier: 'catalog:'
+        version: 0.0.2(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/core@12.3.2)(drizzle-orm@1.0.0-rc.5(@types/pg@8.23.1)(mysql2@3.24.6(@types/node@24.19.2))(pg@8.23.1)(zod@4.6.7))(reflect-metadata@0.2.2)
+      drizzle-orm:
+        specifier: 'catalog:'
+        version: 1.0.0-rc.5(@types/pg@8.23.1)(mysql2@3.24.6(@types/node@24.19.2))(pg@8.23.1)(zod@4.6.7)
+    devDependencies:
+      '@nestjs/testing':
+        specifier: 'catalog:'
+        version: 12.3.3(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/core@12.3.2)(@nestjs/platform-express@12.3.2)
+      '@swc/core':
+        specifier: 'catalog:'
+        version: 1.16.21(@swc/helpers@0.5.23)
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.2
+      oxlint:
+        specifier: 'catalog:'
+        version: 1.91.0(oxlint-tsgolint@7.0.2005)
+      oxlint-tsgolint:
+        specifier: 'catalog:'
+        version: 7.0.2005
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+      unplugin-swc:
+        specifier: 'catalog:'
+        version: 2.0.0(@rspack/core@2.3.1(@swc/helpers@0.5.23))(@swc/core@1.16.21(@swc/helpers@0.5.23))(esbuild@0.28.2)(rolldown@1.2.16)(rollup@4.67.5)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.0))
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.12(@types/node@24.19.2)(@vitest/coverage-v8@4.1.12)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.0))
+
   packages/backend/products:
     dependencies:
       '@dafne/backend-changelog':
@@ -1492,15 +1574,15 @@ importers:
       '@dafne/backend-database':
         specifier: workspace:*
         version: link:../database
+      '@dafne/backend-permissions':
+        specifier: workspace:*
+        version: link:../permissions
       '@dafne/backend-session':
         specifier: workspace:*
         version: link:../session
       '@dafne/backend-uom':
         specifier: workspace:*
         version: link:../uom
-      '@dafne/backend-user-groups':
-        specifier: workspace:*
-        version: link:../user-groups
       '@dafne/contracts':
         specifier: workspace:*
         version: link:../../contracts
@@ -1556,15 +1638,15 @@ importers:
       '@dafne/backend-fsm':
         specifier: workspace:*
         version: link:../fsm
+      '@dafne/backend-permissions':
+        specifier: workspace:*
+        version: link:../permissions
       '@dafne/backend-products':
         specifier: workspace:*
         version: link:../products
       '@dafne/backend-session':
         specifier: workspace:*
         version: link:../session
-      '@dafne/backend-user-groups':
-        specifier: workspace:*
-        version: link:../user-groups
       '@dafne/contracts':
         specifier: workspace:*
         version: link:../../contracts
@@ -1657,12 +1739,12 @@ importers:
       '@dafne/backend-database':
         specifier: workspace:*
         version: link:../database
+      '@dafne/backend-permissions':
+        specifier: workspace:*
+        version: link:../permissions
       '@dafne/backend-session':
         specifier: workspace:*
         version: link:../session
-      '@dafne/backend-user-groups':
-        specifier: workspace:*
-        version: link:../user-groups
       '@dafne/contracts':
         specifier: workspace:*
         version: link:../../contracts
@@ -1709,30 +1791,24 @@ importers:
       '@dafne/backend-crud':
         specifier: workspace:*
         version: link:../crud
-      '@dafne/backend-database':
+      '@dafne/backend-database-auth':
         specifier: workspace:*
-        version: link:../database
-      '@dafne/backend-session':
-        specifier: workspace:*
-        version: link:../session
+        version: link:../database-auth
       '@dafne/contracts':
         specifier: workspace:*
         version: link:../../contracts
-      '@dafne/permissions':
-        specifier: workspace:*
-        version: link:../../permissions
       '@nestjs/cache-manager':
         specifier: 'catalog:'
         version: 12.0.2(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/core@12.3.2)(cache-manager@7.2.9)(keyv@6.1.0)(rxjs@7.8.2)
       '@nestjs/common':
         specifier: 'catalog:'
         version: 12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0)
-      '@nestjs/core':
-        specifier: 'catalog:'
-        version: 12.3.2(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/platform-express@12.3.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/drizzle':
         specifier: 'catalog:'
         version: 0.0.2(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/core@12.3.2)(drizzle-orm@1.0.0-rc.5(@types/pg@8.23.1)(mysql2@3.24.6(@types/node@24.19.2))(pg@8.23.1)(zod@4.6.7))(reflect-metadata@0.2.2)
+      '@thallesp/nestjs-better-auth':
+        specifier: 'catalog:'
+        version: 2.8.0(@nestjs/common@12.3.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/core@12.3.2)(better-auth@1.7.12(drizzle-kit@1.0.0-rc.5(drizzle-orm@1.0.0-rc.5(@types/pg@8.23.1)(mysql2@3.24.6(@types/node@24.19.2))(pg@8.23.1)(zod@4.6.7)))(drizzle-orm@1.0.0-rc.5(@types/pg@8.23.1)(mysql2@3.24.6(@types/node@24.19.2))(pg@8.23.1)(zod@4.6.7))(mysql2@3.24.6(@types/node@24.19.2))(next@16.4.6(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@24.19.2)(babel-plugin-macros@3.1.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(pg@8.23.1)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(vitest@4.1.12))(express@5.3.0(supports-color@7.2.0))(qs@6.17.1)(typescript@6.0.3)
       drizzle-orm:
         specifier: 'catalog:'
         version: 1.0.0-rc.5(@types/pg@8.23.1)(mysql2@3.24.6(@types/node@24.19.2))(pg@8.23.1)(zod@4.6.7)

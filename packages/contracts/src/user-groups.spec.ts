@@ -17,12 +17,11 @@ describe("userGroupBodySchema", () => {
       name: "Name",
       description: null,
       memberIds: [],
-      permissions: [],
     });
   });
 
-  it("refuses an unknown permission", () => {
-    expect(failedFields({ name: "Name", permissions: ["Customer.fly"] })).toEqual(["permissions.0"]);
+  it("refuses permissions: they're each app's own", () => {
+    expect(failedFields({ name: "Name", permissions: ["Customer.create"] })).toEqual(["unrecognized_keys"]);
   });
 
   it("keeps each member once", () => {
@@ -44,6 +43,10 @@ describe("listUserGroupsQuerySchema", () => {
     expect(
       listUserGroupsQuerySchema.parse({ limit: "10", offset: "20" }),
     ).toEqual({ limit: 10, offset: 20 });
+  });
+
+  it("filters by member", () => {
+    expect(listUserGroupsQuerySchema.parse({ memberId: "u1" })).toEqual({ memberId: "u1" });
   });
 
   it("rejects an unknown sort field and a limit over 100", () => {

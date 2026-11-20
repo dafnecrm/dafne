@@ -27,7 +27,7 @@ import {
   type AssistantModelOptions,
   type AssistantProviderKind,
 } from '@dafne/contracts';
-import { PermissionsService } from '@dafne/backend-user-groups';
+import { PermissionsService } from '@dafne/backend-permissions';
 import { AssistantTools, errorText } from '../tools/assistant-tools.js';
 import { WRITE_TOOLS, type WriteToolName } from '../tools/write-tools.js';
 import type { ProviderConfig } from './model-factory.js';

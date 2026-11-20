@@ -67,6 +67,9 @@
     },
     {
       "path": "../../packages/backend/uom"
+    },
+    {
+      "path": "../../packages/backend/permissions"
     }
   ]
 }

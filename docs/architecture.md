@@ -16,12 +16,13 @@ browser ──► sales-web ──/api/auth/*──► apps/auth ──► auth 
 ## Shared sign-in: `apps/auth`
 
 - Runs [Better Auth](https://www.better-auth.com) under `/api/auth/*`, the
-  users API (`/users`) and the app access (`app_access`), on the
-  `auth` schema. It's built from `@dafne/backend-auth`,
-  `@dafne/backend-users` and `@dafne/backend-database-auth`.
+  users API (`/users`), the app access (`app_access`) and the
+  [user groups](#user-groups) (`/user-groups`), on the `auth` schema.
+  It's built from `@dafne/backend-auth`, `@dafne/backend-users`,
+  `@dafne/backend-user-groups` and `@dafne/backend-database-auth`.
 - **Only this app runs Better Auth** and writes the `auth` schema. The
-  apps' APIs never add `AuthModule`; they only read `auth.user` (joins,
-  foreign keys).
+  apps' APIs never add `AuthModule`; they only read the `auth` tables
+  (`auth.user`, `auth.user_group`…: joins, foreign keys).
 - The frontends **proxy `/api/auth/*`** to it (`next.config.ts`), so the
   session cookie (`dafne.session_token`) belongs to the frontend's origin.
   With `COOKIE_DOMAIN` (e.g. `cliente.it`) it belongs to the parent domain,
@@ -33,7 +34,11 @@ browser ──► sales-web ──/api/auth/*──► apps/auth ──► auth 
 ## App access
 
 `app_access` says which user can use which app, and with which role:
-the session carries it as `user.apps` (e.g. `{ sales: "admin" }`).
+the session carries it as `user.apps` (e.g. `{ sales: "admin" }`), and
+the ids of the user's groups as `user.groups` (e.g. `[1, 4]`; the
+all-users groups apply to whoever can use the app, so they aren't listed).
+Their names, for any signed-in user, come from apps/auth's
+`GET /me/user-groups`.
 
 - A new user gets the apps in `DEFAULT_APPS` (e.g. `sales`).
 - Global admins (`role: admin`) can use every app.
@@ -46,11 +51,22 @@ the session carries it as `user.apps` (e.g. `{ sales: "admin" }`).
 
 ## User groups
 
-`@dafne/backend-user-groups` (`/user-groups`, admins) keeps named groups of
-users (`user_group`, `user_group_member`, sales schema): generic, not tied
-to a feature. They carry [permissions](#permissions) and decide who can use
-an [AI agent](assistant.md#who-can-use-an-agent). If another app needs them,
-the tables move to `core`.
+`@dafne/backend-user-groups`, served by `apps/auth` (`/user-groups`,
+global admins and super-admins, like `/users`), keeps named groups of
+users (`auth.user_group`, `auth.user_group_member`): generic, not tied to
+a feature, and **shared by every app**. What a group can do is each app's
+own: its [permissions](#permissions) live in the app's schema
+(`sales.user_group_permission`, pointing to `auth.user_group`), and in
+sales a group also decides who can use an
+[AI agent](assistant.md#who-can-use-an-agent).
+
+- `GET /user-groups?memberId=<user id>` lists the groups a user is in.
+- An all-users group (`all_users`, "Tutti gli utenti") has no members: it
+  applies to every user who has access to the app reading it
+  (`app_access`).
+- The frontend's group pages call both: apps/auth for the group and its
+  members, the app's API for its permissions
+  (`GET`/`PUT /user-groups/:id/permissions`).
 
 ## Permissions
 
@@ -61,17 +77,22 @@ everything.
 
 - The catalog is `PERMISSIONS` in `packages/contracts/src/permissions.ts`
   (subject → actions, stored as `"Customer.create"`).
-- Groups hold them (`user_group_permission`), managed by admins in
-  Admin → Accesso → Gruppi di utenti. The "Tutti gli utenti" group
-  (`all_users`) applies to everyone: the migration gave it every permission,
-  so nothing changed on day one.
+- Groups hold them per app (`sales.user_group_permission`,
+  `@dafne/backend-permissions`: `PUT /user-groups/:id/permissions`, admins
+  of the app), managed in Admin → Accesso → Gruppi di utenti. The "Tutti
+  gli utenti" group (`all_users`) applies to every user of the app: the
+  migration gave it every permission, so nothing changed on day one. A
+  migration adding a permission gives it to that group too
+  (`… FROM "auth"."user_group" WHERE "all_users"`).
 - Both sides build the same [CASL](https://casl.js.org) ability from
   `{ admin, permissions }` (`abilityFor`, `@dafne/permissions`):
   - **backend**: `@Can('create', 'Customer')` on a route
-    (`@dafne/backend-user-groups`; the controller's module imports
-    `UserGroupsModule`) answers 403 without the permission.
+    (`@dafne/backend-permissions`; the controller's module imports
+    `PermissionsModule`) answers 403 without the permission.
     `PermissionsService` caches each user's permissions for a minute; any
-    write to a group drops them;
+    write to a group (members in apps/auth, permissions in the app) bumps
+    `PermissionsVersion` in the cache the apps share (Redis, `REDIS_URL`
+    in both), which drops them;
   - **frontend**: the `(app)` layout passes `GET /me/permissions` to
     `<PermissionsProvider>`; `<Can I="create" a="Customer">` (or `useCan`)
     from `@dafne/frontend-permissions` hides what the user can't do.

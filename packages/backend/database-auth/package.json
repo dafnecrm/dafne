@@ -1,7 +1,7 @@
 {
   "name": "@dafne/backend-database-auth",
   "version": "0.0.1",
-  "description": "auth: Better Auth's tables (users, sessions) and app_access, in the auth schema, with their migrations",
+  "description": "auth: Better Auth's tables (users, sessions) app_access and the user groups, in the auth schema, with their migrations",
   "private": true,
   "type": "module",
   "dafne": {

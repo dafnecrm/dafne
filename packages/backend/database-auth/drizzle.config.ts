@@ -4,7 +4,7 @@ import { defineConfig } from 'drizzle-kit';
 // `pnpm dafne db generate @dafne/backend-database-auth`.
 export default defineConfig({
   out: './migrations',
-  schema: ['./src/auth-db.ts', './src/better-auth.ts', './src/app-access.ts'],
+  schema: ['./src/auth-db.ts', './src/better-auth.ts', './src/app-access.ts', './src/user-groups.ts'],
   dialect: 'postgresql',
   schemaFilter: ['auth'],
   dbCredentials: { url: process.env.DATABASE_URL ?? 'postgres://localhost/dafne' },

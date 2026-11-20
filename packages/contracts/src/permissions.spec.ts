@@ -1,4 +1,4 @@
-import { PERMISSION_KEYS, permissionsSchema } from './permissions.ts';
+import { groupPermissionsBodySchema, PERMISSION_KEYS, permissionsSchema } from './permissions.ts';
 
 describe('permissions', () => {
   it('lists every action of every subject', () => {
@@ -10,5 +10,11 @@ describe('permissions', () => {
     expect(permissionsSchema.parse(['Customer.create', 'Customer.create'])).toEqual(['Customer.create']);
     expect(permissionsSchema.safeParse(['Customer.fly']).success).toBe(false);
     expect(permissionsSchema.parse(undefined)).toEqual([]);
+  });
+
+  it("parses a group's permissions body, refusing anything else", () => {
+    expect(groupPermissionsBodySchema.parse({ permissions: ['Customer.create'] })).toEqual({ permissions: ['Customer.create'] });
+    expect(groupPermissionsBodySchema.parse({})).toEqual({ permissions: [] });
+    expect(groupPermissionsBodySchema.safeParse({ permissions: [], name: 'x' }).success).toBe(false);
   });
 });

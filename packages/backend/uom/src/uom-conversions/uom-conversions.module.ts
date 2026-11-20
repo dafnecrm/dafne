@@ -1,6 +1,6 @@
 import { CrudHooksModule } from '@dafne/backend-crud';
 import { DatabaseModule } from '@dafne/backend-database';
-import { UserGroupsModule } from '@dafne/backend-user-groups';
+import { PermissionsModule } from '@dafne/backend-permissions';
 import { Module } from '@nestjs/common';
 import { UomConversionsService } from './uom-conversions.service.js';
 import { UomConversionsController } from './uom-conversions.controller.js';
@@ -9,7 +9,7 @@ import { UomConversionsController } from './uom-conversions.controller.js';
   imports: [
     DatabaseModule,
     // @Can() on the controller: AbilityGuard and the permissions.
-    UserGroupsModule,
+    PermissionsModule,
     CrudHooksModule,
   ],
   controllers: [UomConversionsController],

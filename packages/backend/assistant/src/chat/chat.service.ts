@@ -12,7 +12,7 @@ import {
   type AssistantToolName,
   type ContractLocale,
 } from '@dafne/contracts';
-import { PermissionsService } from '@dafne/backend-user-groups';
+import { PermissionsService } from '@dafne/backend-permissions';
 import { AssistantTools, errorText } from '../tools/assistant-tools.js';
 import { ConversationsService } from './conversations.service.js';
 import { ModelFactory } from './model-factory.js';
