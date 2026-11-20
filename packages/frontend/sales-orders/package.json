@@ -14,7 +14,12 @@
     "./sales-order-types/actions": "./src/sales-order-types/actions.ts",
     "./sales-order-types/schema": "./src/sales-order-types/schema.ts",
     "./sales-order-types/server": "./src/sales-order-types/server.ts",
-    "./sales-order-types/components/*": "./src/sales-order-types/components/*.tsx"
+    "./sales-order-types/components/*": "./src/sales-order-types/components/*.tsx",
+    "./quotations": "./src/quotations/index.ts",
+    "./quotations/actions": "./src/quotations/actions.ts",
+    "./quotations/schema": "./src/quotations/schema.ts",
+    "./quotations/server": "./src/quotations/server.ts",
+    "./quotations/components/*": "./src/quotations/components/*.tsx"
   },
   "scripts": {
     "lint": "eslint src",

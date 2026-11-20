@@ -1,0 +1,1026 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "65ebc168-e812-4c07-8742-6c1707ce8616",
+  "prevIds": [
+    "aaefda1f-a76a-4338-8502-6b90fa99b2dc"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "sales",
+        "quotation"
+      ],
+      "writes": [
+        "s|tbl|sales.quotation",
+        "n|tbl|sales.quotation",
+        "e|tbl|sales.quotation",
+        "n|rel|sales.quotation",
+        "n|type|sales.quotation",
+        "n|rel|sales.quotation_pkey"
+      ],
+      "reads": [
+        "n|sch|sales"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "sales",
+        "quotation_item"
+      ],
+      "writes": [
+        "s|tbl|sales.quotation_item",
+        "n|tbl|sales.quotation_item",
+        "e|tbl|sales.quotation_item",
+        "n|rel|sales.quotation_item",
+        "n|type|sales.quotation_item",
+        "n|rel|sales.quotation_item_pkey"
+      ],
+      "reads": [
+        "n|sch|sales"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "sales",
+        "sales_order",
+        "quotation_id"
+      ],
+      "writes": [
+        "s|col|sales.sales_order.quotation_id",
+        "n|col|sales.sales_order.quotation_id",
+        "e|col|sales.sales_order.quotation_id"
+      ],
+      "reads": [
+        "n|tbl|sales.sales_order",
+        "n|sch|sales"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "sales",
+        "quotation",
+        "quotation_deletedAt_idx"
+      ],
+      "writes": [
+        "s|idx|sales.quotation_deletedAt_idx",
+        "n|idx|sales.quotation_deletedAt_idx",
+        "e|idx|sales.quotation_deletedAt_idx",
+        "n|rel|sales.quotation_deletedAt_idx"
+      ],
+      "reads": [
+        "n|tbl|sales.quotation",
+        "n|sch|sales",
+        "n|col|sales.quotation.deleted_at"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "sales",
+        "quotation",
+        "quotation_customerId_idx"
+      ],
+      "writes": [
+        "s|idx|sales.quotation_customerId_idx",
+        "n|idx|sales.quotation_customerId_idx",
+        "e|idx|sales.quotation_customerId_idx",
+        "n|rel|sales.quotation_customerId_idx"
+      ],
+      "reads": [
+        "n|tbl|sales.quotation",
+        "n|sch|sales",
+        "n|col|sales.quotation.customer_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "sales",
+        "quotation",
+        "quotation_typeId_idx"
+      ],
+      "writes": [
+        "s|idx|sales.quotation_typeId_idx",
+        "n|idx|sales.quotation_typeId_idx",
+        "e|idx|sales.quotation_typeId_idx",
+        "n|rel|sales.quotation_typeId_idx"
+      ],
+      "reads": [
+        "n|tbl|sales.quotation",
+        "n|sch|sales",
+        "n|col|sales.quotation.type_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "sales",
+        "quotation_item",
+        "quotation_item_productId_idx"
+      ],
+      "writes": [
+        "s|idx|sales.quotation_item_productId_idx",
+        "n|idx|sales.quotation_item_productId_idx",
+        "e|idx|sales.quotation_item_productId_idx",
+        "n|rel|sales.quotation_item_productId_idx"
+      ],
+      "reads": [
+        "n|tbl|sales.quotation_item",
+        "n|sch|sales",
+        "n|col|sales.quotation_item.product_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "sales",
+        "quotation_item",
+        "quotation_item_uomId_idx"
+      ],
+      "writes": [
+        "s|idx|sales.quotation_item_uomId_idx",
+        "n|idx|sales.quotation_item_uomId_idx",
+        "e|idx|sales.quotation_item_uomId_idx",
+        "n|rel|sales.quotation_item_uomId_idx"
+      ],
+      "reads": [
+        "n|tbl|sales.quotation_item",
+        "n|sch|sales",
+        "n|col|sales.quotation_item.uom_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "sales",
+        "sales_order",
+        "sales_order_quotationId_idx"
+      ],
+      "writes": [
+        "s|idx|sales.sales_order_quotationId_idx",
+        "n|idx|sales.sales_order_quotationId_idx",
+        "e|idx|sales.sales_order_quotationId_idx",
+        "n|rel|sales.sales_order_quotationId_idx"
+      ],
+      "reads": [
+        "n|tbl|sales.sales_order",
+        "n|sch|sales",
+        "n|col|sales.sales_order.quotation_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "quotation"
+      ],
+      "writes": [
+        "s|fk|sales.quotation.quotation_customer_id_customer_id_fkey",
+        "n|fk|sales.quotation.quotation_customer_id_customer_id_fkey",
+        "e|fk|sales.quotation.quotation_customer_id_customer_id_fkey",
+        "n|con|sales.quotation.quotation_customer_id_customer_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.quotation",
+        "n|sch|sales",
+        "n|tbl|sales.customer",
+        "n|sch|sales",
+        "n|col|sales.quotation.customer_id",
+        "n|col|sales.customer.id",
+        "e|uniqueness|sales.customer.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "quotation"
+      ],
+      "writes": [
+        "s|fk|sales.quotation.quotation_type_id_sales_order_type_id_fkey",
+        "n|fk|sales.quotation.quotation_type_id_sales_order_type_id_fkey",
+        "e|fk|sales.quotation.quotation_type_id_sales_order_type_id_fkey",
+        "n|con|sales.quotation.quotation_type_id_sales_order_type_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.quotation",
+        "n|sch|sales",
+        "n|tbl|sales.sales_order_type",
+        "n|sch|sales",
+        "n|col|sales.quotation.type_id",
+        "n|col|sales.sales_order_type.id",
+        "e|uniqueness|sales.sales_order_type.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "quotation"
+      ],
+      "writes": [
+        "s|fk|sales.quotation.quotation_created_by_id_user_id_fkey",
+        "n|fk|sales.quotation.quotation_created_by_id_user_id_fkey",
+        "e|fk|sales.quotation.quotation_created_by_id_user_id_fkey",
+        "n|con|sales.quotation.quotation_created_by_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.quotation",
+        "n|sch|sales",
+        "n|tbl|auth.user",
+        "n|sch|auth",
+        "n|col|sales.quotation.created_by_id",
+        "n|col|auth.user.id",
+        "e|uniqueness|auth.user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "quotation"
+      ],
+      "writes": [
+        "s|fk|sales.quotation.quotation_updated_by_id_user_id_fkey",
+        "n|fk|sales.quotation.quotation_updated_by_id_user_id_fkey",
+        "e|fk|sales.quotation.quotation_updated_by_id_user_id_fkey",
+        "n|con|sales.quotation.quotation_updated_by_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.quotation",
+        "n|sch|sales",
+        "n|tbl|auth.user",
+        "n|sch|auth",
+        "n|col|sales.quotation.updated_by_id",
+        "n|col|auth.user.id",
+        "e|uniqueness|auth.user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "quotation_item"
+      ],
+      "writes": [
+        "s|fk|sales.quotation_item.quotation_item_quotation_id_quotation_id_fkey",
+        "n|fk|sales.quotation_item.quotation_item_quotation_id_quotation_id_fkey",
+        "e|fk|sales.quotation_item.quotation_item_quotation_id_quotation_id_fkey",
+        "n|con|sales.quotation_item.quotation_item_quotation_id_quotation_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.quotation_item",
+        "n|sch|sales",
+        "n|tbl|sales.quotation",
+        "n|sch|sales",
+        "n|col|sales.quotation_item.quotation_id",
+        "n|col|sales.quotation.id",
+        "e|uniqueness|sales.quotation.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "quotation_item"
+      ],
+      "writes": [
+        "s|fk|sales.quotation_item.quotation_item_product_id_product_id_fkey",
+        "n|fk|sales.quotation_item.quotation_item_product_id_product_id_fkey",
+        "e|fk|sales.quotation_item.quotation_item_product_id_product_id_fkey",
+        "n|con|sales.quotation_item.quotation_item_product_id_product_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.quotation_item",
+        "n|sch|sales",
+        "n|tbl|sales.product",
+        "n|sch|sales",
+        "n|col|sales.quotation_item.product_id",
+        "n|col|sales.product.id",
+        "e|uniqueness|sales.product.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "quotation_item"
+      ],
+      "writes": [
+        "s|fk|sales.quotation_item.quotation_item_uom_id_uom_id_fkey",
+        "n|fk|sales.quotation_item.quotation_item_uom_id_uom_id_fkey",
+        "e|fk|sales.quotation_item.quotation_item_uom_id_uom_id_fkey",
+        "n|con|sales.quotation_item.quotation_item_uom_id_uom_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.quotation_item",
+        "n|sch|sales",
+        "n|tbl|sales.uom",
+        "n|sch|sales",
+        "n|col|sales.quotation_item.uom_id",
+        "n|col|sales.uom.id",
+        "e|uniqueness|sales.uom.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "sales_order"
+      ],
+      "writes": [
+        "s|fk|sales.sales_order.sales_order_quotation_id_quotation_id_fkey",
+        "n|fk|sales.sales_order.sales_order_quotation_id_quotation_id_fkey",
+        "e|fk|sales.sales_order.sales_order_quotation_id_quotation_id_fkey",
+        "n|con|sales.sales_order.sales_order_quotation_id_quotation_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.sales_order",
+        "n|sch|sales",
+        "n|tbl|sales.quotation",
+        "n|sch|sales",
+        "n|col|sales.sales_order.quotation_id",
+        "n|col|sales.quotation.id",
+        "e|uniqueness|sales.quotation.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "name": "quotation",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "name": "quotation_item",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "quotation",
+        "name": "id",
+        "type": "serial",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "quotation",
+        "name": "status",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'draft'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "quotation",
+        "name": "notes",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "quotation",
+        "name": "customer_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "quotation",
+        "name": "type_id",
+        "type": "varchar(5)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "quotation",
+        "name": "valid_until",
+        "type": "date",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "quotation",
+        "name": "created_at",
+        "type": "timestamp(3) with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "quotation",
+        "name": "updated_at",
+        "type": "timestamp(3) with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "quotation",
+        "name": "deleted_at",
+        "type": "timestamp(3) with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "quotation",
+        "name": "created_by_id",
+        "type": "varchar(36)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "quotation",
+        "name": "updated_by_id",
+        "type": "varchar(36)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "quotation_item",
+        "name": "quotation_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "quotation_item",
+        "name": "product_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "quotation_item",
+        "name": "quantity",
+        "type": "numeric(18,6)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "quotation_item",
+        "name": "uom_id",
+        "type": "varchar(10)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "quotation_item",
+        "name": "base_quantity",
+        "type": "numeric(18,6)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "quotation_item",
+        "name": "price",
+        "type": "numeric(14,2)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "quotation_item",
+        "name": "position",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "sales_order",
+        "name": "quotation_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "quotation",
+        "name": "quotation_deletedAt_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "deleted_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "quotation",
+        "name": "quotation_customerId_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "customer_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "quotation",
+        "name": "quotation_typeId_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "type_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "quotation_item",
+        "name": "quotation_item_productId_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "product_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "quotation_item",
+        "name": "quotation_item_uomId_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "uom_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "sales_order",
+        "name": "sales_order_quotationId_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "quotation_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "quotation",
+        "name": "quotation_customer_id_customer_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "customer_id"
+        ],
+        "schemaTo": "sales",
+        "tableTo": "customer",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "RESTRICT",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "quotation",
+        "name": "quotation_type_id_sales_order_type_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "type_id"
+        ],
+        "schemaTo": "sales",
+        "tableTo": "sales_order_type",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "RESTRICT",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "quotation",
+        "name": "quotation_created_by_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "created_by_id"
+        ],
+        "schemaTo": "auth",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "quotation",
+        "name": "quotation_updated_by_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "updated_by_id"
+        ],
+        "schemaTo": "auth",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "quotation_item",
+        "name": "quotation_item_quotation_id_quotation_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "quotation_id"
+        ],
+        "schemaTo": "sales",
+        "tableTo": "quotation",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "quotation_item",
+        "name": "quotation_item_product_id_product_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "product_id"
+        ],
+        "schemaTo": "sales",
+        "tableTo": "product",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "quotation_item",
+        "name": "quotation_item_uom_id_uom_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "uom_id"
+        ],
+        "schemaTo": "sales",
+        "tableTo": "uom",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "RESTRICT",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "sales_order",
+        "name": "sales_order_quotation_id_quotation_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "quotation_id"
+        ],
+        "schemaTo": "sales",
+        "tableTo": "quotation",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "RESTRICT",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "quotation_item",
+        "name": "quotation_item_pkey",
+        "columns": [
+          "quotation_id",
+          "position"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "quotation",
+        "name": "quotation_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    }
+  ]
+}

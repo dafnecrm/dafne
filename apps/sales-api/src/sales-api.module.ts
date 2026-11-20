@@ -15,7 +15,7 @@ import { ActivitiesModule } from '@dafne/backend-activities';
 import { GeoModule } from '@dafne/backend-geo';
 import { ProductsModule } from '@dafne/backend-products';
 import { SessionModule } from '@dafne/backend-session';
-import { SalesOrdersModule, SalesOrderTypesModule } from '@dafne/backend-sales-orders';
+import { SalesOrdersModule, SalesOrderTypesModule, QuotationsModule } from '@dafne/backend-sales-orders';
 import { AssistantModule, AssistantProvidersModule, AssistantModelsModule, AssistantAgentsModule } from '@dafne/backend-assistant';
 import { UomsModule, UomConversionsModule } from '@dafne/backend-uom';
 import { PermissionsModule } from '@dafne/backend-permissions';
@@ -57,6 +57,7 @@ import { PermissionsModule } from '@dafne/backend-permissions';
     UomsModule,
     UomConversionsModule,
     PermissionsModule,
+    QuotationsModule,
   ],
   controllers: [ApiController],
   providers: [

@@ -30,6 +30,17 @@ export const salesOrderItemBodySchema = z.strictObject({
 export type SalesOrderItemBodyInput = z.input<typeof salesOrderItemBodySchema>;
 export type SalesOrderItemBody = z.output<typeof salesOrderItemBodySchema>;
 
+/**
+ * The items of a document with products (a sales order, a quotation):
+ * positions are their key, so two equal ones can't be saved.
+ */
+export const documentItemsSchema = z
+  .array(salesOrderItemBodySchema)
+  .default([])
+  .refine((items) => new Set(items.map((item) => item.position)).size === items.length, {
+    error: msg('salesOrders.items.position.duplicate'),
+  });
+
 /** Values of sales order status. */
 export const SALES_ORDER_STATUSES = ['draft', 'open', 'completed', 'cancelled', 'rejected'] as const;
 export type SalesOrderStatus = (typeof SALES_ORDER_STATUSES)[number];
@@ -43,13 +54,7 @@ export const salesOrderBodySchema = z.strictObject({
   notes: optionalText(z.string().max(65535)),
   customerId: requiredId(msg('salesOrders.customerId.required')),
   typeId: requiredText(5, msg('salesOrders.typeId.required')),
-  // Positions are the items' key (with the order): two equal ones can't be saved.
-  items: z
-    .array(salesOrderItemBodySchema)
-    .default([])
-    .refine((items) => new Set(items.map((item) => item.position)).size === items.length, {
-      error: msg('salesOrders.items.position.duplicate'),
-    }),
+  items: documentItemsSchema,
 });
 
 /**
@@ -179,6 +184,8 @@ export interface SalesOrderDetail extends ListedSalesOrder {
   deletedAt: Date | null;
   customerId: number;
   typeId: string;
+  /** The quotation it was made from (when accepted); null if entered on its own. */
+  quotationId: number | null;
 }
 
 /** The sales order items */

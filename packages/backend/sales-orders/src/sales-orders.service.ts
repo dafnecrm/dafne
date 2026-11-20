@@ -10,10 +10,8 @@ import {
   type SalesOrderDetailItem,
   type SalesOrdersList,
   type ListSalesOrdersQuery,
-  type ProductSaleUnit,
   msg,
-  multiplyDecimal,
-  SalesOrderItemBody,
+  type SalesOrderItemBody,
 } from '@dafne/contracts';
 import { PostgresErrorCode, rethrowPostgresError } from '@dafne/backend-common';
 import { InjectStateMachine, StateMachine } from '@dafne/backend-fsm';
@@ -22,6 +20,7 @@ import type { SessionUser } from '@dafne/backend-session';
 import type { SalesOrderStatus } from '@dafne/contracts';
 import { SALES_ORDER_STATE_MACHINE } from './sales-order.states.js';
 import { SALES_ORDERS_RESOURCE } from './sales-order.changelog.js';
+import { priceItems, type PricedItem } from './items/price-items.js';
 import {
   CrudHooksRegistry,
   type Actor,
@@ -32,6 +31,16 @@ import {
 } from '@dafne/backend-crud';
 
 export const SALES_ORDERS_DEFAULT_PAGE_SIZE = 20;
+
+/** Options of `SalesOrdersService.create` for an order made from a quotation. */
+export interface CreateSalesOrderOptions {
+  /** The caller's transaction (e.g. the quotation's transition). */
+  tx?: Transaction;
+  /** The quotation it's made from. */
+  quotationId?: number | null;
+  /** Prices the items keep when they match (see `priceItems`). */
+  prices?: PricedItem[];
+}
 
 const { salesOrder, salesOrderItem, customer, salesOrderType } = schema;
 
@@ -86,18 +95,6 @@ const rethrowConstraint = rethrowPostgresError([
     error: () => new BadRequestException([`items: ${msg('salesOrders.items.uomId.notFound')}`]),
   },
 ]);
-
-/** An item as saved, with its price: one that comes back unchanged keeps it. */
-interface PricedItem {
-  position: number;
-  productId: number;
-  uomId: string;
-  quantity: number;
-  price: number;
-}
-
-/** Quantities are numeric(18,6): the base one is rounded to that scale. */
-const roundQuantity = (value: number) => Math.round(value * 1e6) / 1e6;
 
 @Injectable()
 export class SalesOrdersService
@@ -224,14 +221,22 @@ export class SalesOrdersService
     return found;
   }
 
-  /** Creates a sales order; `actor` is the creator. */
-  async create(body: SalesOrderBody, actor: Actor): Promise<SalesOrderDetail> {
+  /**
+   * Creates a sales order; `actor` is the creator. With `quotationId` it's
+   * the order of that quotation (accepted), and its items keep the prices
+   * of `prices` they match (same position, product, unit and quantity);
+   * `tx` writes it in the caller's transaction.
+   */
+  async create(
+    body: SalesOrderBody,
+    actor: Actor,
+    { tx: outer, quotationId = null, prices = [] }: CreateSalesOrderOptions = {},
+  ): Promise<SalesOrderDetail> {
     // One instant for both: createdAt and updatedAt start equal.
     const now = new Date();
 
-    this.logger.log("CREATING", JSON.stringify(body))
     return this.hooks
-      .create({ body, actor }, async ({ tx, body }) => {
+      .create({ body, actor, tx: outer }, async ({ tx, body }) => {
         // Born in draft: another status goes through the state machine.
         const [{ id }] = await tx
           .insert(salesOrder)
@@ -239,6 +244,7 @@ export class SalesOrdersService
             notes: body.notes,
             customerId: body.customerId,
             typeId: body.typeId,
+            quotationId,
             createdAt: now,
             updatedAt: now,
             createdById: actor.id,
@@ -246,7 +252,7 @@ export class SalesOrdersService
           })
           .returning({ id: salesOrder.id });
 
-        await this.insertSalesOrderItems(tx, id, body.items);
+        await this.insertSalesOrderItems(tx, id, body.items, prices);
 
         // After the items, as in update: the guards see the order as saved.
         if (body.status) {
@@ -338,13 +344,9 @@ export class SalesOrdersService
   }
 
   /**
-   * Inserts the items of an order. Each quantity is in the item's unit (the
-   * product's base unit when left out), which must be one the product is
-   * sold in: its base quantity and price (the product's price × the base
-   * quantity) are computed from it. An item of `previous` with the same
-   * position, product, unit and quantity keeps its price, so saving an
-   * order again doesn't reprice it. 400 when the product doesn't exist or can't be sold in that
-   * unit.
+   * Inserts the items of an order, priced by `priceItems` (an item of
+   * `previous` that comes back unchanged keeps its price). 400 when the
+   * product doesn't exist or can't be sold in that unit.
    */
   async insertSalesOrderItems(
     tx: Transaction,
@@ -355,52 +357,7 @@ export class SalesOrdersService
     if (!items.length) {
       return;
     }
-    // Each product's units, read once however many items have it.
-    const units = new Map<number, Promise<ProductSaleUnit[] | null>>();
-    const unitsOf = (productId: number) => {
-      let found = units.get(productId);
-      if (!found) {
-        found = this.products.units(productId, tx).catch((error: unknown) => {
-          if (error instanceof NotFoundException) {
-            return null;
-          }
-          throw error;
-        });
-        units.set(productId, found);
-      }
-      return found;
-    };
-
-    const rows = [];
-    for (const [index, item] of items.entries()) {
-      const productUnits = await unitsOf(item.productId);
-      if (!productUnits) {
-        throw new BadRequestException([`items.${index}.productId: ${msg('salesOrders.items.productId.notFound')}`]);
-      }
-      // The base unit comes first.
-      const unit = item.uomId ? productUnits.find((candidate) => candidate.uomId === item.uomId) : productUnits[0];
-      if (!unit) {
-        throw new BadRequestException([`items.${index}.uomId: ${msg('salesOrders.items.uomId.notConvertible')}`]);
-      }
-      const baseQuantity = roundQuantity(item.quantity * unit.factor);
-      const kept = previous.find(
-        (old) =>
-          old.position === item.position &&
-          old.productId === item.productId &&
-          old.uomId === unit.uomId &&
-          old.quantity === item.quantity,
-      );
-      rows.push({
-        orderId: salesOrderId,
-        productId: item.productId,
-        quantity: item.quantity,
-        uomId: unit.uomId,
-        baseQuantity,
-        // The base unit (its price, the product's) comes first.
-        price: kept?.price ?? multiplyDecimal(productUnits[0].price, baseQuantity, 2),
-        position: item.position,
-      });
-    }
-    await tx.insert(schema.salesOrderItem).values(rows);
+    const rows = await priceItems(this.products, tx, items, previous);
+    await tx.insert(salesOrderItem).values(rows.map((row) => ({ ...row, orderId: salesOrderId })));
   }
 }

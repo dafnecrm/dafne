@@ -26,3 +26,4 @@ export * from './assistant-agents.ts';
 export * from './user-groups.ts';
 export * from './uoms.ts';
 export * from './uom-conversions.ts';
+export * from './quotations.ts';

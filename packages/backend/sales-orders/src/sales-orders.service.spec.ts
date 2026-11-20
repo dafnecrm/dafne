@@ -197,6 +197,27 @@ describe('SalesOrdersService', () => {
       expect(stateMachine.transition).not.toHaveBeenCalled();
     });
 
+    it("makes a quotation's order in the caller's transaction, at the quotation's prices", async () => {
+      const outer = { ...db, outer: true };
+      await service.create(
+        body({ customerId: 1, typeId: 'T1', items: [{ productId: 4, quantity: 10, uomId: 'pc', position: 1 }] }),
+        u1,
+        { tx: outer as never, quotationId: 7, prices: [{ position: 1, productId: 4, uomId: 'pc', quantity: 10, price: 19.9 }] },
+      );
+
+      expect(db.transaction).not.toHaveBeenCalled();
+      expect(insert.values.mock.calls[0][0]).toMatchObject({ quotationId: 7 });
+      expect(insert.values.mock.calls[1][0]).toEqual([
+        { orderId: 1, productId: 4, quantity: 10, uomId: 'pc', baseQuantity: 10, price: 19.9, position: 1 },
+      ]);
+    });
+
+    it('leaves quotationId empty for an order entered on its own', async () => {
+      await service.create(body({ customerId: 1, typeId: 'T1' }), u1);
+
+      expect(insert.values.mock.calls[0][0]).toMatchObject({ quotationId: null });
+    });
+
     it('inserts its items with the new order id', async () => {
       await service.create(
         body({

@@ -18,6 +18,7 @@ import { SalesOrderDetailActions } from "@dafne/frontend-sales-orders/components
 import { customersTable } from "@/lib/customers-table";
 import { productsTable } from "@/lib/products-table";
 import { salesOrdersTable } from "@/lib/sales-orders-table";
+import { quotationsTable } from "@/lib/quotations-table";
 import { loadSalesOrder } from "./load-sales-order";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -71,6 +72,7 @@ async function SalesOrderProfile({
           salesOrder={salesOrder}
           customersPath={customersTable.path}
           productsPath={productsTable.path}
+          quotationsPath={quotationsTable.path}
         />
       </PageContentBody>
     </PageContent>
