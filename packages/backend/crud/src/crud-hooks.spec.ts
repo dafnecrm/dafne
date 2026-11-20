@@ -103,6 +103,19 @@ describe('CrudHooks', () => {
     expect(calls).toEqual(['write a', 'load 7']);
   });
 
+  it('writes in the caller\'s transaction when given one, opening none', async () => {
+    const outer = { outer: true } as unknown as Transaction;
+    const audit = new Audit();
+    const write = vi.fn(async (_context: Context) => 7);
+
+    await runner({ create: { post: [Audit] } }, [audit]).create({ body: { name: 'a' }, actor, tx: outer }, write);
+
+    expect(db.transaction).not.toHaveBeenCalled();
+    expect(write.mock.calls[0][0]).toMatchObject({ tx: outer });
+    expect(load).toHaveBeenCalledWith(7, outer);
+    expect(audit.seen[0]).toMatchObject({ id: 7, tx: outer });
+  });
+
   it('doesn\'t read `previous` when the operation has no hooks', async () => {
     await runner({ create: { pre: [Upper] } }, [new Upper()]).update({ id: 1, body: { name: 'a' }, actor }, async () => {});
 

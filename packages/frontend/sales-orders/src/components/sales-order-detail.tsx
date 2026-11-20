@@ -9,6 +9,7 @@ import {
   BoxesLinkedIcon,
   TagIcon,
   EuroIcon,
+  FileTextIcon,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Detail, DetailSection } from "@dafne/frontend-ui/components/detail";
@@ -27,16 +28,19 @@ import { formatCurrency } from "@dafne/frontend-ui/lib/currencies";
 /**
  * The details of a sales order: its fields, then who created and updated it.
  * The customer links to `<customersPath>/<id>`, the app's customer page,
- * the items' products to `<productsPath>/<id>`.
+ * the items' products to `<productsPath>/<id>`, the quotation it was made
+ * from (if any) to `<quotationsPath>/<id>`.
  */
 export function SalesOrderDetails({
   salesOrder,
   customersPath,
   productsPath,
+  quotationsPath,
 }: {
   salesOrder: SalesOrderDetail;
   customersPath: string;
   productsPath: string;
+  quotationsPath?: string;
 }) {
   const t = useTranslations();
   const optionLabel = useOptionLabel();
@@ -67,6 +71,20 @@ export function SalesOrderDetails({
             return total;
           }, 0), locale)}
         </Detail>
+        {salesOrder.quotationId != null && (
+          <Detail icon={FileTextIcon} label={t("quotations.singular")}>
+            {quotationsPath ? (
+              <Link
+                href={`${quotationsPath}/${encodeURIComponent(salesOrder.quotationId)}`}
+                className="hover:underline"
+              >
+                {t("quotations.fromQuotation", { id: salesOrder.quotationId })}
+              </Link>
+            ) : (
+              t("quotations.fromQuotation", { id: salesOrder.quotationId })
+            )}
+          </Detail>
+        )}
         <Detail icon={TextIcon} label={t("salesOrders.fields.notes")} wide>
           {salesOrder.notes ? (
             <TextEditorContent

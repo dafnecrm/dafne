@@ -18,6 +18,7 @@ import { USER_GROUPS_MESSAGES } from "@dafne/frontend-user-groups";
 import { USERS_MESSAGES } from "@dafne/frontend-users";
 import { UOMS_MESSAGES } from "@dafne/frontend-products/uoms";
 import { UOM_CONVERSIONS_MESSAGES } from "@dafne/frontend-products/uom-conversions";
+import { QUOTATIONS_MESSAGES } from "@dafne/frontend-sales-orders/quotations";
 
 /**
  * The locale of the current render. Server Components read the [locale]
@@ -67,6 +68,7 @@ export default getRequestConfig(async ({ locale, requestLocale }) => {
       userGroups: USER_GROUPS_MESSAGES[resolved],
       uoms: UOMS_MESSAGES[resolved],
       uomConversions: UOM_CONVERSIONS_MESSAGES[resolved],
+      quotations: QUOTATIONS_MESSAGES[resolved],
     },
   };
 });

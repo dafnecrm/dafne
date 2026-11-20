@@ -184,4 +184,23 @@ export const it: ContractMessages = {
     otherKind: 'Le due unità devono essere dello stesso tipo',
     taken: 'Queste due unità hanno già una conversione',
   },
+  quotations: {
+    notFound: 'Offerta non trovata',
+    customerId: {
+      required: "Inserisci l'id del cliente",
+      notFound: "Scegli un cliente dall'elenco",
+    },
+    typeId: {
+      required: "Inserisci il tipo dell'offerta",
+      notFound: "Scegli un tipo dall'elenco",
+    },
+    items: {
+      notFound: "Riga dell'offerta non trovata",
+      enterAtLeastOneItem: 'Inserisci almeno una riga',
+    },
+    status: {
+      required: 'Scegli lo stato',
+      mustBeDraft: 'Solo un\'offerta in bozza può essere modificata',
+    },
+  },
 };

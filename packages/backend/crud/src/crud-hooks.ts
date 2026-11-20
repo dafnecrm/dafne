@@ -20,6 +20,16 @@ interface Registration {
   instances: Map<Type, unknown>;
 }
 
+/**
+ * A transaction to write in, so the write and its hooks are part of the
+ * caller's own (e.g. a state machine's hook that creates a record). Without
+ * it the runner opens one. With it the after-commit hooks run once the
+ * write is done, before the caller's transaction commits.
+ */
+export interface WriteInput {
+  tx?: Transaction;
+}
+
 /** What a service gives its runner. */
 export interface CrudHooksOptions<Id, Detail> {
   /** The database the runner opens the write's transaction on. */
@@ -73,9 +83,12 @@ export class CrudHooks<Id, Body, Detail> {
     this.logger = new Logger(`CrudHooks(${resource})`);
   }
 
-  /** Runs `write` (which inserts and returns the new id); returns the created record. */
+  /**
+   * Runs `write` (which inserts and returns the new id); returns the created
+   * record. With `tx` it runs in the caller's transaction (see `WriteInput`).
+   */
   async create(
-    input: { body: Body; actor: Actor },
+    input: { body: Body; actor: Actor } & WriteInput,
     write: (context: WriteContext<Id, Body, Detail>) => Promise<Id>,
   ): Promise<Detail> {
     const { result } = await this.run('create', input, write);
@@ -84,7 +97,7 @@ export class CrudHooks<Id, Body, Detail> {
 
   /** Runs `write` (which updates, or throws 404); returns the updated record. */
   async update(
-    input: { id: Id; body: Body; actor: Actor },
+    input: { id: Id; body: Body; actor: Actor } & WriteInput,
     write: (context: WriteContext<Id, Body, Detail>) => Promise<void>,
   ): Promise<Detail> {
     const { result } = await this.run('update', input, write);
@@ -93,7 +106,7 @@ export class CrudHooks<Id, Body, Detail> {
 
   /** Runs `write` (which deletes, or throws 404). */
   async delete(
-    input: { id: Id; actor: Actor },
+    input: { id: Id; actor: Actor } & WriteInput,
     write: (context: CrudHookContext<Id, Body, Detail>) => Promise<void>,
   ): Promise<void> {
     await this.run('delete', input, write);
@@ -101,7 +114,7 @@ export class CrudHooks<Id, Body, Detail> {
 
   private async run(
     operation: CrudOperation,
-    input: { id?: Id; body?: Body; actor: Actor },
+    { tx: outer, ...input }: { id?: Id; body?: Body; actor: Actor } & WriteInput,
     write: (context: WriteContext<Id, Body, Detail>) => Promise<Id | void>,
   ): Promise<CrudHookContext<Id, Body, Detail>> {
     const { registry, resource } = this;
@@ -111,7 +124,8 @@ export class CrudHooks<Id, Body, Detail> {
     const afterCommit = registry.hooks<CrudAfterCommitHook>(resource, operation, 'afterCommit');
     const hooked = pre.length + post.length + afterCommit.length > 0;
 
-    const context = await db.transaction(async (tx) => {
+    const inTransaction = <T>(run: (tx: Transaction) => Promise<T>) => (outer ? run(outer) : db.transaction(run));
+    const context = await inTransaction(async (tx) => {
       const context: CrudHookContext<Id, Body, Detail> = { resource, operation, ...input, tx };
       if (hooked && operation !== 'create') {
         context.previous = await load(context.id as Id, tx);

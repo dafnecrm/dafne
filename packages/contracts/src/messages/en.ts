@@ -187,6 +187,25 @@ export const en = {
     otherKind: 'Both units must be of the same kind',
     taken: 'These two units already have a conversion',
   },
+  quotations: {
+    notFound: 'Quotation not found',
+    customerId: {
+      required: 'Enter the customer id',
+      notFound: 'Choose a customer from the list',
+    },
+    typeId: {
+      required: 'Enter the quotation type',
+      notFound: 'Choose a type from the list',
+    },
+    items: {
+      notFound: 'Quotation item not found',
+      enterAtLeastOneItem: 'Enter at least one item',
+    },
+    status: {
+      required: 'Choose the status',
+      mustBeDraft: 'Only a draft quotation can be changed',
+    },
+  },
 };
 
 /** The shape every language must have: same keys, any text. */

@@ -8,6 +8,7 @@ import {
   text,
   primaryKey,
   serial,
+  uniqueIndex,
 } from 'drizzle-orm/pg-core';
 import { salesSchema } from './sales.js';
 import { user } from '../auth.js';
@@ -15,6 +16,7 @@ import { customer } from './customers.js';
 import { product } from './products.js';
 import { salesOrderType } from './sales-order-types.ts';
 import { uom } from './uoms.js';
+import { quotation } from './quotations.js';
 
 /**
  * A sales order managed by the users. Deletion is logical: `deletedAt` is
@@ -37,6 +39,13 @@ export const salesOrder = salesSchema.table(
     typeId: varchar({ length: 5 })
       .notNull()
       .references(() => salesOrderType.id, { onDelete: 'restrict' }),
+    /**
+     * The quotation it was made from, when accepted; null for an order
+     * entered on its own. @api output
+     */
+    quotationId: integer('quotation_id').references(() => quotation.id, {
+      onDelete: 'restrict',
+    }),
     createdAt: timestamp('created_at', { precision: 3, withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -58,6 +67,8 @@ export const salesOrder = salesSchema.table(
   (table) => [
     index('sales_order_deletedAt_idx').on(table.deletedAt),
     index('sales_order_customerId_idx').on(table.customerId),
+    // One order per quotation (nulls don't clash: orders without one).
+    uniqueIndex('sales_order_quotationId_idx').on(table.quotationId),
   ],
 );
 
@@ -106,7 +117,7 @@ export const salesOrderItem = salesSchema.table(
 );
 
 export const salesOrderRelations = defineRelationsPart(
-  { user, salesOrder, customer, salesOrderItem, salesOrderType },
+  { user, salesOrder, customer, salesOrderItem, salesOrderType, quotation },
   (r) => ({
     salesOrder: {
       createdBy: r.one.user({
@@ -134,6 +145,18 @@ export const salesOrderRelations = defineRelationsPart(
         to: r.salesOrderType.id,
         optional: false,
         alias: 'salesOrderType',
+      }),
+      quotation: r.one.quotation({
+        from: r.salesOrder.quotationId,
+        to: r.quotation.id,
+        alias: 'salesOrderQuotation',
+      }),
+    },
+    quotation: {
+      salesOrder: r.one.salesOrder({
+        from: r.quotation.id,
+        to: r.salesOrder.quotationId,
+        alias: 'salesOrderQuotation',
       }),
     },
     customer: {
