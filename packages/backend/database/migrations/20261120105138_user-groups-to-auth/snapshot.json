@@ -1,0 +1,218 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "aaefda1f-a76a-4338-8502-6b90fa99b2dc",
+  "prevIds": [
+    "6f610790-9b8a-407f-9cc6-9df251344040"
+  ],
+  "footprints": [
+    {
+      "statementType": "drop_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "user_group_member"
+      ],
+      "writes": [
+        "s|fk|sales.user_group_member.user_group_member_group_id_user_group_id_fkey",
+        "n|fk|sales.user_group_member.user_group_member_group_id_user_group_id_fkey",
+        "e|fk|sales.user_group_member.user_group_member_group_id_user_group_id_fkey",
+        "n|con|sales.user_group_member.user_group_member_group_id_user_group_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.user_group_member",
+        "n|sch|sales",
+        "e|col|sales.user_group_member.group_id"
+      ]
+    },
+    {
+      "statementType": "drop_table",
+      "statementTarget": [
+        "table",
+        "sales",
+        "user_group"
+      ],
+      "writes": [
+        "s|tbl|sales.user_group",
+        "n|tbl|sales.user_group",
+        "e|tbl|sales.user_group",
+        "n|rel|sales.user_group",
+        "n|type|sales.user_group"
+      ],
+      "reads": [
+        "n|sch|sales"
+      ]
+    },
+    {
+      "statementType": "drop_table",
+      "statementTarget": [
+        "table",
+        "sales",
+        "user_group_member"
+      ],
+      "writes": [
+        "s|tbl|sales.user_group_member",
+        "n|tbl|sales.user_group_member",
+        "e|tbl|sales.user_group_member",
+        "n|rel|sales.user_group_member",
+        "n|type|sales.user_group_member"
+      ],
+      "reads": [
+        "n|sch|sales"
+      ]
+    },
+    {
+      "statementType": "recreate_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "assistant_agent_group"
+      ],
+      "writes": [
+        "s|fk|sales.assistant_agent_group.assistant_agent_group_group_id_user_group_id_fkey",
+        "n|fk|sales.assistant_agent_group.assistant_agent_group_group_id_user_group_id_fkey",
+        "e|fk|sales.assistant_agent_group.assistant_agent_group_group_id_user_group_id_fkey",
+        "n|con|sales.assistant_agent_group.assistant_agent_group_group_id_user_group_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.assistant_agent_group",
+        "n|sch|sales",
+        "n|tbl|auth.user_group",
+        "n|sch|auth",
+        "n|col|sales.assistant_agent_group.group_id",
+        "n|col|auth.user_group.id",
+        "e|uniqueness|auth.user_group.id"
+      ],
+      "sqlHash": "f54263c68905efea"
+    },
+    {
+      "statementType": "recreate_fk",
+      "statementTarget": [
+        "table",
+        "sales",
+        "user_group_permission"
+      ],
+      "writes": [
+        "s|fk|sales.user_group_permission.user_group_permission_group_id_user_group_id_fkey",
+        "n|fk|sales.user_group_permission.user_group_permission_group_id_user_group_id_fkey",
+        "e|fk|sales.user_group_permission.user_group_permission_group_id_user_group_id_fkey",
+        "n|con|sales.user_group_permission.user_group_permission_group_id_user_group_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|sales.user_group_permission",
+        "n|sch|sales",
+        "n|tbl|auth.user_group",
+        "n|sch|auth",
+        "n|col|sales.user_group_permission.group_id",
+        "n|col|auth.user_group.id",
+        "e|uniqueness|auth.user_group.id"
+      ],
+      "sqlHash": "0f7f338e3fbf120c"
+    }
+  ],
+  "deltas": [
+    {
+      "op": "drop",
+      "key": "tables\u0000[\"sales\",\"user_group\"]"
+    },
+    {
+      "op": "drop",
+      "key": "tables\u0000[\"sales\",\"user_group_member\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"sales\",\"user_group\",\"id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"sales\",\"user_group\",\"name\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"sales\",\"user_group\",\"description\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"sales\",\"user_group\",\"created_at\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"sales\",\"user_group\",\"updated_at\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"sales\",\"user_group\",\"deleted_at\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"sales\",\"user_group\",\"created_by_id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"sales\",\"user_group\",\"updated_by_id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"sales\",\"user_group_member\",\"group_id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"sales\",\"user_group_member\",\"user_id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"sales\",\"user_group\",\"all_users\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"sales\",\"user_group_deletedAt_idx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"sales\",\"user_group_member_userId_idx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "fks\u0000[\"sales\",\"user_group\",\"user_group_created_by_id_user_id_fkey\"]"
+    },
+    {
+      "op": "drop",
+      "key": "fks\u0000[\"sales\",\"user_group\",\"user_group_updated_by_id_user_id_fkey\"]"
+    },
+    {
+      "op": "drop",
+      "key": "fks\u0000[\"sales\",\"user_group_member\",\"user_group_member_group_id_user_group_id_fkey\"]"
+    },
+    {
+      "op": "drop",
+      "key": "fks\u0000[\"sales\",\"user_group_member\",\"user_group_member_user_id_user_id_fkey\"]"
+    },
+    {
+      "op": "drop",
+      "key": "pks\u0000[\"sales\",\"user_group_member\",\"user_group_member_pkey\"]"
+    },
+    {
+      "op": "drop",
+      "key": "pks\u0000[\"sales\",\"user_group\",\"user_group_pkey\"]"
+    },
+    {
+      "op": "drop",
+      "key": "uniques\u0000[\"sales\",\"user_group\",\"user_group_name_key\"]"
+    },
+    {
+      "op": "alter",
+      "key": "fks\u0000[\"sales\",\"assistant_agent_group\",\"assistant_agent_group_group_id_user_group_id_fkey\"]",
+      "set": {
+        "schemaTo": "auth"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "fks\u0000[\"sales\",\"user_group_permission\",\"user_group_permission_group_id_user_group_id_fkey\"]",
+      "set": {
+        "schemaTo": "auth"
+      }
+    }
+  ]
+}

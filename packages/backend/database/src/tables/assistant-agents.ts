@@ -10,10 +10,9 @@ import {
   integer,
   boolean,
 } from 'drizzle-orm/pg-core';
-import { user } from '../auth.js';
+import { user, userGroup } from '../auth.js';
 import { salesSchema } from './sales.js';
 import { assistantModel } from './assistant-models.js';
-import { userGroup } from './user-groups.js';
 
 /**
  * An assistant agent managed by the users. Deletion is logical: `deletedAt` is

@@ -1,7 +1,6 @@
-import { schema, type Database } from '@dafne/backend-database';
+import { authSchema, type AuthDatabase } from '@dafne/backend-database-auth';
 import { InjectDrizzle } from '@nestjs/drizzle';
 import { Injectable, NotFoundException } from '@nestjs/common';
-
 import {
   and,
   asc,
@@ -16,28 +15,29 @@ import {
 import {
   USER_GROUP_FILTER_FIELDS,
   type UserGroupFilterField,
+  type MyUserGroup,
   type UserGroupBody,
   type UserGroupDetail,
   type UserGroupsList,
   type ListUserGroupsQuery,
   msg,
-  type Permission,
 } from '@dafne/contracts';
-import { PermissionsService } from './permissions.service.js';
-import {
-  CrudHooksRegistry,
-  type Actor,
-  type CrudHooks,
-  type CrudService,
-  type Executor,
-} from '@dafne/backend-crud';
+import type { CrudService } from '@dafne/backend-crud';
+import { PermissionsVersion } from './permissions-version.js';
 
 export const USER_GROUPS_DEFAULT_PAGE_SIZE = 20;
 
-const { userGroup, userGroupMember, userGroupPermission, user } = schema;
+const { userGroup, userGroupMember, user } = authSchema;
 
-/** A group's permissions, as an array (none: empty). */
-const permissions = sql<Permission[]>`coalesce((select array_agg(${userGroupPermission.permission} order by ${userGroupPermission.permission}) from ${userGroupPermission} where ${userGroupPermission.groupId} = ${userGroup.id}), '{}')`;
+/** The database, or a transaction on it. */
+type Executor =
+  | AuthDatabase
+  | Parameters<Parameters<AuthDatabase['transaction']>[0]>[0];
+
+/** The signed-in user writing (only the id matters). */
+interface Actor {
+  id: string;
+}
 
 /** How many users a group has, for the list. */
 const memberCount = sql<number>`(select count(*) from ${userGroupMember} where ${userGroupMember.groupId} = ${userGroup.id})`.mapWith(Number);
@@ -58,9 +58,19 @@ const EXACT_FILTERS: Partial<
 /** User groups that haven't been deleted. */
 const notDeleted = isNull(userGroup.deletedAt);
 
+/** The groups `userId` is a member of. */
+const hasMember = (userId: string) =>
+  sql`exists (select 1 from ${userGroupMember} where ${userGroupMember.groupId} = ${userGroup.id} and ${userGroupMember.userId} = ${userId})`;
+
 /** Only the user's ID and name, for "created by" / "updated by". */
 const userSummary = { columns: { id: true, name: true } } as const;
 
+/**
+ * The user groups and their members, shared by every app (auth schema,
+ * served by apps/auth). What a group can do is each app's own
+ * (@dafne/backend-permissions). Not through CrudHooks: those run on an
+ * app's database (@dafne/backend-crud), and no lib hooks into the groups.
+ */
 @Injectable()
 export class UserGroupsService implements CrudService<
   number,
@@ -69,23 +79,28 @@ export class UserGroupsService implements CrudService<
   UserGroupBody,
   UserGroupDetail
 > {
-  /** Runs the writes with the hooks registered on `user-groups`. */
-  private readonly hooks: CrudHooks<number, UserGroupBody, UserGroupDetail>;
-
   constructor(
-    @InjectDrizzle() private readonly db: Database,
-    registry: CrudHooksRegistry,
-    private readonly permissionsService: PermissionsService,
-  ) {
-    this.hooks = registry.for('user-groups', {
-      db,
-      load: (id, tx) => this.get(id, tx),
-    });
+    @InjectDrizzle() private readonly db: AuthDatabase,
+    private readonly permissionsVersion: PermissionsVersion,
+  ) {}
+
+  /**
+   * The groups `userId` is a member of (not deleted), by name, for GET
+   * /me/user-groups. Not paged: a user is in few groups. All-users groups
+   * have no members: they're left out.
+   */
+  ofMember(userId: string): Promise<MyUserGroup[]> {
+    return this.db
+      .select({ id: userGroup.id, name: userGroup.name, description: userGroup.description })
+      .from(userGroup)
+      .where(and(notDeleted, hasMember(userId)))
+      .orderBy(asc(userGroup.name));
   }
 
   /**
    * Lists user groups that aren't deleted, paged and sorted, filtered by
-   * every field given (AND, each matching text the field contains).
+   * every field given (AND, each matching text the field contains), and
+   * by `memberId`: the groups that user is in.
    */
   async list(query: ListUserGroupsQuery = {}): Promise<UserGroupsList> {
     const {
@@ -93,6 +108,7 @@ export class UserGroupsService implements CrudService<
       offset = 0,
       sortBy = 'id',
       sortDirection = 'desc',
+      memberId,
     } = query;
     const { db } = this;
     const filters = USER_GROUP_FILTER_FIELDS.flatMap((field) => {
@@ -108,6 +124,9 @@ export class UserGroupsService implements CrudService<
           : ilike(userGroup[field], `%${escapeLike(value)}%`),
       ];
     });
+    if (memberId) {
+      filters.push(hasMember(memberId));
+    }
     const where = and(notDeleted, ...filters) as SQL;
     const direction = sortDirection === 'asc' ? asc : desc;
 
@@ -119,7 +138,6 @@ export class UserGroupsService implements CrudService<
           description: userGroup.description,
           memberCount,
           allUsers: userGroup.allUsers,
-          permissions,
           createdAt: userGroup.createdAt,
           updatedAt: userGroup.updatedAt,
         })
@@ -135,8 +153,8 @@ export class UserGroupsService implements CrudService<
   }
 
   /**
-   * One user group that isn't deleted, with who created and last
-   * updated it. Throws 404 otherwise.
+   * One user group that isn't deleted, with its members and who created
+   * and last updated it. Throws 404 otherwise.
    */
   async get(id: number, db: Executor = this.db): Promise<UserGroupDetail> {
     const found = await db.query.userGroup.findFirst({
@@ -147,25 +165,13 @@ export class UserGroupsService implements CrudService<
     if (!found) {
       throw new NotFoundException(msg('userGroups.notFound'));
     }
-    const [members, granted] = await Promise.all([
-      db
-        .select({ id: user.id, name: user.name, email: user.email })
-        .from(userGroupMember)
-        .innerJoin(user, eq(user.id, userGroupMember.userId))
-        .where(eq(userGroupMember.groupId, id))
-        .orderBy(asc(user.name)),
-      db
-        .select({ permission: userGroupPermission.permission })
-        .from(userGroupPermission)
-        .where(eq(userGroupPermission.groupId, id))
-        .orderBy(asc(userGroupPermission.permission)),
-    ]);
-    return {
-      ...found,
-      members,
-      memberCount: members.length,
-      permissions: granted.map((row) => row.permission as Permission),
-    };
+    const members = await db
+      .select({ id: user.id, name: user.name, email: user.email })
+      .from(userGroupMember)
+      .innerJoin(user, eq(user.id, userGroupMember.userId))
+      .where(eq(userGroupMember.groupId, id))
+      .orderBy(asc(user.name));
+    return { ...found, members, memberCount: members.length };
   }
 
   /**
@@ -179,22 +185,11 @@ export class UserGroupsService implements CrudService<
     }
   }
 
-  /** Replaces a group's permissions with `permissions`. */
-  private async replacePermissions(tx: Executor, groupId: number, permissions: Permission[]) {
-    await tx.delete(userGroupPermission).where(eq(userGroupPermission.groupId, groupId));
-    if (permissions.length) {
-      await tx.insert(userGroupPermission).values(permissions.map((permission) => ({ groupId, permission })));
-    }
-  }
-
-  /**
-   * Creates an user group; `actor` is the creator. Runs the hooks registered on
-   * `user-groups` (CrudHooksModule.forFeature), in one transaction.
-   */
+  /** Creates an user group with its members; `actor` is the creator. */
   async create(body: UserGroupBody, actor: Actor): Promise<UserGroupDetail> {
     // One instant for both: createdAt and updatedAt start equal.
     const now = new Date();
-    const created = await this.hooks.create({ body, actor }, async ({ tx, body }) => {
+    const created = await this.db.transaction(async (tx) => {
       // The id is serial: the database picks it.
       const [{ id }] = await tx
         .insert(userGroup)
@@ -208,24 +203,23 @@ export class UserGroupsService implements CrudService<
         })
         .returning({ id: userGroup.id });
       await this.replaceMembers(tx, id, body.memberIds);
-      await this.replacePermissions(tx, id, body.permissions);
-      return id;
+      return this.get(id, tx);
     });
-    await this.permissionsService.invalidate();
+    await this.permissionsVersion.bump();
     return created;
   }
 
   /**
-   * Replaces an user group's fields; `actor` is the editor. Throws 404
-   * if the user group doesn't exist or is deleted.
+   * Replaces an user group's fields and members; `actor` is the editor.
+   * Throws 404 if the user group doesn't exist or is deleted.
    */
   async update(
     id: number,
     body: UserGroupBody,
     actor: Actor,
   ): Promise<UserGroupDetail> {
-    const updated = await this.hooks.update({ id, body, actor }, async ({ tx, body }) => {
-      const result = await tx
+    const updated = await this.db.transaction(async (tx) => {
+      const [row] = await tx
         .update(userGroup)
         .set({
           name: body.name,
@@ -234,34 +228,33 @@ export class UserGroupsService implements CrudService<
           // The time of this change.
           updatedAt: new Date(),
         })
-        .where(and(eq(userGroup.id, id), notDeleted));
-      if (result.rowCount === 0) {
+        .where(and(eq(userGroup.id, id), notDeleted))
+        .returning({ allUsers: userGroup.allUsers });
+      if (!row) {
         throw new NotFoundException(msg('userGroups.notFound'));
       }
       // An all-users group has no member list: it applies to everyone.
-      const [{ allUsers }] = await tx.select({ allUsers: userGroup.allUsers }).from(userGroup).where(eq(userGroup.id, id));
-      await this.replaceMembers(tx, id, allUsers ? [] : body.memberIds);
-      await this.replacePermissions(tx, id, body.permissions);
+      await this.replaceMembers(tx, id, row.allUsers ? [] : body.memberIds);
+      return this.get(id, tx);
     });
-    await this.permissionsService.invalidate();
+    await this.permissionsVersion.bump();
     return updated;
   }
 
   /**
    * Deletes an user group logically: sets deletedAt, so it disappears
-   * from the API but stays in the database. Throws 404 if already deleted.
+   * from the API (and its permissions from every app) but stays in the
+   * database. Throws 404 if already deleted.
    */
   async delete(id: number, actor: Actor): Promise<void> {
-    await this.hooks.delete({ id, actor }, async ({ tx }) => {
-      const now = new Date();
-      const result = await tx
-        .update(userGroup)
-        .set({ deletedAt: now, updatedAt: now, updatedById: actor.id })
-        .where(and(eq(userGroup.id, id), notDeleted));
-      if (result.rowCount === 0) {
-        throw new NotFoundException(msg('userGroups.notFound'));
-      }
-    });
-    await this.permissionsService.invalidate();
+    const now = new Date();
+    const result = await this.db
+      .update(userGroup)
+      .set({ deletedAt: now, updatedAt: now, updatedById: actor.id })
+      .where(and(eq(userGroup.id, id), notDeleted));
+    if (result.rowCount === 0) {
+      throw new NotFoundException(msg('userGroups.notFound'));
+    }
+    await this.permissionsVersion.bump();
   }
 }

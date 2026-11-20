@@ -23,9 +23,7 @@ import { Button } from "@dafne/frontend-ui/components/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+  DropdownMenuItem, DropdownMenuTrigger
 } from "@dafne/frontend-ui/components/dropdown-menu";
 import {
   Empty,

@@ -10,10 +10,10 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
-import { Roles, Session } from '@dafne/backend-session';
-import type { UserSession } from '@dafne/backend-session';
+import { Roles, Session } from '@thallesp/nestjs-better-auth';
 import { IdPipe, ZodValidationPipe } from '@dafne/backend-common';
 import {
+  ADMIN_ROLES,
   userGroupBodySchema,
   listUserGroupsQuerySchema,
   type UserGroupBody,
@@ -24,11 +24,17 @@ import {
 import type { CrudController } from '@dafne/backend-crud';
 import { UserGroupsService } from './user-groups.service.js';
 
+/** Only the user matters here (Better Auth's session or the CRUD interface's). */
+interface Signed {
+  user: { id: string };
+}
+
 /**
- * User groups, their members and permissions: admins only (of the app, or
- * global). Which agents a group can use is set on the agent (super-admins).
+ * The user groups and their members, shared by every app (apps/auth):
+ * admins and super-admins, like the users they pick from. What a group can
+ * do is set on each app (PUT /user-groups/:id/permissions on its API).
  */
-@Roles(['admin'])
+@Roles([...ADMIN_ROLES])
 @Controller('user-groups')
 export class UserGroupsController implements CrudController<
   number,
@@ -55,7 +61,7 @@ export class UserGroupsController implements CrudController<
   @Post()
   create(
     @Body(new ZodValidationPipe(userGroupBodySchema)) body: UserGroupBody,
-    @Session() session: UserSession,
+    @Session() session: Signed,
   ): Promise<UserGroupDetail> {
     return this.userGroupsService.create(body, session.user);
   }
@@ -64,7 +70,7 @@ export class UserGroupsController implements CrudController<
   update(
     @Param('id', IdPipe) id: number,
     @Body(new ZodValidationPipe(userGroupBodySchema)) body: UserGroupBody,
-    @Session() session: UserSession,
+    @Session() session: Signed,
   ): Promise<UserGroupDetail> {
     return this.userGroupsService.update(id, body, session.user);
   }
@@ -74,7 +80,7 @@ export class UserGroupsController implements CrudController<
   @HttpCode(HttpStatus.NO_CONTENT)
   async delete(
     @Param('id', IdPipe) id: number,
-    @Session() session: UserSession,
+    @Session() session: Signed,
   ): Promise<void> {
     await this.userGroupsService.delete(id, session.user);
   }

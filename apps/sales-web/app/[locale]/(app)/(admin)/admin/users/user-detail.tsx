@@ -14,6 +14,7 @@ import {
   MonitorSmartphoneIcon,
   ShieldIcon,
   UserIcon,
+  UsersIcon,
 } from "lucide-react";
 import CopyButton from "@dafne/frontend-ui/components/copy-button";
 import { Detail, DetailSection } from "@dafne/frontend-ui/components/detail";
@@ -36,7 +37,7 @@ export function UserDetails({ user }: { user: UserDetail }) {
 
   return (
     <>
-      <DetailSection title={t("users.sections.profile")}>
+      <DetailSection title={t("users.sections.profile")} groupVariant="grid">
         <Detail icon={UserIcon} label={t("users.fields.firstname")}>
           {user.firstname}
         </Detail>
@@ -60,9 +61,14 @@ export function UserDetails({ user }: { user: UserDetail }) {
               : role}
           </Badge>
         </Detail>
+        <Detail icon={UsersIcon} label={t("users.fields.groups")}>
+          {user.groups?.map((groupName, i) => <Badge key={`usergroup-${i}`} variant="secondary">
+            {groupName}
+          </Badge>)}
+        </Detail>
       </DetailSection>
 
-      <DetailSection title={t("users.sections.access")}>
+      <DetailSection title={t("users.sections.access")} groupVariant="grid">
         <Detail
           icon={user.banned ? BanIcon : CircleCheckIcon}
           label={t("users.fields.status")}
@@ -96,7 +102,7 @@ export function UserDetails({ user }: { user: UserDetail }) {
         </Detail>
       </DetailSection>
 
-      <DetailSection title={t("users.sections.signInMethods")}>
+      <DetailSection title={t("users.sections.signInMethods")} groupVariant="grid">
         {user.accounts.length ? (
           user.accounts.map((account) => (
             <Detail
@@ -122,7 +128,7 @@ export function UserDetails({ user }: { user: UserDetail }) {
 
       <UserSessions sessions={user.sessions} />
 
-      <DetailSection title={t("common.record.title")}>
+      <DetailSection title={t("common.record.title")} groupVariant="grid" defaultOpen={false}>
         <Detail icon={FingerprintIcon} label={t("users.fields.id")}>
           <div className="flex items-center gap-2">
             <code className="font-sans text-xs truncate">{user.id}</code>
@@ -200,6 +206,7 @@ function UserSessions({ sessions }: { sessions: UserSession[] }) {
     </DetailSection>
   );
 }
+
 
 const BROWSERS: [RegExp, string][] = [
   [/Edg\//, "Edge"],

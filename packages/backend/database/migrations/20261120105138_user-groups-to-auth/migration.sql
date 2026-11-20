@@ -1,0 +1,3 @@
+-- Nothing to run: auth's 20261120105132_user-groups moved user_group and
+-- user_group_member to the auth schema (ALTER TABLE … SET SCHEMA), foreign
+-- keys included. This migration only records it in the sales snapshot.

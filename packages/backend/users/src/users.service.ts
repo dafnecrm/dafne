@@ -124,6 +124,12 @@ export class UsersService
           columns: { id: true, providerId: true, createdAt: true },
           orderBy: { createdAt: 'asc' },
         },
+        // Deleted groups are kept in the table, but hidden everywhere.
+        groups: {
+          columns: { name: true },
+          where: { deletedAt: { isNull: true } },
+          orderBy: { name: 'asc' },
+        },
         sessions: {
           columns: {
             id: true,
@@ -151,6 +157,7 @@ export class UsersService
       // Expired sessions still count as activity, but aren't listed.
       lastActiveAt: sessions[0]?.updatedAt ?? null,
       sessions: sessions.filter((s) => s.expiresAt > now),
+      groups: found.groups.map(g => g.name)
     };
   }
 }

@@ -1,7 +1,7 @@
 import { CrudHooksModule } from '@dafne/backend-crud';
 import { DatabaseModule } from '@dafne/backend-database';
 import { Module } from '@nestjs/common';
-import { UserGroupsModule } from '@dafne/backend-user-groups';
+import { PermissionsModule } from '@dafne/backend-permissions';
 import { UomConversionsModule } from '@dafne/backend-uom';
 import { ProductsService } from './products.service.js';
 import { ProductsController } from './products.controller.js';
@@ -14,7 +14,7 @@ import { ProductNotUsedHook } from './product-not-used.crud-hook.ts';
   imports: [
     DatabaseModule,
     // @Can() on the controller: AbilityGuard and the permissions.
-    UserGroupsModule,
+    PermissionsModule,
     // UomConversionsService: the units a product's base unit converts to.
     UomConversionsModule,
     CrudHooksModule,

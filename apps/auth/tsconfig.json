@@ -17,6 +17,9 @@
       "path": "../../packages/backend/users"
     },
     {
+      "path": "../../packages/backend/user-groups"
+    },
+    {
       "path": "../../packages/backend/migrator"
     },
     {

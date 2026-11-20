@@ -2,8 +2,8 @@ import type { UserGroupsMessages } from "./en.ts";
 
 /** User group texts in Italian: same keys as en.ts, checked by the type. */
 export const it: UserGroupsMessages = {
-  title: "Gruppi di utenti",
-  singular: "Gruppo di utenti",
+  title: "Gruppi utenti",
+  singular: "Gruppo utenti",
   new: "Nuovo gruppo",
   all: "Tutti i gruppi",
   noun: "gruppi",

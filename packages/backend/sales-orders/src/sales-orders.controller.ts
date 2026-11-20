@@ -11,7 +11,7 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
-import { Can, PermissionsService } from '@dafne/backend-user-groups';
+import { Can, PermissionsService } from '@dafne/backend-permissions';
 import type { SessionUser } from '@dafne/backend-session';
 import { Session } from '@dafne/backend-session';
 import type { UserSession } from '@dafne/backend-session';

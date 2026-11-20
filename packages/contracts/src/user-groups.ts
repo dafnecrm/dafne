@@ -7,13 +7,18 @@ import {
   type Page,
 } from "./common.ts";
 import { msg } from "./messages/index.ts";
-import { permissionsSchema, type Permission } from "./permissions.ts";
 
 /* ---------- Requests ---------- */
 
+/*
+ * The user groups are shared by every app: apps/auth serves them and their
+ * members (/user-groups). What a group can do is each app's own: see
+ * permissions.ts (GET and PUT /user-groups/:id/permissions on the app's API).
+ */
+
 /**
- * Body of POST /user-groups and PUT /user-groups/:id. PUT replaces the
- * whole user group: omitted optional fields are cleared.
+ * Body of POST /user-groups and PUT /user-groups/:id (apps/auth). PUT
+ * replaces the whole user group: omitted optional fields are cleared.
  */
 export const userGroupBodySchema = z.strictObject({
   name: requiredText(100, msg("userGroups.name.required")),
@@ -24,8 +29,6 @@ export const userGroupBodySchema = z.strictObject({
     .max(500)
     .nullish()
     .transform((ids) => [...new Set(ids ?? [])]),
-  /** What its members can do (see permissions.ts), the whole list. */
-  permissions: permissionsSchema,
 });
 
 /** What a client sends: blank optional fields may be "", null or missing. */
@@ -54,6 +57,11 @@ export type UserGroupFilterField = (typeof USER_GROUP_FILTER_FIELDS)[number];
 /** Query string of GET /user-groups. Deleted user groups are never listed. */
 export const listUserGroupsQuerySchema = z.strictObject({
   ...pageQuery,
+  /**
+   * Only the groups this user is a member of (auth.user.id). All-users
+   * groups have no members: they're left out.
+   */
+  memberId: z.string().min(1).max(36).optional(),
   id: z
     .string()
     .regex(/^\s*\d{0,9}\s*$/)
@@ -76,9 +84,8 @@ export interface ListedUserGroup {
   description: string | null;
   /** How many users are in it (0 for an all-users group: it has no list). */
   memberCount: number;
-  /** It applies to every user of the app ("Tutti gli utenti"). */
+  /** It applies to every user who has access to the app ("Tutti gli utenti"). */
   allUsers: boolean;
-  permissions: Permission[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -86,13 +93,18 @@ export interface ListedUserGroup {
 /** Response of GET /user-groups. */
 export type UserGroupsList = Page<ListedUserGroup>;
 
+/**
+ * A group of the signed-in user, in GET /me/user-groups (apps/auth, by
+ * name). Only the groups they're a member of: all-users groups are left out.
+ */
+export type MyUserGroup = Pick<ListedUserGroup, "id" | "name" | "description">;
+
 /** A user who created or last updated an user group; null if since removed. */
 export interface UserGroupUser {
   id: string;
   name: string;
 }
 
-/** Response of GET /user-groups/:id, POST /user-groups and PUT /user-groups/:id. */
 /** A user in a group. */
 export interface UserGroupMember {
   id: string;
@@ -100,6 +112,7 @@ export interface UserGroupMember {
   email: string;
 }
 
+/** Response of GET /user-groups/:id, POST /user-groups and PUT /user-groups/:id. */
 export interface UserGroupDetail extends ListedUserGroup {
   /** By name. */
   members: UserGroupMember[];

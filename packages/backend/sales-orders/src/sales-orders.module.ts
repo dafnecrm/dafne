@@ -4,7 +4,7 @@ import { DatabaseModule } from '@dafne/backend-database';
 import { FsmModule } from '@dafne/backend-fsm';
 import type { SalesOrderDetail, SalesOrderStatus } from '@dafne/contracts';
 import { Module } from '@nestjs/common';
-import { UserGroupsModule } from '@dafne/backend-user-groups';
+import { PermissionsModule } from '@dafne/backend-permissions';
 import { ProductsModule } from '@dafne/backend-products';
 import { SalesOrdersService } from './sales-orders.service.js';
 import { SalesOrdersController } from './sales-orders.controller.js';
@@ -17,7 +17,7 @@ import { SalesOrderIsDraftHook } from './sales-order.hooks.js';
   imports: [
     DatabaseModule,
     // @Can() on the controller: AbilityGuard and the permissions.
-    UserGroupsModule,
+    PermissionsModule,
     // ProductsService: the units an item's product is sold in.
     ProductsModule,
     CrudHooksModule,

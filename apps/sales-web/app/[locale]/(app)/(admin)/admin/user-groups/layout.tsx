@@ -4,7 +4,8 @@ import { getCurrentUser, isAdmin } from "@/lib/session";
 
 /**
  * User groups and their permissions: admins only, anyone else gets a 404.
- * The backend checks it again (`@Roles(['admin'])`) on every call.
+ * The backends check it again on every call: apps/auth for the groups and
+ * their members (shared by every app), the API for their permissions here.
  */
 export default function UserGroupsLayout({ children }: { children: ReactNode }) {
   // The session is read per request.

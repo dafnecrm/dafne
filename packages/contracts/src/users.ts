@@ -133,4 +133,6 @@ export interface UserDetail extends ListedUser {
   sessions: UserActiveSession[];
   /** Latest session activity; null if never signed in. */
   lastActiveAt: Date | null;
+  /** User group names */
+  groups?: string[]
 }

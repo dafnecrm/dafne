@@ -11,6 +11,12 @@ export interface SessionUser {
   lastname: string;
   /** The apps the user can use, with their role in each (app_access). */
   apps: Record<string, string>;
+  /**
+   * The ids of the groups the user is a member of (auth.user_group_member,
+   * not deleted), sorted. The all-users groups aren't listed: they apply to
+   * whoever can use the app (`apps[app]`).
+   */
+  groups: number[];
 }
 
 export interface SessionData {

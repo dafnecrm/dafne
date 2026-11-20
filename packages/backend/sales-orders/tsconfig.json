@@ -12,7 +12,7 @@
       "path": "../../contracts"
     },
     {
-      "path": "../user-groups"
+      "path": "../permissions"
     },
     {
       "path": "../session"

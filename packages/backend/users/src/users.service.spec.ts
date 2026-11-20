@@ -149,6 +149,7 @@ describe('UsersService', () => {
         email: 'ada@example.com',
         accounts,
         sessions: [active, expired],
+        groups: [{ name: 'Commerciali' }, { name: 'Ufficio' }],
       });
 
       await expect(service.get('1')).resolves.toEqual({
@@ -158,12 +159,13 @@ describe('UsersService', () => {
         accounts,
         lastActiveAt: active.updatedAt,
         sessions: [active],
+        groups: ['Commerciali', 'Ufficio'],
       });
       expect(findFirst.mock.calls[0][0]).toMatchObject({ where: { id: '1' } });
     });
 
     it('never selects tokens or passwords', async () => {
-      findFirst.mockResolvedValue({ id: '1', accounts: [], sessions: [] });
+      findFirst.mockResolvedValue({ id: '1', accounts: [], sessions: [], groups: [] });
       await service.get('1');
 
       const { with: relations } = findFirst.mock.calls[0][0];
@@ -178,6 +180,7 @@ describe('UsersService', () => {
         id: '1',
         accounts: [],
         sessions: [{ updatedAt: lastActive, expiresAt: new Date(0) }],
+        groups: [],
       });
 
       await expect(service.get('1')).resolves.toMatchObject({
@@ -187,7 +190,7 @@ describe('UsersService', () => {
     });
 
     it('has no last activity without sessions', async () => {
-      findFirst.mockResolvedValue({ id: '1', accounts: [], sessions: [] });
+      findFirst.mockResolvedValue({ id: '1', accounts: [], sessions: [], groups: [] });
 
       await expect(service.get('1')).resolves.toMatchObject({
         providers: [],
@@ -216,7 +219,7 @@ describe('UsersService', () => {
 
     it('creates the user unverified, sends the link and returns their detail', async () => {
       auth.createUser.mockResolvedValue('u1');
-      findFirst.mockResolvedValue({ id: 'u1', accounts: [], sessions: [] });
+      findFirst.mockResolvedValue({ id: 'u1', accounts: [], sessions: [], groups: [] });
 
       await expect(service.create(body)).resolves.toMatchObject({
         id: 'u1',
@@ -234,7 +237,7 @@ describe('UsersService', () => {
     it('still returns the user when the email fails', async () => {
       auth.createUser.mockResolvedValue('u1');
       auth.sendVerificationEmail.mockRejectedValue(new Error('no API key'));
-      findFirst.mockResolvedValue({ id: 'u1', accounts: [], sessions: [] });
+      findFirst.mockResolvedValue({ id: 'u1', accounts: [], sessions: [], groups: [] });
 
       await expect(service.create(body)).resolves.toMatchObject({
         id: 'u1',

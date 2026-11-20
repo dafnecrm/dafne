@@ -1,7 +1,8 @@
 import { defineRelations } from 'drizzle-orm';
-// auth.ts re-exports the users' table of the auth schema (@dafne/backend-database-auth),
+// auth.ts re-exports the users' and groups' tables of the auth schema (@dafne/backend-database-auth),
 // outside tables/: drizzle-kit would put it in this package's migrations.
 import * as auth from './auth.js';
+import { userGroupRelations } from '@dafne/backend-database-auth';
 import * as customers from './tables/customers.js';
 import * as activities from './tables/activities.js';
 import { mergeRelations } from './merge-relations.js';
@@ -27,11 +28,10 @@ const { salesOrderTypeRelations, ...salesOrderTypeTables } = salesOrderTypes;
 const { assistantProviderRelations, ...assistantProviderTables } = assistantProviders;
 const { assistantModelRelations, ...assistantModelTables } = assistantModels;
 const { assistantAgentRelations, ...assistantAgentTables } = assistantAgents;
-const { userGroupRelations, ...userGroupTables } = userGroups;
 const { uomRelations, ...uomTables } = uoms;
 const { uomConversionRelations, ...uomConversionTables } = uomConversions;
 
-export const schema = { ...authTables, ...customerTables, ...activityTables, ...countryTables, ...productTables, ...salesOrderTables, ...salesOrderTypeTables, ...assistantProviderTables, ...assistantModelTables, ...assistantAgentTables, ...assistantConversations, ...userGroupTables, ...uomTables, ...uomConversionTables };
+export const schema = { ...authTables, ...customerTables, ...activityTables, ...countryTables, ...productTables, ...salesOrderTables, ...salesOrderTypeTables, ...assistantProviderTables, ...assistantModelTables, ...assistantAgentTables, ...assistantConversations, ...userGroups, ...uomTables, ...uomConversionTables };
 
 // Tables plus the relations defined next to them.
 export const relations = mergeRelations(

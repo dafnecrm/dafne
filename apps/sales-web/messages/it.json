@@ -22,7 +22,7 @@
     "assistantModels": "Modelli IA",
     "assistantAgents": "Agenti IA",
     "assistant": "Assistente IA",
-    "userGroups": "Gruppi di utenti",
+    "userGroups": "Gruppi utenti",
     "changePassword": "Cambia password",
     "uoms": "Unità di misura",
     "uomConversions": "Conversioni"
@@ -48,6 +48,7 @@
     "title": "Account",
     "description": "I dati del tuo account.",
     "memberSince": "Iscritto dal",
+    "noGroups": "Nessun gruppo",
     "avatar": {
       "saveFailed": "Impossibile salvare l'avatar. Riprova.",
       "wrongType": "Scegli un'immagine PNG, JPEG, WebP o GIF.",
@@ -209,7 +210,8 @@
       "lastActive": "Ultima attività",
       "accounts": "Account",
       "createdAt": "Iscritto",
-      "id": "ID utente"
+      "id": "ID utente",
+      "groups": "Gruppi"
     },
     "role": {
       "admin": "Amministratore",

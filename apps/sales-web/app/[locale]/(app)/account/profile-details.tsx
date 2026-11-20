@@ -2,10 +2,11 @@
 
 import { isGlobalAdmin } from "@dafne/contracts";
 import { useTranslations } from "next-intl";
-import { CalendarPlusIcon, MailIcon, ShieldIcon, UserIcon } from "lucide-react";
+import { CalendarPlusIcon, MailIcon, ShieldIcon, UserIcon, UsersIcon } from "lucide-react";
 import { Detail, DetailSection } from "@dafne/frontend-ui/components/detail";
 import { LocalDate } from "@dafne/frontend-ui/components/local-date";
 import { Badge } from "@dafne/frontend-ui/components/badge";
+import type { MyUserGroup } from "@dafne/frontend-user-groups";
 import type { User } from "@/lib/session";
 import { AvatarUpload } from "./avatar-upload";
 
@@ -13,7 +14,7 @@ import { AvatarUpload } from "./avatar-upload";
  * Read-only view of the signed-in user's details. "Member since" is shown in
  * the viewer's time zone, which is only known in the browser.
  */
-export function ProfileDetails({ user }: { user: User }) {
+export function ProfileDetails({ user, groups }: { user: User; groups: MyUserGroup[] }) {
   const role = user.role ?? "user";
   const t = useTranslations();
 
@@ -54,6 +55,19 @@ export function ProfileDetails({ user }: { user: User }) {
                 ? t(`users.role.${role}` as "users.role.user")
                 : role}
             </Badge>
+          </Detail>
+          <Detail icon={UsersIcon} label={t("users.fields.groups")}>
+            {groups.length ? (
+              <div className="flex flex-wrap gap-1">
+                {groups.map((group) => (
+                  <Badge key={group.id} variant="secondary" title={group.description ?? undefined}>
+                    {group.name}
+                  </Badge>
+                ))}
+              </div>
+            ) : (
+              <span className="text-muted-foreground">{t("account.noGroups")}</span>
+            )}
           </Detail>
           <Detail icon={CalendarPlusIcon} label={t("account.memberSince")}>
             <LocalDate value={user.createdAt} format="longDate" />

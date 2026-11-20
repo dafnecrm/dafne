@@ -53,7 +53,7 @@ export class AbilityGuard implements CanActivate {
 /**
  * Only users whose groups allow `action` on `subject` (see
  * contracts/permissions.ts); admins always. The controller's module imports
- * UserGroupsModule, which provides the guard.
+ * PermissionsModule, which provides the guard.
  *
  *   @Post() @Can('create', 'Customer') create(...) {}
  */

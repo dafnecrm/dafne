@@ -1,7 +1,7 @@
 import { CrudHooksModule } from '@dafne/backend-crud';
 import { DatabaseModule } from '@dafne/backend-database';
 import { Module } from '@nestjs/common';
-import { UserGroupsModule } from '@dafne/backend-user-groups';
+import { PermissionsModule } from '@dafne/backend-permissions';
 import { CustomersController } from './customers.controller.js';
 import { CustomersService } from './customers.service.js';
 import { ChangelogModule } from '@dafne/backend-changelog';
@@ -11,7 +11,7 @@ import { CUSTOMER_CHANGELOG, CUSTOMERS_RESOURCE } from './customer.changelog.js'
   imports: [
     DatabaseModule,
     // @Can() on the controller: AbilityGuard and the permissions.
-    UserGroupsModule, 
+    PermissionsModule, 
     CrudHooksModule,
     ChangelogModule,
     ChangelogModule.forFeature<CustomerDetail>(CUSTOMERS_RESOURCE, CUSTOMER_CHANGELOG)
