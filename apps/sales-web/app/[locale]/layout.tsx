@@ -8,8 +8,9 @@ import { TooltipProvider } from "@dafne/frontend-ui/components/tooltip";
 import { ThemeScript } from "@dafne/frontend-ui/components/theme-script";
 import { cn } from "@dafne/frontend-ui/lib/utils";
 import { routing } from "@/i18n/routing";
+import { Toaster } from "@dafne/frontend-ui/components/toast";
 
-const figtree = Figtree({subsets:['latin'],variable:'--font-sans'});
+const figtree = Figtree({ subsets: ['latin'], variable: '--font-sans' });
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -53,6 +54,7 @@ export default async function RootLayout({
       </head>
       <body className="min-h-full flex flex-col">
         <NextIntlClientProvider>
+          <Toaster />
           <TooltipProvider>{children}</TooltipProvider>
         </NextIntlClientProvider>
       </body>

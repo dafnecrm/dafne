@@ -13,7 +13,7 @@ export class SalesOrderHasItemsGuard implements TransitionGuard<SalesOrderStatus
   }
 }
 
-/** A sales order needs at least one item to leave draft. */
+/** A sales order customer needs to have shipping address. */
 @Injectable()
 export class SalesOrderCustomerHasShippingAddress implements TransitionGuard<SalesOrderStatus, number> {
   async canTransition({ id, tx }: TransitionContext<SalesOrderStatus, number>): Promise<TransitionGuardResult> {
@@ -39,5 +39,34 @@ export class SalesOrderCustomerHasShippingAddress implements TransitionGuard<Sal
     ));
 
     return count > 0 || msg('salesOrders.customer.noShippingAddress');
+  }
+}
+
+/** A sales order customer needs to have billing address. */
+@Injectable()
+export class SalesOrderCustomerHasBillingAddress implements TransitionGuard<SalesOrderStatus, number> {
+  async canTransition({ id, tx }: TransitionContext<SalesOrderStatus, number>): Promise<TransitionGuardResult> {
+    const so = await tx
+      .select({
+        customerId: schema.customer.id
+      })
+      .from(schema.salesOrder)
+      .innerJoin(schema.customer, eq(schema.customer.id, schema.salesOrder.customerId))
+      .where(eq(schema.salesOrder.id, id));
+
+    if (so.length === 0) {
+      return msg('salesOrders.notFound')
+    }
+
+    if (!so[0].customerId) {
+      return msg('salesOrders.customerId.notFound')
+    }
+
+    const count = await tx.$count(schema.customerAddress, and(
+      eq(schema.customerAddress.customerId, so[0].customerId),
+      eq(schema.customerAddress.type, 'billing')
+    ));
+
+    return count > 0 || msg('salesOrders.customer.noBillingAddress');
   }
 }

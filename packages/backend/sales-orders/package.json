@@ -18,6 +18,7 @@
     "@dafne/backend-database": "workspace:*",
     "@dafne/backend-documents": "workspace:*",
     "@dafne/backend-fsm": "workspace:*",
+    "@dafne/backend-notifications": "workspace:*",
     "@dafne/backend-permissions": "workspace:*",
     "@dafne/backend-products": "workspace:*",
     "@dafne/backend-session": "workspace:*",

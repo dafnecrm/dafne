@@ -3,6 +3,7 @@ import { CrudHooksModule } from '@dafne/backend-crud';
 import { CustomersModule } from '@dafne/backend-customers';
 import { DocumentsModule } from '@dafne/backend-documents';
 import { DatabaseModule } from '@dafne/backend-database';
+import { NotificationsModule } from '@dafne/backend-notifications';
 import { FsmModule } from '@dafne/backend-fsm';
 import { PermissionsModule } from '@dafne/backend-permissions';
 import { ProductsModule } from '@dafne/backend-products';
@@ -42,7 +43,7 @@ import { QuotationDocumentSource } from './quotation.document.js';
       name: QUOTATION_STATE_MACHINE,
       transition: QuotationTransition,
       states: QUOTATION_STATES,
-      imports: [ChangelogModule, SalesOrdersModule],
+      imports: [ChangelogModule, SalesOrdersModule, NotificationsModule, DocumentsModule,],
       post: [QuotationStatusChangelog],
     }),
     // The PDF (QuotationDocumentSource): a quotation and its customer,

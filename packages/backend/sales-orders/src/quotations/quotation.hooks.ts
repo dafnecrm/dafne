@@ -1,9 +1,11 @@
-import type { TransitionContext, TransitionHook } from '@dafne/backend-fsm';
+import type { TransitionContext, TransitionHook, TransitionHookResult } from '@dafne/backend-fsm';
 import { msg, type QuotationBody, type QuotationDetail, type QuotationStatus } from '@dafne/contracts';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { draftOnlyHook } from '../items/document-hooks.js';
 import { SalesOrdersService } from '../sales-orders.service.js';
 import { QUOTATION_CHANGELOG } from './quotation.changelog.js';
+import { EmailsService } from '@dafne/backend-notifications';
+import { DocumentsService } from '@dafne/backend-documents';
 
 /**
  * Pre hook of update: a quotation that isn't a draft may change only its
@@ -25,7 +27,7 @@ export const QuotationIsDraftHook = draftOnlyHook<QuotationBody, QuotationDetail
 @Injectable()
 export class CreateSalesOrderFromQuotation implements TransitionHook<QuotationStatus, number> {
   // Not QuotationsService: it needs this machine, which needs its hooks.
-  constructor(private readonly salesOrders: SalesOrdersService) {}
+  constructor(private readonly salesOrders: SalesOrdersService) { }
 
   async run({ id, tx, user }: TransitionContext<QuotationStatus, number>): Promise<void> {
     // The order's creator: accepting a quotation is a user's act.
@@ -55,5 +57,54 @@ export class CreateSalesOrderFromQuotation implements TransitionHook<QuotationSt
         prices: quotation.items,
       },
     );
+  }
+}
+
+/** Send quotation pdf to customer */
+@Injectable()
+export class SendQuotationPdfToCustomer implements TransitionHook<QuotationStatus, number> {
+  logger = new Logger(SendQuotationPdfToCustomer.name);
+
+  constructor(
+    private emailsService: EmailsService,
+    private documentsService: DocumentsService,
+  ) { }
+
+  async run({ id, tx, user }: TransitionContext<QuotationStatus, number>): Promise<TransitionHookResult> {
+    if (!user) {
+      throw new Error(`Quotation ${id}: accepting it needs a user.`);
+    }
+
+    const quotation = await tx.query.quotation.findFirst({
+      where: { id, deletedAt: { isNull: true } },
+      columns: { id: true },
+      with: { customer: { columns: { email: true, name: true } } },
+    });
+
+    if (!quotation) {
+      throw new NotFoundException(msg('quotations.notFound'));
+    }
+
+    try {
+      const { pdf, fileName } = await this.documentsService.render('quotation', String(quotation.id), {
+        actor: user,
+        locale: 'en'
+      })
+
+      this.logger.log(`Sending quotation pdf to ${quotation.customer.email}`);
+      try {
+        await this.emailsService.sendEmailWithTemplate(quotation.customer.email, 'quotation', {
+          quotationId: String(quotation.id),
+          customerName: quotation.customer.name,
+        }, [{
+          filename: fileName,
+          content: pdf
+        }])
+      } catch (error) {
+        throw new ConflictException(msg('notifications.emailNotSent'));  
+      }
+    } catch (error) {
+      throw new ConflictException(msg('documentTemplates.notFound'));
+    }
   }
 }

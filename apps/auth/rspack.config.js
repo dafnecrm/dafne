@@ -7,10 +7,17 @@ import nodeExternals from 'webpack-node-externals';
  * - workspace packages (@dafne/*) are bundled: they ship TypeScript
  *   sources, so Node can't load them from node_modules at runtime;
  * - the migrations of every database are copied into dist/migrations, for
- *   MIGRATE_ON_START (see src/main.ts).
+ *   MIGRATE_ON_START (see src/main.ts);
+ * - source maps name files by their absolute path: debuggers can't map
+ *   the default webpack://@dafne/<app>/../../… (the scope's slash), so
+ *   breakpoints in src/ and in the libs were never hit.
  */
 export default (options) => ({
   ...options,
+  output: {
+    ...options.output,
+    devtoolModuleFilenameTemplate: '[absolute-resource-path]',
+  },
   externals: [
     nodeExternals({ importType: 'module', allowlist: [/^@dafne\//] }),
     // Nest's other externals (Node builtins) stay as they are.

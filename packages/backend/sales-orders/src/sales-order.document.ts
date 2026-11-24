@@ -6,7 +6,7 @@ import {
   type DocumentData,
   type DocumentSource,
 } from '@dafne/backend-documents';
-import { msg, SalesOrderDetail, type CustomerAddress, type CustomerDetail, type QuotationDetail } from '@dafne/contracts';
+import { msg, SalesOrderDetail, type CustomerAddress, type CustomerDetail } from '@dafne/contracts';
 import { SalesOrdersService } from './sales-orders.service.ts';
 
 /** The `resource` of the quotations' templates: GET /documents/quotation/:id/pdf. */

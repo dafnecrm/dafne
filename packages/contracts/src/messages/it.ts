@@ -103,15 +103,16 @@ export const it: ContractMessages = {
       required: 'Inserisci il tipo ordine',
       notFound: 'Scegli un tipo ordine dall\'elenco',
     },
-    status: { 
+    status: {
       required: 'Scegli lo stato',
       mustBeDraft: 'Lo stato non è Bozza',
     },
     customer: {
-      noShippingAddress: 'Il cliente non ha indirizzo di spedizione'
+      noShippingAddress: 'Il cliente non ha indirizzo di spedizione',
+      noBillingAddress: 'Il cliente non ha indirizzo di fatturazione',
     }
   },
-  salesOrderTypes: { 
+  salesOrderTypes: {
     notFound: 'Tipo ordine non trovato',
     id: {
       required: 'Inserisci il tipo',
@@ -220,4 +221,7 @@ export const it: ContractMessages = {
     noTemplate: 'Non è ancora stato caricato un modello per questo documento',
     conversionFailed: 'Non è stato possibile creare il PDF: riprova più tardi',
   },
+  notifications: {
+    emailNotSent: 'Email couldn\'t be sent'
+  }
 };
