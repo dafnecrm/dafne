@@ -32,6 +32,7 @@ export const documentTemplates: DocumentTemplatesMessages = {
   },
   resources: {
     quotation: "Offerta",
+    salesOrder: "Ordine di vendita",
   },
   file: {
     title: "File Word",
