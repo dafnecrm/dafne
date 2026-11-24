@@ -21,6 +21,9 @@
       "path": "../permissions"
     },
     {
+      "path": "../notifications"
+    },
+    {
       "path": "../fsm"
     },
     {
