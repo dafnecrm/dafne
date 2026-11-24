@@ -62,9 +62,9 @@ export function documentFilters(locale: string) {
     },
     countryName: (input: unknown) => {
       const value = String(input);
-      return value === null 
-      ? input
-      : new Intl.DisplayNames([locale], { type: "region" }).of(value) ?? input;
+      return value === null
+        ? input
+        : new Intl.DisplayNames([locale], { type: "region" }).of(value) ?? input;
     },
     upper: (input: unknown) => (typeof input === 'string' ? input.toUpperCase() : input),
     lower: (input: unknown) => (typeof input === 'string' ? input.toLowerCase() : input),
