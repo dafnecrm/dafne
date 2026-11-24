@@ -705,6 +705,9 @@ importers:
       '@dafne/frontend-data-table':
         specifier: workspace:*
         version: link:../../packages/frontend/data-table
+      '@dafne/frontend-documents':
+        specifier: workspace:*
+        version: link:../../packages/frontend/documents
       '@dafne/frontend-forms':
         specifier: workspace:*
         version: link:../../packages/frontend/forms
@@ -2344,6 +2347,58 @@ importers:
       '@tanstack/react-table':
         specifier: ^9.3.1
         version: 9.3.1(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      lucide-react:
+        specifier: 'catalog:'
+        version: 1.68.0(@types/react@19.3.0)(react@19.3.0)
+    devDependencies:
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.3.0
+      eslint:
+        specifier: 'catalog:'
+        version: 9.39.5(jiti@2.7.0)(supports-color@7.2.0)
+      next:
+        specifier: 'catalog:'
+        version: 16.4.6(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      next-intl:
+        specifier: 'catalog:'
+        version: 4.14.9(@swc/helpers@0.5.23)(@types/react@19.3.0)(next@16.4.6(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0)
+      react:
+        specifier: 'catalog:'
+        version: 19.3.0
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.3.0(react@19.3.0)
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.12(@types/node@26.6.6)(@vitest/coverage-v8@4.1.12)(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.0))
+
+  packages/frontend/documents:
+    dependencies:
+      '@dafne/contracts':
+        specifier: workspace:*
+        version: link:../../contracts
+      '@dafne/frontend-api':
+        specifier: workspace:*
+        version: link:../api
+      '@dafne/frontend-data-table':
+        specifier: workspace:*
+        version: link:../data-table
+      '@dafne/frontend-forms':
+        specifier: workspace:*
+        version: link:../forms
+      '@dafne/frontend-permissions':
+        specifier: workspace:*
+        version: link:../permissions
+      '@dafne/frontend-ui':
+        specifier: workspace:*
+        version: link:../ui
+      '@tanstack/react-form-nextjs':
+        specifier: 'catalog:'
+        version: 1.33.5(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       lucide-react:
         specifier: 'catalog:'
         version: 1.68.0(@types/react@19.3.0)(react@19.3.0)

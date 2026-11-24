@@ -8,25 +8,28 @@ import { DetailSection } from "@dafne/frontend-ui/components/detail";
 import { FieldGroup } from "@dafne/frontend-ui/components/field";
 import { setServerError, useAppForm } from "@dafne/frontend-forms/client";
 import { useResetOnLeave } from "@dafne/frontend-forms/client";
-import type { DocumentResource, DocumentTemplateDetail } from "@/lib/document-templates";
-import { DocumentTemplatePlaceholders } from "./document-template-placeholders";
-import { useResourceLabel } from "./use-resource-label";
-import { saveDocumentTemplate } from "./actions";
-import { documentTemplateFormOpts, documentTemplateSchema } from "./schema";
+import type { DocumentResource, DocumentTemplateDetail } from "../types.ts";
+import { DocumentTemplatePlaceholders } from "./document-template-placeholders.tsx";
+import { useResourceLabel } from "./use-resource-label.ts";
+import { saveDocumentTemplate } from "../actions.ts";
+import { documentTemplateFormOpts, documentTemplateSchema } from "../schema.ts";
 import { FileTextIcon, TextIcon } from "lucide-react";
 import { InputGroupAddon } from "@dafne/frontend-ui/components/input-group";
 
 /**
  * Creates a document template, or edits `documentTemplate`, for one of
- * `resources` (what the API makes documents for). Saving opens its page,
- * where its Word file is uploaded.
+ * `resources` (what the API makes documents for). Saving opens its page
+ * (`<path>/<id>`, `path` being the app's document templates list), where
+ * its Word file is uploaded.
  */
 export function DocumentTemplateForm({
   documentTemplate,
   resources,
+  path,
 }: {
   documentTemplate?: DocumentTemplateDetail;
   resources: DocumentResource[];
+  path: string;
 }) {
   const t = useTranslations();
   const resourceLabel = useResourceLabel();
@@ -41,6 +44,7 @@ export function DocumentTemplateForm({
       const result = await saveDocumentTemplate(
         documentTemplate?.id ?? null,
         value,
+        path,
       );
       if (result?.error) {
         setServerError(formApi, result.error);
@@ -50,8 +54,8 @@ export function DocumentTemplateForm({
   // The page stays mounted (hidden) after leaving it: start fresh next time.
   useResetOnLeave(form);
   const cancelHref = documentTemplate
-    ? `/document-templates/${encodeURIComponent(documentTemplate.id)}`
-    : "/document-templates";
+    ? `${path}/${encodeURIComponent(documentTemplate.id)}`
+    : path;
 
   return (
     <form

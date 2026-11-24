@@ -17,6 +17,7 @@ import type { UsersMessages } from "@dafne/frontend-users";
 import type { UomsMessages } from "@dafne/frontend-products/uoms";
 import type { UomConversionsMessages } from "@dafne/frontend-products/uom-conversions";
 import type { QuotationsMessages } from "@dafne/frontend-sales-orders/quotations";
+import type { DocumentsMessages, DocumentTemplatesMessages } from "@dafne/frontend-documents";
 
 /**
  * Typed messages: t("customers.title") only compiles if the key exists in
@@ -46,6 +47,8 @@ declare module "next-intl" {
       uoms: UomsMessages;
       uomConversions: UomConversionsMessages;
       quotations: QuotationsMessages;
+      documentTemplates: DocumentTemplatesMessages;
+      documents: DocumentsMessages;
     };
   }
 }

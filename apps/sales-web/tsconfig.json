@@ -20,7 +20,8 @@
         "@dafne/frontend-assistant",
         "@dafne/frontend-user-groups",
         "@dafne/frontend-permissions",
-        "@dafne/frontend-users"
+        "@dafne/frontend-users",
+        "@dafne/frontend-documents"
       ]
     }
   },

@@ -14,8 +14,8 @@ import {
   AlertDialogTitle,
 } from "@dafne/frontend-ui/components/alert-dialog";
 import { Spinner } from "@dafne/frontend-ui/components/spinner";
-import type { DocumentTemplateDetail } from "@/lib/document-templates";
-import { deleteDocumentTemplate } from "./actions";
+import type { DocumentTemplateDetail } from "../types.ts";
+import { deleteDocumentTemplate } from "../actions.ts";
 
 /*
  * The confirmation dialogs of a document template, shared by the table's row menu
@@ -26,16 +26,18 @@ import { deleteDocumentTemplate } from "./actions";
 export type DocumentTemplateRef = Pick<DocumentTemplateDetail, "id">;
 
 /**
- * Confirms the deletion and runs it, then goes back to the list
+ * Confirms the deletion and runs it, then goes back to the list at `path`
  * (`then="list"`) or refreshes the current page (default).
  */
 export function DeleteDocumentTemplateDialog({
   documentTemplate,
   then = "refresh",
+  path,
   onClose,
 }: {
   documentTemplate: DocumentTemplateRef;
   then?: "list" | "refresh";
+  path: string;
   onClose: () => void;
 }) {
   const router = useRouter();
@@ -52,7 +54,7 @@ export function DeleteDocumentTemplateDialog({
       }
       onClose();
       if (then === "list") {
-        router.replace("/document-templates");
+        router.replace(path);
       } else {
         router.refresh();
       }

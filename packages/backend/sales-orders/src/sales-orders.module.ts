@@ -12,6 +12,9 @@ import { SalesOrderTransition } from './sales-order.transition.js';
 import { SALES_ORDER_STATE_MACHINE, SALES_ORDER_STATES } from './sales-order.states.js';
 import { SALES_ORDER_CHANGELOG, SALES_ORDERS_RESOURCE, SalesOrderStatusChangelog } from './sales-order.changelog.js';
 import { SalesOrderIsDraftHook } from './sales-order.hooks.js';
+import { DocumentsModule } from '@dafne/backend-documents';
+import { SalesOrderDocumentSource } from './sales-order.document.ts';
+import { CustomersModule } from '@dafne/backend-customers';
 
 @Module({
   imports: [
@@ -36,9 +39,11 @@ import { SalesOrderIsDraftHook } from './sales-order.hooks.js';
       imports: [ChangelogModule],
       post: [SalesOrderStatusChangelog],
     }),
+    DocumentsModule,
+    CustomersModule
   ],
   controllers: [SalesOrdersController],
-  providers: [SalesOrdersService],
+  providers: [SalesOrdersService, SalesOrderDocumentSource],
   exports: [SalesOrdersService],
 })
 export class SalesOrdersModule {}

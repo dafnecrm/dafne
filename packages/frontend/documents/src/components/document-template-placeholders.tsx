@@ -1,6 +1,6 @@
 import { RepeatIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import type { DocumentPlaceholder } from "@/lib/document-templates";
+import type { DocumentPlaceholder } from "../types.ts";
 
 /** The tags a template of a resource can use, as they are written in Word. */
 export function DocumentTemplatePlaceholders({

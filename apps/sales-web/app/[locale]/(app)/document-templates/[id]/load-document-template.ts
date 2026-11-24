@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { BackendError } from "@dafne/frontend-api";
-import { getDocumentTemplate } from "@/lib/document-templates";
+import { getDocumentTemplate } from "@dafne/frontend-documents/server";
 import { requireUser } from "@/lib/session";
 
 /** The document template for a page, or the 404 page if missing or deleted. */

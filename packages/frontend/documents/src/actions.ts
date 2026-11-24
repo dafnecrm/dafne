@@ -3,11 +3,11 @@
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { BackendError, backendFetch } from "@dafne/frontend-api/server";
-import type { DocumentTemplateDetail } from "@/lib/document-templates";
 import {
   documentTemplateSchema,
   type DocumentTemplateFormValues,
-} from "./schema";
+} from "./schema.ts";
+import type { DocumentTemplateDetail } from "./types.ts";
 
 /*
  * Document template mutations. The backend checks the session (forwarded by
@@ -34,13 +34,19 @@ async function errorMessage(error: unknown) {
 }
 
 /**
- * Creates a document template (no `id`) or replaces one, then opens its page.
- * Returns an error message when it fails.
+ * Creates a document template (no `id`) or replaces one, then opens its page
+ * (`<path>/<id>`, `path` being the app's document templates list). Returns
+ * an error message when it fails.
  */
 export async function saveDocumentTemplate(
   id: DocumentTemplateDetail["id"] | null,
   values: DocumentTemplateFormValues,
+  path: string,
 ): Promise<ActionError> {
+  // Any POST can call this: only redirect within the app.
+  if (!/^\/[\w/-]*$/.test(path)) {
+    throw new Error(`Invalid path: ${path}`);
+  }
   const parsed = documentTemplateSchema.safeParse(values);
   if (!parsed.success) {
     return { error: (await getTranslations())("common.errors.invalid") };
@@ -62,7 +68,7 @@ export async function saveDocumentTemplate(
     return { error: await errorMessage(error) };
   }
   // Outside the try: redirect works by throwing.
-  redirect(`/document-templates/${encodeURIComponent(savedId)}`);
+  redirect(`${path}/${encodeURIComponent(savedId)}`);
 }
 
 /**

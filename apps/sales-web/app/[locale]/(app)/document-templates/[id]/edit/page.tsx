@@ -10,8 +10,9 @@ import {
   PageContentTitle,
 } from "@dafne/frontend-ui/components/page-content";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
-import { DocumentTemplateForm } from "../../document-template-form";
-import { listDocumentResources } from "@/lib/document-templates";
+import { DocumentTemplateForm } from "@dafne/frontend-documents/components/document-template-form";
+import { listDocumentResources } from "@dafne/frontend-documents/server";
+import { documentTemplatesTable } from "@/lib/document-templates-table";
 import { loadDocumentTemplate } from "../load-document-template";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -41,7 +42,7 @@ async function EditDocumentTemplate({
   return (
     <PageContent>
       <BreadcrumbLabel
-        href={`/document-templates/${encodeURIComponent(documentTemplate.id)}`}
+        href={`${documentTemplatesTable.path}/${encodeURIComponent(documentTemplate.id)}`}
         label={`${t("documentTemplates.singular")} ${documentTemplate.id}`}
       />
       <PageContentHeader>
@@ -55,7 +56,7 @@ async function EditDocumentTemplate({
         </PageContentDescription>
       </PageContentHeader>
       <PageContentBody>
-        <DocumentTemplateForm documentTemplate={documentTemplate} resources={resources} />
+        <DocumentTemplateForm documentTemplate={documentTemplate} resources={resources} path={documentTemplatesTable.path} />
       </PageContentBody>
     </PageContent>
   );

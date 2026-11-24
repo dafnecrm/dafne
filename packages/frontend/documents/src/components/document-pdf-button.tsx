@@ -1,8 +1,8 @@
-import { listTemplatesFor } from "@/lib/document-templates";
-import { DocumentPdfMenu } from "./document-pdf-menu";
+import { listTemplatesFor } from "../server.ts";
+import { DocumentPdfMenu } from "./document-pdf-menu.tsx";
 
 /**
- * The PDF of a record of `resource` (e.g. "quotation"), from the templates
+ * A server component: the PDF of a record of `resource` (e.g. "quotation"), from the templates
  * admins uploaded for it: nothing while there is none.
  */
 export async function DocumentPdfButton({ resource, id }: { resource: string; id: string | number }) {
