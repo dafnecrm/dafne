@@ -12,10 +12,10 @@ import { useTranslations } from "next-intl";
 import CopyButton from "@dafne/frontend-ui/components/copy-button";
 import { Detail, DetailSection } from "@dafne/frontend-ui/components/detail";
 import { LocalDate } from "@dafne/frontend-ui/components/local-date";
-import type { DocumentPlaceholder, DocumentTemplateDetail } from "@/lib/document-templates";
-import { DocumentTemplateFile } from "./document-template-file";
-import { DocumentTemplatePlaceholders } from "./document-template-placeholders";
-import { useResourceLabel } from "./use-resource-label";
+import type { DocumentPlaceholder, DocumentTemplateDetail } from "../types.ts";
+import { DocumentTemplateFile } from "./document-template-file.tsx";
+import { DocumentTemplatePlaceholders } from "./document-template-placeholders.tsx";
+import { useResourceLabel } from "./use-resource-label.ts";
 
 /**
  * The details of a document template: its fields, its Word file, the tags

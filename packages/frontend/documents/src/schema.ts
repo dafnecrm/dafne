@@ -4,7 +4,7 @@ import {
   type DocumentTemplateBody,
 } from "@dafne/contracts";
 import { formSchema } from "@dafne/frontend-forms";
-import type { DocumentTemplateDetail } from "@/lib/document-templates";
+import type { DocumentTemplateDetail } from "./types.ts";
 
 /** Form values: every field is text, "" when blank. Keys follow the contract. */
 export type DocumentTemplateFormValues = Record<

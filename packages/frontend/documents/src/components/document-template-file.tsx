@@ -8,7 +8,8 @@ import { Alert, AlertDescription } from "@dafne/frontend-ui/components/alert";
 import { Button } from "@dafne/frontend-ui/components/button";
 import { Spinner } from "@dafne/frontend-ui/components/spinner";
 import { useCan } from "@dafne/frontend-permissions";
-import type { DocumentTemplateDetail, DocumentTemplateError } from "@/lib/document-templates";
+import type { DocumentTemplateDetail, DocumentTemplateError } from "../types.ts";
+import { documentTemplateApiBase } from "../links.ts";
 
 /** What the upload route answers on an error. */
 interface UploadError {
@@ -28,7 +29,7 @@ export function DocumentTemplateFile({ documentTemplate }: { documentTemplate: D
   const input = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [result, setResult] = useState<UploadError | "uploaded" | null>(null);
-  const base = `/api/document-templates/${encodeURIComponent(documentTemplate.id)}`;
+  const base = documentTemplateApiBase(documentTemplate.id);
   const hasFile = Boolean(documentTemplate.fileName);
 
   async function upload(file: File) {

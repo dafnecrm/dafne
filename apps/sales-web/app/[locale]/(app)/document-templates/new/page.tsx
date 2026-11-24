@@ -9,8 +9,9 @@ import {
   PageContentTitle,
 } from "@dafne/frontend-ui/components/page-content";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
-import { listDocumentResources } from "@/lib/document-templates";
-import { DocumentTemplateForm } from "../document-template-form";
+import { DocumentTemplateForm } from "@dafne/frontend-documents/components/document-template-form";
+import { listDocumentResources } from "@dafne/frontend-documents/server";
+import { documentTemplatesTable } from "@/lib/document-templates-table";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations();
@@ -38,5 +39,5 @@ export default async function NewDocumentTemplatePage() {
 
 /** The form, once the resources documents can be made for are loaded. */
 async function NewDocumentTemplateForm() {
-  return <DocumentTemplateForm resources={await listDocumentResources()} />;
+  return <DocumentTemplateForm resources={await listDocumentResources()} path={documentTemplatesTable.path} />;
 }

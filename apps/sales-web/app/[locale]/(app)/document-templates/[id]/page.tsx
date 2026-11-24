@@ -13,9 +13,10 @@ import {
 } from "@dafne/frontend-ui/components/page-content";
 import { Button } from "@dafne/frontend-ui/components/button";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
-import { DocumentTemplateDetailActions } from "../document-template-detail-actions";
-import { DocumentTemplateDetails } from "../document-template-detail";
-import { listDocumentResources } from "@/lib/document-templates";
+import { DocumentTemplateDetailActions } from "@dafne/frontend-documents/components/document-template-detail-actions";
+import { DocumentTemplateDetails } from "@dafne/frontend-documents/components/document-template-detail";
+import { listDocumentResources } from "@dafne/frontend-documents/server";
+import { documentTemplatesTable } from "@/lib/document-templates-table";
 import { loadDocumentTemplate } from "./load-document-template";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -47,7 +48,7 @@ async function DocumentTemplateProfile({
   return (
     <PageContent>
       <BreadcrumbLabel
-        href={`/document-templates/${encodeURIComponent(documentTemplate.id)}`}
+        href={`${documentTemplatesTable.path}/${encodeURIComponent(documentTemplate.id)}`}
         label={`${t("documentTemplates.singular")} ${documentTemplate.id}`}
       />
       <PageContentHeader>
@@ -57,12 +58,12 @@ async function DocumentTemplateProfile({
             variant="outline"
             size="sm"
             nativeButton={false}
-            render={<Link href="/document-templates" />}
+            render={<Link href={documentTemplatesTable.path} />}
           >
             <ArrowLeftIcon data-icon="inline-start" />
             {t("documentTemplates.all")}
           </Button>
-          <DocumentTemplateDetailActions documentTemplate={documentTemplate} />
+          <DocumentTemplateDetailActions documentTemplate={documentTemplate} path={documentTemplatesTable.path} />
         </PageContentAction>
       </PageContentHeader>
       <PageContentBody>

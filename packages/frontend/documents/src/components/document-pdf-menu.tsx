@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@dafne/frontend-ui/components/dropdown-menu";
-import { documentPdfHref } from "@/lib/document-links";
+import { documentPdfHref } from "../links.ts";
 
 /** A template a record's PDF can be made with. */
 export interface PdfTemplate {

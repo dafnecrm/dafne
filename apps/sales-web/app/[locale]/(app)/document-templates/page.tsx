@@ -16,10 +16,10 @@ import {
 import { Button } from "@dafne/frontend-ui/components/button";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { getTableParams } from "@dafne/frontend-data-table";
-import { listDocumentTemplates } from "@/lib/document-templates";
+import { DocumentTemplatesTable } from "@dafne/frontend-documents/components/document-templates-table";
+import { listDocumentTemplates } from "@dafne/frontend-documents/server";
 import { documentTemplatesTable } from "@/lib/document-templates-table";
 import { requireUser } from "@/lib/session";
-import { DocumentTemplatesTable } from "./document-templates-table";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations();
@@ -39,7 +39,7 @@ export default function DocumentTemplatesPage({
           <Can I="create" a="DocumentTemplate">
             <Button
               nativeButton={false}
-              render={<Link href="/document-templates/new" />}
+              render={<Link href={`${documentTemplatesTable.path}/new`} />}
             >
               <PlusIcon data-icon="inline-start" />
               {t("documentTemplates.new")}
@@ -75,6 +75,7 @@ async function DocumentTemplatesList({
       documentTemplates={data.items}
       total={data.total}
       params={params}
+      config={documentTemplatesTable}
     />
   );
 }

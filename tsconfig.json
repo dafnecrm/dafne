@@ -130,6 +130,9 @@
     },
     {
       "path": "./packages/backend/documents"
+    },
+    {
+      "path": "./packages/frontend/documents"
     }
   ]
 }

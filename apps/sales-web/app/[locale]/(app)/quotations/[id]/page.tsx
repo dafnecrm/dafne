@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
-import { DocumentPdfButton } from "@/components/document-pdf-button";
+import { DocumentPdfButton } from "@dafne/frontend-documents/components/document-pdf-button";
 import { BreadcrumbLabel } from "@/components/page-breadcrumb";
 import {
   PageContent,

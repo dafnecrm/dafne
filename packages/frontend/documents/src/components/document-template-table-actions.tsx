@@ -1,6 +1,11 @@
 "use client";
 
-import { EllipsisVerticalIcon, PencilIcon, Trash2Icon } from "lucide-react";
+import {
+  EllipsisVerticalIcon,
+  EyeIcon,
+  PencilIcon,
+  Trash2Icon,
+} from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Can } from "@dafne/frontend-permissions";
@@ -16,17 +21,22 @@ import {
 import {
   DeleteDocumentTemplateDialog,
   type DocumentTemplateRef,
-} from "./document-template-dialogs";
+} from "./document-template-dialogs.tsx";
 
-/** Actions on the document template's page, in a menu. */
-export function DocumentTemplateDetailActions({
+/**
+ * Actions of a row of the document templates table, in a menu: view
+ * (`<path>/<id>`), edit (`<path>/<id>/edit`), delete.
+ */
+export function DocumentTemplateTableActions({
   documentTemplate,
+  path,
 }: {
   documentTemplate: DocumentTemplateRef;
+  path: string;
 }) {
   const [deleting, setDeleting] = useState(false);
   const t = useTranslations();
-  const href = `/document-templates/${encodeURIComponent(documentTemplate.id)}`;
+  const href = `${path}/${encodeURIComponent(documentTemplate.id)}`;
 
   return (
     <>
@@ -34,7 +44,7 @@ export function DocumentTemplateDetailActions({
         <DropdownMenuTrigger
           render={
             <Button
-              variant="outline"
+              variant="ghost"
               size="icon-sm"
               aria-label={t("common.actionsFor", {
                 name: `${t("documentTemplates.singular")} ${documentTemplate.id}`,
@@ -45,6 +55,10 @@ export function DocumentTemplateDetailActions({
           <EllipsisVerticalIcon />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
+          <DropdownMenuItem render={<Link href={href} />}>
+            <EyeIcon />
+            {t("common.viewDetails")}
+          </DropdownMenuItem>
           <Can I="update" a="DocumentTemplate">
             <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
               <PencilIcon />
@@ -67,7 +81,7 @@ export function DocumentTemplateDetailActions({
       {deleting && (
         <DeleteDocumentTemplateDialog
           documentTemplate={documentTemplate}
-          then="list"
+          path={path}
           onClose={() => setDeleting(false)}
         />
       )}

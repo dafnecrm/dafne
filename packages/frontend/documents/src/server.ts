@@ -1,17 +1,17 @@
-import type * as contracts from "@dafne/contracts";
-import type { Json } from "@dafne/contracts";
 import { backendFetch } from "@dafne/frontend-api/server";
 import type { TableFilters, TableSort } from "@dafne/frontend-data-table";
-import { documentTemplatesTable } from "./document-templates-table";
+import { DOCUMENT_TEMPLATES_DEFAULT_SORT } from "./document-templates-table.ts";
+import type {
+  DocumentResource,
+  DocumentTemplateDetail,
+  DocumentTemplatesList,
+  ListedDocumentTemplate,
+} from "./types.ts";
 
 /*
- * API types come from the backend's contracts (dates arrive as strings,
- * hence Json<...>), so they can't drift from what the backend returns.
+ * Reads, for server components (backendFetch forwards the browser's
+ * cookies, so it only runs on the server).
  */
-export type ListedDocumentTemplate = Json<contracts.ListedDocumentTemplate>;
-export type DocumentTemplatesList = Json<contracts.DocumentTemplatesList>;
-export type DocumentTemplateUser = Json<contracts.DocumentTemplateUser>;
-export type DocumentTemplateDetail = Json<contracts.DocumentTemplateDetail>;
 
 /**
  * Calls the backend's GET /document-templates/:id. Throws a BackendError with
@@ -31,7 +31,7 @@ export async function listDocumentTemplates({
   limit,
   offset,
   filters = {},
-  sort = documentTemplatesTable.defaultSort,
+  sort = DOCUMENT_TEMPLATES_DEFAULT_SORT,
 }: {
   limit: number;
   offset: number;
@@ -50,10 +50,6 @@ export async function listDocumentTemplates({
   const res = await backendFetch(`/document-templates?${query}`);
   return res.json();
 }
-
-export type DocumentResource = Json<contracts.DocumentResource>;
-export type DocumentPlaceholder = Json<contracts.DocumentPlaceholder>;
-export type DocumentTemplateError = Json<contracts.DocumentTemplateError>;
 
 /** Calls GET /document-templates/resources: what templates can be made for, with their tags. */
 export async function listDocumentResources(): Promise<DocumentResource[]> {

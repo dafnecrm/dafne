@@ -43,11 +43,17 @@ only admins, or a group given them on purpose, manage templates. Each
 resource has at most one default template: marking one as default clears
 the others.
 
-The browser never calls the API directly. sales-web relays the files
-through route handlers (`app/[locale]/api/documents/…` and
-`api/document-templates/[id]/file|preview`, `lib/files.ts`). The upload
-also goes through a route handler, because server actions take bodies of
-at most 1 MB.
+The frontend side is `@dafne/frontend-documents` (`packages/frontend/documents`):
+the templates' pages (components, actions, `defineDocumentTemplatesTable({ path })`),
+the PDF button and their texts (`documentTemplates`, `documents`). An app
+keeps only its pages, which pass its list path.
+
+The browser never calls the API directly. The app relays the files
+through route handlers that re-export the lib's (`@dafne/frontend-documents/routes`)
+at `app/[locale]/api/documents/[resource]/[id]/pdf` and
+`api/document-templates/[id]/file|preview`, the paths its links use. The
+upload also goes through a route handler, because server actions take
+bodies of at most 1 MB.
 
 ## Giving a resource documents
 
@@ -63,6 +69,8 @@ the resource's module, and add `DocumentsModule` to the module's imports
   least one element in each list.
 
 In the frontend, add the resource's name under
-`documentTemplates.resources` in the messages, and put
-`<DocumentPdfButton resource="<resource>" id={…} />` on its page. The
+`documentTemplates.resources` in the messages of `@dafne/frontend-documents`
+(`src/messages/en.ts`, `it.ts`), and put
+`<DocumentPdfButton resource="<resource>" id={…} />`
+(`@dafne/frontend-documents/components/document-pdf-button`) on its page. The
 button shows only once a template with a file exists.
