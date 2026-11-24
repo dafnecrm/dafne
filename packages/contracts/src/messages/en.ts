@@ -106,15 +106,16 @@ export const en = {
       required: 'Enter the sales order type',
       notFound: 'Choose a type from the list',
     },
-    status: { 
+    status: {
       required: 'Choose the status',
       mustBeDraft: 'Status must be draft',
     },
     customer: {
-      noShippingAddress: 'Customer has no shipping address'
+      noShippingAddress: 'Customer has no shipping address',
+      noBillingAddress: 'Customer has no billing address',
     }
   },
-  salesOrderTypes: { 
+  salesOrderTypes: {
     notFound: 'Sales order type not found',
     id: {
       required: 'Enter the type id',
@@ -223,6 +224,9 @@ export const en = {
     noTemplate: 'No template has been uploaded for this document yet',
     conversionFailed: 'The PDF could not be created: try again later',
   },
+  notifications: {
+    emailNotSent: 'Email couldn\'t be sent'
+  }
 };
 
 /** The shape every language must have: same keys, any text. */

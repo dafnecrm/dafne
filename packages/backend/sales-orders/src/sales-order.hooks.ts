@@ -30,6 +30,7 @@ export class SalesOrderLogPostHook implements TransitionHook<SalesOrderStatus, n
  * Pre hook of update: a sales order that isn't a draft may change only its
  * notes. The status isn't compared: the state machine checks its changes.
  */
+@Injectable()
 export const SalesOrderIsDraftHook = draftOnlyHook<SalesOrderBody, SalesOrderDetail>(
   SALES_ORDER_CHANGELOG,
   msg('salesOrders.status.mustBeDraft'),

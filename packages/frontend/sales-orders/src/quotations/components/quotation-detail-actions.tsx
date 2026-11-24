@@ -12,7 +12,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import type { QuotationStatus } from "@dafne/contracts";
 import { Can } from "@dafne/frontend-permissions";
 import { Button } from "@dafne/frontend-ui/components/button";
@@ -31,6 +31,7 @@ import {
   DeleteQuotationDialog,
 } from "./quotation-dialogs.tsx";
 import { QuotationChangelogSheet } from "./quotation-changelog.tsx";
+import { toast } from "@dafne/frontend-ui/components/toast";
 
 /**
  * Actions on the quotation's page: its next status (send a draft; accept,
@@ -50,7 +51,6 @@ export function QuotationDetailActions({
   const [deleting, setDeleting] = useState(false);
   const [accepting, setAccepting] = useState(false);
   const [history, setHistory] = useState(false);
-  const [error, setError] = useState<string>();
   const [pending, startTransition] = useTransition();
   const router = useRouter();
   const t = useTranslations();
@@ -60,20 +60,22 @@ export function QuotationDetailActions({
     startTransition(async () => {
       const result = await changeQuotationStatus(quotation.id, status);
       if ("error" in result) {
-        setError(result.error);
+        toast.add({
+          type: 'error',
+          title: 'Error',
+          description: result.error
+        })
         return;
       }
-      setError(undefined);
+      toast.add({
+          type: 'success',
+          title: 'Quotation status changed',
+        })
       router.refresh();
     });
 
   return (
     <>
-      {error && (
-        <p role="alert" className="self-center text-sm text-destructive">
-          {error}
-        </p>
-      )}
       <Can I="changeStatus" a="Quotation">
         {quotation.status === "draft" && (
           <Button variant="outline" size="sm" disabled={pending} onClick={() => moveTo("sent")}>
