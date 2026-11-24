@@ -60,6 +60,12 @@ export function documentFilters(locale: string) {
         ? input
         : new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(date);
     },
+    countryName: (input: unknown) => {
+      const value = String(input);
+      return value === null
+        ? input
+        : new Intl.DisplayNames([locale], { type: "region" }).of(value) ?? input;
+    },
     upper: (input: unknown) => (typeof input === 'string' ? input.toUpperCase() : input),
     lower: (input: unknown) => (typeof input === 'string' ? input.toLowerCase() : input),
   };
