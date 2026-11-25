@@ -20,6 +20,7 @@ app's `README.md`.
 | [Architecture](architecture.md)          | Apps, shared sign-in (`apps/auth`), sessions, app access, contracts               |
 | [Databases and migrations](databases.md) | One schema per app, `auth`, `core`, the migrator, deploy                           |
 | [Documents](documents.md)                | PDFs from Word templates admins upload: tags, API, Gotenberg, giving a resource documents |
+| [Logs and observability](observability.md) | Logging (pino, `createLogger`), OpenTelemetry and Grafana (Loki, Tempo, Faro), local Grafana, Grafana Cloud |
 | [The AI assistant](assistant.md)        | Providers (Anthropic, Ollama…), models, agents, tools, confirmations, model eval |
 | [The `dafne` CLI](cli.md)                | Generators (`g backend-resource`, `g frontend-resource`, `g frontend-app`…), `remove backend-db-column`, `sync contract`, `sync frontend-resource`, `db` commands, task shortcuts |
 | [Column tags](column-tags.md)            | `@api` and `@form` in table files: the defaults, each tag, what the syncs leave alone |

@@ -21,7 +21,8 @@
         "@dafne/frontend-user-groups",
         "@dafne/frontend-permissions",
         "@dafne/frontend-users",
-        "@dafne/frontend-documents"
+        "@dafne/frontend-documents",
+        "@dafne/frontend-logger"
       ]
     }
   },

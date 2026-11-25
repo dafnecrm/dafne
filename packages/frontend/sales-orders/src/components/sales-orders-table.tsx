@@ -54,6 +54,7 @@ export function useSalesOrderColumns({
 }) {
   const t = useTranslations();
   const optionLabel = useOptionLabel();
+
   return useMemo(
     () =>
       col.columns([

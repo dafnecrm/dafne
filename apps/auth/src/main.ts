@@ -1,3 +1,4 @@
+import { useAppLogger } from '@dafne/backend-logger';
 import { migrateOnStart } from '@dafne/backend-migrator/start';
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
@@ -15,7 +16,10 @@ async function bootstrap() {
   const app = await NestFactory.create(AuthModule, {
     // Better Auth needs the raw body; its module re-adds parsers for other routes.
     bodyParser: false,
+    // What Nest logs while starting waits for pino (LoggerModule).
+    bufferLogs: true,
   });
+  useAppLogger(app);
   await app.listen(process.env.PORT ?? 3001);
 }
 await bootstrap();

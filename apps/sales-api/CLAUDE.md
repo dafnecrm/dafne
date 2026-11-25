@@ -96,3 +96,13 @@ keys of `messages/en.ts`; `it.ts` must have the same keys (typed by
   (`database/src/auth.ts` re-exports it, outside `tables/` so drizzle-kit
   leaves it out of the sales migrations): the sales tables point to it
   with foreign keys across schemas.
+
+## Logs and telemetry
+
+- `LoggerModule.forRoot({ app: 'sales' })` (`@dafne/backend-logger`) and
+  `useAppLogger(app)` in `main.ts` make pino the logger: libs keep using
+  Nest's `Logger`. `LOG_*` configure it (`.env.example`).
+- `src/telemetry.ts` (`@dafne/backend-telemetry`) is a second rspack entry,
+  `dist/telemetry.js`, loaded before the app with `node --import` (every
+  start script). Off without `OTEL_EXPORTER_OTLP_ENDPOINT`. See
+  `../../docs/observability.md`.

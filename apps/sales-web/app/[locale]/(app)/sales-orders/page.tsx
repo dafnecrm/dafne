@@ -30,6 +30,7 @@ export default function SalesOrdersPage({
   searchParams,
 }: PageProps<"/[locale]/sales-orders">) {
   const t = useTranslations();
+
   return (
     <PageContent>
       <PageContentHeader>

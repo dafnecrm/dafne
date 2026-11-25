@@ -13,6 +13,8 @@ describe('devServices', () => {
       { name: 'db', host: 'db.dafne.localhost', port: 5432 },
       { name: 'redis', host: 'redis.dafne.localhost', port: 6379 },
       { name: 'gotenberg', host: 'gotenberg.dafne.localhost', port: 3100 },
+      { name: 'otel', host: 'otel.dafne.localhost', port: 4318 },
+      { name: 'alloy', host: 'faro.dafne.localhost', port: 12347 },
     ]);
     expect(devServices({ DAFNE_DB_PORT: '5433' })[0].port).toBe(5433);
   });
@@ -38,7 +40,7 @@ describe('startServices', () => {
     if (!hasDocker || process.env.CI) {
       return;
     }
-    // Something else on the db and gotenberg ports; redis on a port nobody uses.
+    // Something else on the db, gotenberg, otel and alloy ports; redis on a port nobody uses.
     const other = createServer();
     await new Promise<void>((done) => other.listen(0, '127.0.0.1', done));
     const dbPort = (other.address() as { port: number }).port;
@@ -48,6 +50,8 @@ describe('startServices', () => {
       DAFNE_DB_PORT: String(dbPort),
       DAFNE_REDIS_PORT: '56391',
       DAFNE_GOTENBERG_PORT: String(dbPort),
+      DAFNE_OTLP_PORT: String(dbPort),
+      DAFNE_FARO_PORT: String(dbPort),
     };
     try {
       const outcome = await startServices(ROOT, env);
@@ -57,6 +61,8 @@ describe('startServices', () => {
         elsewhere: [
           { name: 'db', port: dbPort },
           { name: 'gotenberg', port: dbPort },
+          { name: 'otel', port: dbPort },
+          { name: 'alloy', port: dbPort },
         ],
       });
       expect(await isPortBusy(56391)).toBe(true);

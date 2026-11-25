@@ -1,0 +1,35 @@
+{
+  "name": "@dafne/backend-telemetry",
+  "version": "0.0.1",
+  "description": "OpenTelemetry for the apps: traces, metrics and logs over OTLP (Grafana: Tempo, Prometheus, Loki), started before the app with node --import",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "oxlint -c ../.oxlintrc.json --type-aware src",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@opentelemetry/api": "catalog:",
+    "@opentelemetry/auto-instrumentations-node": "catalog:",
+    "@opentelemetry/instrumentation-express": "catalog:",
+    "@opentelemetry/sdk-node": "catalog:",
+    "import-in-the-middle": "catalog:"
+  },
+  "devDependencies": {
+    "@swc/core": "catalog:",
+    "@types/node": "catalog:",
+    "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:",
+    "typescript": "catalog:",
+    "unplugin-swc": "catalog:",
+    "vitest": "catalog:"
+  },
+  "nx": {
+    "tags": [
+      "scope:backend"
+    ]
+  }
+}

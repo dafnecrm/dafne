@@ -11,6 +11,7 @@ import { AuthDatabaseModule } from '@dafne/backend-database-auth';
 import { AuthModule as BetterAuthModule } from '@dafne/backend-auth';
 import { UsersModule } from '@dafne/backend-users';
 import { UserGroupsModule } from '@dafne/backend-user-groups';
+import { LoggerModule } from '@dafne/backend-logger';
 import { AuthController } from './auth.controller.js';
 
 /**
@@ -23,6 +24,8 @@ import { AuthController } from './auth.controller.js';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: ['.env'] }),
+    // pino: request lines and every Nest Logger, configured by LOG_*.
+    LoggerModule.forRoot({ app: 'auth' }),
     // The cache the apps share (CACHE_MANAGER): Redis at REDIS_URL, with
     // the apps' namespace, so a change to a group drops their cached
     // permissions (PermissionsVersion). Memory without it: then the apps

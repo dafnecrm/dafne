@@ -18,6 +18,7 @@ import {
   SidebarTrigger,
 } from "@dafne/frontend-ui/components/sidebar";
 import { getCurrentUser, isAdmin, isSuperAdmin, requireUser } from "@/lib/session";
+import { TelemetryUser } from "@dafne/frontend-logger/telemetry";
 
 /** Layout for pages that need a signed-in user. */
 export default function AppLayout({ children }: { children: ReactNode }) {
@@ -87,6 +88,12 @@ async function AdminNav() {
 }
 
 async function SidebarUser() {
-  const { name, firstname, lastname, email, image } = await requireUser();
-  return <NavUser user={{ name, firstname, lastname, email, image }} />;
+  const { id, name, firstname, lastname, email, image } = await requireUser();
+  return (
+    <>
+      {/* The browser's telemetry carries the user's id only. */}
+      <TelemetryUser id={id} />
+      <NavUser user={{ name, firstname, lastname, email, image }} />
+    </>
+  );
 }

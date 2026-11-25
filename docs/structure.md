@@ -53,6 +53,8 @@ Each project has one scope tag (see [Project boundaries](boundaries.md)).
 | `@dafne/backend-notifications` | Notifications and emails (Resend)                                                                   |
 | `@dafne/backend-geo`           | Place search and countries                                                                          |
 | `@dafne/backend-documents`     | PDFs from the Word templates admins upload (docxtemplater, Gotenberg): see [Documents](documents.md) |
+| `@dafne/backend-logger`        | pino for the APIs (`LoggerModule.forRoot({ app })`, `useAppLogger`): console, rotated files, redaction: see [Observability](observability.md) |
+| `@dafne/backend-telemetry`     | OpenTelemetry for the APIs (`startTelemetry`, loaded with `node --import`): traces, metrics, logs to Grafana |
 | `@dafne/backend-crud`          | The interface every CRUD resource implements (`CrudController`, `CrudService`, `Actor`) and its write hooks (`CrudHooksModule.forFeature`) |
 | `@dafne/backend-changelog`     | Change log of CRUD resources (`ChangelogModule.forFeature`, `changelogTransitionHook`, `ChangelogService`) |
 | `@dafne/backend-fsm`           | State machines for a record's status (`FsmModule.forFeature`, `@InjectStateMachine()`): guards, pre/post hooks (per transition, or of every transition), one transaction |
@@ -69,6 +71,7 @@ They ship TypeScript sources, compiled by Next.
 | `@dafne/frontend-ui`         | Design system: shadcn components (Base UI), dates, theme               |
 | `@dafne/frontend-forms`      | Form building blocks (TanStack Form): fields, contexts, schema helpers |
 | `@dafne/frontend-data-table` | Server-side data tables: config, URL state, `DataTable`                 |
+| `@dafne/frontend-logger`     | `createLogger` on the server and in the browser, `<Telemetry />` (Grafana Faro): see [Observability](observability.md) |
 
 ### Shared and tooling
 

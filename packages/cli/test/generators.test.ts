@@ -296,6 +296,15 @@ describe('backend-app', () => {
     for (const tsconfig of ['tsconfig.json', 'tsconfig.build.json']) {
       expect(read(`apps/worker/${tsconfig}`)).toContain('../../packages/backend/migrator');
     }
+    // pino and OpenTelemetry, like apps/sales-api.
+    expect(main).toContain('useAppLogger(app);');
+    expect(read('apps/worker/src/worker.module.ts')).toContain("LoggerModule.forRoot({ app: 'worker' })");
+    expect(read('apps/worker/src/telemetry.ts')).toContain("startTelemetry({ serviceName: 'worker' });");
+    expect(read('apps/worker/rspack.config.js')).toContain("telemetry: './src/telemetry.ts'");
+    expect(JSON.parse(read('apps/worker/package.json')).scripts['start:prod']).toBe(
+      'node --import ./dist/telemetry.js dist/main',
+    );
+    expect(read('apps/worker/tsconfig.json')).toContain('../../packages/backend/telemetry');
     expect(read('apps/worker/src/worker.controller.ts')).toContain('export class WorkerController');
     expect(read('tsconfig.json')).toContain('./apps/worker');
   });
@@ -303,7 +312,7 @@ describe('backend-app', () => {
   it('takes libs, with their npm dependencies', async () => {
     await generate(backendAppGenerator, { name: 'worker' });
     await generate(backendLibGenerator, { name: 'jobs', app: 'worker' });
-    expect(read('apps/worker/src/worker.module.ts')).toContain('JobsModule],');
+    expect(read('apps/worker/src/worker.module.ts')).toContain('    JobsModule,\n  ],');
     const pkg = read('apps/worker/package.json');
     expect(pkg).toContain('"@dafne/backend-jobs": "workspace:*"');
     expect(pkg).toContain('"drizzle-orm"');

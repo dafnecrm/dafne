@@ -73,6 +73,12 @@
     },
     {
       "path": "../../packages/backend/documents"
+    },
+    {
+      "path": "../../packages/backend/logger"
+    },
+    {
+      "path": "../../packages/backend/telemetry"
     }
   ]
 }

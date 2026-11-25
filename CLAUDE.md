@@ -21,9 +21,11 @@ keep it in line when these rules change. Each project has its own
 ## Commands (from the root)
 
 - `pnpm install`: installs every project (one `pnpm-lock.yaml`, here).
-- PostgreSQL 18, Redis and Gotenberg (DOCX to PDF) for development are in
-  `compose.yaml`, at `db.dafne.localhost:5432`, `redis.dafne.localhost:6379`
-  and `gotenberg.dafne.localhost:3100`: `pnpm dafne
+- PostgreSQL 18, Redis, Gotenberg (DOCX to PDF) and the Grafana stack
+  (`otel`: Grafana at `otel.dafne.localhost:3200`, OTLP on `:4318`;
+  `alloy`: the browser's Faro, `faro.dafne.localhost:12347`, its UI on `:12345`) for
+  development are in `compose.yaml`, at `db.dafne.localhost:5432`,
+  `redis.dafne.localhost:6379` and `gotenberg.dafne.localhost:3100`: `pnpm dafne
   dev` starts them (`--no-services` not), `pnpm dafne services up | down |
   status | logs` handles them alone.
 - `pnpm build | test | lint | typecheck`: `nx run-many` over all projects.
@@ -134,6 +136,15 @@ keep it in line when these rules change. Each project has its own
   `changelogTransitionHook` for its state machine), with the CLI:
   `dafne g backend-changelog <resource>` (or `backend-resource
   --changelog`), `--partition` for a partition of its own.
+- **Logs and telemetry** (`docs/observability.md`): the APIs log with
+  Nest's `Logger` or pino (`@dafne/backend-logger`, `LoggerModule.forRoot({
+  app })` and `useAppLogger`), and start OpenTelemetry before the app
+  (`@dafne/backend-telemetry`, `src/telemetry.ts` built as
+  `dist/telemetry.js`, `node --import ./dist/telemetry.js dist/main`). The
+  frontend logs with `@dafne/frontend-logger` (`/server`, `/client`;
+  `/telemetry` for Grafana Faro), never with Faro directly. Everything goes
+  to Grafana over OTLP; off without `OTEL_EXPORTER_OTLP_ENDPOINT` /
+  `FARO_URL`. Log ids, never customer data.
 - **Braces on every `if`/`else`/loop body**, one-liners included
   (`curly: all`, in the oxlint and ESLint configs and the CLI's templates).
 - `.nxignore` hides the CLIs' test fixtures, which look like projects.
