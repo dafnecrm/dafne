@@ -6,6 +6,7 @@ import { SalesOrdersService } from '../sales-orders.service.js';
 import { QUOTATION_CHANGELOG } from './quotation.changelog.js';
 import { EmailsService } from '@dafne/backend-notifications';
 import { DocumentsService } from '@dafne/backend-documents';
+import { QUOTATION_DOCUMENT } from './quotation.document.ts';
 
 /**
  * Pre hook of update: a quotation that isn't a draft may change only its
@@ -86,7 +87,8 @@ export class SendQuotationPdfToCustomer implements TransitionHook<QuotationStatu
     }
 
     try {
-      const { pdf, fileName } = await this.documentsService.render('quotation', String(quotation.id), {
+      /** render the default template */
+      const { pdf, fileName } = await this.documentsService.render(QUOTATION_DOCUMENT, String(quotation.id), {
         actor: user,
         locale: 'en'
       })
@@ -101,7 +103,7 @@ export class SendQuotationPdfToCustomer implements TransitionHook<QuotationStatu
           content: pdf
         }])
       } catch (error) {
-        throw new ConflictException(msg('notifications.emailNotSent'));  
+        throw new ConflictException(msg('notifications.emailNotSent'));
       }
     } catch (error) {
       throw new ConflictException(msg('documentTemplates.notFound'));

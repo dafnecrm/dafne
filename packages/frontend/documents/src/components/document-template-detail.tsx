@@ -7,6 +7,7 @@ import {
   TextIcon,
   ToggleLeftIcon,
   HashIcon,
+  LanguagesIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import CopyButton from "@dafne/frontend-ui/components/copy-button";
@@ -42,6 +43,9 @@ export function DocumentTemplateDetails({
         </Detail>
         <Detail icon={TextIcon} label={t("documentTemplates.fields.resource")}>
           {resourceLabel(documentTemplate.resource)}
+        </Detail>
+        <Detail icon={LanguagesIcon} label={t("documentTemplates.fields.language")}>
+          {t(`documentTemplates.languages.${documentTemplate.language}`)}
         </Detail>
         <Detail
           icon={ToggleLeftIcon}

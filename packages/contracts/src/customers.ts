@@ -5,6 +5,7 @@ import {
   requiredText,
   SORT_DIRECTIONS,
   optionalDate,
+  LANGUAGES,
   type Page,
 } from './common.ts';
 import { msg } from './messages/index.ts';
@@ -51,6 +52,10 @@ export const customerAddressBodySchema = z.strictObject({
 export const CUSTOMER_TYPES = ['person', 'company'] as const;
 export type CustomerType = (typeof CUSTOMER_TYPES)[number];
 
+/** Values of customer language: the language of its documents. */
+export const CUSTOMER_LANGUAGES = LANGUAGES;
+export type CustomerLanguage = (typeof CUSTOMER_LANGUAGES)[number];
+
 /**
  * Body of POST /customers and PUT /customers/:id. PUT replaces the whole
  * customer, addresses included: omitted optional fields are cleared.
@@ -88,6 +93,8 @@ export const customerBodySchema = z
         .regex(PHONE_PATTERN, { error: msg('customers.phone.invalid') }),
     ),
     notes: optionalText(z.string().max(65535)),
+    /** Blank: the documents use the user's language. */
+    language: optionalText(z.enum(CUSTOMER_LANGUAGES, { error: msg('customers.language.required') })),
     /** In display order; at most one address of each type. */
     addresses: z
       .array(customerAddressBodySchema)
@@ -198,6 +205,7 @@ export interface CustomerDetail extends ListedCustomer {
   fiscalCode: string | null;
   vatNumber: string | null;
   notes: string | null;
+  language: CustomerLanguage | null;
   /** Always null: deleted customers aren't returned. */
   deletedAt: Date | null;
 }

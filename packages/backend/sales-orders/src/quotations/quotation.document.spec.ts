@@ -62,6 +62,7 @@ const customer = {
   phone: null,
   fiscalCode: null,
   vatNumber: 'IT01234567890',
+  language: 'en',
   addresses: [address('shipping', 'Torino'), address('billing', 'Milano')],
 } as unknown as CustomerDetail;
 
@@ -105,16 +106,17 @@ describe('QuotationDocumentSource', () => {
     vi.resetAllMocks();
   });
 
-  it('loads the quotation and its customer', async () => {
+  it('loads the quotation and its customer, in the customer language', async () => {
     quotations.get.mockResolvedValue(quotation);
     customers.get.mockResolvedValue(customer);
 
-    const { data, fileName } = await source.load('42', context);
+    const { data, fileName, language } = await source.load('42', context);
 
     expect(quotations.get).toHaveBeenCalledWith(42);
     expect(customers.get).toHaveBeenCalledWith(7);
     expect(data.total).toBe(40.83);
     expect(fileName).toBe('quotation-42');
+    expect(language).toBe('en');
   });
 
   it('answers 404 for an id that is not a number', async () => {

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { ContractMessageKey } from './messages/index.ts';
+import type { ContractLocale, ContractMessageKey } from './messages/index.ts';
 
 /** Required text: trimmed, so a blank value fails with `error` (a message key). */
 export const requiredText = (max: number, error: ContractMessageKey) =>
@@ -29,6 +29,14 @@ export const optionalText = <T extends z.ZodType<string, string>>(inner: T) =>
     .pipe(inner.nullable())
     .nullish()
     .transform((value) => value ?? null);
+
+/**
+ * The languages documents can be made in: a customer's language picks the
+ * template of its documents, and formats their numbers and dates. The same
+ * languages the contracts' messages have.
+ */
+export const LANGUAGES = ['it', 'en'] as const satisfies readonly ContractLocale[];
+export type Language = (typeof LANGUAGES)[number];
 
 /** limit and offset of a paged list, from the query string. */
 export const pageQuery = {

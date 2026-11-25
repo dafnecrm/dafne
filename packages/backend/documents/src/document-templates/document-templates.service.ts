@@ -16,6 +16,7 @@ import {
   isNotNull,
   ilike,
   ne,
+  sql,
   type Column,
   type SQL,
 } from 'drizzle-orm';
@@ -28,7 +29,9 @@ import {
   type ListDocumentTemplatesQuery,
   DOCUMENT_TEMPLATE_MAX_BYTES,
   msg,
+  type Language,
 } from '@dafne/contracts';
+import { DEFAULT_LOCALE } from '@dafne/backend-common';
 import {
   CrudHooksRegistry,
   type Actor,
@@ -61,6 +64,8 @@ const EXACT_FILTERS: Partial<
   // A registered resource name: matched whole, not as a substring. A
   // function, not String: the CLI's sync keeps only keys and ids as String.
   resource: (value) => value,
+  // A language code: matched whole.
+  language: (value) => value,
   // "true" | "false" (the contract checks it): ILIKE doesn't work on a boolean.
   isDefault: (value) => value === 'true',
 };
@@ -82,6 +87,8 @@ export interface UploadedTemplate {
 export interface TemplateFile {
   id: number;
   resource: string;
+  /** The language to fill it in: its text's, and its numbers' and dates'. */
+  language: Language;
   fileName: string;
   content: Buffer;
 }
@@ -148,6 +155,7 @@ export class DocumentTemplatesService implements CrudService<
           id: documentTemplate.id,
           name: documentTemplate.name,
           resource: documentTemplate.resource,
+          language: documentTemplate.language,
           isDefault: documentTemplate.isDefault,
           fileName: documentTemplate.fileName,
           size: documentTemplate.size,
@@ -197,7 +205,7 @@ export class DocumentTemplatesService implements CrudService<
     const now = new Date();
     return this.hooks.create({ body, actor }, async ({ tx, body }) => {
       if (body.isDefault) {
-        await this.clearDefault(tx, body.resource);
+        await this.clearDefault(tx, body.resource, body.language);
       }
       // The id is serial: the database picks it.
       const [{ id }] = await tx
@@ -205,6 +213,7 @@ export class DocumentTemplatesService implements CrudService<
         .values({
           name: body.name,
           resource: body.resource,
+          language: body.language,
           isDefault: body.isDefault,
           createdAt: now,
           updatedAt: now,
@@ -228,13 +237,14 @@ export class DocumentTemplatesService implements CrudService<
     this.checkResource(body.resource);
     return this.hooks.update({ id, body, actor }, async ({ tx, body }) => {
       if (body.isDefault) {
-        await this.clearDefault(tx, body.resource, id);
+        await this.clearDefault(tx, body.resource, body.language, id);
       }
       const result = await tx
         .update(documentTemplate)
         .set({
           name: body.name,
           resource: body.resource,
+          language: body.language,
           isDefault: body.isDefault,
           updatedById: actor.id,
           // The time of this change.
@@ -267,14 +277,13 @@ export class DocumentTemplatesService implements CrudService<
   /**
    * Stores the .docx of a template, replacing the one it had: only Word
    * files up to DOCUMENT_TEMPLATE_MAX_BYTES, which fill without errors
-   * with the sample data of the template's resource (422 with the errors
-   * otherwise). Not a CRUD write: the body's hooks don't run.
+   * with the sample data of the template's resource, in its language (422
+   * with the errors otherwise). Not a CRUD write: the body's hooks don't run.
    */
   async setFile(
     id: number,
     file: UploadedTemplate | undefined,
     actor: Actor,
-    locale: string,
   ): Promise<DocumentTemplateDetail> {
     if (!file) {
       throw new BadRequestException(msg('documentTemplates.file.missing'));
@@ -289,9 +298,9 @@ export class DocumentTemplatesService implements CrudService<
         msg('documentTemplates.file.tooLarge'),
       );
     }
-    const { resource } = await this.get(id);
+    const { resource, language } = await this.get(id);
     // Throws 422 with the tags at fault.
-    fillDocx(file.buffer, this.sources.get(resource).sample(locale), locale);
+    fillDocx(file.buffer, this.sources.get(resource).sample(language), language);
 
     const result = await this.db
       .update(documentTemplate)
@@ -315,6 +324,7 @@ export class DocumentTemplatesService implements CrudService<
       .select({
         id: documentTemplate.id,
         resource: documentTemplate.resource,
+        language: documentTemplate.language,
         fileName: documentTemplate.fileName,
         content: documentTemplate.content,
       })
@@ -331,14 +341,20 @@ export class DocumentTemplatesService implements CrudService<
 
   /**
    * The .docx to fill for `resource`: the template `id` (it must be of that
-   * resource), else the resource's default. Null when there is none with a
-   * file.
+   * resource, any language), else the resource's default in `language`,
+   * else its default in DEFAULT_LOCALE, else any of its defaults. Null when
+   * there is none with a file.
    */
-  async fileFor(resource: string, id?: number): Promise<TemplateFile | null> {
+  async fileFor(
+    resource: string,
+    language: string,
+    id?: number,
+  ): Promise<TemplateFile | null> {
     const [found] = await this.db
       .select({
         id: documentTemplate.id,
         resource: documentTemplate.resource,
+        language: documentTemplate.language,
         fileName: documentTemplate.fileName,
         content: documentTemplate.content,
       })
@@ -352,6 +368,11 @@ export class DocumentTemplatesService implements CrudService<
           isNotNull(documentTemplate.content),
           notDeleted,
         ),
+      )
+      // The defaults by preference: `language`, the app's, then any (by id).
+      .orderBy(
+        sql`case ${documentTemplate.language} when ${language} then 0 when ${DEFAULT_LOCALE} then 1 else 2 end`,
+        asc(documentTemplate.id),
       )
       .limit(1);
     if (!found?.content) {
@@ -371,10 +392,14 @@ export class DocumentTemplatesService implements CrudService<
     }
   }
 
-  /** Makes the other templates of `resource` not default: one default per resource. */
+  /**
+   * Makes the other templates of `resource` in `language` not default: one
+   * default per resource and language.
+   */
   private async clearDefault(
     tx: Transaction,
     resource: string,
+    language: Language,
     except?: number,
   ): Promise<void> {
     await tx
@@ -383,6 +408,7 @@ export class DocumentTemplatesService implements CrudService<
       .where(
         and(
           eq(documentTemplate.resource, resource),
+          eq(documentTemplate.language, language),
           eq(documentTemplate.isDefault, true),
           notDeleted,
           except === undefined ? undefined : ne(documentTemplate.id, except),

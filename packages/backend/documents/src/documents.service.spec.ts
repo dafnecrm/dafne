@@ -28,48 +28,77 @@ describe('DocumentsService', () => {
     gotenberg.toPdf.mockImplementation((filled: Buffer) => Promise.resolve(filled));
   });
 
-  it("fills the resource's default template with the record and converts it", async () => {
-    templates.fileFor.mockResolvedValue({ id: 3, resource: 'quotation', fileName: 'q.docx', content: docx(paragraph('Quotation {id}')) });
-    vi.mocked(source.load).mockResolvedValue({ data: { id: 42 }, fileName: 'quotation-42' });
+  it("fills the default template in the record's language with the record, in the template's language", async () => {
+    vi.mocked(source.load).mockResolvedValue({ data: { id: 42, total: 1234.5 }, fileName: 'quotation-42', language: 'en' });
+    templates.fileFor.mockResolvedValue({
+      id: 3,
+      resource: 'quotation',
+      language: 'en',
+      fileName: 'q.docx',
+      content: docx(paragraph('Quotation {id}: {total | number:2}')),
+    });
 
     const { pdf, fileName } = await service.render('quotation', '42', { actor, locale: 'it' });
 
-    expect(templates.fileFor).toHaveBeenCalledWith('quotation', undefined);
     expect(source.load).toHaveBeenCalledWith('42', { actor, locale: 'it' });
-    // The mock converter hands back the filled .docx.
-    expect(paragraphs(pdf)).toEqual(['Quotation 42']);
+    expect(templates.fileFor).toHaveBeenCalledWith('quotation', 'en', undefined);
+    // The mock converter hands back the filled .docx, formatted in English.
+    expect(paragraphs(pdf)).toEqual(['Quotation 42: 1,234.50']);
     expect(fileName).toBe('quotation-42.pdf');
   });
 
-  it('uses the template asked for', async () => {
-    templates.fileFor.mockResolvedValue({ id: 7, resource: 'quotation', fileName: 'q.docx', content: docx(paragraph('x')) });
-    vi.mocked(source.load).mockResolvedValue({ data: {}, fileName: 'q' });
+  it("falls back to the user's language when the record has none", async () => {
+    vi.mocked(source.load).mockResolvedValue({ data: {}, fileName: 'q', language: null });
+    templates.fileFor.mockResolvedValue({ id: 3, resource: 'quotation', language: 'it', fileName: 'q.docx', content: docx(paragraph('x')) });
 
-    await service.render('quotation', '42', { actor, locale: 'en' }, 7);
+    await service.render('quotation', '42', { actor, locale: 'en' });
 
-    expect(templates.fileFor).toHaveBeenCalledWith('quotation', 7);
+    expect(templates.fileFor).toHaveBeenCalledWith('quotation', 'en', undefined);
   });
 
-  it('answers 404 before loading the record when no template was uploaded', async () => {
+  it('uses the template asked for, in its own language', async () => {
+    vi.mocked(source.load).mockResolvedValue({ data: { total: 12345.5 }, fileName: 'q', language: 'en' });
+    templates.fileFor.mockResolvedValue({
+      id: 7,
+      resource: 'quotation',
+      language: 'it',
+      fileName: 'q.docx',
+      content: docx(paragraph('{total | number:2}')),
+    });
+
+    const { pdf } = await service.render('quotation', '42', { actor, locale: 'en' }, 7);
+
+    expect(templates.fileFor).toHaveBeenCalledWith('quotation', 'en', 7);
+    expect(paragraphs(pdf)).toEqual(['12.345,50']);
+  });
+
+  it('answers 404 when no template was uploaded', async () => {
+    vi.mocked(source.load).mockResolvedValue({ data: {}, fileName: 'q' });
     templates.fileFor.mockResolvedValue(null);
 
     await expect(service.render('quotation', '42', { actor, locale: 'en' })).rejects.toMatchObject({
       message: 'documents.noTemplate',
     });
-    expect(source.load).not.toHaveBeenCalled();
+    expect(gotenberg.toPdf).not.toHaveBeenCalled();
   });
 
   it('answers 404 for a resource without documents', async () => {
     await expect(service.render('invoice', '1', { actor, locale: 'en' })).rejects.toBeInstanceOf(NotFoundException);
   });
 
-  it("previews a template with its resource's sample data", async () => {
-    templates.file.mockResolvedValue({ id: 3, resource: 'quotation', fileName: 'Offerta 2026.docx', content: docx(paragraph('{customer}')) });
+  it("previews a template with its resource's sample data, in the template's language", async () => {
+    templates.file.mockResolvedValue({
+      id: 3,
+      resource: 'quotation',
+      language: 'en',
+      fileName: 'Offerta 2026.docx',
+      content: docx(paragraph('{customer}')),
+    });
     vi.mocked(source.sample).mockReturnValue({ customer: 'Acme' });
 
-    const { pdf, fileName } = await service.preview(3, 'it');
+    const { pdf, fileName } = await service.preview(3);
 
-    expect(source.sample).toHaveBeenCalledWith('it');
+    expect(source.sample).toHaveBeenCalledWith('en');
     expect(paragraphs(pdf)).toEqual(['Acme']);
     expect(fileName).toBe('Offerta-2026-preview.pdf');
   });

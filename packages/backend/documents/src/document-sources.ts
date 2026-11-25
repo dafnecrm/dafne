@@ -3,10 +3,13 @@ import { DiscoveryService } from '@nestjs/core';
 import type { SessionUser } from '@dafne/backend-session';
 import { msg, type DocumentPlaceholder, type DocumentResource } from '@dafne/contracts';
 
-/** Who asks for a document, and the language to format it in. */
+/** Who asks for a document, and their language. */
 export interface DocumentContext {
   actor: SessionUser;
-  /** E.g. "it": numbers, dates and currencies are formatted in it. */
+  /**
+   * E.g. "it", the user's: picks the template when the record has no
+   * language of its own (DocumentData.language).
+   */
   locale: string;
 }
 
@@ -15,6 +18,11 @@ export interface DocumentData<Data extends object = object> {
   data: Data;
   /** Without the extension, e.g. "quotation-42". */
   fileName: string;
+  /**
+   * The language of whom the document is for (e.g. the customer's): the
+   * default template in it is used. Null or missing: the user's.
+   */
+  language?: string | null;
 }
 
 /**

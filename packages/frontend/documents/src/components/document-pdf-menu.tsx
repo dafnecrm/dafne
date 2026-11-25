@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@dafne/frontend-ui/components/dropdown-menu";
+import type { Language } from "@dafne/contracts";
 import { documentPdfHref } from "../links.ts";
 
 /** A template a record's PDF can be made with. */
@@ -17,11 +18,13 @@ export interface PdfTemplate {
   id: number;
   name: string;
   isDefault: boolean;
+  language: Language;
 }
 
 /**
- * Opens the PDF of a record in a new tab: with the default template, or
- * (from the menu) with another of `templates`.
+ * Opens the PDF of a record in a new tab: with the default template in the
+ * record's language (the backend picks it, e.g. by the customer's
+ * language), or (from the menu) with one of `templates`.
  */
 export function DocumentPdfMenu({
   resource,
@@ -33,14 +36,10 @@ export function DocumentPdfMenu({
   templates: PdfTemplate[];
 }) {
   const t = useTranslations("documents");
-  const main = templates.find((template) => template.isDefault) ?? templates[0];
-  const others = templates.filter((template) => template !== main);
-  const link = (template: PdfTemplate) => (
-    <a
-      href={documentPdfHref(resource, id, template.isDefault ? undefined : template.id)}
-      target="_blank"
-      rel="noopener"
-    />
+  // Without a default the backend has nothing to pick: the button opens the first template.
+  const main = templates.some((template) => template.isDefault) ? undefined : templates[0];
+  const link = (template?: PdfTemplate) => (
+    <a href={documentPdfHref(resource, id, template?.id)} target="_blank" rel="noopener" />
   );
 
   const button = (
@@ -49,7 +48,7 @@ export function DocumentPdfMenu({
       {t("pdf")}
     </Button>
   );
-  if (!others.length) {
+  if (templates.length < 2) {
     return button;
   }
   return (
@@ -63,7 +62,10 @@ export function DocumentPdfMenu({
           {templates.map((template) => (
             <DropdownMenuItem key={template.id} render={link(template)}>
               {template.name}
-              {template.isDefault && <span className="text-muted-foreground ml-auto text-xs">{t("defaultTemplate")}</span>}
+              <span className="text-muted-foreground ml-auto text-xs">
+                {t(`languages.${template.language}`)}
+                {template.isDefault && ` · ${t("defaultTemplate")}`}
+              </span>
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>

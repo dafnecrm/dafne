@@ -57,7 +57,7 @@ export async function listDocumentResources(): Promise<DocumentResource[]> {
   return res.json();
 }
 
-/** The templates with a file of `resource` (e.g. "quotation"), defaults first, for a PDF menu. */
+/** The templates with a file of `resource` (e.g. "quotation"), defaults first (one per language), for a PDF menu. */
 export async function listTemplatesFor(resource: string): Promise<ListedDocumentTemplate[]> {
   const query = new URLSearchParams({ resource, limit: "100", sortBy: "isDefault", sortDirection: "desc" });
   const res = await backendFetch(`/document-templates?${query}`);

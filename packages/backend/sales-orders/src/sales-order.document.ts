@@ -133,7 +133,12 @@ export class SalesOrderDocumentSource implements DocumentSource<SalesOrderDocume
     }
     const salesOrder = await this.salesOrders.get(Number(id));
     const customer = await this.customers.get(salesOrder.customerId);
-    return { data: salesOrderDocumentData(salesOrder, customer), fileName: `sales-order-${salesOrder.id}` };
+    return {
+      data: salesOrderDocumentData(salesOrder, customer),
+      fileName: `sales-order-${salesOrder.id}`,
+      // Its template and formats follow the customer's language.
+      language: customer.language,
+    };
   }
 
   sample(_locale: string): SalesOrderDocumentData {

@@ -33,6 +33,12 @@ export const customer = salesSchema.table(
     phone: varchar('phone', { length: 32 }),
     /** @api detail @form editor */
     notes: text('notes'),
+    /**
+     * The language of the customer's documents (it, en): picks their
+     * template and formats them. Null: the user's language.
+     * @api detail
+     */
+    language: text('language', { enum: ['it', 'en'] }),
     createdAt: timestamp('created_at', { precision: 3, withTimezone: true })
       .defaultNow()
       .notNull(),

@@ -9,7 +9,7 @@ export const CUSTOMERS_RESOURCE = 'customers';
  * machine logs its changes (CustomerStatusChangelog), once each.
  */
 export const CUSTOMER_CHANGELOG: ChangelogOptions<CustomerDetail> = {
-  fields: ['name', 'type', 'addresses', 'email', 'phone'],
+  fields: ['name', 'type', 'addresses', 'email', 'phone', 'language'],
   map: {
     addresses: (addresses) =>
       addresses

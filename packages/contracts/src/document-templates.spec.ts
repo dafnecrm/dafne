@@ -15,8 +15,13 @@ function failedFields(body: unknown) {
 describe("documentTemplateBodySchema", () => {
   it("parses a body", () => {
     expect(
-      documentTemplateBodySchema.parse({ name: "Name", resource: "Resource" }),
-    ).toEqual({ name: "Name", resource: "Resource" });
+      documentTemplateBodySchema.parse({ name: "Name", resource: "Resource", language: "en" }),
+    ).toEqual({ name: "Name", resource: "Resource", language: "en" });
+  });
+
+  it("requires one of the languages", () => {
+    expect(failedFields({ name: "Name", resource: "Resource" })).toEqual(["language"]);
+    expect(failedFields({ name: "Name", resource: "Resource", language: "de" })).toEqual(["language"]);
   });
 
   it("rejects unknown properties such as deletedAt", () => {
@@ -25,6 +30,7 @@ describe("documentTemplateBodySchema", () => {
         deletedAt: "2026-01-01",
         name: "Name",
         resource: "Resource",
+        language: "it",
       }),
     ).toEqual(["unrecognized_keys"]);
   });

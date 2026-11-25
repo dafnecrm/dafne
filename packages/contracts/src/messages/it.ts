@@ -25,6 +25,7 @@ export const it: ContractMessages = {
       typeTaken: 'Un altro indirizzo ha già questo tipo',
       country: "Scegli il paese dall'elenco",
     },
+    language: { required: 'Scegli la lingua' },
   },
   customerAddresses: {
     type: { required: 'Scegli il tipo' },
@@ -207,6 +208,7 @@ export const it: ContractMessages = {
   documentTemplates: {
     notFound: 'Modello di documento non trovato',
     name: { required: 'Inserisci il nome' },
+    language: { required: 'Scegli la lingua' },
     resource: { required: 'Inserisci la risorsa', unknown: 'Per questa risorsa non si possono creare documenti' },
     file: {
       missing: 'Carica un file .docx',

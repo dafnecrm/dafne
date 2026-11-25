@@ -97,6 +97,7 @@ export function customerFormOpts(customer?: CustomerDetail) {
       fiscalCode: customer?.fiscalCode ?? "",
       vatNumber: customer?.vatNumber ?? "",
       notes: customer?.notes ?? "",
+      language: customer?.language ?? "",
     } satisfies CustomerFormValues as CustomerFormValues,
   });
 }
