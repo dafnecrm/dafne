@@ -37,7 +37,10 @@ erasable syntax (no enums, namespaces or constructor parameter properties;
     `changelogTransitionHook` is added by hand.
   - `backend-lib`: an empty lib, named as given (not pluralized).
   - `backend-app`: a Nest app in `apps/<name>` (`templates/app`), which
-    migrates on startup with `MIGRATE_ON_START=true` (`@dafne/backend-migrator`).
+    migrates on startup with `MIGRATE_ON_START=true` (`@dafne/backend-migrator`),
+    logs with pino (`@dafne/backend-logger`) and starts OpenTelemetry
+    before the app (`src/telemetry.ts`, a second rspack entry loaded with
+    `node --import`; `@dafne/backend-telemetry`).
   - `contract`: a contract and its spec.
   - `frontend-lib`: an empty lib in `packages/frontend/<name>`
     (`templates/frontend-lib`), wired into a frontend app, `--app` (default

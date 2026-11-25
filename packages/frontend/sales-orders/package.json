@@ -35,6 +35,7 @@
     "@dafne/frontend-permissions": "workspace:*",
     "@dafne/frontend-products": "workspace:*",
     "@dafne/frontend-ui": "workspace:*",
+    "@dafne/frontend-logger": "workspace:*",
     "@tanstack/react-form-nextjs": "catalog:",
     "lucide-react": "catalog:"
   },

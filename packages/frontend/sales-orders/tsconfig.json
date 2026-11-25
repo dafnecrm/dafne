@@ -18,6 +18,9 @@
   ],
   "references": [
     {
+      "path": "../logger"
+    },
+    {
       "path": "../ui"
     },
     {

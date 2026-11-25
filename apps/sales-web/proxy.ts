@@ -27,6 +27,11 @@ export function proxy(request: NextRequest) {
   if (pathname.startsWith("/api/auth/")) {
     return NextResponse.next();
   }
+  // The browser's telemetry (Grafana Faro), proxied to FARO_URL (next.config.ts),
+  // signed in or not: errors on the sign-in page count too.
+  if (pathname === "/telemetry") {
+    return NextResponse.next();
+  }
 
   const hasSession = SESSION_COOKIES.some((name) => request.cookies.has(name));
   const isPublic = PUBLIC_PATHS.includes(pathname);

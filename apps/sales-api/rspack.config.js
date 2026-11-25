@@ -8,14 +8,19 @@ import nodeExternals from 'webpack-node-externals';
  *   sources, so Node can't load them from node_modules at runtime;
  * - the migrations of every database are copied into dist/migrations, for
  *   MIGRATE_ON_START (see src/main.ts);
+ * - src/telemetry.ts is an entry of its own, dist/telemetry.js: OpenTelemetry
+ *   (@dafne/backend-telemetry) loads before the app, with
+ *   `node --import ./dist/telemetry.js dist/main`;
  * - source maps name files by their absolute path: debuggers can't map
  *   the default webpack://@dafne/<app>/../../… (the scope's slash), so
  *   breakpoints in src/ and in the libs were never hit.
  */
 export default (options) => ({
   ...options,
+  entry: { main: options.entry, telemetry: './src/telemetry.ts' },
   output: {
     ...options.output,
+    filename: '[name].js',
     devtoolModuleFilenameTemplate: '[absolute-resource-path]',
   },
   externals: [

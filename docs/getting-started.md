@@ -19,8 +19,11 @@
 - **[Gotenberg](https://gotenberg.dev)** (8): converts the documents filled
   from the uploaded Word templates to PDF (`GOTENBERG_URL`). Only the PDF
   downloads need it.
+- **The Grafana stack** (optional): logs, traces and metrics
+  ([Observability](observability.md)). In development, `otel` (Grafana at
+  <http://otel.dafne.localhost:3200>) and `alloy` (the browser's telemetry).
 
-For development, `compose.yaml` runs all three (Docker, or
+For development, `compose.yaml` runs them all (Docker, or
 [OrbStack](https://orbstack.dev) on macOS, which uses less memory than
 Docker Desktop), and **`pnpm dafne dev` starts them by itself** before the
 apps. They keep running after it stops, with the data in volumes:
@@ -36,8 +39,9 @@ nothing and the apps use what their `.env` points to; `--no-services`
 skips them.
 
 They answer at `db.dafne.localhost:5432` (superuser `postgres` / `secret`),
-`redis.dafne.localhost:6379` and `gotenberg.dafne.localhost:3100` (which
-converts documents to PDF), the hosts of the `.env.example` files.
+`redis.dafne.localhost:6379`, `gotenberg.dafne.localhost:3100` (which
+converts documents to PDF), `otel.dafne.localhost:4318` (OTLP; Grafana on
+`:3200`) and `faro.dafne.localhost:12347`, the hosts of the `.env.example` files.
 `*.localhost` resolves to this machine by itself, and the ports are
 published on the loopback only. Another PostgreSQL (e.g. Postgres.app) or
 Redis on those ports must be stopped first, or the containers moved:

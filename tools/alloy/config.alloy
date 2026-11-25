@@ -1,0 +1,87 @@
+// Development only (compose.yaml, the alloy service): receives what the
+// browser sends with Grafana Faro (@dafne/frontend-logger), through the
+// frontend's /telemetry rewrite, and forwards it to the otel service
+// (grafana/otel-lgtm): logs, errors and web vitals to Loki, traces to Tempo.
+// Alloy's own metrics (faro_receiver_*, loki_write_*…) go there too, to
+// Prometheus as job="alloy".
+// In production the frontend sends to Grafana Cloud's Faro collector, or to
+// an Alloy like this one in front of your own Loki and Tempo.
+
+faro.receiver "frontend" {
+  server {
+    listen_address = "0.0.0.0"
+    listen_port    = 12347
+    // The browser posts to its own origin; the Next server forwards here.
+    cors_allowed_origins = ["https://*.dafne.localhost"]
+  }
+
+  output {
+    logs   = [loki.process.frontend.receiver]
+    traces = [otelcol.exporter.otlphttp.lgtm.input]
+  }
+}
+
+// Faro writes logfmt lines (kind=log|exception|measurement|event, level,
+// app_name…): the app becomes service_name, as for the APIs' logs.
+loki.process "frontend" {
+  forward_to = [loki.write.lgtm.receiver]
+
+  stage.logfmt {
+    mapping = {
+      service_name = "app_name",
+      kind         = "",
+      level        = "",
+    }
+  }
+
+  stage.labels {
+    values = {
+      service_name = "",
+      kind         = "",
+      level        = "",
+    }
+  }
+}
+
+loki.write "lgtm" {
+  endpoint {
+    url = "http://otel:3100/loki/api/v1/push"
+  }
+}
+
+otelcol.exporter.otlphttp "lgtm" {
+  client {
+    endpoint = "http://otel:4318"
+  }
+}
+
+// Live debugging in the UI (http://faro.dafne.localhost:12345): what each
+// component receives, e.g. the Faro payloads.
+livedebugging {
+  enabled = true
+}
+
+// Alloy's own metrics, every 15s, over OTLP like the apps' metrics.
+prometheus.exporter.self "alloy" { }
+
+prometheus.scrape "alloy" {
+  targets         = prometheus.exporter.self.alloy.targets
+  scrape_interval = "15s"
+  forward_to      = [prometheus.relabel.alloy.receiver]
+}
+
+// The exporter names its target job="integrations/self": job="alloy" instead.
+prometheus.relabel "alloy" {
+  forward_to = [otelcol.receiver.prometheus.alloy.receiver]
+
+  rule {
+    target_label = "job"
+    replacement  = "alloy"
+  }
+}
+
+otelcol.receiver.prometheus "alloy" {
+  output {
+    metrics = [otelcol.exporter.otlphttp.lgtm.input]
+  }
+}

@@ -29,6 +29,7 @@ export default function QuotationsPage({
   searchParams,
 }: PageProps<"/[locale]/quotations">) {
   const t = useTranslations();
+
   return (
     <PageContent>
       <PageContentHeader>

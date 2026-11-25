@@ -23,7 +23,13 @@
       "path": "../../packages/backend/user-groups"
     },
     {
+      "path": "../../packages/backend/telemetry"
+    },
+    {
       "path": "../../packages/backend/migrator"
+    },
+    {
+      "path": "../../packages/backend/logger"
     },
     {
       "path": "../../packages/backend/database-auth"

@@ -24,6 +24,7 @@ const FILES: Record<string, (app: string) => string> = {
   'oxlintrc.json': () => '.oxlintrc.json',
   gitignore: () => '.gitignore',
   'src/main.ts': () => 'src/main.ts',
+  'src/telemetry.ts': () => 'src/telemetry.ts',
   'src/controller.ts': (app) => `src/${app}.controller.ts`,
   'src/controller.spec.ts': (app) => `src/${app}.controller.spec.ts`,
 };

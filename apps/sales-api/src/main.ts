@@ -1,3 +1,4 @@
+import { useAppLogger } from '@dafne/backend-logger';
 import { migrateOnStart } from '@dafne/backend-migrator/start';
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
@@ -13,7 +14,9 @@ async function bootstrap() {
   });
 
   // Sign-in is apps/auth's: this API checks the session (@dafne/backend-session).
-  const app = await NestFactory.create(SalesApiModule);
+  // bufferLogs: what Nest logs while starting waits for pino (LoggerModule).
+  const app = await NestFactory.create(SalesApiModule, { bufferLogs: true });
+  useAppLogger(app);
 
   await app.listen(process.env.PORT ?? 3000);
 }

@@ -133,6 +133,15 @@
     },
     {
       "path": "./packages/frontend/documents"
+    },
+    {
+      "path": "./packages/backend/logger"
+    },
+    {
+      "path": "./packages/backend/telemetry"
+    },
+    {
+      "path": "./packages/frontend/logger"
     }
   ]
 }

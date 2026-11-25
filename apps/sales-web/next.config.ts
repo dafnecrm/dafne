@@ -30,7 +30,10 @@ const nextConfig: NextConfig = {
     "@dafne/frontend-permissions",
     "@dafne/frontend-users",
     "@dafne/frontend-documents",
+    "@dafne/frontend-logger",
   ],
+  // Loaded from node_modules by instrumentation.node.ts, not bundled.
+  serverExternalPackages: ["@opentelemetry/sdk-node"],
   cacheComponents: true,
   experimental: {
     // `next upgrade --agent` applies security releases.
@@ -45,10 +48,17 @@ const nextConfig: NextConfig = {
   // Better Auth runs in apps/auth (shared by the apps); the browser calls it
   // on this origin, so there's no CORS and its session cookies belong to the
   // frontend (to the parent domain with COOKIE_DOMAIN in apps/auth).
+  //
+  // The browser's telemetry (Grafana Faro, <Telemetry />) posts to
+  // /telemetry on this origin too, so ad blockers let it through: it goes
+  // on to FARO_URL (the alloy service in development, Grafana Cloud's Faro
+  // collector in production). Without FARO_URL there's no telemetry.
   rewrites() {
     const auth = process.env.AUTH_URL ?? "http://localhost:3001";
+    const faro = process.env.FARO_URL;
     return [
       { source: "/api/auth/:path*", destination: `${auth}/api/auth/:path*` },
+      ...(faro ? [{ source: "/telemetry", destination: faro }] : []),
     ];
   },
   outputFileTracingRoot: root,

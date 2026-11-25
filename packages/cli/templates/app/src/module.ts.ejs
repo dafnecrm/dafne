@@ -5,10 +5,15 @@ import {
   I18nExceptionFilter,
   PostgresErrorInterceptor,
 } from '@dafne/backend-common';
+import { LoggerModule } from '@dafne/backend-logger';
 import { <%= a.pascal %>Controller } from './<%= a.kebab %>.controller.js';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true, envFilePath: ['.env'] })],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: ['.env'] }),
+    // pino: request lines and every Nest Logger, configured by LOG_*.
+    LoggerModule.forRoot({ app: '<%= a.kebab %>' }),
+  ],
   controllers: [<%= a.pascal %>Controller],
   providers: [
     // Errors in the request's language (Accept-Language).

@@ -10,15 +10,21 @@ import { setServerError } from "@dafne/frontend-forms/client";
 import { useResetOnLeave } from "@dafne/frontend-forms/client";
 import { saveSalesOrder } from "../actions.ts";
 import { useAppForm } from "./form-hook.ts";
-import { salesOrderFormOpts, salesOrderSchema, STATUS_OPTIONS } from "../schema.ts";
+import {
+  salesOrderFormOpts,
+  salesOrderSchema,
+  STATUS_OPTIONS,
+} from "../schema.ts";
 import type { SalesOrderDetail } from "../types.ts";
 import { DetailSection } from "@dafne/frontend-ui/components/detail";
 import { TagIcon } from "lucide-react";
-import { DocumentItemsSection, hasOutdatedPrices } from "./document-items-section.tsx";
+import {
+  DocumentItemsSection,
+  hasOutdatedPrices,
+} from "./document-items-section.tsx";
 import { useOptionLabels } from "@dafne/frontend-ui/hooks/use-option-labels";
 import { InputGroupAddon } from "@dafne/frontend-ui/components/input-group";
 import { useSearchParams } from "next/navigation";
-
 
 /**
  * Creates a sales order, or edits `salesOrder`. Saving opens the sales order's page
@@ -26,14 +32,14 @@ import { useSearchParams } from "next/navigation";
  */
 export function SalesOrderForm({
   salesOrder,
-  path
+  path,
 }: {
   salesOrder?: SalesOrderDetail;
   path: string;
 }) {
   const t = useTranslations();
-  const searchParams = useSearchParams()
-  const customerIdFromParams = searchParams.get('customerId');
+  const searchParams = useSearchParams();
+  const customerIdFromParams = searchParams.get("customerId");
 
   const statusOptions = useOptionLabels(STATUS_OPTIONS);
 
@@ -46,7 +52,12 @@ export function SalesOrderForm({
     onSubmitMeta: { reprice: false } as { reprice: boolean },
     onSubmit: async ({ value, meta, formApi }) => {
       // Redirects on success, so only an error comes back.
-      const result = await saveSalesOrder(salesOrder?.id ?? null, value, path, meta);
+      const result = await saveSalesOrder(
+        salesOrder?.id ?? null,
+        value,
+        path,
+        meta,
+      );
       if (result?.error) {
         setServerError(formApi, result.error);
       }
@@ -70,7 +81,10 @@ export function SalesOrderForm({
         <FieldGroup>
           <form.FormErrors />
 
-          <DetailSection title={t("salesOrders.sections.details")} groupVariant="grid">
+          <DetailSection
+            title={t("salesOrders.sections.details")}
+            groupVariant="grid"
+          >
             <form.AppField name="typeId">
               {(field) => (
                 <field.SalesOrderTypeSelectField
@@ -117,13 +131,12 @@ export function SalesOrderForm({
                 />
               )}
             </form.AppField>
-
           </DetailSection>
 
           {/**
            * Not mode="array": that re-renders only when its array version
            * changes, and reset() (on leaving the page) zeroes it, so new
-           * values could be missed. The table follows every value instead. 
+           * values could be missed. The table follows every value instead.
            */}
           <form.AppField name="items">
             {(items) => (
@@ -145,11 +158,13 @@ export function SalesOrderForm({
             >
               {t("common.cancel")}
             </Button>
-            {hasOutdatedPrices(salesOrder?.items) && <form.SubmitButton
+            {hasOutdatedPrices(salesOrder?.items) && (
+              <form.SubmitButton
                 variant="destructive"
                 label={t("salesOrders.saveChangesAndUpdatePrices")}
                 submitMeta={{ reprice: true }}
-              />}
+              />
+            )}
             <form.SubmitButton
               label={t(
                 salesOrder ? "common.saveChanges" : "salesOrders.create",

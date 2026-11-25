@@ -9,6 +9,7 @@ import { ThemeScript } from "@dafne/frontend-ui/components/theme-script";
 import { cn } from "@dafne/frontend-ui/lib/utils";
 import { routing } from "@/i18n/routing";
 import { Toaster } from "@dafne/frontend-ui/components/toast";
+import { Telemetry } from "@dafne/frontend-logger/telemetry";
 
 const figtree = Figtree({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -53,6 +54,15 @@ export default async function RootLayout({
         <ThemeScript />
       </head>
       <body className="min-h-full flex flex-col">
+        {/* Grafana Faro in the browser, when FARO_URL is set (next.config.ts proxies /telemetry). */}
+        {process.env.FARO_URL && (
+          <Telemetry
+            app="sales-web"
+            environment={process.env.NODE_ENV}
+            sampleRate={Number(process.env.FARO_SAMPLE_RATE ?? 1)}
+            level={process.env.NEXT_PUBLIC_LOG_LEVEL}
+          />
+        )}
         <NextIntlClientProvider>
           <Toaster />
           <TooltipProvider>{children}</TooltipProvider>

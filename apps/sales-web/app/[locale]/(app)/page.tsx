@@ -8,7 +8,6 @@ import {
 } from "@dafne/frontend-ui/components/card";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { requireUser } from "@/lib/session";
-
 export default function Home() {
   return (
     <Suspense fallback={<Skeleton className="h-24 w-full rounded-xl" />}>

@@ -20,10 +20,13 @@ import { AssistantModule, AssistantProvidersModule, AssistantModelsModule, Assis
 import { UomsModule, UomConversionsModule } from '@dafne/backend-uom';
 import { PermissionsModule } from '@dafne/backend-permissions';
 import { DocumentsModule } from '@dafne/backend-documents';
+import { LoggerModule } from '@dafne/backend-logger';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: ['.env'] }),
+    // pino: request lines and every Nest Logger, configured by LOG_*.
+    LoggerModule.forRoot({ app: 'sales' }),
     // Shared cache (CACHE_MANAGER): Redis at REDIS_URL, or memory without it.
     CacheModule.registerAsync({
       isGlobal: true,
