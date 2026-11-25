@@ -7,6 +7,10 @@
 `main` changes only through pull requests. The `affected` CI check is
 required to merge.
 
+Dafne is licensed under the [AGPL-3.0](../LICENSE) (`AGPL-3.0-only`): by
+opening a pull request you agree that your contribution is released under
+the same license.
+
 ## What CI runs
 
 `.github/workflows/ci.yml`, on every pull request and push to `main`, in

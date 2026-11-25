@@ -71,6 +71,8 @@ keep it in line when these rules change. Each project has its own
   when they're out of date. Shared compiler options are in
   `tsconfig.base.json`. The frontend (Next) and the CLI (TypeScript 7) keep
   their own tsconfig and `typecheck` script.
+- **License**: AGPL-3.0 (`LICENSE`); every `package.json` has
+  `"license": "AGPL-3.0-only"` (the CLI's templates write it).
 - **Shared versions** go in the `catalog:` of `pnpm-workspace.yaml`
   (`"zod": "catalog:"`). Workspace packages are `"workspace:*"`.
 - **`@dafne/contracts` ships TypeScript sources** (no build): Next compiles

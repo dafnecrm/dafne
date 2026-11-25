@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "Creates the Dafne Postgres database; applies the migrations of every schema (auth, sales, \u2026) in one order, by timestamp; generates them with drizzle-kit",
   "private": true,
+  "license": "AGPL-3.0-only",
   "type": "module",
   "exports": {
     "./start": "./src/start.ts",

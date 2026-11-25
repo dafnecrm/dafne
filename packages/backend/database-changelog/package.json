@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "changelog: the change log of the CRUD resources (one table, partitioned by resource), with its migrations",
   "private": true,
+  "license": "AGPL-3.0-only",
   "type": "module",
   "dafne": {
     "schema": "changelog"

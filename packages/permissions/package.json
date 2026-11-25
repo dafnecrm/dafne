@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "What users can do (CASL abilities from user groups' permissions), shared by the backend and the frontend",
   "private": true,
+  "license": "AGPL-3.0-only",
   "type": "module",
   "exports": {
     ".": "./src/index.ts"

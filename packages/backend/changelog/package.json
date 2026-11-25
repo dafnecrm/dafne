@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "Change log of CRUD resources: ChangelogModule.forFeature records each write (and status change) in the changelog schema",
   "private": true,
+  "license": "AGPL-3.0-only",
   "type": "module",
   "exports": {
     ".": "./src/index.ts"

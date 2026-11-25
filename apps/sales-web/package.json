@@ -2,6 +2,7 @@
   "name": "@dafne/sales-web",
   "version": "0.1.0",
   "private": true,
+  "license": "AGPL-3.0-only",
   "dafne": {
     "dev": {
       "host": "sales-web",

@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "Sign-in for the apps' APIs: a guard that validates the session with apps/auth, and @Session() / @Roles()",
   "private": true,
+  "license": "AGPL-3.0-only",
   "type": "module",
   "exports": {
     ".": "./src/index.ts"

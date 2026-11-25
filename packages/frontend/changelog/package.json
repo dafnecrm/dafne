@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "Change log of any resource, for any frontend app: the history sheet and its texts",
   "private": true,
+  "license": "AGPL-3.0-only",
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
