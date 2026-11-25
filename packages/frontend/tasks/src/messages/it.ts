@@ -13,6 +13,12 @@ export const it: TasksMessages = {
         description: "Elimina le esecuzioni vecchie e chiude come fallite quelle interrotte quando l'app delle attività si è fermata.",
       },
     },
+    quotations: {
+      expiry: {
+        name: "Scadenza offerte",
+        description: "Assegna lo stato expired alle offerte non più valide."
+      }
+    }
   },
   fields: {
     task: "Attività",
