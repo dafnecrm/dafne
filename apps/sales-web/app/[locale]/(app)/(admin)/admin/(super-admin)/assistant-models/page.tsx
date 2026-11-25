@@ -36,6 +36,8 @@ export default function AssistantModelsPage({
         <PageContentDescription>{t("common.listHint")}</PageContentDescription>
         <PageContentAction>
           <Button
+            variant="outline"
+            size="sm"
             nativeButton={false}
             render={<Link href={`${assistantModelsTable.path}/new`} />}
           >

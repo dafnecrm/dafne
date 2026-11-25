@@ -38,7 +38,12 @@ export default function CustomersPage({
         <PageContentAction>
           {/* Only for who may create one; the API checks it too. */}
           <Can I="create" a="Customer">
-            <Button nativeButton={false} render={<Link href="/customers/new" />}>
+            <Button
+              variant="outline"
+              size="sm"
+              nativeButton={false}
+              render={<Link href="/customers/new" />}
+            >
               <PlusIcon data-icon="inline-start" />
               {t("customers.new")}
             </Button>

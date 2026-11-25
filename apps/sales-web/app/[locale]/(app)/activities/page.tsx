@@ -38,7 +38,12 @@ export default function ActivitiesPage({
         <PageContentAction>
           {/* Only for who may create one; the API checks it too. */}
           <Can I="create" a="Activity">
-            <Button nativeButton={false} render={<Link href="/activities/new" />}>
+            <Button
+              variant="outline"
+              size="sm"
+              nativeButton={false}
+              render={<Link href="/activities/new" />}
+            >
               <PlusIcon data-icon="inline-start" />
               {t("activities.new")}
             </Button>

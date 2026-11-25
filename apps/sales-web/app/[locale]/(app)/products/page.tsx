@@ -38,7 +38,12 @@ export default function ProductsPage({
         <PageContentAction>
           {/* Only for who may create one; the API checks it too. */}
           <Can I="create" a="Product">
-            <Button nativeButton={false} render={<Link href={`${productsTable.path}/new`} />}>
+            <Button
+              variant="outline"
+              size="sm"
+              nativeButton={false}
+              render={<Link href={`${productsTable.path}/new`} />}
+            >
               <PlusIcon data-icon="inline-start" />
               {t("products.new")}
             </Button>

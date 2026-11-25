@@ -36,6 +36,8 @@ export default function AssistantProvidersPage({
         <PageContentDescription>{t("common.listHint")}</PageContentDescription>
         <PageContentAction>
           <Button
+            variant="outline"
+            size="sm"
             nativeButton={false}
             render={<Link href={`${assistantProvidersTable.path}/new`} />}
           >
