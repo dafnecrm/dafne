@@ -121,14 +121,8 @@ export class DocumentTemplatesController implements CrudController<
     @Param('id', IdPipe) id: number,
     @UploadedFile() file: UploadedTemplate | undefined,
     @Session() session: UserSession,
-    @Headers('accept-language') acceptLanguage: string | undefined,
   ): Promise<DocumentTemplateDetail> {
-    return this.documentTemplatesService.setFile(
-      id,
-      file,
-      session.user,
-      localeFrom(acceptLanguage),
-    );
+    return this.documentTemplatesService.setFile(id, file, session.user);
   }
 
   /** Downloads the .docx of a template. */
@@ -142,14 +136,9 @@ export class DocumentTemplatesController implements CrudController<
     });
   }
 
-  /** The template filled with its resource's sample data, as a PDF. */
+  /** The template filled with its resource's sample data, in its language, as a PDF. */
   @Get(':id/preview')
-  async preview(
-    @Param('id', IdPipe) id: number,
-    @Headers('accept-language') acceptLanguage: string | undefined,
-  ): Promise<StreamableFile> {
-    return pdfFile(
-      await this.documents.preview(id, localeFrom(acceptLanguage)),
-    );
+  async preview(@Param('id', IdPipe) id: number): Promise<StreamableFile> {
+    return pdfFile(await this.documents.preview(id));
   }
 }

@@ -37,6 +37,12 @@ export const en = {
     id: "ID",
     addresses: 'Addresses',
     notes: 'Notes',
+    language: "Document language",
+  },
+  language: {
+    none: "Same as the user",
+    it: "Italian",
+    en: "English",
   },
   type: {
     person: "Person",

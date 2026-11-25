@@ -14,7 +14,7 @@ export async function DocumentPdfButton({ resource, id }: { resource: string; id
     <DocumentPdfMenu
       resource={resource}
       id={id}
-      templates={templates.map(({ id: templateId, name, isDefault }) => ({ id: templateId, name, isDefault }))}
+      templates={templates.map(({ id: templateId, name, isDefault, language }) => ({ id: templateId, name, isDefault, language }))}
     />
   );
 }

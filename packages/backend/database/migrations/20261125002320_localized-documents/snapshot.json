@@ -1,0 +1,171 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "3db44757-4355-486a-85c4-ced666420e6a",
+  "prevIds": [
+    "376c6508-94ff-465f-8431-955d42b8d7cd"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "sales",
+        "customer",
+        "language"
+      ],
+      "writes": [
+        "s|col|sales.customer.language",
+        "n|col|sales.customer.language",
+        "e|col|sales.customer.language"
+      ],
+      "reads": [
+        "n|tbl|sales.customer",
+        "n|sch|sales"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "sales",
+        "document_template",
+        "language"
+      ],
+      "writes": [
+        "s|col|sales.document_template.language",
+        "n|col|sales.document_template.language",
+        "e|col|sales.document_template.language"
+      ],
+      "reads": [
+        "n|tbl|sales.document_template",
+        "n|sch|sales"
+      ]
+    },
+    {
+      "statementType": "recreate_index",
+      "statementTarget": [
+        "index",
+        "sales",
+        "document_template",
+        "document_template_resource_idx"
+      ],
+      "writes": [
+        "s|idx|sales.document_template_resource_idx",
+        "n|idx|sales.document_template_resource_idx",
+        "e|idx|sales.document_template_resource_idx",
+        "n|rel|sales.document_template_resource_idx"
+      ],
+      "reads": [
+        "n|tbl|sales.document_template",
+        "n|sch|sales",
+        "n|col|sales.document_template.resource",
+        "n|col|sales.document_template.language"
+      ],
+      "sharedWrites": [],
+      "sqlHash": "ad58b5697ad2e4d8"
+    },
+    {
+      "statementType": "recreate_index",
+      "statementTarget": [
+        "index",
+        "sales",
+        "document_template",
+        "document_template_default_uq"
+      ],
+      "writes": [
+        "s|idx|sales.document_template_default_uq",
+        "n|idx|sales.document_template_default_uq",
+        "e|idx|sales.document_template_default_uq",
+        "n|rel|sales.document_template_default_uq"
+      ],
+      "reads": [
+        "n|tbl|sales.document_template",
+        "n|sch|sales",
+        "n|col|sales.document_template.resource",
+        "n|col|sales.document_template.language"
+      ],
+      "sharedWrites": [],
+      "sqlHash": "f641e5ea97125441"
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "customer",
+        "name": "language",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "document_template",
+        "name": "language",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'it'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "indexes\u0000[\"sales\",\"document_template_resource_idx\"]",
+      "set": {
+        "columns": [
+          {
+            "value": "resource",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "language",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ]
+      }
+    },
+    {
+      "op": "alter",
+      "key": "indexes\u0000[\"sales\",\"document_template_default_uq\"]",
+      "set": {
+        "columns": [
+          {
+            "value": "resource",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "language",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ]
+      }
+    }
+  ]
+}

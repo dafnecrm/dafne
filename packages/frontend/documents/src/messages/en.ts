@@ -29,9 +29,14 @@ export const documentTemplates = {
     id: "Template ID",
     name: "Name",
     resource: "Document",
-    isDefault: "Default for this document",
+    language: "Language",
+    isDefault: "Default for this document and language",
     fileName: "Word file",
     size: "Size",
+  },
+  languages: {
+    it: "Italian",
+    en: "English",
   },
   resources: {
     quotation: "Quotation",
@@ -63,6 +68,10 @@ export const documents = {
   pdf: "PDF",
   choose: "PDF with another template",
   defaultTemplate: "Default",
+  languages: {
+    it: "Italian",
+    en: "English",
+  },
 };
 
 /** The shape every language must have: same keys, any text. */

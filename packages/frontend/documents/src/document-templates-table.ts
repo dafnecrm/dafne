@@ -1,6 +1,7 @@
-import type {
-  DocumentTemplateFilterField,
-  DocumentTemplateSortField,
+import {
+  LANGUAGES,
+  type DocumentTemplateFilterField,
+  type DocumentTemplateSortField,
 } from "@dafne/contracts";
 import {
   defineDataTable,
@@ -38,6 +39,7 @@ export function defineDocumentTemplatesTable({
       "id",
       "name",
       "resource",
+      "language",
       "isDefault",
       "fileName",
       "size",
@@ -58,6 +60,14 @@ export function defineDocumentTemplatesTable({
       {
         field: "resource" satisfies DocumentTemplateFilterField,
         label: "documentTemplates.fields.resource" satisfies DocumentTemplatesMessageKey,
+      },
+      {
+        field: "language" satisfies DocumentTemplateFilterField,
+        label: "documentTemplates.fields.language" satisfies DocumentTemplatesMessageKey,
+        options: LANGUAGES.map((language) => ({
+          value: language,
+          label: `documentTemplates.languages.${language}` satisfies DocumentTemplatesMessageKey,
+        })),
       },
       {
         field: "isDefault" satisfies DocumentTemplateFilterField,

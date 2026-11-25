@@ -28,6 +28,7 @@ export const en = {
       typeTaken: 'Another address already has this type',
       country: 'Choose the country from the list',
     },
+    language: { required: 'Choose the language' },
   },
   customerAddresses: {
     type: { required: 'Choose the type' },
@@ -210,6 +211,7 @@ export const en = {
   documentTemplates: {
     notFound: 'Document template not found',
     name: { required: 'Enter the name' },
+    language: { required: 'Choose the language' },
     resource: { required: 'Enter the resource', unknown: 'Documents cannot be made for this resource' },
     file: {
       missing: 'Upload a .docx file',

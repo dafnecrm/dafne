@@ -199,6 +199,7 @@ export class CustomersService
             email: body.email,
             phone: body.phone,
             notes: body.notes,
+            language: body.language,
             createdAt: now,
             updatedAt: now,
             createdById: actor.id,
@@ -236,6 +237,7 @@ export class CustomersService
             email: body.email,
             phone: body.phone,
             notes: body.notes,
+            language: body.language,
             updatedById: actor.id,
             // The time of this change.
             updatedAt: new Date(),

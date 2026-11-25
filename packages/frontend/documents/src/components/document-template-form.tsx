@@ -2,7 +2,8 @@
 
 import { revalidateLogic } from "@tanstack/react-form-nextjs";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { LANGUAGES } from "@dafne/contracts";
 import { Button } from "@dafne/frontend-ui/components/button";
 import { DetailSection } from "@dafne/frontend-ui/components/detail";
 import { FieldGroup } from "@dafne/frontend-ui/components/field";
@@ -13,7 +14,7 @@ import { DocumentTemplatePlaceholders } from "./document-template-placeholders.t
 import { useResourceLabel } from "./use-resource-label.ts";
 import { saveDocumentTemplate } from "../actions.ts";
 import { documentTemplateFormOpts, documentTemplateSchema } from "../schema.ts";
-import { FileTextIcon, TextIcon } from "lucide-react";
+import { FileTextIcon, LanguagesIcon, TextIcon } from "lucide-react";
 import { InputGroupAddon } from "@dafne/frontend-ui/components/input-group";
 
 /**
@@ -34,8 +35,9 @@ export function DocumentTemplateForm({
   const t = useTranslations();
   const resourceLabel = useResourceLabel();
   const resourceOptions = resources.map(({ resource }) => ({ value: resource, label: resourceLabel(resource) }));
+  const languageOptions = LANGUAGES.map((language) => ({ value: language, label: t(`documentTemplates.languages.${language}`) }));
   const form = useAppForm({
-    ...documentTemplateFormOpts(documentTemplate),
+    ...documentTemplateFormOpts(documentTemplate, useLocale()),
     // Validate on submit, then on every change.
     validationLogic: revalidateLogic(),
     validators: { onDynamic: documentTemplateSchema },
@@ -94,6 +96,18 @@ export function DocumentTemplateForm({
                 >
                   <InputGroupAddon>
                     <FileTextIcon />
+                  </InputGroupAddon>
+                </field.SelectField>
+              )}
+            </form.AppField>
+            <form.AppField name="language">
+              {(field) => (
+                <field.SelectField
+                  label={t("documentTemplates.fields.language")}
+                  options={languageOptions}
+                >
+                  <InputGroupAddon>
+                    <LanguagesIcon />
                   </InputGroupAddon>
                 </field.SelectField>
               )}

@@ -121,7 +121,12 @@ export class QuotationDocumentSource implements DocumentSource<QuotationDocument
     }
     const quotation = await this.quotations.get(Number(id));
     const customer = await this.customers.get(quotation.customerId);
-    return { data: quotationDocumentData(quotation, customer), fileName: `quotation-${quotation.id}` };
+    return {
+      data: quotationDocumentData(quotation, customer),
+      fileName: `quotation-${quotation.id}`,
+      // Its template and formats follow the customer's language.
+      language: customer.language,
+    };
   }
 
   sample(_locale: string): QuotationDocumentData {

@@ -3,11 +3,17 @@ import {
   pageQuery,
   SORT_DIRECTIONS,
   requiredText,
+  LANGUAGES,
   type Page,
 } from "./common.ts";
 import { msg } from "./messages/index.ts";
 
 /* ---------- Requests ---------- */
+
+/** Values of document template language: the language of its text and formats. */
+export const DOCUMENT_TEMPLATE_LANGUAGES = LANGUAGES;
+export type DocumentTemplateLanguage =
+  (typeof DOCUMENT_TEMPLATE_LANGUAGES)[number];
 
 /**
  * Body of POST /document-templates and PUT /document-templates/:id. PUT replaces the
@@ -16,6 +22,10 @@ import { msg } from "./messages/index.ts";
 export const documentTemplateBodySchema = z.strictObject({
   name: requiredText(120, msg("documentTemplates.name.required")),
   resource: requiredText(60, msg("documentTemplates.resource.required")),
+  language: z
+    .enum(DOCUMENT_TEMPLATE_LANGUAGES, {
+      error: msg("documentTemplates.language.required"),
+    }),
   isDefault: z.boolean().optional(),
 });
 
@@ -31,6 +41,7 @@ export const DOCUMENT_TEMPLATE_SORT_FIELDS = [
   "id",
   "name",
   "resource",
+  "language",
   "isDefault",
   "fileName",
   "size",
@@ -49,6 +60,7 @@ export const DOCUMENT_TEMPLATE_FILTER_FIELDS = [
   "id",
   "name",
   "resource",
+  "language",
   "isDefault",
   "fileName",
 ] as const;
@@ -64,6 +76,7 @@ export const listDocumentTemplatesQuerySchema = z.strictObject({
     .optional(),
   name: z.string().max(120).optional(),
   resource: z.string().max(60).optional(),
+  language: z.enum(DOCUMENT_TEMPLATE_LANGUAGES).optional(),
   isDefault: z.enum(["true", "false"]).optional(),
   fileName: z.string().max(255).optional(),
   /** Defaults to id. */
@@ -82,6 +95,7 @@ export interface ListedDocumentTemplate {
   id: number;
   name: string;
   resource: string;
+  language: DocumentTemplateLanguage;
   isDefault: boolean;
   fileName: string | null;
   size: number | null;

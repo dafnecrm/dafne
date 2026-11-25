@@ -36,6 +36,12 @@ export const it: CustomersMessages = {
     id: "ID",
     addresses: "Addresses",
     notes: "Notes",
+    language: "Lingua dei documenti",
+  },
+  language: {
+    none: "Quella dell'utente",
+    it: "Italiano",
+    en: "Inglese",
   },
   type: {
     person: "Persona",

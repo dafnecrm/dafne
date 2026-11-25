@@ -14,6 +14,7 @@ import {
   Building2Icon,
   SquareUserIcon,
   TextIcon,
+  LanguagesIcon,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import CopyButton from "@dafne/frontend-ui/components/copy-button";
@@ -76,6 +77,10 @@ export function CustomerDetails({
             {customer.vatNumber ?? "—"}
           </Detail>
         )}
+
+        <Detail icon={LanguagesIcon} label={t("customers.fields.language")}>
+          {t(`customers.language.${customer.language ?? "none"}`)}
+        </Detail>
 
         <Detail icon={TextIcon} label={t("customers.fields.notes")} wide>
           {customer.notes ? (

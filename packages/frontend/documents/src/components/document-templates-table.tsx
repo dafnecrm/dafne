@@ -56,6 +56,10 @@ function useDocumentTemplateColumns(path: string) {
           header: t("documentTemplates.fields.resource"),
           cell: (info) => resourceLabel(info.getValue()),
         }),
+        col.accessor("language", {
+          header: t("documentTemplates.fields.language"),
+          cell: (info) => t(`documentTemplates.languages.${info.getValue()}`),
+        }),
         col.accessor("isDefault", {
           header: t("documentTemplates.fields.isDefault"),
           cell: (info) => t(info.getValue() ? "common.yes" : "common.no"),

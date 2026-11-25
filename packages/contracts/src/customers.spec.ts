@@ -53,7 +53,14 @@ describe('customerBodySchema', () => {
       phone: null,
       addresses: [],
       notes: null,
+      language: null,
     });
+  });
+
+  it('takes one of the languages, a blank one as null', () => {
+    expect(customerBodySchema.parse({ ...company, language: 'en' }).language).toBe('en');
+    expect(customerBodySchema.parse({ ...company, language: '' }).language).toBeNull();
+    expect(failedFields({ ...company, language: 'de' })).toEqual(['language']);
   });
 
   it('rejects a blank name, a bad email and a bad phone', () => {

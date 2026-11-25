@@ -6,7 +6,7 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { and, asc, desc, eq, isNull } from 'drizzle-orm';
+import { and, asc, desc, eq, isNull, ne } from 'drizzle-orm';
 import {
   documentTemplateBodySchema,
   type DocumentTemplateBodyInput,
@@ -50,13 +50,11 @@ describe('DocumentTemplatesService', () => {
     delete: vi.fn(),
     query: { documentTemplate: { findFirst } },
   };
-  const found = { id: 1, resource: 'quotation' };
+  const found = { id: 1, resource: 'quotation', language: 'en' };
   // One resource with documents: quotation.
   const sources = new DocumentSources({ getProviders: () => [] } as never);
-  sources.register('quotation', {
-    load: vi.fn(),
-    sample: () => ({ customer: { name: 'Acme' } }),
-  });
+  const sample = vi.fn();
+  sources.register('quotation', { load: vi.fn(), sample });
 
   beforeEach(async () => {
     vi.resetAllMocks();
@@ -78,6 +76,7 @@ describe('DocumentTemplatesService', () => {
     update.set.mockReturnValue(update);
     update.where.mockResolvedValue({ rowCount: 1 });
     findFirst.mockResolvedValue(found);
+    sample.mockReturnValue({ customer: { name: 'Acme' } });
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -147,7 +146,7 @@ describe('DocumentTemplatesService', () => {
     it('inserts the document template with its creator', async () => {
       await expect(
         service.create(
-          body({ name: 'Name', resource: 'quotation' }),
+          body({ name: 'Name', resource: 'quotation', language: 'it' }),
           actor('u1'),
         ),
       ).resolves.toBe(found);
@@ -166,7 +165,7 @@ describe('DocumentTemplatesService', () => {
     it('updates the document template', async () => {
       await service.update(
         1,
-        body({ name: 'Name', resource: 'quotation' }),
+        body({ name: 'Name', resource: 'quotation', language: 'it' }),
         actor('u2'),
       );
 
@@ -184,7 +183,7 @@ describe('DocumentTemplatesService', () => {
       await expect(
         service.update(
           999,
-          body({ name: 'Name', resource: 'quotation' }),
+          body({ name: 'Name', resource: 'quotation', language: 'it' }),
           actor('u2'),
         ),
       ).rejects.toBeInstanceOf(NotFoundException);
@@ -215,26 +214,59 @@ describe('DocumentTemplatesService', () => {
   describe('resource and default', () => {
     it('refuses a resource without documents', async () => {
       await expect(
-        service.create(body({ name: 'Name', resource: 'invoice' }), actor('u1')),
+        service.create(body({ name: 'Name', resource: 'invoice', language: 'it' }), actor('u1')),
       ).rejects.toBeInstanceOf(BadRequestException);
       expect(db.insert).not.toHaveBeenCalled();
     });
 
-    it("makes a new default the resource's only one", async () => {
+    it("makes a new default the only one of its resource and language", async () => {
       await service.create(
-        body({ name: 'Name', resource: 'quotation', isDefault: true }),
+        body({ name: 'Name', resource: 'quotation', language: 'en', isDefault: true }),
         actor('u1'),
       );
 
-      // First the other defaults are cleared, then the row is inserted.
+      // First the other defaults in English are cleared, then the row is inserted.
       expect(update.set.mock.calls[0][0]).toEqual({ isDefault: false });
-      expect(insert.values.mock.calls[0][0]).toMatchObject({ isDefault: true });
+      expect(update.where).toHaveBeenCalledWith(
+        and(
+          eq(documentTemplate.resource, 'quotation'),
+          eq(documentTemplate.language, 'en'),
+          eq(documentTemplate.isDefault, true),
+          notDeleted,
+          undefined,
+        ),
+      );
+      expect(insert.values.mock.calls[0][0]).toMatchObject({ language: 'en', isDefault: true });
+    });
+
+    it('keeps the template being edited default', async () => {
+      await service.update(
+        1,
+        body({ name: 'Name', resource: 'quotation', language: 'it', isDefault: true }),
+        actor('u2'),
+      );
+
+      expect(update.where.mock.calls[0][0]).toEqual(
+        and(
+          eq(documentTemplate.resource, 'quotation'),
+          eq(documentTemplate.language, 'it'),
+          eq(documentTemplate.isDefault, true),
+          notDeleted,
+          ne(documentTemplate.id, 1),
+        ),
+      );
+    });
+
+    it('requires a known language', () => {
+      expect(() =>
+        body({ name: 'Name', resource: 'quotation', language: 'de' as 'it' }),
+      ).toThrow();
     });
 
     it('leaves the other templates alone when not default', async () => {
       await service.update(
         1,
-        body({ name: 'Name', resource: 'quotation', isDefault: false }),
+        body({ name: 'Name', resource: 'quotation', language: 'it', isDefault: false }),
         actor('u2'),
       );
 
@@ -249,13 +281,14 @@ describe('DocumentTemplatesService', () => {
       size: buffer.length,
     });
 
-    it('stores a .docx that fills with the sample data', async () => {
+    it("stores a .docx that fills with the sample data in the template's language", async () => {
       const file = upload(docx(paragraph('{customer.name}')));
 
       await expect(
-        service.setFile(1, file, actor('u2'), 'it'),
+        service.setFile(1, file, actor('u2')),
       ).resolves.toBe(found);
 
+      expect(sample).toHaveBeenCalledWith('en');
       expect(update.set.mock.calls[0][0]).toMatchObject({
         content: file.buffer,
         fileName: 'Offerta.docx',
@@ -266,17 +299,16 @@ describe('DocumentTemplatesService', () => {
 
     it('refuses a missing file, another format or a file too large', async () => {
       await expect(
-        service.setFile(1, undefined, actor('u2'), 'it'),
+        service.setFile(1, undefined, actor('u2')),
       ).rejects.toBeInstanceOf(BadRequestException);
       await expect(
-        service.setFile(1, upload(Buffer.from('x'), 'a.pdf'), actor('u2'), 'it'),
+        service.setFile(1, upload(Buffer.from('x'), 'a.pdf'), actor('u2')),
       ).rejects.toMatchObject({ message: 'documentTemplates.file.notDocx' });
       await expect(
         service.setFile(
           1,
           { ...upload(Buffer.from('x')), size: 6 * 1024 * 1024 },
           actor('u2'),
-          'it',
         ),
       ).rejects.toMatchObject({ message: 'documentTemplates.file.tooLarge' });
       expect(db.update).not.toHaveBeenCalled();
@@ -284,7 +316,7 @@ describe('DocumentTemplatesService', () => {
 
     it('refuses a template with errors, without storing it', async () => {
       await expect(
-        service.setFile(1, upload(docx(paragraph('{customer.name'))), actor('u2'), 'it'),
+        service.setFile(1, upload(docx(paragraph('{customer.name'))), actor('u2')),
       ).rejects.toBeInstanceOf(UnprocessableEntityException);
       expect(db.update).not.toHaveBeenCalled();
     });
@@ -301,22 +333,43 @@ describe('DocumentTemplatesService', () => {
       });
     });
 
-    it("finds the resource's default when no template is asked for", async () => {
+    it("finds the resource's default, preferring the language asked for, then the app's", async () => {
       const content = Buffer.from('docx');
       select.limit.mockResolvedValue([
-        { id: 3, resource: 'quotation', fileName: 'q.docx', content },
+        { id: 3, resource: 'quotation', language: 'en', fileName: 'q.docx', content },
       ]);
 
-      await expect(service.fileFor('quotation')).resolves.toMatchObject({
+      await expect(service.fileFor('quotation', 'en')).resolves.toMatchObject({
         id: 3,
+        language: 'en',
         content,
       });
+      expect(select.where).toHaveBeenCalledWith(
+        and(
+          eq(documentTemplate.resource, 'quotation'),
+          eq(documentTemplate.isDefault, true),
+          expect.anything(),
+          notDeleted,
+        ),
+      );
+      // Every default of the resource, the language's first, then Italian, then the others.
+      const [preference] = select.orderBy.mock.calls[0] as [{ queryChunks: unknown[] }];
+      expect(preference.queryChunks).toContain('en');
+      expect(preference.queryChunks).toContain('it');
     });
 
-    it('is null when the resource has no template with a file', async () => {
+    it('takes the template asked for, whatever its language', async () => {
       select.limit.mockResolvedValue([]);
 
-      await expect(service.fileFor('quotation', 9)).resolves.toBeNull();
+      await expect(service.fileFor('quotation', 'en', 9)).resolves.toBeNull();
+      expect(select.where).toHaveBeenCalledWith(
+        and(
+          eq(documentTemplate.resource, 'quotation'),
+          eq(documentTemplate.id, 9),
+          expect.anything(),
+          notDeleted,
+        ),
+      );
     });
   });
 });

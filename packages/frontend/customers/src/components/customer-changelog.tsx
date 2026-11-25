@@ -6,6 +6,7 @@ import {
   type ChangeFieldConfig,
 } from "@dafne/frontend-changelog/components/changelog-sheet";
 import { ListChangeDetails } from "@dafne/frontend-changelog/components/change-values";
+import { LANGUAGES } from "@dafne/contracts";
 import { countryName } from "@dafne/frontend-ui/lib/country-name";
 import { useOptionLabel } from "@dafne/frontend-ui/hooks/use-option-labels";
 import type { CustomerDetail } from "../types.ts";
@@ -58,6 +59,13 @@ export function CustomerChangelogSheet({
     },
     email: { label: t("customers.fields.email") },
     phone: { label: t("customers.fields.phone") },
+    language: {
+      label: t("customers.fields.language"),
+      value: (value) => {
+        const language = LANGUAGES.find((option) => option === value);
+        return language ? t(`customers.language.${language}`) : "—";
+      },
+    },
   };
 
   return (

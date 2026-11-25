@@ -13,7 +13,9 @@ import {
   SquareUserIcon,
   TagIcon,
   Trash2Icon,
+  LanguagesIcon,
 } from "lucide-react";
+import { LANGUAGES } from "@dafne/contracts";
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@dafne/frontend-ui/components/button";
@@ -169,6 +171,22 @@ export function CustomerForm({
                 </>
               )}
             </form.Subscribe>
+            <form.AppField name="language">
+              {(field) => (
+                <field.SelectField
+                  label={t("customers.fields.language")}
+                  emptyLabel={t("customers.language.none")}
+                  options={LANGUAGES.map((language) => ({
+                    value: language,
+                    label: t(`customers.language.${language}`),
+                  }))}
+                >
+                  <InputGroupAddon>
+                    <LanguagesIcon />
+                  </InputGroupAddon>
+                </field.SelectField>
+              )}
+            </form.AppField>
             <form.AppField name="notes">
               {(field) => (
                 <field.TextEditorField

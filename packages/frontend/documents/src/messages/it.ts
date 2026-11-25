@@ -26,9 +26,14 @@ export const documentTemplates: DocumentTemplatesMessages = {
     id: "ID modello",
     name: "Nome",
     resource: "Documento",
-    isDefault: "Predefinito per questo documento",
+    language: "Lingua",
+    isDefault: "Predefinito per questo documento e lingua",
     fileName: "File Word",
     size: "Dimensione",
+  },
+  languages: {
+    it: "Italiano",
+    en: "Inglese",
   },
   resources: {
     quotation: "Offerta",
@@ -60,4 +65,8 @@ export const documents: DocumentsMessages = {
   pdf: "PDF",
   choose: "PDF con un altro modello",
   defaultTemplate: "Predefinito",
+  languages: {
+    it: "Italiano",
+    en: "Inglese",
+  },
 };

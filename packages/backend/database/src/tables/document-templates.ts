@@ -8,15 +8,16 @@ import {
   serial,
   boolean,
   integer,
+  text,
 } from 'drizzle-orm/pg-core';
 import { user } from '../auth.js';
 import { salesSchema } from './sales.js';
 
 /**
  * A Word (.docx) template an admin uploads for a resource (e.g. `quotation`),
- * filled by @dafne/backend-documents and converted to PDF. Templates are
- * never part of the deploy: they live only here. Each resource has at most
- * one default. Deletion is logical: `deletedAt` is set and the row is hidden
+ * in one language, filled by @dafne/backend-documents and converted to PDF.
+ * Templates are never part of the deploy: they live only here. Each
+ * resource has at most one default per language. Deletion is logical: `deletedAt` is set and the row is hidden
  * from every query, but kept in the table.
  */
 export const documentTemplate = salesSchema.table(
@@ -26,6 +27,12 @@ export const documentTemplate = salesSchema.table(
     name: varchar('name', { length: 120 }).notNull(),
     /** A resource registered with DocumentsModule.forFeature, e.g. quotation. */
     resource: varchar('resource', { length: 60 }).notNull(),
+    /**
+     * The language of the template's text (it, en), which also formats its
+     * numbers and dates. A record's documents use the default of its
+     * customer's language.
+     */
+    language: text('language', { enum: ['it', 'en'] }).default('it').notNull(),
     isDefault: boolean('is_default').default(false).notNull(),
     /** @api readonly */
     fileName: varchar('file_name', { length: 255 }),
@@ -53,10 +60,10 @@ export const documentTemplate = salesSchema.table(
   },
   (table) => [
     index('document_template_deletedAt_idx').on(table.deletedAt),
-    index('document_template_resource_idx').on(table.resource),
-    // At most one default per resource among the templates not deleted.
+    index('document_template_resource_idx').on(table.resource, table.language),
+    // At most one default per resource and language among the templates not deleted.
     uniqueIndex('document_template_default_uq')
-      .on(table.resource)
+      .on(table.resource, table.language)
       .where(sql`${table.isDefault} and ${table.deletedAt} is null`),
   ],
 );
