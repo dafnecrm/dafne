@@ -6,7 +6,7 @@ import { SalesOrdersService } from '../sales-orders.service.js';
 import { QUOTATION_CHANGELOG } from './quotation.changelog.js';
 import { EmailsService } from '@dafne/backend-notifications';
 import { DocumentsService } from '@dafne/backend-documents';
-import { QUOTATION_DOCUMENT } from './quotation.document.ts';
+import { QUOTATION_DOCUMENT } from './quotation.document.js';
 
 /**
  * Pre hook of update: a quotation that isn't a draft may change only its

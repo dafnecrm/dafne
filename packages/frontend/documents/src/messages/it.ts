@@ -62,6 +62,7 @@ export const documentTemplates: DocumentTemplatesMessages = {
 };
 
 export const documents: DocumentsMessages = {
+  title: "Documenti",
   pdf: "PDF",
   choose: "PDF con un altro modello",
   defaultTemplate: "Predefinito",

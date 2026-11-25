@@ -1,7 +1,7 @@
 import type { ActivitiesService } from '@dafne/backend-activities';
 import type { CustomersService } from '@dafne/backend-customers';
 import type { ProductsService } from '@dafne/backend-products';
-import type { SalesOrdersService, SalesOrderTypesService } from '@dafne/backend-sales-orders';
+import type { QuotationsService, SalesOrdersService, SalesOrderTypesService } from '@dafne/backend-sales-orders';
 import type { ContractLocale, AssistantAction, AssistantToolName } from '@dafne/contracts';
 import type { AppAbility } from '@dafne/permissions';
 
@@ -12,6 +12,7 @@ export interface ToolDeps {
   salesOrderTypes: SalesOrderTypesService;
   activities: ActivitiesService;
   products: ProductsService;
+  quotations: QuotationsService;
 }
 
 /** The conversation a toolset works for. */

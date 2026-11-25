@@ -12,7 +12,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import type { QuotationStatus } from "@dafne/contracts";
 import { Can } from "@dafne/frontend-permissions";
 import { Button } from "@dafne/frontend-ui/components/button";
@@ -32,21 +32,26 @@ import {
 } from "./quotation-dialogs.tsx";
 import { QuotationChangelogSheet } from "./quotation-changelog.tsx";
 import { toast } from "@dafne/frontend-ui/components/toast";
+import { DownloadPdfMenuItems } from "@dafne/frontend-documents/components/document-pdf-menu-items";
+import type { PdfTemplate } from "@dafne/frontend-documents/components/document-pdf-menu";
 
 /**
  * Actions on the quotation's page: its next status (send a draft; accept,
  * which opens the sales order it creates at `<salesOrdersPath>/<id>`, or
  * reject a sent one), then a menu: edit (`<path>/<id>/edit`), its history
- * (in a sheet) and delete, then back to the list at `path`.
+ * (in a sheet), its PDF (from `pdfTemplates`, none without them) and
+ * delete, then back to the list at `path`.
  */
 export function QuotationDetailActions({
   quotation,
   path,
   salesOrdersPath,
+  pdfTemplates,
 }: {
   quotation: Pick<QuotationDetail, "id" | "status">;
   path: string;
   salesOrdersPath: string;
+  pdfTemplates: PdfTemplate[];
 }) {
   const [deleting, setDeleting] = useState(false);
   const [accepting, setAccepting] = useState(false);
@@ -61,16 +66,16 @@ export function QuotationDetailActions({
       const result = await changeQuotationStatus(quotation.id, status);
       if ("error" in result) {
         toast.add({
-          type: 'error',
-          title: 'Error',
-          description: result.error
-        })
+          type: "error",
+          title: "Error",
+          description: result.error,
+        });
         return;
       }
       toast.add({
-          type: 'success',
-          title: 'Quotation status changed',
-        })
+        type: "success",
+        title: "Quotation status changed",
+      });
       router.refresh();
     });
 
@@ -78,18 +83,40 @@ export function QuotationDetailActions({
     <>
       <Can I="changeStatus" a="Quotation">
         {quotation.status === "draft" && (
-          <Button variant="outline" size="sm" disabled={pending} onClick={() => moveTo("sent")}>
-            {pending ? <Spinner data-icon="inline-start" /> : <SendIcon data-icon="inline-start" />}
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={pending}
+            onClick={() => moveTo("sent")}
+          >
+            {pending ? (
+              <Spinner data-icon="inline-start" />
+            ) : (
+              <SendIcon data-icon="inline-start" />
+            )}
             {t("quotations.send")}
           </Button>
         )}
         {quotation.status === "sent" && (
           <>
-            <Button variant="outline" size="sm" disabled={pending} onClick={() => moveTo("rejected")}>
-              {pending ? <Spinner data-icon="inline-start" /> : <XIcon data-icon="inline-start" />}
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={pending}
+              onClick={() => moveTo("rejected")}
+            >
+              {pending ? (
+                <Spinner data-icon="inline-start" />
+              ) : (
+                <XIcon data-icon="inline-start" />
+              )}
               {t("quotations.reject")}
             </Button>
-            <Button size="sm" disabled={pending} onClick={() => setAccepting(true)}>
+            <Button
+              size="sm"
+              disabled={pending}
+              onClick={() => setAccepting(true)}
+            >
               <CheckIcon data-icon="inline-start" />
               {t("quotations.accept.action")}
             </Button>
@@ -110,7 +137,7 @@ export function QuotationDetailActions({
         >
           <EllipsisVerticalIcon />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent align="end" className="w-fit max-w-52">
           <Can I="update" a="Quotation">
             <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
               <PencilIcon />
@@ -121,6 +148,11 @@ export function QuotationDetailActions({
             <HistoryIcon />
             {t("changelog.open")}
           </DropdownMenuItem>
+          <DownloadPdfMenuItems
+            resource="quotation"
+            id={quotation.id}
+            templates={pdfTemplates}
+          />
           <Can I="delete" a="Quotation">
             <DropdownMenuSeparator />
             <DropdownMenuItem

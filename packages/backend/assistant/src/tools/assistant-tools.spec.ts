@@ -17,7 +17,8 @@ function setup() {
   const activities = { list: vi.fn(), get: vi.fn(), create: vi.fn(), closeActivity: vi.fn() };
   const products = { list: vi.fn(), get: vi.fn() };
   const salesOrderTypes = { list: vi.fn() };
-  const tools = new AssistantTools(customers as never, salesOrders as never, activities as never, products as never, salesOrderTypes as never);
+  const quotations = { list: vi.fn(), get: vi.fn(), create: vi.fn(), update: vi.fn() };
+  const tools = new AssistantTools(customers as never, salesOrders as never, activities as never, products as never, salesOrderTypes as never, quotations as never);
   const propose = vi.fn(async (kind: string, toolCallId: string, payload: Record<string, unknown>) => ({
     id: 7,
     conversationId: 1,

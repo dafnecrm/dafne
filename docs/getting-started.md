@@ -19,11 +19,13 @@
 - **[Gotenberg](https://gotenberg.dev)** (8): converts the documents filled
   from the uploaded Word templates to PDF (`GOTENBERG_URL`). Only the PDF
   downloads need it.
-- **The Grafana stack** (optional): logs, traces and metrics
+- **The Grafana stack** (optional, opt-in): logs, traces and metrics
   ([Observability](observability.md)). In development, `otel` (Grafana at
-  <http://otel.dafne.localhost:3200>) and `alloy` (the browser's telemetry).
+  <http://otel.dafne.localhost:3200>) and `alloy` (the browser's telemetry),
+  started only by `pnpm dafne dev --telemetry` (or `DAFNE_TELEMETRY=true`).
+  Without it the apps log to the console.
 
-For development, `compose.yaml` runs them all (Docker, or
+For development, `compose.yaml` runs them (Docker, or
 [OrbStack](https://orbstack.dev) on macOS, which uses less memory than
 Docker Desktop), and **`pnpm dafne dev` starts them by itself** before the
 apps. They keep running after it stops, with the data in volumes:

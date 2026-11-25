@@ -19,11 +19,17 @@ stack in production.
 
 Everything is off without its variables: no `OTEL_EXPORTER_OTLP_ENDPOINT`, no
 OpenTelemetry; no `FARO_URL`, no browser telemetry. The logs still go to the
-console.
+console (and, on the APIs, to `LOG_FILE`). That is the default in
+development: the `.env.example` files leave both commented out.
 
 ## Development
 
-`pnpm dafne dev` (or `pnpm dafne services up`) starts two more services:
+The Grafana stack is opt-in, the compose profile `telemetry`: `pnpm dafne
+dev --telemetry` (or `pnpm dafne services up --telemetry`, or
+`DAFNE_TELEMETRY=true` in the shell) starts two more services, and the apps
+send to them once their `.env` sets `OTEL_EXPORTER_OTLP_ENDPOINT` and
+`FARO_URL` (commented out in the `.env.example` files).
+`pnpm dafne services down` stops them too:
 
 - **`otel`** (`grafana/otel-lgtm`): Grafana, Loki, Tempo, Prometheus and an
   OpenTelemetry collector in one image. Grafana at

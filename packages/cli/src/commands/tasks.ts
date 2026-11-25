@@ -2,7 +2,7 @@ import * as p from '@clack/prompts';
 import { Command } from 'commander';
 import { devCert } from '../core/dev-cert.ts';
 import { devRoutes, startDevProxy, type DevProxy } from '../core/dev-proxy.ts';
-import { startServices } from '../core/dev-services.ts';
+import { startServices, wantsTelemetry } from '../core/dev-services.ts';
 import { findWorkspaceRoot, listProjects, runNx } from '../core/nx.ts';
 import { cancelled } from './field-prompts.ts';
 
@@ -27,17 +27,21 @@ interface DevOptions extends TaskOptions {
   https: boolean;
   /** false with --no-services. */
   services: boolean;
+  /** --telemetry: also the Grafana stack (otel, alloy). */
+  telemetry?: boolean;
 }
 
 /**
- * The services of compose.yaml (PostgreSQL, Redis), before the apps and
- * the migrations they run first. Never fatal: without Docker, or with a
- * port taken by another server, the apps use what their .env points to.
+ * The services of compose.yaml (PostgreSQL, Redis, Gotenberg; the Grafana
+ * stack with --telemetry or DAFNE_TELEMETRY=true), before the apps and the
+ * migrations they run first. Never fatal: without Docker, or with a port
+ * taken by another server, the apps use what their .env points to.
  */
-async function devServicesUp(root: string) {
+async function devServicesUp(root: string, options: DevOptions) {
+  const telemetry = wantsTelemetry(options);
   const spinner = p.spinner();
-  spinner.start('Starting PostgreSQL and Redis (compose.yaml)');
-  const outcome = await startServices(root);
+  spinner.start(`Starting the services${telemetry ? ' and the Grafana stack' : ''} (compose.yaml)`);
+  const outcome = await startServices(root, process.env, { telemetry });
   if (outcome.kind === 'no-compose') {
     spinner.stop('No compose.yaml: services left as they are.');
   } else if (outcome.kind === 'no-docker') {
@@ -128,7 +132,7 @@ async function runDev(projects: string[], options: DevOptions) {
   const root = findWorkspaceRoot();
   const chosen = await projectsFor(root, 'dev', projects, options, DEV_DEFAULT);
   if (options.services) {
-    await devServicesUp(root);
+    await devServicesUp(root, options);
   }
   const routes = options.proxy ? devRoutes(root, chosen) : [];
   let proxy: DevProxy | undefined;
@@ -176,13 +180,14 @@ function taskCommand(name: string, description: string, fallback: string[] = [])
 export function taskCommands(): Command[] {
   return [
     new Command('dev')
-      .description('Start PostgreSQL and Redis (compose.yaml), then projects in watch mode (their "dev" script), at https://<app>.dafne.localhost')
+      .description('Start PostgreSQL, Redis and Gotenberg (compose.yaml), then projects in watch mode (their "dev" script), at https://<app>.dafne.localhost')
       .argument('[projects...]', `projects (e.g. @dafne/sales-api); none: ${DEV_DEFAULT.join(', ')}`)
       .option('--pick', 'choose the projects from those with the target')
       .option('--skip-nx-cache', 'run even what is cached')
       .option('--no-proxy', 'no dev proxy: the apps only on localhost:<port>')
       .option('--no-https', 'the dev proxy on plain HTTP, even with mkcert')
-      .option('--no-services', "don't start PostgreSQL and Redis (compose.yaml)")
+      .option('--no-services', "don't start the services of compose.yaml")
+      .option('--telemetry', 'also start the Grafana stack (otel, alloy; or DAFNE_TELEMETRY=true)')
       .action((projects: string[], options: DevOptions) => runDev(projects, options)),
     taskCommand('test', 'Run the tests'),
     taskCommand('build', 'Build'),

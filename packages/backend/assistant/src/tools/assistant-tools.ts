@@ -4,7 +4,7 @@ import { ActivitiesService } from '@dafne/backend-activities';
 import { translate } from '@dafne/backend-common';
 import { CustomersService } from '@dafne/backend-customers';
 import { ProductsService } from '@dafne/backend-products';
-import { SalesOrdersService, SalesOrderTypesService } from '@dafne/backend-sales-orders';
+import { QuotationsService, SalesOrdersService, SalesOrderTypesService } from '@dafne/backend-sales-orders';
 import type { AssistantToolName, ContractLocale } from '@dafne/contracts';
 import { readTools } from './read-tools.js';
 import type { ToolContext, ToolDeps } from './tool-deps.js';
@@ -28,8 +28,9 @@ export class AssistantTools {
     activities: ActivitiesService,
     products: ProductsService,
     salesOrderTypes: SalesOrderTypesService,
+    quotations: QuotationsService
   ) {
-    this.deps = { customers, salesOrders, activities, products, salesOrderTypes };
+    this.deps = { customers, salesOrders, activities, products, salesOrderTypes, quotations };
   }
 
   build(names: readonly AssistantToolName[], context: ToolContext): ToolSet {

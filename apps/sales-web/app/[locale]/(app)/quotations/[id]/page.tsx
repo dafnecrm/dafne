@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
-import { DocumentPdfButton } from "@dafne/frontend-documents/components/document-pdf-button";
+import { listTemplatesFor } from "@dafne/frontend-documents/server";
 import { BreadcrumbLabel } from "@/components/page-breadcrumb";
 import {
   PageContent,
@@ -37,12 +37,19 @@ export default function QuotationPage({
   );
 }
 
-/** Loads the quotation: its id and actions, then its details. */
+/**
+ * Loads the quotation and its PDF templates: its id and actions (the PDF
+ * among them, once a template is uploaded for quotations), then its details.
+ */
 async function QuotationProfile({
   params,
 }: Pick<PageProps<"/[locale]/quotations/[id]">, "params">) {
-  const quotation = await loadQuotation((await params).id);
-  const t = await getTranslations();
+  const { id } = await params;
+  const [quotation, templates, t] = await Promise.all([
+    loadQuotation(id),
+    listTemplatesFor("quotation"),
+    getTranslations(),
+  ]);
 
   return (
     <PageContent>
@@ -62,14 +69,16 @@ async function QuotationProfile({
             <ArrowLeftIcon data-icon="inline-start" />
             {t("quotations.all")}
           </Button>
-          {/* Only once a template is uploaded for quotations. */}
-          <Suspense fallback={null}>
-            <DocumentPdfButton resource="quotation" id={quotation.id} />
-          </Suspense>
           <QuotationDetailActions
             quotation={quotation}
             path={quotationsTable.path}
             salesOrdersPath={salesOrdersTable.path}
+            pdfTemplates={templates.map(({ id: templateId, name, isDefault, language }) => ({
+              id: templateId,
+              name,
+              isDefault,
+              language,
+            }))}
           />
         </PageContentAction>
       </PageContentHeader>

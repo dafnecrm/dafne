@@ -2,7 +2,8 @@
 # Grafana stack (logs, traces, metrics: docs/observability.md).
 #
 #   docker compose up -d      # start (data kept in named volumes): or `pnpm dafne services up`
-#   docker compose down       # stop
+#   docker compose --profile telemetry up -d   # with the Grafana stack: or `pnpm dafne services up --telemetry`
+#   docker compose --profile telemetry down    # stop (the profile stops otel and alloy too)
 #   docker compose down -v    # stop and delete the data
 #
 # They are reached as db.dafne.localhost, redis.dafne.localhost,
@@ -11,8 +12,10 @@
 # ports are published on the loopback only, not to the network.
 # DAFNE_DB_PORT / DAFNE_REDIS_PORT / DAFNE_GOTENBERG_PORT / DAFNE_GRAFANA_PORT /
 # DAFNE_OTLP_PORT / DAFNE_FARO_PORT / DAFNE_ALLOY_PORT change them (e.g. next to Postgres.app).
-# `pnpm dafne dev` starts them by itself, `pnpm dafne services up | down`
-# alone; on a new server dafne dev also creates the database and migrates.
+# The Grafana stack (otel, alloy) is opt-in, the `telemetry` profile:
+# without it the apps only log to the console. `pnpm dafne dev` starts them
+# by itself (`--telemetry` for the Grafana stack), `pnpm dafne services up |
+# down` alone; on a new server dafne dev also creates the database and migrates.
 name: dafne
 
 services:
@@ -71,6 +74,7 @@ services:
   # apps). Its data is thrown away with the container.
   otel:
     image: grafana/otel-lgtm:0.41.1
+    profiles: [telemetry]
     ports:
       - "127.0.0.1:${DAFNE_GRAFANA_PORT:-3200}:3000"
       - "[::1]:${DAFNE_GRAFANA_PORT:-3200}:3000"
@@ -89,6 +93,7 @@ services:
   # http://faro.dafne.localhost:12345; its own metrics go to otel's Prometheus.
   alloy:
     image: grafana/alloy:v1.22.0
+    profiles: [telemetry]
     command:
       - run
       - /etc/alloy/config.alloy

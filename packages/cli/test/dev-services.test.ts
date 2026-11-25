@@ -3,7 +3,7 @@ import { copyFileSync, mkdtempSync } from 'node:fs';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { devServices, isPortBusy, startServices } from '../src/core/dev-services.ts';
+import { devServices, isPortBusy, startServices, wantsTelemetry } from '../src/core/dev-services.ts';
 
 const ROOT = join(import.meta.dirname, '..', '..', '..');
 
@@ -13,10 +13,23 @@ describe('devServices', () => {
       { name: 'db', host: 'db.dafne.localhost', port: 5432 },
       { name: 'redis', host: 'redis.dafne.localhost', port: 6379 },
       { name: 'gotenberg', host: 'gotenberg.dafne.localhost', port: 3100 },
-      { name: 'otel', host: 'otel.dafne.localhost', port: 4318 },
-      { name: 'alloy', host: 'faro.dafne.localhost', port: 12347 },
     ]);
     expect(devServices({ DAFNE_DB_PORT: '5433' })[0].port).toBe(5433);
+  });
+
+  it('adds the Grafana stack only with telemetry', () => {
+    expect(devServices({ DAFNE_OTLP_PORT: '4319' }, { telemetry: true }).slice(3)).toEqual([
+      { name: 'otel', host: 'otel.dafne.localhost', port: 4319 },
+      { name: 'alloy', host: 'faro.dafne.localhost', port: 12347 },
+    ]);
+  });
+});
+
+describe('wantsTelemetry', () => {
+  it('is on with the option or DAFNE_TELEMETRY=true', () => {
+    expect(wantsTelemetry({}, {})).toBe(false);
+    expect(wantsTelemetry({ telemetry: true }, {})).toBe(true);
+    expect(wantsTelemetry({}, { DAFNE_TELEMETRY: 'true' })).toBe(true);
   });
 });
 
@@ -40,7 +53,7 @@ describe('startServices', () => {
     if (!hasDocker || process.env.CI) {
       return;
     }
-    // Something else on the db, gotenberg, otel and alloy ports; redis on a port nobody uses.
+    // Something else on the db, gotenberg, otel and alloy ports; redis on a port nobody uses. With the Grafana stack.
     const other = createServer();
     await new Promise<void>((done) => other.listen(0, '127.0.0.1', done));
     const dbPort = (other.address() as { port: number }).port;
@@ -54,7 +67,7 @@ describe('startServices', () => {
       DAFNE_FARO_PORT: String(dbPort),
     };
     try {
-      const outcome = await startServices(ROOT, env);
+      const outcome = await startServices(ROOT, env, { telemetry: true });
       expect(outcome).toMatchObject({
         kind: 'started',
         running: [{ name: 'redis', port: 56391 }],
@@ -67,9 +80,9 @@ describe('startServices', () => {
       });
       expect(await isPortBusy(56391)).toBe(true);
       // Running already: nothing to start.
-      expect(await startServices(ROOT, env)).toMatchObject({ kind: 'started', running: [{ name: 'redis' }] });
+      expect(await startServices(ROOT, env, { telemetry: true })).toMatchObject({ kind: 'started', running: [{ name: 'redis' }] });
     } finally {
-      spawnSync('docker', ['compose', '-f', join(ROOT, 'compose.yaml'), 'down', '-v'], { env });
+      spawnSync('docker', ['compose', '-f', join(ROOT, 'compose.yaml'), '--profile', 'telemetry', 'down', '-v'], { env });
       await new Promise((done) => other.close(done));
     }
   }, 120_000);

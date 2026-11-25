@@ -7,7 +7,9 @@ import {
   listActivitiesQuerySchema,
   listCustomersQuerySchema,
   listProductsQuerySchema,
+  listQuotationsQuerySchema,
   listSalesOrdersQuerySchema,
+  QUOTATION_STATUSES,
   SALES_ORDER_STATUSES,
   type ASSISTANT_READ_TOOLS,
 } from '@dafne/contracts';
@@ -192,6 +194,52 @@ export function readTools(deps: ToolDeps): Record<ReadToolName, Tool> {
       execute: async ({ id: productId }) => {
         const p = await deps.products.get(productId);
         return { id: p.id, name: p.name, price: p.price, description: clip(p.description) };
+      },
+    }),
+
+    list_quotations: tool({
+      description:
+        'Quotations, newest first, optionally of one customer (customerId from search_customers) and/or in one status. `total` is how many match: use it to answer "how many".',
+      inputSchema: z.object({
+        customerId: id.optional(),
+        status: z.enum(QUOTATION_STATUSES).optional(),
+        limit,
+      }),
+      execute: async ({ customerId, status, limit: max }) => {
+        const page = await deps.quotations.list(
+          listQuotationsQuerySchema.parse({
+            customerId: customerId === undefined ? undefined : String(customerId),
+            status,
+            limit: max ?? 10,
+          }),
+        );
+        return {
+          total: page.total,
+          items: page.items.map((o) => ({
+            id: o.id,
+            status: o.status,
+            customer: o.customer,
+            type: o.type.description,
+            createdAt: day(o.createdAt),
+          })),
+        };
+      },
+    }),
+
+    get_quotation: tool({
+      description: 'One quotation with its lines (products and quantities), by id.',
+      inputSchema: z.object({ id }),
+      execute: async ({ id: quotationId }) => {
+        const o = await deps.quotations.get(quotationId);
+        return {
+          id: o.id,
+          status: o.status,
+          customer: o.customer,
+          type: o.type.description,
+          notes: clip(o.notes),
+          createdAt: day(o.createdAt),
+          items: o.items.map((i) => ({ position: i.position, product: i.product, quantity: i.quantity, unit: i.uomId, price: i.price })),
+        };
       },
     }),
   };

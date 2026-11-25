@@ -38,7 +38,7 @@ function model() {
 
 function setup(rateLimit = '30') {
   const customers = { list: vi.fn(async () => ({ items: [{ id: 1, type: 'company', name: 'Rossi Srl', email: 'a@b.it', phone: null }], total: 1, limit: 10, offset: 0 })) };
-  const tools = new AssistantTools(customers as never, {} as never, {} as never, {} as never, {} as never);
+  const tools = new AssistantTools(customers as never, {} as never, {} as never, {} as never, {} as never, {} as never);
   const conversations = {
     owned: vi.fn(async () => ({ id: 1, agentId: 2, modelId: 3, title: null })),
     agent: vi.fn(async () => ({ id: 2, name: 'Sales', systemPrompt: 'Be helpful', tools: ['search_customers'], defaultModelId: 3, allowModelOverride: true })),

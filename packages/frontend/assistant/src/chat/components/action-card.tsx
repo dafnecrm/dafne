@@ -18,7 +18,10 @@ type WriteKind = Extract<
   | "propose_close_activity"
   | "propose_change_sales_order_status"
   | "propose_create_sales_order"
->;
+  | "propose_create_quotation"
+  >;
+
+const WITH_LINES = new Set<WriteKind>(["propose_create_sales_order", "propose_create_quotation"]);
 
 const FIELDS = [
   "customer",
@@ -37,7 +40,7 @@ const FIELDS = [
 /** The fields to show, from the action's payload. */
 function rows(action: ClientAction): [string, string][] {
   const payload = action.payload as Record<string, unknown>;
-  if (action.kind === "propose_create_sales_order") {
+  if (WITH_LINES.has(action.kind as WriteKind)) {
     return [
       ["customer", String(payload.customer ?? "")],
       ["orderType", String(payload.type ?? "")],
@@ -129,7 +132,7 @@ export function ActionCard({
           ))}
         </dl>
       )}
-      {kind === "propose_create_sales_order" && (
+      {WITH_LINES.has(kind as WriteKind) && (
         <table className="w-full text-left">
           <thead className="text-muted-foreground">
             <tr>

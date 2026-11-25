@@ -26,7 +26,9 @@ keep it in line when these rules change. Each project has its own
   `alloy`: the browser's Faro, `faro.dafne.localhost:12347`, its UI on `:12345`) for
   development are in `compose.yaml`, at `db.dafne.localhost:5432`,
   `redis.dafne.localhost:6379` and `gotenberg.dafne.localhost:3100`: `pnpm dafne
-  dev` starts them (`--no-services` not), `pnpm dafne services up | down |
+  dev` starts them (`--no-services` not; the Grafana stack, the compose
+  profile `telemetry`, only with `--telemetry` or `DAFNE_TELEMETRY=true`:
+  otherwise the apps log to the console only), `pnpm dafne services up | down |
   status | logs` handles them alone.
 - `pnpm build | test | lint | typecheck`: `nx run-many` over all projects.
 - `pnpm affected`: lint, typecheck, test and build only what changed.
