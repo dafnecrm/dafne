@@ -57,12 +57,15 @@ export const en = {
     get_activity: "Read an activity",
     list_products: "List products",
     get_product: "Read a product",
+    list_quotations: "List quotations",
+    get_quotation: "Read a quotation",
     propose_create_customer: "Propose new customers",
     propose_update_customer: "Propose customer changes",
     propose_create_activity: "Propose new activities",
     propose_close_activity: "Propose closing activities",
     propose_change_sales_order_status: "Propose order status changes",
     propose_create_sales_order: "Propose new sales orders",
+    propose_create_quotation: "Propose new quotations",
   },
 };
 

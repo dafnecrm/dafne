@@ -2881,6 +2881,9 @@ importers:
       '@dafne/frontend-data-table':
         specifier: workspace:*
         version: link:../data-table
+      '@dafne/frontend-documents':
+        specifier: workspace:*
+        version: link:../documents
       '@dafne/frontend-forms':
         specifier: workspace:*
         version: link:../forms

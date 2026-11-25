@@ -18,6 +18,7 @@ import {
   type CustomerAddressBody,
   type CustomerBodyInput,
   type CustomerDetail,
+  quotationBodySchema,
 } from '@dafne/contracts';
 import type { ToolContext, ToolDeps } from './tool-deps.js';
 
@@ -249,6 +250,22 @@ const createOrderInput = z.object({
   notes: z.string().max(4000).optional(),
 });
 
+const createQuotationInput = z.object({
+  customer: z.string().min(1).max(255).describe('The customer: its name as the user said it, or its id'),
+  items: z
+    .array(
+      z.object({
+        product: z.string().min(1).max(255).describe('The product: its name as the user said it, or its id'),
+        quantity: z.number().positive(),
+      }),
+    )
+    .min(1)
+    .max(50),
+  // Loose on purpose: small models fill it with guesses, checked below.
+  typeId: z.string().max(100).optional().describe('Only if the user named an order type; usually leave it out'),
+  notes: z.string().max(4000).optional(),
+});
+
 /**
  * One record from what the user called it: an id, the only match, or the
  * match by exact name. Otherwise a question for the model to ask.
@@ -327,6 +344,62 @@ const createOrder: WriteTool<z.infer<typeof createOrderInput>> = {
   },
 };
 
+const createQuotation: WriteTool<z.infer<typeof createQuotationInput>> = {
+  needs: { action: 'create', subject: 'Quotation' },
+  description:
+    'Propose a new quotation (draft) for a customer, with its products and quantities, named as the user named them (the tool finds them). The user confirms it in the UI.',
+  inputSchema: createQuotationInput,
+  prepare: async ({ customer: customerName, items, typeId, notes }, deps, locale) => {
+    const customer = await resolve('customer', customerName, async (search) =>
+      (await deps.customers.list({ search, limit: 10 })).items,
+    );
+    if (typeof customer === 'string') {
+      return customer;
+    }
+    const products: { id: number; name: string }[] = [];
+    for (const item of items) {
+      const product = await resolve('product', item.product, async (search) =>
+        /^\d+$/.test(search)
+          ? [await deps.products.get(Number(search))]
+          : (await deps.products.list({ name: search, limit: 10 })).items,
+      );
+      if (typeof product === 'string') {
+        return product;
+      }
+      products.push(product);
+    }
+    const customerId = customer.id;
+    const types = (await deps.salesOrderTypes.list({ active: 'true', limit: 50 })).items;
+    // An unknown type (often a guess) falls back to the only active one.
+    const type =
+      types.find((t) => t.id.toLowerCase() === typeId?.trim().toLowerCase()) ??
+      (types.length === 1 ? types[0] : undefined);
+    if (!type) {
+      return `Ask the user which order type to use: ${types.map((t) => `${t.id} (${t.description})`).join(', ')}`;
+    }
+    const body = {
+      customerId,
+      typeId: type.id,
+      notes: notes ?? null,
+      items: items.map((item, i) => ({ productId: products[i]!.id, quantity: item.quantity, position: i + 1 })),
+    };
+    const parsed = quotationBodySchema.safeParse(body);
+    if (!parsed.success) {
+      return issues(parsed.error, locale);
+    }
+    return {
+      body,
+      customer: customer.name,
+      type: type.description,
+      lines: items.map((item, i) => ({ product: products[i]!.name, quantity: item.quantity })),
+    };
+  },
+  run: async (payload, deps, actor) => {
+    const created = await deps.quotations.create(quotationBodySchema.parse(payload.body), actor);
+    return { resource: 'quotations', id: created.id };
+  },
+};
+
 /** A write tool with its input type erased, to keep them in one map. */
 const erase = <Input>(definition: WriteTool<Input>) => definition as unknown as WriteTool<unknown>;
 
@@ -337,6 +410,7 @@ export const WRITE_TOOLS: Record<WriteToolName, WriteTool<unknown>> = {
   propose_close_activity: erase(closeActivity),
   propose_change_sales_order_status: erase(changeOrderStatus),
   propose_create_sales_order: erase(createOrder),
+  propose_create_quotation: erase(createQuotation),
 };
 
 /** What the model reads after proposing. */

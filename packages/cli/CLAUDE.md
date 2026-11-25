@@ -112,8 +112,11 @@ erasable syntax (no enums, namespaces or constructor parameter properties;
   serves as `DEV_AUTH_ALLOWED_HOSTS`. Before that, `dev` starts the
   services of the root `compose.yaml` (`core/dev-services.ts`:
   `startServices`, never fatal: no Docker or a port another server holds
-  leaves that service out; `--no-services`), and `services.ts` wraps
-  `docker compose` on it (`dafne services up | down | status | logs`).
+  leaves that service out; `--no-services`; the Grafana stack, `otel` and
+  `alloy`, only with `--telemetry` or `DAFNE_TELEMETRY=true`: the compose
+  profile `telemetry`), and `services.ts` wraps `docker compose` on it
+  (`dafne services up [--telemetry] | down | status | logs`; down, status
+  and logs always pass the profile).
 - `src/core/changes.ts`: `Changes`, the old CLI's change set rebuilt on the
   Nx `Tree` (`exists`, `read`, `list`, `create`, `update`, `warn`), so the
   field, sync and wiring code from the old CLI works unchanged on it.

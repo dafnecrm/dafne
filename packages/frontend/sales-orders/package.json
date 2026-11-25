@@ -32,6 +32,7 @@
     "@dafne/frontend-changelog": "workspace:*",
     "@dafne/frontend-customers": "workspace:*",
     "@dafne/frontend-data-table": "workspace:*",
+    "@dafne/frontend-documents": "workspace:*",
     "@dafne/frontend-forms": "workspace:*",
     "@dafne/frontend-permissions": "workspace:*",
     "@dafne/frontend-products": "workspace:*",

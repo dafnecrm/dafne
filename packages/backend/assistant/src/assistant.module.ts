@@ -3,7 +3,7 @@ import { CrudHooksModule } from '@dafne/backend-crud';
 import { CustomersModule } from '@dafne/backend-customers';
 import { DatabaseModule } from '@dafne/backend-database';
 import { ProductsModule } from '@dafne/backend-products';
-import { SalesOrdersModule, SalesOrderTypesModule } from '@dafne/backend-sales-orders';
+import { QuotationsModule, SalesOrdersModule, SalesOrderTypesModule } from '@dafne/backend-sales-orders';
 import { PermissionsModule } from '@dafne/backend-permissions';
 import { Module } from '@nestjs/common';
 import { AssistantController } from './chat/assistant.controller.js';
@@ -18,7 +18,17 @@ import { AssistantTools } from './tools/assistant-tools.js';
  * ConfigModule (API keys) and CacheModule (rate limit) of the app.
  */
 @Module({
-  imports: [DatabaseModule, CrudHooksModule, CustomersModule, ActivitiesModule, ProductsModule, SalesOrdersModule, SalesOrderTypesModule, PermissionsModule],
+  imports: [
+    DatabaseModule,
+    CrudHooksModule,
+    CustomersModule,
+    ActivitiesModule,
+    ProductsModule,
+    SalesOrdersModule,
+    SalesOrderTypesModule,
+    PermissionsModule,
+    QuotationsModule,
+  ],
   controllers: [AssistantController],
   providers: [ModelFactory, AssistantTools, ConversationsService, ChatService],
   exports: [ConversationsService],

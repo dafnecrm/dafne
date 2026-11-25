@@ -21,6 +21,8 @@ export const ASSISTANT_READ_TOOLS = [
   'get_activity',
   'list_products',
   'get_product',
+  'list_quotations',
+  'get_quotation'
 ] as const;
 
 /** Tools that write: they only propose an action, which the user confirms. */
@@ -31,6 +33,7 @@ export const ASSISTANT_WRITE_TOOLS = [
   'propose_close_activity',
   'propose_change_sales_order_status',
   'propose_create_sales_order',
+  'propose_create_quotation',
 ] as const;
 
 export const ASSISTANT_TOOL_NAMES = [...ASSISTANT_READ_TOOLS, ...ASSISTANT_WRITE_TOOLS] as const;

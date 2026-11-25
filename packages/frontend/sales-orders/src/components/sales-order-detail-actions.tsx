@@ -18,6 +18,8 @@ import {
   type SalesOrderRef,
 } from "./sales-order-dialogs.tsx";
 import { SalesOrderChangelogSheet } from "./sales-order-changelog.tsx";
+import { DownloadPdfMenuItems } from "@dafne/frontend-documents/components/document-pdf-menu-items";
+import { PdfTemplate } from "@dafne/frontend-documents/components/document-pdf-menu";
 
 /**
  * Actions on the sales order's page, in a menu: edit (`<path>/<id>/edit`),
@@ -26,9 +28,11 @@ import { SalesOrderChangelogSheet } from "./sales-order-changelog.tsx";
 export function SalesOrderDetailActions({
   salesOrder,
   path,
+  pdfTemplates
 }: {
   salesOrder: SalesOrderRef;
-  path: string;
+    path: string;
+    pdfTemplates: PdfTemplate[]
 }) {
   const [deleting, setDeleting] = useState(false);
   const [history, setHistory] = useState(false);
@@ -51,7 +55,7 @@ export function SalesOrderDetailActions({
         >
           <EllipsisVerticalIcon />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent align="end" className="w-fit max-w-52">
           <Can I="update" a="SalesOrder">
             <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
               <PencilIcon />
@@ -62,6 +66,11 @@ export function SalesOrderDetailActions({
             <HistoryIcon />
             {t("changelog.open")}
           </DropdownMenuItem>
+          <DownloadPdfMenuItems
+            resource="salesOrder"
+            id={salesOrder.id}
+            templates={pdfTemplates}
+          />
           <Can I="delete" a="SalesOrder">
             <DropdownMenuSeparator />
             <DropdownMenuItem

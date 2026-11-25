@@ -4,9 +4,10 @@ import { connect } from 'node:net';
 import { join } from 'node:path';
 
 /*
- * The development services of compose.yaml (PostgreSQL, Redis, Gotenberg, and
- * the Grafana stack: otel for the apps' OTLP, alloy for the browser's Faro), started
- * by `dafne dev` before the apps: `docker compose up -d --wait`, which
+ * The development services of compose.yaml (PostgreSQL, Redis, Gotenberg,
+ * and, opt-in, the Grafana stack: otel for the apps' OTLP, alloy for the
+ * browser's Faro, the compose profile `telemetry`), started by `dafne dev`
+ * before the apps: `docker compose up -d --wait`, which
  * returns at once when they run already. They keep running after dev
  * stops (data in volumes); `dafne services down` stops them. A service
  * whose port another server holds (e.g. Postgres.app) is left to that
@@ -15,6 +16,19 @@ import { join } from 'node:path';
  */
 
 export const COMPOSE_FILE = 'compose.yaml';
+
+/** The compose profile of the Grafana stack (otel, alloy). */
+export const TELEMETRY_PROFILE = 'telemetry';
+
+export interface ServicesOptions {
+  /** Also the Grafana stack (otel, alloy): --telemetry, or DAFNE_TELEMETRY=true. */
+  telemetry?: boolean;
+}
+
+/** Whether the Grafana stack is wanted: the option, else DAFNE_TELEMETRY=true. */
+export function wantsTelemetry(options: ServicesOptions = {}, env: NodeJS.ProcessEnv = process.env): boolean {
+  return Boolean(options.telemetry) || env.DAFNE_TELEMETRY === 'true';
+}
 
 export interface DevService {
   /** The compose service, e.g. db. */
@@ -25,17 +39,27 @@ export interface DevService {
   port: number;
 }
 
-/** The services of compose.yaml, with their hosts and ports. */
-export function devServices(env: NodeJS.ProcessEnv = process.env): DevService[] {
+/** The services of compose.yaml, with their hosts and ports; the Grafana stack only with `telemetry`. */
+export function devServices(env: NodeJS.ProcessEnv = process.env, { telemetry = false }: ServicesOptions = {}): DevService[] {
   const port = (name: string, fallback: number) => Number(env[name] ?? fallback);
-  return [
+  const services = [
     { name: 'db', host: 'db.dafne.localhost', port: port('DAFNE_DB_PORT', 5432) },
     { name: 'redis', host: 'redis.dafne.localhost', port: port('DAFNE_REDIS_PORT', 6379) },
     { name: 'gotenberg', host: 'gotenberg.dafne.localhost', port: port('DAFNE_GOTENBERG_PORT', 3100) },
-    // OTLP over HTTP (Grafana is on DAFNE_GRAFANA_PORT, default 3200).
-    { name: 'otel', host: 'otel.dafne.localhost', port: port('DAFNE_OTLP_PORT', 4318) },
-    { name: 'alloy', host: 'faro.dafne.localhost', port: port('DAFNE_FARO_PORT', 12347) },
   ];
+  if (telemetry) {
+    services.push(
+      // OTLP over HTTP (Grafana is on DAFNE_GRAFANA_PORT, default 3200).
+      { name: 'otel', host: 'otel.dafne.localhost', port: port('DAFNE_OTLP_PORT', 4318) },
+      { name: 'alloy', host: 'faro.dafne.localhost', port: port('DAFNE_FARO_PORT', 12347) },
+    );
+  }
+  return services;
+}
+
+/** `docker compose -f compose.yaml`, with the telemetry profile when asked. */
+function composeArgs(root: string, telemetry: boolean): string[] {
+  return ['compose', '-f', join(root, COMPOSE_FILE), ...(telemetry ? ['--profile', TELEMETRY_PROFILE] : [])];
 }
 
 export type ServicesOutcome =
@@ -45,7 +69,8 @@ export type ServicesOutcome =
   | { kind: 'failed'; output: string };
 
 function compose(root: string, args: string[], env: NodeJS.ProcessEnv) {
-  return spawnSync('docker', ['compose', '-f', join(root, COMPOSE_FILE), ...args], {
+  // The profile, so the Grafana stack shows up when it runs.
+  return spawnSync('docker', [...composeArgs(root, true), ...args], {
     cwd: root,
     env,
     encoding: 'utf8',
@@ -88,9 +113,14 @@ function dockerProblem(env: NodeJS.ProcessEnv): string | null {
 
 /**
  * Starts the services of compose.yaml that aren't running, leaving out
- * those whose port another server holds. Waits until they're healthy.
+ * those whose port another server holds. Waits until they're healthy. The
+ * Grafana stack only with `telemetry` (or DAFNE_TELEMETRY=true).
  */
-export async function startServices(root: string, env: NodeJS.ProcessEnv = process.env): Promise<ServicesOutcome> {
+export async function startServices(
+  root: string,
+  env: NodeJS.ProcessEnv = process.env,
+  options: ServicesOptions = {},
+): Promise<ServicesOutcome> {
   if (!existsSync(join(root, COMPOSE_FILE))) {
     return { kind: 'no-compose' };
   }
@@ -99,7 +129,8 @@ export async function startServices(root: string, env: NodeJS.ProcessEnv = proce
     return { kind: 'no-docker', reason: problem };
   }
   const running = runningServices(root, env);
-  const services = devServices(env);
+  const telemetry = wantsTelemetry(options, env);
+  const services = devServices(env, { telemetry });
   const elsewhere: DevService[] = [];
   const toStart: DevService[] = [];
   for (const service of services) {
@@ -114,7 +145,7 @@ export async function startServices(root: string, env: NodeJS.ProcessEnv = proce
   }
   if (toStart.length) {
     const result = await new Promise<{ status: number | null; output: string }>((done) => {
-      const child = spawn('docker', ['compose', '-f', join(root, COMPOSE_FILE), 'up', '-d', '--wait', ...toStart.map((s) => s.name)], {
+      const child = spawn('docker', [...composeArgs(root, telemetry), 'up', '-d', '--wait', ...toStart.map((s) => s.name)], {
         cwd: root,
         env,
       });
@@ -135,10 +166,13 @@ export async function startServices(root: string, env: NodeJS.ProcessEnv = proce
   };
 }
 
-/** `docker compose <args>` on compose.yaml with the terminal attached; resolves with its exit code. */
-export function runCompose(root: string, args: string[]): Promise<number> {
+/**
+ * `docker compose <args>` on compose.yaml with the terminal attached;
+ * resolves with its exit code. `telemetry` adds the Grafana stack's profile.
+ */
+export function runCompose(root: string, args: string[], { telemetry = false }: ServicesOptions = {}): Promise<number> {
   return new Promise((done, fail) => {
-    const child = spawn('docker', ['compose', '-f', join(root, COMPOSE_FILE), ...args], { cwd: root, stdio: 'inherit' });
+    const child = spawn('docker', [...composeArgs(root, telemetry), ...args], { cwd: root, stdio: 'inherit' });
     child.on('error', fail);
     child.on('exit', (code) => done(code ?? 1));
   });

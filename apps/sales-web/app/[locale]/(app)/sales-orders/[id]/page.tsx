@@ -20,7 +20,7 @@ import { productsTable } from "@/lib/products-table";
 import { salesOrdersTable } from "@/lib/sales-orders-table";
 import { quotationsTable } from "@/lib/quotations-table";
 import { loadSalesOrder } from "./load-sales-order";
-import { DocumentPdfButton } from "@dafne/frontend-documents/components/document-pdf-button";
+import { listTemplatesFor } from "@dafne/frontend-documents/server";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations();
@@ -41,8 +41,11 @@ export default function SalesOrderPage({
 async function SalesOrderProfile({
   params,
 }: Pick<PageProps<"/[locale]/sales-orders/[id]">, "params">) {
-  const salesOrder = await loadSalesOrder((await params).id);
-  const t = await getTranslations();
+  const [salesOrder, templates, t] = await Promise.all([
+    loadSalesOrder((await params).id),
+    listTemplatesFor("salesOrder"),
+    getTranslations()
+  ]);
 
   return (
     <PageContent>
@@ -62,13 +65,10 @@ async function SalesOrderProfile({
             <ArrowLeftIcon data-icon="inline-start" />
             {t("salesOrders.all")}
           </Button>
-          {/* Only once a template is uploaded for quotations. */}
-          <Suspense fallback={null}>
-            <DocumentPdfButton resource="salesOrder" id={salesOrder.id} />
-          </Suspense>
           <SalesOrderDetailActions
             salesOrder={salesOrder}
             path={salesOrdersTable.path}
+            pdfTemplates={templates}
           />
         </PageContentAction>
       </PageContentHeader>

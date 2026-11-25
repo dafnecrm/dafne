@@ -459,11 +459,16 @@ stops. Without Docker, or when a port is held by another server (e.g.
 Postgres.app on 5432), that service isn't started and the apps use what
 their `.env` points to. `--no-services` skips them.
 
+The Grafana stack (`otel`, `alloy`: [Observability](observability.md)) is
+opt-in, the compose profile `telemetry`: `dafne dev --telemetry` (or
+`DAFNE_TELEMETRY=true`) starts it too. Without it the apps only log to the
+console.
+
 ```sh
-dafne services up              # start them, wait until healthy
+dafne services up [--telemetry] # start them, wait until healthy
 dafne services status          # ports and health
-dafne services logs [db|redis|gotenberg] # follow the logs
-dafne services down [-v]       # stop them (-v: and delete the data)
+dafne services logs [db|redis|gotenberg|otel|alloy] # follow the logs
+dafne services down [-v]       # stop them, the Grafana stack too (-v: and delete the data)
 ```
 
 `DAFNE_DB_PORT` / `DAFNE_REDIS_PORT` / `DAFNE_GOTENBERG_PORT` move them
