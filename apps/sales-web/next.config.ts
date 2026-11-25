@@ -31,6 +31,7 @@ const nextConfig: NextConfig = {
     "@dafne/frontend-users",
     "@dafne/frontend-documents",
     "@dafne/frontend-logger",
+    "@dafne/frontend-tasks",
   ],
   // Loaded from node_modules by instrumentation.node.ts, not bundled.
   serverExternalPackages: ["@opentelemetry/sdk-node"],

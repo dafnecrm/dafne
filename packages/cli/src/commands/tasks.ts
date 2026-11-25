@@ -13,7 +13,7 @@ import { cancelled } from './field-prompts.ts';
  */
 
 /** What `dafne dev` starts without projects. */
-const DEV_DEFAULT = ['@dafne/auth', '@dafne/sales-api', '@dafne/sales-web'];
+const DEV_DEFAULT = ['@dafne/auth', '@dafne/sales-api', '@dafne/sales-tasks', '@dafne/sales-web'];
 
 interface TaskOptions {
   pick?: boolean;

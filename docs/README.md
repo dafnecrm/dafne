@@ -21,6 +21,7 @@ app's `README.md`.
 | [Databases and migrations](databases.md) | One schema per app, `auth`, `core`, the migrator, deploy                           |
 | [Documents](documents.md)                | PDFs from Word templates admins upload: tags, API, Gotenberg, giving a resource documents |
 | [Logs and observability](observability.md) | Logging (pino, `createLogger`), OpenTelemetry and Grafana (Loki, Tempo, Faro), local Grafana, Grafana Cloud |
+| [Scheduled tasks](tasks.md)             | `apps/sales-tasks`: `@Task` handlers, schedules (BullMQ), one run at a time, starting tasks from another backend, the admin pages |
 | [The AI assistant](assistant.md)        | Providers (Anthropic, Ollama…), models, agents, tools, confirmations, model eval |
 | [The `dafne` CLI](cli.md)                | Generators (`g backend-resource`, `g frontend-resource`, `g frontend-app`…), `remove backend-db-column`, `sync contract`, `sync frontend-resource`, `db` commands, task shortcuts |
 | [Column tags](column-tags.md)            | `@api` and `@form` in table files: the defaults, each tag, what the syncs leave alone |
@@ -33,7 +34,7 @@ Planned work that isn't implemented yet is in [ROADMAP.md](../ROADMAP.md).
 
 ```sh
 pnpm install
-cp apps/auth/.env.example apps/auth/.env           # and the same for sales-api, sales-web
+cp apps/auth/.env.example apps/auth/.env           # and the same for sales-api, sales-tasks, sales-web
 cp packages/backend/migrator/.env.example packages/backend/migrator/.env
 pnpm dafne dev                                     # PostgreSQL, Redis, database, migrations, then https://sales-web.dafne.localhost…
 ```

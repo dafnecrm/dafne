@@ -16,6 +16,7 @@ drizzle-kit.
 | `<app>`  | the app's schema package                      | One per new app                                       |
 | `core`   | its own package (not created yet)             | Tables shared by several apps                         |
 | `changelog` | `@dafne/backend-database-changelog`        | The change log of the CRUD resources ([below](#the-change-log)) |
+| `tasks`  | `@dafne/backend-database-tasks` (`apps/sales-tasks`) | The scheduled tasks' settings, runs and logs ([Scheduled tasks](tasks.md)) |
 
 Rules:
 
@@ -274,6 +275,16 @@ ALTER DEFAULT PRIVILEGES FOR ROLE dafne IN SCHEMA changelog
   GRANT SELECT, INSERT ON TABLES TO dafne_auth, dafne_sales;
 ALTER DEFAULT PRIVILEGES FOR ROLE dafne IN SCHEMA changelog
   GRANT USAGE ON SEQUENCES TO dafne_auth, dafne_sales;
+
+-- apps/sales-tasks connects as dafne_sales (its tasks work on the sales
+-- data); it and apps/sales-api (TasksClient) write the tasks schema.
+GRANT USAGE ON SCHEMA tasks TO dafne_sales;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA tasks TO dafne_sales;
+GRANT USAGE ON ALL SEQUENCES IN SCHEMA tasks TO dafne_sales;
+ALTER DEFAULT PRIVILEGES FOR ROLE dafne IN SCHEMA tasks
+  GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO dafne_sales;
+ALTER DEFAULT PRIVILEGES FOR ROLE dafne IN SCHEMA tasks
+  GRANT USAGE ON SEQUENCES TO dafne_sales;
 ```
 
 The foreign keys to `auth.user` need no grant at runtime: Postgres checks

@@ -395,7 +395,7 @@ packages. `migrate` needs `MIGRATIONS_DATABASE_URL`. See
 ## Running tasks
 
 ```sh
-dafne dev                            # @dafne/auth, @dafne/sales-api, @dafne/sales-web in watch mode, at https://<app>.dafne.localhost
+dafne dev                            # @dafne/auth, @dafne/sales-api, @dafne/sales-tasks, @dafne/sales-web in watch mode, at https://<app>.dafne.localhost
 dafne dev @dafne/worker              # given projects
 dafne test                           # every project
 dafne test @dafne/backend-customers

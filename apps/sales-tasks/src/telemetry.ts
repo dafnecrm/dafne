@@ -1,0 +1,6 @@
+// Built as dist/telemetry.js (rspack.config.js) and loaded before the app
+// (`node --import ./dist/telemetry.js dist/main`), so OpenTelemetry can patch
+// the modules it loads. Off without OTEL_EXPORTER_OTLP_ENDPOINT.
+import { startTelemetry } from '@dafne/backend-telemetry';
+
+startTelemetry({ serviceName: 'sales-tasks' });

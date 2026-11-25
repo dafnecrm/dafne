@@ -12,6 +12,18 @@
       "path": "../../packages/contracts"
     },
     {
+      "path": "../../packages/backend/user-groups"
+    },
+    {
+      "path": "../../packages/backend/uom"
+    },
+    {
+      "path": "../../packages/backend/telemetry"
+    },
+    {
+      "path": "../../packages/backend/tasks"
+    },
+    {
       "path": "../../packages/backend/session"
     },
     {
@@ -21,13 +33,25 @@
       "path": "../../packages/backend/products"
     },
     {
+      "path": "../../packages/backend/permissions"
+    },
+    {
       "path": "../../packages/backend/migrator"
+    },
+    {
+      "path": "../../packages/backend/logger"
     },
     {
       "path": "../../packages/backend/geo"
     },
     {
       "path": "../../packages/backend/fsm"
+    },
+    {
+      "path": "../../packages/backend/documents"
+    },
+    {
+      "path": "../../packages/backend/database-tasks"
     },
     {
       "path": "../../packages/backend/database-changelog"
@@ -51,28 +75,10 @@
       "path": "../../packages/backend/changelog"
     },
     {
-      "path": "../../packages/backend/activities"
-    },
-    {
       "path": "../../packages/backend/assistant"
     },
     {
-      "path": "../../packages/backend/user-groups"
-    },
-    {
-      "path": "../../packages/backend/uom"
-    },
-    {
-      "path": "../../packages/backend/permissions"
-    },
-    {
-      "path": "../../packages/backend/documents"
-    },
-    {
-      "path": "../../packages/backend/logger"
-    },
-    {
-      "path": "../../packages/backend/telemetry"
+      "path": "../../packages/backend/activities"
     }
   ]
 }

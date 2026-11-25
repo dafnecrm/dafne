@@ -21,6 +21,7 @@ import { UomsModule, UomConversionsModule } from '@dafne/backend-uom';
 import { PermissionsModule } from '@dafne/backend-permissions';
 import { DocumentsModule } from '@dafne/backend-documents';
 import { LoggerModule } from '@dafne/backend-logger';
+import { TasksClientModule } from '@dafne/backend-tasks';
 
 @Module({
   imports: [
@@ -63,6 +64,8 @@ import { LoggerModule } from '@dafne/backend-logger';
     PermissionsModule,
     QuotationsModule,
     DocumentsModule,
+    // TasksClient: starts the scheduled tasks of apps/sales-tasks (queue at REDIS_URL).
+    TasksClientModule,
   ],
   controllers: [ApiController],
   providers: [

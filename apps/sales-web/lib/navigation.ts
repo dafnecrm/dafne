@@ -1,5 +1,6 @@
 import type { MessageKeys, Messages, NestedKeyOf } from "next-intl";
 import {
+  CalendarClockIcon,
   ContactIcon,
   HouseIcon,
   UserIcon,
@@ -133,6 +134,7 @@ export const NAV_SECTIONS: NavSection[] = [
         ],
       },
       { title: "documentTemplates", href: "/document-templates", icon: FileTextIcon },
+      { title: "tasks", href: "/admin/tasks", icon: CalendarClockIcon },
     ],
   },
 ];

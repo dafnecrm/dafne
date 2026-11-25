@@ -1,0 +1,47 @@
+{
+  "name": "@dafne/backend-tasks",
+  "version": "0.0.1",
+  "description": "Scheduled tasks on BullMQ: @Task handlers, their worker and schedules (TasksModule, apps/sales-tasks), and TasksClient to start them from another backend",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "oxlint -c ../.oxlintrc.json --type-aware src",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@dafne/backend-common": "workspace:*",
+    "@dafne/backend-database": "workspace:*",
+    "@dafne/backend-database-auth": "workspace:*",
+    "@dafne/backend-database-tasks": "workspace:*",
+    "@dafne/backend-session": "workspace:*",
+    "@dafne/contracts": "workspace:*",
+    "@nestjs/bullmq": "catalog:",
+    "@nestjs/common": "catalog:",
+    "@nestjs/config": "catalog:",
+    "@nestjs/core": "catalog:",
+    "@nestjs/drizzle": "catalog:",
+    "bullmq": "catalog:",
+    "cron-parser": "catalog:",
+    "drizzle-orm": "catalog:",
+    "ioredis": "catalog:"
+  },
+  "devDependencies": {
+    "@nestjs/testing": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/node": "catalog:",
+    "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:",
+    "typescript": "catalog:",
+    "unplugin-swc": "catalog:",
+    "vitest": "catalog:"
+  },
+  "nx": {
+    "tags": [
+      "scope:backend"
+    ]
+  }
+}

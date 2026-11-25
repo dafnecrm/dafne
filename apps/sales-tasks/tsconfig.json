@@ -1,0 +1,39 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "out-tsc",
+    "tsBuildInfoFile": "out-tsc/tsconfig.tsbuildinfo",
+    "types": ["node", "vitest/globals"]
+  },
+  "include": ["src"],
+  "references": [
+    {
+      "path": "../../packages/contracts"
+    },
+    {
+      "path": "../../packages/backend/telemetry"
+    },
+    {
+      "path": "../../packages/backend/tasks"
+    },
+    {
+      "path": "../../packages/backend/session"
+    },
+    {
+      "path": "../../packages/backend/migrator"
+    },
+    {
+      "path": "../../packages/backend/logger"
+    },
+    {
+      "path": "../../packages/backend/database-tasks"
+    },
+    {
+      "path": "../../packages/backend/database"
+    },
+    {
+      "path": "../../packages/backend/common"
+    }
+  ]
+}
