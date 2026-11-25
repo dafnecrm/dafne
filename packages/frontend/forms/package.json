@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "Form building blocks (TanStack Form): fields, contexts, schema helpers",
   "private": true,
+  "license": "AGPL-3.0-only",
   "type": "module",
   "exports": {
     ".": "./src/index.ts",

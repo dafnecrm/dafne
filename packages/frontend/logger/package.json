@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "Logging for the frontend: one createLogger API on the server (stdout, OpenTelemetry) and in the browser (Grafana Faro, <Telemetry />)",
   "private": true,
+  "license": "AGPL-3.0-only",
   "type": "module",
   "exports": {
     ".": "./src/index.ts",

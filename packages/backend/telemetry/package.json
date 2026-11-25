@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "OpenTelemetry for the apps: traces, metrics and logs over OTLP (Grafana: Tempo, Prometheus, Loki), started before the app with node --import",
   "private": true,
+  "license": "AGPL-3.0-only",
   "type": "module",
   "exports": {
     ".": "./src/index.ts"

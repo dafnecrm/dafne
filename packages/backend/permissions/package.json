@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "What the user groups can do in the app (its own permissions), /me/permissions and @Can()",
   "private": true,
+  "license": "AGPL-3.0-only",
   "type": "module",
   "exports": {
     ".": "./src/index.ts"

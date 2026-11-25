@@ -39,3 +39,16 @@ pnpm dafne dev                                     # PostgreSQL, Redis, database
 ```
 
 Details in [Getting started](getting-started.md).
+
+## License
+
+Copyright (C) 2026 Luca Lulani.
+
+Dafne is free software, licensed under the
+[GNU Affero General Public License v3.0 only](../LICENSE) (`AGPL-3.0-only`):
+you may use, modify and distribute it, also commercially, provided that the
+modified versions stay under the same license and that whoever runs a
+modified version over a network offers its users the source code. Every
+workspace package declares `"license": "AGPL-3.0-only"`, and the CLI's
+templates give it to the packages they generate. Contributions are accepted
+under the same license (see [CI and contributing](contributing.md)).

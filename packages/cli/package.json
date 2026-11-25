@@ -3,6 +3,7 @@
   "version": "0.2.0",
   "description": "Dafne CLI: Nx generators for the backend, and shortcuts for Nx tasks",
   "private": true,
+  "license": "AGPL-3.0-only",
   "type": "module",
   "bin": {
     "dafne": "./src/index.ts"

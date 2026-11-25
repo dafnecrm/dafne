@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "The apps' logger: pino (nestjs-pino) to the console, pretty or JSON, and to rotated files; every Nest Logger goes through it",
   "private": true,
+  "license": "AGPL-3.0-only",
   "type": "module",
   "exports": {
     ".": "./src/index.ts"
