@@ -1,6 +1,11 @@
 "use client";
 
-import { EllipsisVerticalIcon, HistoryIcon, PencilIcon, Trash2Icon } from "lucide-react";
+import {
+  EllipsisVerticalIcon,
+  HistoryIcon,
+  PencilIcon,
+  Trash2Icon,
+} from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Can } from "@dafne/frontend-permissions";
@@ -28,11 +33,11 @@ import { PdfTemplate } from "@dafne/frontend-documents/components/document-pdf-m
 export function SalesOrderDetailActions({
   salesOrder,
   path,
-  pdfTemplates
+  pdfTemplates,
 }: {
   salesOrder: SalesOrderRef;
-    path: string;
-    pdfTemplates: PdfTemplate[]
+  path: string;
+  pdfTemplates: PdfTemplate[];
 }) {
   const [deleting, setDeleting] = useState(false);
   const [history, setHistory] = useState(false);
@@ -41,48 +46,50 @@ export function SalesOrderDetailActions({
 
   return (
     <>
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          render={
-            <Button
-              variant="outline"
-              size="icon-sm"
-              aria-label={t("common.actionsFor", {
-                name: `${t("salesOrders.singular")} ${salesOrder.id}`,
-              })}
+      <div className="">
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <Button
+                variant="outline"
+                size="icon-sm"
+                aria-label={t("common.actionsFor", {
+                  name: `${t("salesOrders.singular")} ${salesOrder.id}`,
+                })}
+              />
+            }
+          >
+            <EllipsisVerticalIcon />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-fit max-w-52">
+            <Can I="update" a="SalesOrder">
+              <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
+                <PencilIcon />
+                {t("common.edit")}
+              </DropdownMenuItem>
+            </Can>
+            <DropdownMenuItem onClick={() => setHistory(true)}>
+              <HistoryIcon />
+              {t("changelog.open")}
+            </DropdownMenuItem>
+            <DownloadPdfMenuItems
+              resource="salesOrder"
+              id={salesOrder.id}
+              templates={pdfTemplates}
             />
-          }
-        >
-          <EllipsisVerticalIcon />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-fit max-w-52">
-          <Can I="update" a="SalesOrder">
-            <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
-              <PencilIcon />
-              {t("common.edit")}
-            </DropdownMenuItem>
-          </Can>
-          <DropdownMenuItem onClick={() => setHistory(true)}>
-            <HistoryIcon />
-            {t("changelog.open")}
-          </DropdownMenuItem>
-          <DownloadPdfMenuItems
-            resource="salesOrder"
-            id={salesOrder.id}
-            templates={pdfTemplates}
-          />
-          <Can I="delete" a="SalesOrder">
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              variant="destructive"
-              onClick={() => setDeleting(true)}
-            >
-              <Trash2Icon />
-              {t("common.delete")}
-            </DropdownMenuItem>
-          </Can>
-        </DropdownMenuContent>
-      </DropdownMenu>
+            <Can I="delete" a="SalesOrder">
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                variant="destructive"
+                onClick={() => setDeleting(true)}
+              >
+                <Trash2Icon />
+                {t("common.delete")}
+              </DropdownMenuItem>
+            </Can>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
       {/* Outside the menu, which closes when an item is clicked. */}
       <SalesOrderChangelogSheet
         salesOrderId={salesOrder.id}
