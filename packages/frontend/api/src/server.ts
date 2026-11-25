@@ -8,6 +8,9 @@ export { BackendError } from "./errors.ts";
 /** Base URL of the app's Nest API (e.g. apps/sales-api). */
 export const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:3000";
 
+/** Base URL of the app's scheduled tasks (e.g. apps/sales-tasks: /tasks, for admins). */
+export const TASKS_URL = process.env.TASKS_URL ?? "http://localhost:3002";
+
 /** Base URL of apps/auth: sign-in (Better Auth) and users, shared by the apps. */
 export const AUTH_URL = process.env.AUTH_URL ?? "http://localhost:3001";
 
@@ -31,6 +34,11 @@ export function backendFetch(path: string, init: RequestInit = {}) {
 /** Like backendFetch, for apps/auth (e.g. the users: /users). */
 export function authFetch(path: string, init: RequestInit = {}) {
   return fetchFrom(AUTH_URL, path, init);
+}
+
+/** Like backendFetch, for the app's scheduled tasks (e.g. /tasks). */
+export function tasksFetch(path: string, init: RequestInit = {}) {
+  return fetchFrom(TASKS_URL, path, init);
 }
 
 async function fetchFrom(baseUrl: string, path: string, init: RequestInit) {

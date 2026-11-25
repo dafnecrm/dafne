@@ -33,6 +33,7 @@
     "@dafne/frontend-permissions": "workspace:*",
     "@dafne/frontend-products": "workspace:*",
     "@dafne/frontend-sales-orders": "workspace:*",
+    "@dafne/frontend-tasks": "workspace:*",
     "@dafne/frontend-ui": "workspace:*",
     "@dafne/frontend-user-groups": "workspace:*",
     "@dafne/frontend-users": "workspace:*",

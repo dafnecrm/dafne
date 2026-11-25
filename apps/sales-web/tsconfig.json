@@ -22,7 +22,8 @@
         "@dafne/frontend-permissions",
         "@dafne/frontend-users",
         "@dafne/frontend-documents",
-        "@dafne/frontend-logger"
+        "@dafne/frontend-logger",
+        "@dafne/frontend-tasks"
       ]
     }
   },

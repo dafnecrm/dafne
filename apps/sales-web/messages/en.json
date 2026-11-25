@@ -27,7 +27,8 @@
     "uoms": "Units of measure",
     "uomConversions": "Conversions",
     "quotations": "Quotations",
-    "documentTemplates": "Document templates"
+    "documentTemplates": "Document templates",
+    "tasks": "Scheduled tasks"
   },
   "breadcrumb": {
     "new": "New",

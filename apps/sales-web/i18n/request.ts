@@ -20,6 +20,7 @@ import { UOMS_MESSAGES } from "@dafne/frontend-products/uoms";
 import { UOM_CONVERSIONS_MESSAGES } from "@dafne/frontend-products/uom-conversions";
 import { QUOTATIONS_MESSAGES } from "@dafne/frontend-sales-orders/quotations";
 import { DOCUMENT_TEMPLATES_MESSAGES, DOCUMENTS_MESSAGES } from "@dafne/frontend-documents";
+import { TASKS_MESSAGES } from "@dafne/frontend-tasks";
 
 /**
  * The locale of the current render. Server Components read the [locale]
@@ -73,6 +74,8 @@ export default getRequestConfig(async ({ locale, requestLocale }) => {
       // Document templates and PDF texts, shipped by @dafne/frontend-documents.
       documentTemplates: DOCUMENT_TEMPLATES_MESSAGES[resolved],
       documents: DOCUMENTS_MESSAGES[resolved],
+      // Scheduled tasks texts, shipped by @dafne/frontend-tasks.
+      tasks: TASKS_MESSAGES[resolved],
     },
   };
 });

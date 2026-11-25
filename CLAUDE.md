@@ -8,6 +8,7 @@ keep it in line when these rules change. Each project has its own
 | Folder               | Package            | What                                              |
 | -------------------- | ------------------ | ------------------------------------------------- |
 | `apps/sales-api`           | `@dafne/sales-api`       | NestJS API of the sales app                            |
+| `apps/sales-tasks`         | `@dafne/sales-tasks`     | Scheduled tasks of the sales app (BullMQ worker, admin API) |
 | `packages/backend/*` | `@dafne/backend-*` | The backend's Nest libs (customers, auth…)        |
 | `apps/sales-web`      | `@dafne/sales-web`  | Next.js app                                       |
 | `packages/frontend/*` | `@dafne/frontend-*` | The frontend's libs (auth…), TypeScript sources compiled by Next |
@@ -33,7 +34,7 @@ keep it in line when these rules change. Each project has its own
 - `pnpm build | test | lint | typecheck`: `nx run-many` over all projects.
 - `pnpm affected`: lint, typecheck, test and build only what changed.
 - `pnpm nx <target> <project>`, e.g. `pnpm nx test @dafne/sales-api`.
-- `pnpm dafne dev` starts `@dafne/auth`, `@dafne/sales-api` and `@dafne/sales-web`
+- `pnpm dafne dev` starts `@dafne/auth`, `@dafne/sales-api`, `@dafne/sales-tasks` and `@dafne/sales-web`
   (migrating first, with `MIGRATIONS_DATABASE_URL`), each at
   `https://<app>.dafne.localhost` (its dev proxy; the app's `dafne.dev` in
   its package.json); `pnpm dafne db
@@ -100,7 +101,8 @@ keep it in line when these rules change. Each project has its own
   schema per app (`sales`, `<app>`), plus `auth` (users, sessions, user
   groups and their members; each app keeps its groups' permissions),
   `changelog` (the change log, written only by `@dafne/backend-changelog`,
-  depending only on `auth`) and, once a second app needs a table, `core`.
+  depending only on `auth`), `tasks` (the scheduled tasks' settings and runs, written
+  only by `@dafne/backend-tasks`; `docs/tasks.md`) and, once a second app needs a table, `core`.
   Names are fixed. A table is
   born in the schema of the app that creates it and moves to `core` when
   another app must read it or reference it (`ALTER TABLE … SET SCHEMA`).

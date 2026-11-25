@@ -10,6 +10,8 @@ allowBuilds:
   '@swc/core': true
   esbuild: true
   lefthook: true
+  # bullmq's msgpackr: prebuilt binaries come as optional packages; its script only rebuilds them.
+  msgpackr-extract: false
   nx: true
   # Its postinstall only checks versions: not needed.
   protobufjs: false
@@ -25,6 +27,7 @@ catalog:
   "@grafana/faro-web-sdk": ^2.15.0
   "@grafana/faro-web-tracing": ^2.15.0
   "@better-auth/drizzle-adapter": 1.7.12
+  "@nestjs/bullmq": ^12.0.2
   "@nestjs/cache-manager": ^12.0.2
   "@nestjs/common": ^12.0.1
   "@nestjs/config": ^12.0.1
@@ -49,15 +52,18 @@ catalog:
   ai: ^7.0.176
   angular-expressions: ^1.7.2
   better-auth: 1.7.12
+  bullmq: ^6.7.0
   client-only: ^0.0.1
   class-variance-authority: ^0.7.1
   cn: ^0.5.0
+  cron-parser: ^5.4.0
   docxtemplater: ^3.71.1
   drizzle-kit: 1.0.0-rc.5
   drizzle-orm: 1.0.0-rc.5
   eslint: ^9
   eslint-plugin-react-hooks: ^7.1.1
   import-in-the-middle: ^3.6.0
+  ioredis: ^5.8.0
   lucide-react: ^1.61.0
   next: 16.4.6
   next-intl: ^4.14.9

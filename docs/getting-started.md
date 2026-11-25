@@ -68,7 +68,8 @@ copy:
 | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `apps/auth/.env`                     | `PORT` (3001), `DATABASE_URL` (on `dafne`), `BETTER_AUTH_SECRET`, `AUTH_ALLOWED_HOSTS`, `BETTER_AUTH_URL`, `TRUSTED_ORIGINS`, `COOKIE_DOMAIN`, `DEFAULT_APPS`, `ADMIN_EMAIL` / `ADMIN_PASSWORD`, `RESEND_API_KEY` |
 | `apps/sales-api/.env`                  | `PORT` (3000), `DATABASE_URL` (on `dafne`), `AUTH_URL`, `REDIS_URL`                                                                                                             |
-| `apps/sales-web/.env`                  | `BACKEND_URL`, `AUTH_URL`, `APP_URL` (`https://sales-web.dafne.localhost`)                                                                                                          |
+| `apps/sales-tasks/.env`                | `PORT` (3002), `DATABASE_URL` (on `dafne`), `AUTH_URL`, `REDIS_URL` (the tasks' queue), `TASKS_CONCURRENCY`, `TASKS_RETENTION_DAYS` |
+| `apps/sales-web/.env`                  | `BACKEND_URL`, `TASKS_URL`, `AUTH_URL`, `APP_URL` (`https://sales-web.dafne.localhost`)                                                                                                          |
 | `packages/backend/migrator/.env`     | `MIGRATIONS_DATABASE_URL`: the `dafne` database, with the user that owns it; `ADMIN_DATABASE_URL`: a superuser, to create the database (`db create`, and `dafne dev` when it's missing)                                               |
 
 In development every URL uses the same `dafne` user, the database's
@@ -89,7 +90,7 @@ pnpm dafne dev            # PostgreSQL and Redis, the database, the migrations, 
 On the first run `dafne dev` starts the services of `compose.yaml`,
 creates the `dafne` database and its owner (from
 `MIGRATIONS_DATABASE_URL`, as the superuser of `ADMIN_DATABASE_URL`),
-applies every migration, then starts `@dafne/auth`, `@dafne/sales-api` and
+applies every migration, then starts `@dafne/auth`, `@dafne/sales-api`, `@dafne/sales-tasks` and
 `@dafne/sales-web`. The same steps one by one, e.g. on your own server:
 
 ```sh

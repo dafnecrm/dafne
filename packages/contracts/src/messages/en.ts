@@ -228,7 +228,24 @@ export const en = {
   },
   notifications: {
     emailNotSent: 'Email couldn\'t be sent'
-  }
+  },
+  tasks: {
+    notFound: 'Task not found',
+    alreadyRunning: 'This task is already running: try again when it ends',
+    disabled: 'This task is turned off',
+    cron: { invalid: 'Enter a valid cron pattern (e.g. 0 2 * * *)' },
+    timezone: {
+      required: 'Enter the time zone',
+      invalid: 'Enter a valid time zone (e.g. Europe/Rome)',
+    },
+    timeoutSeconds: { invalid: 'Enter a number of seconds, from 1 to 86400' },
+    run: {
+      notFound: 'Run not found',
+      timedOut: 'The run took longer than its timeout',
+      workerLost: 'The run was interrupted (the tasks app stopped)',
+      unknownTask: 'The tasks app no longer defines this task',
+    },
+  },
 };
 
 /** The shape every language must have: same keys, any text. */

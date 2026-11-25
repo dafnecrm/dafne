@@ -225,5 +225,22 @@ export const it: ContractMessages = {
   },
   notifications: {
     emailNotSent: 'Email couldn\'t be sent'
-  }
+  },
+  tasks: {
+    notFound: 'Attività pianificata non trovata',
+    alreadyRunning: "Quest'attività è già in esecuzione: riprova quando termina",
+    disabled: "Quest'attività è disattivata",
+    cron: { invalid: 'Inserisci un\'espressione cron valida (es. 0 2 * * *)' },
+    timezone: {
+      required: 'Inserisci il fuso orario',
+      invalid: 'Inserisci un fuso orario valido (es. Europe/Rome)',
+    },
+    timeoutSeconds: { invalid: 'Inserisci un numero di secondi, da 1 a 86400' },
+    run: {
+      notFound: 'Esecuzione non trovata',
+      timedOut: "L'esecuzione ha superato il tempo massimo",
+      workerLost: "L'esecuzione è stata interrotta (l'app delle attività si è fermata)",
+      unknownTask: "L'app delle attività non definisce più quest'attività",
+    },
+  },
 };

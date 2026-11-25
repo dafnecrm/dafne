@@ -36,6 +36,7 @@ Each project has one scope tag (see [Project boundaries](boundaries.md)).
 | ---------------- | --------------- | ------- | -------------------------------------------------------------------------------------- |
 | `@dafne/auth`    | `apps/auth`     | backend | Sign-in (Better Auth), users, app access, on the `auth` schema. Shared by every app.  |
 | `@dafne/sales-api` | `apps/sales-api` | backend  | The sales app's NestJS API: composes the backend libs, on the `sales` schema.          |
+| `@dafne/sales-tasks` | `apps/sales-tasks` | backend | The sales app's scheduled tasks: BullMQ worker, schedules and admin API, on the `tasks` schema: see [Scheduled tasks](tasks.md). |
 | `@dafne/sales-web` | `apps/sales-web` | frontend | The sales app's Next.js frontend: talks to the APIs over HTTP.                         |
 
 ### Backend libs (`packages/backend/*`)
@@ -45,6 +46,7 @@ Each project has one scope tag (see [Project boundaries](boundaries.md)).
 | `@dafne/backend-database`      | The `sales` schema: Drizzle tables, `DatabaseModule`, migrations                                      |
 | `@dafne/backend-database-auth` | The `auth` schema: Better Auth tables and `app_access`, migrations                                  |
 | `@dafne/backend-database-changelog` | The `changelog` schema: the change log table (partitioned by resource), migrations written by hand |
+| `@dafne/backend-database-tasks` | The `tasks` schema: task settings, runs and their logs, migrations |
 | `@dafne/backend-migrator`      | Applies the migrations of every schema in one order; generates them                                |
 | `@dafne/backend-auth`          | Better Auth in Nest (`AuthModule`), used only by `apps/auth`                                        |
 | `@dafne/backend-session`       | Session guard for the apps' APIs (`SessionModule.forRoot({ app })`, `@Session()`, `@Roles()`)        |
@@ -57,6 +59,7 @@ Each project has one scope tag (see [Project boundaries](boundaries.md)).
 | `@dafne/backend-telemetry`     | OpenTelemetry for the APIs (`startTelemetry`, loaded with `node --import`): traces, metrics, logs to Grafana |
 | `@dafne/backend-crud`          | The interface every CRUD resource implements (`CrudController`, `CrudService`, `Actor`) and its write hooks (`CrudHooksModule.forFeature`) |
 | `@dafne/backend-changelog`     | Change log of CRUD resources (`ChangelogModule.forFeature`, `changelogTransitionHook`, `ChangelogService`) |
+| `@dafne/backend-tasks`         | Scheduled tasks (BullMQ): `@Task` handlers, `TasksModule` (worker, schedules, admin API), `TasksClient` to start them from any backend |
 | `@dafne/backend-fsm`           | State machines for a record's status (`FsmModule.forFeature`, `@InjectStateMachine()`): guards, pre/post hooks (per transition, or of every transition), one transaction |
 | `@dafne/backend-customers`, `-products`, `-activities` | Feature libs of the sales app (module, controller, service)                       |
 
@@ -66,7 +69,8 @@ They ship TypeScript sources, compiled by Next.
 
 | Package                      | Role                                                                    |
 | ---------------------------- | ----------------------------------------------------------------------- |
-| `@dafne/frontend-api`        | Server-side calls to the APIs: `backendFetch`, `authFetch`, `BackendError` |
+| `@dafne/frontend-api`        | Server-side calls to the APIs: `backendFetch`, `authFetch`, `tasksFetch`, `BackendError` |
+| `@dafne/frontend-tasks`      | Admin pages of the scheduled tasks: list, settings, runs, logs          |
 | `@dafne/frontend-auth`       | Better Auth client, server session helpers, auth error messages        |
 | `@dafne/frontend-ui`         | Design system: shadcn components (Base UI), dates, theme               |
 | `@dafne/frontend-forms`      | Form building blocks (TanStack Form): fields, contexts, schema helpers |
