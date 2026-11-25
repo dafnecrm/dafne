@@ -37,7 +37,7 @@ export default function <%= p.pascal %>Page({
           {t("common.listHint")}
         </PageContentDescription>
         <PageContentAction>
-          <Button nativeButton={false} render={<Link href="/<%= p.kebab %>/new" />}>
+          <Button variant="outline" size="sm" nativeButton={false} render={<Link href="/<%= p.kebab %>/new" />}>
             <PlusIcon data-icon="inline-start" />
             {t("<%= p.camel %>.new")}
           </Button>

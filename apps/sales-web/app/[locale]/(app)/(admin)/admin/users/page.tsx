@@ -37,7 +37,12 @@ export default function UsersPage({
         <PageContentTitle>{t("title")}</PageContentTitle>
         <PageContentDescription>{t("listDescription")}</PageContentDescription>
         <PageContentAction>
-          <Button nativeButton={false} render={<Link href={`${usersTable.path}/new`} />}>
+          <Button
+            variant="outline"
+            size="sm"
+            nativeButton={false}
+            render={<Link href={`${usersTable.path}/new`} />}
+          >
             <PlusIcon data-icon="inline-start" />
             {t("new")}
           </Button>
@@ -78,5 +83,12 @@ async function UsersList({
     throw error;
   }
 
-  return <UsersTable users={data.items} total={data.total} params={params} config={usersTable} />;
+  return (
+    <UsersTable
+      users={data.items}
+      total={data.total}
+      params={params}
+      config={usersTable}
+    />
+  );
 }

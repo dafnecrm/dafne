@@ -38,6 +38,8 @@ export default function UomsPage({
         <PageContentAction>
           <Can I="create" a="Uom">
             <Button
+              variant="outline"
+              size="sm"
               nativeButton={false}
               render={<Link href={`${uomsTable.path}/new`} />}
             >

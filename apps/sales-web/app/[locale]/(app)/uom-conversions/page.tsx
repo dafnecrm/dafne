@@ -38,6 +38,8 @@ export default function UomConversionsPage({
         <PageContentAction>
           <Can I="create" a="UomConversion">
             <Button
+              variant="outline"
+              size="sm"
               nativeButton={false}
               render={<Link href={`${uomConversionsTable.path}/new`} />}
             >

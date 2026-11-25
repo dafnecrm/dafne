@@ -40,6 +40,8 @@ export default function SalesOrdersPage({
           {/* Only for who may create one; the API checks it too. */}
           <Can I="create" a="SalesOrder">
             <Button
+              variant="outline"
+              size="sm"
               nativeButton={false}
               render={<Link href={`${salesOrdersTable.path}/new`} />}
             >

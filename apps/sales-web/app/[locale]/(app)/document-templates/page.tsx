@@ -38,6 +38,8 @@ export default function DocumentTemplatesPage({
         <PageContentAction>
           <Can I="create" a="DocumentTemplate">
             <Button
+              variant="outline"
+              size="sm"
               nativeButton={false}
               render={<Link href={`${documentTemplatesTable.path}/new`} />}
             >

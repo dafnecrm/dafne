@@ -36,6 +36,8 @@ export default function UserGroupsPage({
         <PageContentDescription>{t("common.listHint")}</PageContentDescription>
         <PageContentAction>
           <Button
+            variant="outline"
+            size="sm"
             nativeButton={false}
             render={<Link href={`${userGroupsTable.path}/new`} />}
           >
