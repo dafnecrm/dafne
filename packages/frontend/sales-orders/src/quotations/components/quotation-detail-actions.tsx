@@ -37,6 +37,7 @@ import { QuotationChangelogSheet } from "./quotation-changelog.tsx";
 import { toast } from "@dafne/frontend-ui/components/toast";
 import { DownloadPdfMenuItems } from "@dafne/frontend-documents/components/document-pdf-menu-items";
 import type { PdfTemplate } from "@dafne/frontend-documents/components/document-pdf-menu";
+import { QUOTATION_EDITABLE_STATUSES } from "../quotations-table.ts";
 
 /**
  * Actions on the quotation's page: its next status (send a draft; accept,
@@ -123,17 +124,19 @@ export function QuotationDetailActions({
 
   return (
     <>
-      <Can I="update" a="Quotation">
-        <Button
-          variant="outline"
-          size="sm"
-          className="hidden sm:inline-flex"
-          nativeButton={false}
-          render={<Link href={`${href}/edit`} />}>
-          <PencilIcon />
-          {t("common.edit")}
-        </Button>
-      </Can>
+      {QUOTATION_EDITABLE_STATUSES.has(quotation.status) &&
+        <Can I="update" a="Quotation">
+          <Button
+            variant="outline"
+            size="sm"
+            className="hidden sm:inline-flex"
+            nativeButton={false}
+            render={<Link href={`${href}/edit`} />}>
+            <PencilIcon />
+            {t("common.edit")}
+          </Button>
+        </Can>}
+
       <Can I="changeStatus" a="Quotation">
         {steps.map(({ key, label, icon: Icon, primary, moves, onSelect }) => (
           <Button
@@ -168,14 +171,15 @@ export function QuotationDetailActions({
           <EllipsisVerticalIcon />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuGroup className="sm:hidden">
+          {(QUOTATION_EDITABLE_STATUSES.has(quotation.status) || steps.length > 0) && <DropdownMenuGroup className="sm:hidden">
             <DropdownMenuLabel>{t("common.actions")}</DropdownMenuLabel>
-            <Can I="update" a="Quotation">
-              <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
-                <PencilIcon />
-                {t("common.edit")}
-              </DropdownMenuItem>
-            </Can>
+            {QUOTATION_EDITABLE_STATUSES.has(quotation.status) &&
+              <Can I="update" a="Quotation">
+                <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
+                  <PencilIcon />
+                  {t("common.edit")}
+                </DropdownMenuItem>
+              </Can>}
             {steps.length > 0 && (
               <Can I="changeStatus" a="Quotation">
                 {steps.map(({ key, label, icon: Icon, onSelect }) => (
@@ -193,8 +197,8 @@ export function QuotationDetailActions({
               </Can>
             )}
             <DropdownMenuSeparator />
-          </DropdownMenuGroup>
-          <DownloadPdfMenuItems
+          </DropdownMenuGroup>}
+          < DownloadPdfMenuItems
             resource="quotation"
             id={quotation.id}
             templates={pdfTemplates}
