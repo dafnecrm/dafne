@@ -20,6 +20,7 @@ import {
   ArrowDownIcon,
   ArrowUpDownIcon,
   ArrowUpIcon,
+  ChevronDownIcon,
   FilterIcon,
   InboxIcon,
   ListFilterIcon,
@@ -58,6 +59,15 @@ import {
   ComboboxItem,
   ComboboxList,
 } from "@dafne/frontend-ui/components/combobox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@dafne/frontend-ui/components/dropdown-menu";
 import { Input } from "@dafne/frontend-ui/components/input";
 import {
   Select,
@@ -247,31 +257,45 @@ function DataTableMobileSort({
     { value: `${id}:asc`, label: t("sortAsc", { label }) },
     { value: `${id}:desc`, label: t("sortDesc", { label }) },
   ]);
+  const value = sort ? `${sort.id}:${sort.desc ? "desc" : "asc"}` : null;
+  const current = items.find((item) => item.value === value);
+  // A menu, so on a phone it's a drawer like the actions.
   return (
-    <Select
-      items={items}
-      value={sort ? `${sort.id}:${sort.desc ? "desc" : "asc"}` : null}
-      onValueChange={(value) => {
-        if (!value) {
-          return;
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full justify-start"
+            disabled={disabled}
+            aria-label={t("sortBy")}
+          />
         }
-        const at = value.lastIndexOf(":");
-        onChange({ id: value.slice(0, at), desc: value.slice(at + 1) === "desc" });
-      }}
-      disabled={disabled}
-    >
-      <SelectTrigger size="sm" className="self-start" aria-label={t("sortBy")}>
+      >
         <ArrowUpDownIcon data-icon="inline-start" />
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent alignItemWithTrigger={false} align="start">
-        {items.map((item) => (
-          <SelectItem key={item.value} value={item.value}>
-            {item.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+        {current?.label ?? t("sortBy")}
+        <ChevronDownIcon data-icon="inline-end" className="ml-auto text-muted-foreground" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>{t("sortBy")}</DropdownMenuLabel>
+          <DropdownMenuRadioGroup
+            value={value}
+            onValueChange={(next: string) => {
+              const at = next.lastIndexOf(":");
+              onChange({ id: next.slice(0, at), desc: next.slice(at + 1) === "desc" });
+            }}
+          >
+            {items.map((item) => (
+              <DropdownMenuRadioItem key={item.value} value={item.value} closeOnClick>
+                {item.label}
+              </DropdownMenuRadioItem>
+            ))}
+          </DropdownMenuRadioGroup>
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 

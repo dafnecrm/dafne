@@ -25,14 +25,9 @@ import {
 import { SalesOrderChangelogSheet } from "./sales-order-changelog.tsx";
 import { DownloadPdfMenuItems } from "@dafne/frontend-documents/components/document-pdf-menu-items";
 import { PdfTemplate } from "@dafne/frontend-documents/components/document-pdf-menu";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerTrigger,
-} from "@dafne/frontend-ui/components/drawer";
 
 /**
- * Actions on the sales order's page, in a menu: edit (`<path>/<id>/edit`),
+ * Actions on the sales order's page, in a menu (a drawer on mobile): edit (`<path>/<id>/edit`),
  * its history (in a sheet) and delete, then back to the list at `path`.
  */
 export function SalesOrderDetailActions({
@@ -51,90 +46,48 @@ export function SalesOrderDetailActions({
 
   return (
     <>
-      <div className="hidden md:block">
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <Button
-                variant="outline"
-                size="icon-sm"
-                aria-label={t("common.actionsFor", {
-                  name: `${t("salesOrders.singular")} ${salesOrder.id}`,
-                })}
-              />
-            }
-          >
-            <EllipsisVerticalIcon />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <Can I="update" a="SalesOrder">
-              <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
-                <PencilIcon />
-                {t("common.edit")}
-              </DropdownMenuItem>
-            </Can>
-            <DropdownMenuItem onClick={() => setHistory(true)}>
-              <HistoryIcon />
-              {t("changelog.open")}
-            </DropdownMenuItem>
-            <DownloadPdfMenuItems
-              resource="salesOrder"
-              id={salesOrder.id}
-              templates={pdfTemplates}
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          render={
+            <Button
+              variant="outline"
+              size="icon-sm"
+              aria-label={t("common.actionsFor", {
+                name: `${t("salesOrders.singular")} ${salesOrder.id}`,
+              })}
             />
-            <Can I="delete" a="SalesOrder">
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                variant="destructive"
-                onClick={() => setDeleting(true)}
-              >
-                <Trash2Icon />
-                {t("common.delete")}
-              </DropdownMenuItem>
-            </Can>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-      <div className="md:hidden">
-        <Drawer>
-          <DrawerTrigger
-            render={
-              <Button
-                variant="outline"
-                size="icon-sm"
-                aria-label={t("common.actionsFor", {
-                  name: `${t("salesOrders.singular")} ${salesOrder.id}`,
-                })}
-              />
-            }
-          >
-            <EllipsisVerticalIcon />
-          </DrawerTrigger>
-          <DrawerContent>
-            <div className="flex flex-col gap-2">
-              <Can I="update" a="SalesOrder">
-                <Button
-                  nativeButton={false}
-                  render={<Link href={`${href}/edit`} />}
-                >
-                  <PencilIcon />
-                  {t("common.edit")}
-                </Button>
-              </Can>
-              <Button onClick={() => setHistory(true)}>
-                <HistoryIcon />
-                {t("changelog.open")}
-              </Button>
-              <Can I="delete" a="SalesOrder">
-                <Button variant="destructive" onClick={() => setDeleting(true)}>
-                  <Trash2Icon />
-                  {t("common.delete")}
-                </Button>
-              </Can>
-            </div>
-          </DrawerContent>
-        </Drawer>
-      </div>
+          }
+        >
+          <EllipsisVerticalIcon />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <Can I="update" a="SalesOrder">
+            <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
+              <PencilIcon />
+              {t("common.edit")}
+            </DropdownMenuItem>
+          </Can>
+          <DropdownMenuItem onClick={() => setHistory(true)}>
+            <HistoryIcon />
+            {t("changelog.open")}
+          </DropdownMenuItem>
+          <DownloadPdfMenuItems
+            resource="salesOrder"
+            id={salesOrder.id}
+            templates={pdfTemplates}
+          />
+          <Can I="delete" a="SalesOrder">
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={() => setDeleting(true)}
+            >
+              <Trash2Icon />
+              {t("common.delete")}
+            </DropdownMenuItem>
+          </Can>
+        </DropdownMenuContent>
+      </DropdownMenu>
       {/* Outside the menu, which closes when an item is clicked. */}
       <SalesOrderChangelogSheet
         salesOrderId={salesOrder.id}
