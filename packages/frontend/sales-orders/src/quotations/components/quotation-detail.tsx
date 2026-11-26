@@ -100,6 +100,20 @@ export function QuotationDetails({
         <Detail icon={HashIcon} label={t("quotations.fields.itemsCount")}>
           {quotation.itemsCount}
         </Detail>
+        <Detail icon={CalendarIcon} label={t("quotations.fields.acceptedAt")}>
+          {quotation.acceptedAt ? (
+            <LocalDate value={quotation.acceptedAt} format="longDate" />
+          ) : (
+            "—"
+          )}
+        </Detail>
+        <Detail icon={CalendarIcon} label={t("quotations.fields.rejectedAt")}>
+          {quotation.rejectedAt ? (
+            <LocalDate value={quotation.rejectedAt} format="longDate" />
+          ) : (
+            "—"
+          )}
+        </Detail>
       </DetailSection>
       <DetailSection title={t("quotations.sections.items")}>
         <SalesOrderItemTable

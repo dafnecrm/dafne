@@ -21,6 +21,7 @@ describe("quotationBodySchema", () => {
       notes: null,
       validUntil: null,
       items: [],
+      rejectedAt: null,
     });
   });
 

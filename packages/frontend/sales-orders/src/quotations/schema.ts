@@ -45,7 +45,8 @@ export function quotationFormOpts(
     defaultValues: {
       status: quotation?.status ?? "draft",
       notes: quotation?.notes ?? "",
-      customerId: quotation?.customerId?.toString() ?? defaults?.customerId ?? "",
+      customerId:
+        quotation?.customerId?.toString() ?? defaults?.customerId ?? "",
       typeId: quotation?.typeId ?? "",
       validUntil: quotation?.validUntil?.slice(0, 10) ?? "",
       items:
@@ -55,6 +56,7 @@ export function quotationFormOpts(
           quantity: item.quantity,
           uomId: item.uomId,
         })) ?? [],
+      rejectedAt: quotation?.rejectedAt?.slice(0, 10) ?? "",
     } satisfies QuotationFormValues as QuotationFormValues,
   });
 }

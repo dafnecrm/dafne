@@ -41,6 +41,7 @@ export const quotationBodySchema = z.strictObject({
   customerId: requiredId(msg('quotations.customerId.required')),
   typeId: requiredText(5, msg('quotations.typeId.required')),
   validUntil: z.coerce.date({ error: msg('common.date.invalid') }),
+  rejectedAt: optionalDate(msg('common.date.invalid')),
   items: documentItemsSchema,
 });
 
@@ -71,7 +72,7 @@ export const quotationStatusBodySchema = z.strictObject({
 export type QuotationStatusBody = z.output<typeof quotationStatusBodySchema>;
 
 /** Quotation fields the list can be sorted by. */
-export const QUOTATION_SORT_FIELDS = ['id', 'status', 'validUntil', 'createdAt', 'updatedAt'] as const;
+export const QUOTATION_SORT_FIELDS = ['id', 'status', 'validUntil', 'acceptedAt', 'rejectedAt', 'createdAt', 'updatedAt'] as const;
 export type QuotationSortField = (typeof QUOTATION_SORT_FIELDS)[number];
 
 /**
@@ -113,6 +114,8 @@ export interface ListedQuotation {
   customer: SalesOrderCustomer;
   type: SalesOrderTypeSummary;
   validUntil: Date;
+  acceptedAt: Date | null;
+  rejectedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
   itemsCount: number;

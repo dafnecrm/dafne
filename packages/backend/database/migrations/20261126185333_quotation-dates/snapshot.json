@@ -1,0 +1,106 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "57bcdc76-346e-4246-8f19-e6b5922872e9",
+  "prevIds": [
+    "0ee4f421-29a7-421e-8f06-64805c3802b1"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "sales",
+        "quotation",
+        "accepted_at"
+      ],
+      "writes": [
+        "s|col|sales.quotation.accepted_at",
+        "n|col|sales.quotation.accepted_at",
+        "e|col|sales.quotation.accepted_at"
+      ],
+      "reads": [
+        "n|tbl|sales.quotation",
+        "n|sch|sales"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "sales",
+        "quotation",
+        "rejected_at"
+      ],
+      "writes": [
+        "s|col|sales.quotation.rejected_at",
+        "n|col|sales.quotation.rejected_at",
+        "e|col|sales.quotation.rejected_at"
+      ],
+      "reads": [
+        "n|tbl|sales.quotation",
+        "n|sch|sales"
+      ]
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "sales",
+        "quotation",
+        "valid_until"
+      ],
+      "writes": [
+        "s|colprop|sales.quotation.valid_until.notNull"
+      ],
+      "reads": [
+        "n|tbl|sales.quotation",
+        "n|sch|sales",
+        "n|col|sales.quotation.valid_until"
+      ],
+      "sqlHash": "cac58f4501cf4447"
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "quotation",
+        "name": "accepted_at",
+        "type": "date",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "sales",
+        "table": "quotation",
+        "name": "rejected_at",
+        "type": "date",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"sales\",\"quotation\",\"valid_until\"]",
+      "set": {
+        "notNull": true
+      }
+    }
+  ]
+}

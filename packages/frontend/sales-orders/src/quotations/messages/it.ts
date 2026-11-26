@@ -30,7 +30,9 @@ export const it: QuotationsMessages = {
     items: "Righe",
     total: "Totale",
     salesOrder: "Ordine di vendita",
-    itemsCount: "Num. item"
+    itemsCount: "Num. item",
+    acceptedAt: "Accepted at",
+    rejectedAt: "Rejected at"
   },
   accept: {
     action: "Accetta",

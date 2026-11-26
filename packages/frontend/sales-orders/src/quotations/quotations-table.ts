@@ -8,7 +8,14 @@ import {
   type DataTableConfig,
 } from "@dafne/frontend-data-table";
 import { type QuotationsMessageKey } from "./messages/index.ts";
-import { AlarmClockOffIcon, CircleCheckIcon, CircleIcon, CircleXIcon, LucideIcon, SendIcon } from "lucide-react";
+import {
+  AlarmClockOffIcon,
+  CircleCheckIcon,
+  CircleIcon,
+  CircleXIcon,
+  LucideIcon,
+  SendIcon,
+} from "lucide-react";
 
 /** Quotation status icons */
 export const QUOTATION_STATUS_ICONS: Record<QuotationStatus, LucideIcon> = {
@@ -18,7 +25,6 @@ export const QUOTATION_STATUS_ICONS: Record<QuotationStatus, LucideIcon> = {
   expired: AlarmClockOffIcon,
   rejected: CircleXIcon,
 };
-
 
 /** Labels (message keys) of the status values. */
 export const QUOTATION_STATUS_OPTIONS = [
@@ -33,7 +39,9 @@ export const QUOTATION_STATUS_OPTIONS = [
 export const QUOTATIONS_DEFAULT_SORT = { id: "id", desc: true };
 
 /** Editable states for a quotation */
-export const QUOTATION_EDITABLE_STATUSES: Set<QuotationStatus> = new Set(["draft"])
+export const QUOTATION_EDITABLE_STATUSES: Set<QuotationStatus> = new Set([
+  "draft",
+]);
 
 /** A quotations table's config: its path is always set (detail links use it). */
 export type QuotationsTableConfig = DataTableConfig & { path: string };
@@ -62,6 +70,8 @@ export function defineQuotationsTable({
       "id",
       "status",
       "validUntil",
+      "acceptedAt",
+      "rejectedAt",
       "createdAt",
       "updatedAt",
     ] satisfies QuotationSortField[],

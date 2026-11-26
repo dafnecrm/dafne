@@ -13,10 +13,17 @@ import { InputGroupAddon } from "@dafne/frontend-ui/components/input-group";
 import { useOptionLabels } from "@dafne/frontend-ui/hooks/use-option-labels";
 import { setServerError, useResetOnLeave } from "@dafne/frontend-forms/client";
 import { useAppForm } from "../../components/form-hook.ts";
-import { DocumentItemsSection, hasOutdatedPrices } from "../../components/document-items-section.tsx";
+import {
+  DocumentItemsSection,
+  hasOutdatedPrices,
+} from "../../components/document-items-section.tsx";
 import { saveQuotation } from "../actions.ts";
 import { QUOTATION_EDITABLE_STATUSES } from "../quotations-table.ts";
-import { quotationFormOpts, quotationSchema, STATUS_OPTIONS } from "../schema.ts";
+import {
+  quotationFormOpts,
+  quotationSchema,
+  STATUS_OPTIONS,
+} from "../schema.ts";
 import type { QuotationDetail } from "../types.ts";
 
 /**
@@ -37,7 +44,9 @@ export function QuotationForm({
   const searchParams = useSearchParams();
   const statusOptions = useOptionLabels(STATUS_OPTIONS);
   const form = useAppForm({
-    ...quotationFormOpts(quotation, { customerId: searchParams.get("customerId") }),
+    ...quotationFormOpts(quotation, {
+      customerId: searchParams.get("customerId"),
+    }),
     // Validate on submit, then on every change.
     validationLogic: revalidateLogic(),
     validators: { onDynamic: quotationSchema },
@@ -45,7 +54,12 @@ export function QuotationForm({
     onSubmitMeta: { reprice: false } as { reprice: boolean },
     onSubmit: async ({ value, meta, formApi }) => {
       // Redirects on success, so only an error comes back.
-      const result = await saveQuotation(quotation?.id ?? null, value, path, meta);
+      const result = await saveQuotation(
+        quotation?.id ?? null,
+        value,
+        path,
+        meta,
+      );
       if (result?.error) {
         setServerError(formApi, result.error);
       }
@@ -53,7 +67,8 @@ export function QuotationForm({
   });
   // The page stays mounted (hidden) after leaving it: start fresh next time.
   useResetOnLeave(form);
-  const readOnly = !!quotation && !QUOTATION_EDITABLE_STATUSES.has(quotation.status);
+  const readOnly =
+    !!quotation && !QUOTATION_EDITABLE_STATUSES.has(quotation.status);
   const cancelHref = quotation
     ? `${path}/${encodeURIComponent(quotation.id)}`
     : path;
@@ -142,6 +157,13 @@ export function QuotationForm({
                 />
               )}
             </form.AppField>
+            <form.AppField name="rejectedAt">
+              {(field) => (
+                <field.DatePickerField
+                  label={t("quotations.fields.rejectedAt")}
+                />
+              )}
+            </form.AppField>
           </fieldset>
 
           <div className="flex justify-end gap-2">
@@ -161,7 +183,9 @@ export function QuotationForm({
             )}
             {!readOnly && (
               <form.SubmitButton
-                label={t(quotation ? "common.saveChanges" : "quotations.create")}
+                label={t(
+                  quotation ? "common.saveChanges" : "quotations.create",
+                )}
               />
             )}
           </div>

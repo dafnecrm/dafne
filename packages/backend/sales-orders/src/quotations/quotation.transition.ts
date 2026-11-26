@@ -28,7 +28,13 @@ export class QuotationTransition extends StateTransition<QuotationStatus, number
   async execute({ id, to, tx, user }: TransitionContext<QuotationStatus, number>): Promise<void> {
     await tx
       .update(quotation)
-      .set({ status: to, updatedAt: new Date(), ...(user && { updatedById: user.id }) })
+      .set({ 
+        status: to, 
+        acceptedAt: to === 'accepted' ? new Date() : undefined,
+        rejectedAt: to === 'rejected' ? new Date() : undefined,
+        updatedAt: new Date(), 
+        ...(user && { updatedById: user.id }) 
+      })
       .where(eq(quotation.id, id));
   }
 }
