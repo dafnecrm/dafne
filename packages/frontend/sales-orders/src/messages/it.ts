@@ -32,7 +32,8 @@ export const it: SalesOrdersMessages = {
     items: "Items",
     status: "Status",
     customerId: "Customer id",
-    typeId: "Type id"
+    typeId: "Type id",
+    itemsCount: "Num. item"
   },
   items: {
     add: "Aggiungi",

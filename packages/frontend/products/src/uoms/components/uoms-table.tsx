@@ -52,18 +52,23 @@ function useUomColumns(path: string) {
             </Link>
           ),
         }),
-        col.accessor("name", { header: t("uoms.fields.name") }),
+        col.accessor("name", { 
+          header: t("uoms.fields.name"),
+          meta: { mobile: 'title' }
+        }),
         col.accessor("description", {
           header: t("uoms.fields.description"),
           cell: (info) => info.getValue() ?? "—",
+          meta: { mobile: "subtitle" }
         }),
         col.accessor("kind", {
           header: t("uoms.fields.kind"),
+          meta: { mobile: "hidden" },
           cell: (info) => optionLabel(UOM_KIND_OPTIONS, info.getValue()),
         }),
         col.accessor("createdAt", {
           header: t("uoms.fields.createdAt"),
-          meta: { className: "text-right" },
+          meta: { className: "text-right", mobile: "hidden" },
           cell: (info) => (
             <LocalDate
               value={info.getValue()}

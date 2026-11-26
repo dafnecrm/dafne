@@ -76,7 +76,7 @@ function useProductColumns(path: string) {
         }),
         col.accessor("createdAt", {
           header: t("createdAt"),
-          meta: { className: "text-right", mobile: "aside" },
+          meta: { className: "text-right", mobile: "hidden" },
           cell: (info) => (
             <LocalDate
               value={info.getValue()}

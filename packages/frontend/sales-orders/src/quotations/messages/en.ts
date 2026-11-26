@@ -32,6 +32,7 @@ export const en = {
     items: "Items",
     total: "Total",
     salesOrder: "Sales order",
+    itemsCount: "Items count"
   },
   accept: {
     action: "Accept",

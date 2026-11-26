@@ -34,7 +34,8 @@ export const en = {
     items: "Items",
     status: 'Status',
     customerId: 'Customer id',
-    typeId: 'Type id'
+    typeId: 'Type id',
+    itemsCount: "Items count"
   },
   items: {
     add: "Add",

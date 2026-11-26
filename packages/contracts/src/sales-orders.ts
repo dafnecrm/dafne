@@ -124,6 +124,7 @@ export interface ListedSalesOrder {
   type: SalesOrderTypeSummary,
   createdAt: Date;
   updatedAt: Date;
+  itemsCount: number;
 }
 
 
@@ -173,7 +174,7 @@ export interface SalesOrderDetailItem {
    */
   price: number;
 }
-export interface SalesOrderDetail extends ListedSalesOrder {
+export interface SalesOrderDetail extends Omit<ListedSalesOrder, 'itemsCount'> {
   notes: string | null;
   customer: SalesOrderCustomer;
   type: SalesOrderTypeSummary;

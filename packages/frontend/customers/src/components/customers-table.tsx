@@ -49,7 +49,7 @@ function useCustomerColumns(path: string) {
       col.accessor("id", {
         meta: {
           className: 'w-20',
-          mobile: "subtitle",
+          mobile: "hidden",
         },
         header: t("id"),
         cell: ({ row }) => (
@@ -112,7 +112,7 @@ function useCustomerColumns(path: string) {
       }),
       col.accessor("createdAt", {
         header: t("createdAt"),
-        meta: { className: "text-right", mobile: "aside" },
+        meta: { className: "text-right", mobile: "hidden" },
         cell: (info) => (
           <LocalDate
             value={info.getValue()}

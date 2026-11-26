@@ -68,7 +68,7 @@ export function useSalesOrderColumns({
           ),
           meta: {
             className: "w-20",
-            mobile: 'title'
+            mobile: "subtitle"
           },
         }),
         col.accessor("type", {
@@ -88,6 +88,7 @@ export function useSalesOrderColumns({
             col.accessor("customer", {
               header: t("salesOrders.fields.customer"),
               enableSorting: false,
+              meta: { mobile: "title" },
               cell: ({ row }) => (
                 <Link
                   href={`${customersPath}/${encodeURIComponent(row.original.customer.id)}`}
@@ -110,6 +111,11 @@ export function useSalesOrderColumns({
             />
           ),
         }),
+        col.accessor("itemsCount", {
+          header: t("salesOrders.fields.itemsCount"),
+          meta: { className: "text-right @2xl:hidden" },
+          cell: ({ row }) => row.original.itemsCount ?? 0
+        })
       ]),
     [t, path, customersPath, optionLabel],
   );

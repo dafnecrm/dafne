@@ -43,6 +43,7 @@ function useUomConversionColumns(path: string) {
       col.columns([
         col.accessor("id", {
           header: t("uomConversions.fields.id"),
+          meta: { mobile: "hidden" },
           cell: ({ row }) => (
             <Link
               href={`${path}/${encodeURIComponent(row.original.id)}`}
@@ -55,14 +56,16 @@ function useUomConversionColumns(path: string) {
         col.accessor("fromUomId", {
           header: t("uomConversions.fields.fromUomId"),
           cell: ({ row }) => `${row.original.from.id} · ${row.original.from.name}`,
+          meta: { mobile: "hidden" },
         }),
         col.accessor("toUomId", {
           header: t("uomConversions.fields.toUomId"),
           cell: ({ row }) => `${row.original.to.id} · ${row.original.to.name}`,
+          meta: { mobile: "hidden" },
         }),
         col.accessor("factor", {
           header: t("uomConversions.fields.factor"),
-          meta: { className: "text-right" },
+          meta: { className: "text-right", mobile: "title" },
           cell: ({ row }) =>
             t("uomConversions.fields.equals", {
               from: row.original.fromUomId,
@@ -72,7 +75,7 @@ function useUomConversionColumns(path: string) {
         }),
         col.accessor("createdAt", {
           header: t("uomConversions.fields.createdAt"),
-          meta: { className: "text-right" },
+          meta: { className: "text-right", mobile: "hidden" },
           cell: (info) => (
             <LocalDate
               value={info.getValue()}
