@@ -17,10 +17,9 @@ import { LocalDate } from "@dafne/frontend-ui/components/local-date";
 import type { SalesOrderDetail } from "../types.ts";
 import Link from "next/link";
 import { SalesOrderItemTable } from "./sales-order-items-table.tsx";
-import { SALES_ORDER_STATUS_OPTIONS } from "../sales-orders-table.ts";
-import { useOptionLabel } from "@dafne/frontend-ui/hooks/use-option-labels";
 import CopyButton from "@dafne/frontend-ui/components/copy-button";
 import { formatCurrency } from "@dafne/frontend-ui/lib/currencies";
+import { SalesOrderStatusBadge } from "./sales-order-status-badge.tsx";
 
 /** @dafne-ignore: customerId, typeId */
 
@@ -42,8 +41,8 @@ export function SalesOrderDetails({
   quotationsPath?: string;
 }) {
   const t = useTranslations();
-  const optionLabel = useOptionLabel();
   const locale = useLocale()
+  
   return (
     <>
       <DetailSection
@@ -62,7 +61,7 @@ export function SalesOrderDetails({
           </Link>
         </Detail>
         <Detail icon={TagIcon} label={t("salesOrders.fields.status")}>
-          {optionLabel(SALES_ORDER_STATUS_OPTIONS, salesOrder.status)}
+          <SalesOrderStatusBadge status={salesOrder.status} />
         </Detail>
         <Detail icon={EuroIcon} label={t("salesOrders.totalPrice")}>
           {formatCurrency(salesOrder.items.reduce((total, item) => {
