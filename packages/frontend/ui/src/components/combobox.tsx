@@ -75,7 +75,11 @@ function Combobox<
     return (
       <ComboboxFieldContext.Provider value={context}>
         <ComboboxDrawerContext.Provider value={sheet}>
+          {/* A key per mode: crossing the breakpoint (or hydrating on
+              mobile, `useIsMobile` is false on the server) remounts the
+              Root instead of switching its `open` to controlled. */}
           <ComboboxPrimitive.Root
+            key="drawer"
             {...props}
             // The list is in the drawer, not in Base UI's popup: the
             // drawer opens and closes it (a pick closes it too).
@@ -102,7 +106,7 @@ function Combobox<
   return (
     <ComboboxFieldContext.Provider value={context}>
       <ComboboxDrawerContext.Provider value={null}>
-        <ComboboxPrimitive.Root {...props} />
+        <ComboboxPrimitive.Root key="popup" {...props} />
       </ComboboxDrawerContext.Provider>
     </ComboboxFieldContext.Provider>
   )
