@@ -46,6 +46,7 @@ function useActivityColumns() {
       col.columns([
         col.accessor("id", {
           header: t("activities.fields.id"),
+          meta: { className: "w-20", mobile: 'subtitle' },
           cell: ({ row }) => (
             <Link
               href={`/activities/${encodeURIComponent(row.original.id)}`}
@@ -57,6 +58,7 @@ function useActivityColumns() {
         }),
         col.accessor("name", {
           header: t("activities.fields.name"),
+          meta: { mobile: 'title' },
           cell: ({ row }) => (
             <Link
               href={`/activities/${encodeURIComponent(row.original.id)}`}
@@ -72,6 +74,7 @@ function useActivityColumns() {
         }),
         col.accessor("status", {
           header: t("activities.fields.status"),
+          meta: { mobile: 'aside' },
           cell: (info) => {
             const status = ACTIVITY_STATUS_OPTIONS.find(
               (o) => o.value === info.getValue(),
@@ -98,7 +101,7 @@ function useActivityColumns() {
         }),
         col.accessor("createdAt", {
           header: t("activities.fields.createdAt"),
-          meta: { className: "text-right" },
+          meta: { className: "text-right", mobile: 'hidden' },
           cell: (info) => (
             <LocalDate
               value={info.getValue()}
