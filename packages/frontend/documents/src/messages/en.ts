@@ -67,7 +67,7 @@ export const documentTemplates = {
 export const documents = {
   title: "Documents",
   pdf: "PDF",
-  choose: "All templates",
+  choose: "PDF other templates",
   defaultTemplate: "Default",
   languages: {
     it: "Italian",

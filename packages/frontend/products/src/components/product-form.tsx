@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { revalidateLogic, useStore } from "@tanstack/react-form-nextjs";
+import { revalidateLogic, useSelector } from "@tanstack/react-form-nextjs";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@dafne/frontend-ui/components/button";
@@ -55,7 +55,7 @@ export function ProductForm({
   useResetOnLeave(form);
 
   // The units the base unit converts to, as last loaded for `base`.
-  const base = useStore(form.store, (state) => state.values.uomId);
+  const base = useSelector(form.store, (state) => state.values.uomId);
   const [loaded, setLoaded] = useState<{ base: string; units: ConvertibleUom[] } | null>(null);
   useEffect(() => {
     if (!base) {

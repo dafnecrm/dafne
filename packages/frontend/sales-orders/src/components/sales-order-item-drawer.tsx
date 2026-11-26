@@ -21,7 +21,7 @@ import {
   type SalesOrderItemFormValues,
 } from "../schema.ts";
 import { useAppForm } from "./form-hook.ts";
-import { revalidateLogic, useStore } from "@tanstack/react-form-nextjs";
+import { revalidateLogic, useSelector } from "@tanstack/react-form-nextjs";
 import { FieldGroup } from "@dafne/frontend-ui/components/field";
 import { Button } from "@dafne/frontend-ui/components/button";
 import {
@@ -145,7 +145,7 @@ function ItemForm({
       );
     },
   });
-  const productId = useStore(form.store, (state) => state.values.productId);
+  const productId = useSelector(form.store, (state) => state.values.productId);
   const units = loaded && loaded.productId === productId ? loaded.units : [];
 
   // Load the product's units when it changes; a unit it isn't sold in
