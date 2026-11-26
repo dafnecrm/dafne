@@ -81,6 +81,8 @@ export function PlaceSearch({
 
   return (
     <Combobox
+      // Its own input, not ComboboxInput: no drawer on mobile.
+      drawer={false}
       items={places}
       // The backend already matched them: show every result.
       filter={null}

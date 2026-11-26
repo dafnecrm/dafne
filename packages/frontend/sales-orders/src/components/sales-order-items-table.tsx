@@ -124,12 +124,15 @@ export function SalesOrderItemTable({
   items,
   rowActions,
   emptyContent,
-  productsPath
+  productsPath,
+  bordered,
 }: {
   items: SalesOrderItemRow[];
   rowActions?: (row: SalesOrderItemRow, index: number) => ReactNode;
   emptyContent?: ReactNode;
-  productsPath?: string
+  productsPath?: string;
+  /** Rounded border around the table; off inside a bordered section. */
+  bordered?: boolean;
 }) {
   const t = useTranslations();
   const columns = useSalesOrderItemColumns({ productsPath });
@@ -157,6 +160,7 @@ export function SalesOrderItemTable({
       manualPagination={false}
       manualSorting={false}
       rowActions={rowActions}
+      bordered={bordered}
       empty={
         <Empty>
           <EmptyHeader>

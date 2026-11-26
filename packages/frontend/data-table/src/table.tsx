@@ -490,7 +490,7 @@ export function DataTable<TData extends RowData>({
    */
   return (
     <div className="@container flex flex-col gap-4">
-      {config.filters.length > 0 && rows.length > 0 && (
+      {config.filters.length > 0 && (
         <>
           <div className="hidden @2xl:block">{filterBar(false)}</div>
           <Drawer open={filtersOpen} onOpenChange={setFiltersOpen}>
@@ -500,6 +500,7 @@ export function DataTable<TData extends RowData>({
                 size="sm"
                 disabled={navigating}
                 onClick={() => setFiltersOpen(true)}
+                className="flex-1"
               >
                 <ListFilterIcon data-icon="inline-start" />
                 {activeFilters
@@ -508,7 +509,7 @@ export function DataTable<TData extends RowData>({
               </Button>
               {activeFilters > 0 && (
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
                   disabled={navigating}
                   onClick={() =>
@@ -869,7 +870,7 @@ export function DataTableFilters({
         );
       })}
 
-      <Button type="submit" variant="default" disabled={disabled}>
+      <Button type="submit" variant="outline" disabled={disabled}>
         <FilterIcon data-icon="inline-start" />
         {t("dataTable.filter")}
       </Button>

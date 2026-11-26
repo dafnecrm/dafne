@@ -22,8 +22,7 @@ import {
 } from "@dafne/frontend-ui/components/empty";
 import type { TableParams } from "@dafne/frontend-data-table";
 import {
-  type SalesOrdersTableConfig,
-  SALES_ORDER_STATUS_OPTIONS,
+  type SalesOrdersTableConfig
 } from "../sales-orders-table.ts";
 import type { ListedSalesOrder } from "../types.ts";
 import { SalesOrderTableActions } from "./sales-order-table-actions.tsx";
@@ -31,8 +30,7 @@ import Link from "next/link";
 import { Button } from "@dafne/frontend-ui/components/button";
 import { SalesOrderTypeSelect } from "../sales-order-types/components/sales-order-type-select.tsx";
 import { useOptionLabel } from "@dafne/frontend-ui/hooks/use-option-labels";
-import { SALES_ORDER_STATUS_ICONS } from "./sales-order-status-icons.ts";
-import { Badge } from "@dafne/frontend-ui/components/badge";
+import { SalesOrderStatusBadge } from "./sales-order-status-badge.tsx";
 
 /*
  * Columns of the sales orders table. Column ids double as the backend's
@@ -82,11 +80,7 @@ export function useSalesOrderColumns({
           header: t("salesOrders.fields.status"),
           meta: { mobile: 'aside' },
           cell: (info) => {
-            const Icon = SALES_ORDER_STATUS_ICONS[info.getValue()]
-            return <Badge variant="outline">
-              <Icon />
-              {optionLabel(SALES_ORDER_STATUS_OPTIONS, info.getValue())}
-            </Badge>
+            return <SalesOrderStatusBadge status={info.getValue()} />
           }
         }),
         ...(customersPath
@@ -107,7 +101,7 @@ export function useSalesOrderColumns({
           : []),
         col.accessor("createdAt", {
           header: t("salesOrders.fields.createdAt"),
-          meta: { className: "text-right", mobile: "aside" },
+          meta: { className: "text-right", mobile: "hidden" },
           cell: (info) => (
             <LocalDate
               value={info.getValue()}

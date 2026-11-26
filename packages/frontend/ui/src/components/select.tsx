@@ -5,9 +5,105 @@ import { Select as SelectPrimitive } from "@base-ui/react/select"
 import { cn } from "cn"
 import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from "lucide-react"
 
-const Select = SelectPrimitive.Root
+import { Drawer, DrawerContent } from "@dafne/frontend-ui/components/drawer"
+import { useIsMobile } from "@dafne/frontend-ui/hooks/use-mobile"
+
+// On mobile the options open in a drawer from the bottom: the trigger and
+// the value stay Base UI's (the root's `items` name the value), the
+// content and items render their drawer form while this is set.
+type SelectDrawer = {
+  isSelected: (value: unknown) => boolean
+  select: (value: unknown, event: React.MouseEvent) => void
+}
+
+const SelectDrawerContext = React.createContext<SelectDrawer | null>(null)
+
+// A drawer row: taller than an item, to be tapped (as the menu's).
+const drawerItemClassName =
+  "relative flex min-h-10 w-full cursor-default items-center gap-2.5 rounded-lg pr-10 pl-3 text-left text-sm outline-hidden select-none hover:bg-accent focus-visible:bg-accent active:bg-accent disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+
+/**
+ * A select; below the mobile breakpoint (single value), its options open
+ * in a drawer from the bottom. Pass `items` so the trigger names the value
+ * without the options mounted. `drawer={false}` keeps the popup.
+ */
+function Select<Value, Multiple extends boolean | undefined = false>({
+  drawer = true,
+  ...props
+}: SelectPrimitive.Root.Props<Value, Multiple> & { drawer?: boolean }) {
+  const isMobile = useIsMobile()
+  const [open, setOpenState] = React.useState(false)
+  const [uncontrolled, setUncontrolled] = React.useState(props.defaultValue)
+  const { onOpenChange, onValueChange, isItemEqualToValue } = props
+  const setOpen = React.useCallback(
+    (next: boolean) => {
+      setOpenState(next)
+      ;(onOpenChange as ((open: boolean) => void) | undefined)?.(next)
+    },
+    [onOpenChange]
+  )
+  const value = props.value !== undefined ? props.value : uncontrolled
+  const sheet = React.useMemo<SelectDrawer>(
+    () => ({
+      isSelected: (item) =>
+        value !== null &&
+        value !== undefined &&
+        (isItemEqualToValue
+          ? (isItemEqualToValue as (a: unknown, b: unknown) => boolean)(
+              item,
+              value
+            )
+          : Object.is(item, value)),
+      select: (item, event) => {
+        setUncontrolled(item as typeof uncontrolled)
+        ;(
+          onValueChange as
+            | ((value: unknown, details: unknown) => void)
+            | undefined
+        )?.(item, { reason: "item-press", event })
+        setOpen(false)
+      },
+    }),
+    [value, isItemEqualToValue, onValueChange, setOpen]
+  )
+  if (drawer && isMobile && !props.multiple) {
+    return (
+      <SelectDrawerContext.Provider value={sheet}>
+        <Drawer open={open} onOpenChange={setOpen}>
+          <SelectPrimitive.Root
+            {...props}
+            value={value as typeof props.value}
+            // Its popup stays closed: the trigger opens the drawer.
+            open={false}
+            onOpenChange={(next) => {
+              if (next) {
+                setOpen(true)
+              }
+            }}
+          />
+        </Drawer>
+      </SelectDrawerContext.Provider>
+    )
+  }
+  return (
+    <SelectDrawerContext.Provider value={null}>
+      <SelectPrimitive.Root {...props} />
+    </SelectDrawerContext.Provider>
+  )
+}
 
 function SelectGroup({ className, ...props }: SelectPrimitive.Group.Props) {
+  if (React.useContext(SelectDrawerContext)) {
+    return (
+      <div
+        role="group"
+        data-slot="select-group"
+        className={cn("flex flex-col", className as string)}
+      >
+        {props.children as React.ReactNode}
+      </div>
+    )
+  }
   return (
     <SelectPrimitive.Group
       data-slot="select-group"
@@ -75,6 +171,19 @@ function SelectContent({
     | "alignItemWithTrigger"
     | "anchor"
   >) {
+  if (React.useContext(SelectDrawerContext)) {
+    // `className` sizes the popup: not the drawer's.
+    return (
+      <DrawerContent data-slot="select-content">
+        <div
+          role="listbox"
+          className="flex flex-col overflow-y-auto p-2 pb-[max(--spacing(2),env(safe-area-inset-bottom))]"
+        >
+          {children as React.ReactNode}
+        </div>
+      </DrawerContent>
+    )
+  }
   return (
     <SelectPrimitive.Portal>
       <SelectPrimitive.Positioner
@@ -105,6 +214,19 @@ function SelectLabel({
   className,
   ...props
 }: SelectPrimitive.GroupLabel.Props) {
+  if (React.useContext(SelectDrawerContext)) {
+    return (
+      <div
+        data-slot="select-label"
+        className={cn(
+          "px-3 pt-2 pb-1 text-xs text-muted-foreground",
+          className as string
+        )}
+      >
+        {props.children as React.ReactNode}
+      </div>
+    )
+  }
   return (
     <SelectPrimitive.GroupLabel
       data-slot="select-label"
@@ -119,6 +241,26 @@ function SelectItem({
   children,
   ...props
 }: SelectPrimitive.Item.Props) {
+  const sheet = React.useContext(SelectDrawerContext)
+  if (sheet) {
+    const selected = sheet.isSelected(props.value)
+    return (
+      <button
+        type="button"
+        role="option"
+        aria-selected={selected}
+        data-slot="select-item"
+        disabled={props.disabled}
+        className={cn(drawerItemClassName, className as string)}
+        onClick={(event) => sheet.select(props.value, event)}
+      >
+        <span className="flex flex-1 shrink-0 items-center gap-2 whitespace-nowrap">
+          {children}
+        </span>
+        {selected && <CheckIcon className="absolute right-3" />}
+      </button>
+    )
+  }
   return (
     <SelectPrimitive.Item
       data-slot="select-item"
@@ -146,6 +288,15 @@ function SelectSeparator({
   className,
   ...props
 }: SelectPrimitive.Separator.Props) {
+  if (React.useContext(SelectDrawerContext)) {
+    return (
+      <div
+        role="separator"
+        data-slot="select-separator"
+        className={cn("-mx-2 my-1 h-px bg-border", className as string)}
+      />
+    )
+  }
   return (
     <SelectPrimitive.Separator
       data-slot="select-separator"
