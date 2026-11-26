@@ -348,7 +348,7 @@ function AssistantChat({ streamPath }: { streamPath: (conversationId: number) =>
                 <SelectValue />
               </SelectTrigger>
               {/* Below the trigger, as wide as its items (labels, "local" badge). */}
-              <SelectContent alignItemWithTrigger={false} align="start" className="w-auto min-w-(--anchor-width)">
+              <SelectContent alignItemWithTrigger={false} align="start">
                 {agents.map((a) => (
                   <SelectItem key={a.id} value={a.id}>
                     {a.name}
@@ -368,7 +368,7 @@ function AssistantChat({ streamPath }: { streamPath: (conversationId: number) =>
                 <SelectValue />
               </SelectTrigger>
               {/* Below the trigger, as wide as its items (labels, "local" badge). */}
-              <SelectContent alignItemWithTrigger={false} align="start" className="w-auto min-w-(--anchor-width)">
+              <SelectContent alignItemWithTrigger={false} align="start">
                 {agent.models.map((m) => (
                   <SelectItem key={m.id} value={m.id}>
                     {m.label}

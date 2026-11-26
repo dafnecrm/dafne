@@ -10,6 +10,7 @@ import {
   ComboboxEmpty,
   ComboboxItem,
   ComboboxList,
+  useComboboxAnchor,
 } from "@dafne/frontend-ui/components/combobox";
 import {
   InputGroup,
@@ -44,6 +45,7 @@ export function PlaceSearch({
   const [places, setPlaces] = useState<GeoPlace[]>([]);
   const [error, setError] = useState<string>();
   const [loading, setLoading] = useState(false);
+  const anchor = useComboboxAnchor();
 
   useEffect(() => {
     // Ignores the answer if the user typed again meanwhile.
@@ -96,7 +98,7 @@ export function PlaceSearch({
       itemToStringLabel={(place: GeoPlace) => place.label}
       isItemEqualToValue={(a: GeoPlace, b: GeoPlace) => a.id === b.id}
     >
-      <InputGroup>
+      <InputGroup ref={anchor}>
         <InputGroupAddon>
           {loading ? <Spinner /> : <SearchIcon />}
         </InputGroupAddon>
@@ -106,7 +108,7 @@ export function PlaceSearch({
           render={<InputGroupInput />}
         />
       </InputGroup>
-      <ComboboxContent>
+      <ComboboxContent anchor={anchor}>
         <ComboboxEmpty>{empty}</ComboboxEmpty>
         <ComboboxList>
           {(place: GeoPlace) => (

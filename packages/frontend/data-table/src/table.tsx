@@ -107,8 +107,8 @@ import { cn } from "@dafne/frontend-ui/lib/utils";
  * In a narrow container (below 42rem: a phone, or a sheet) each row is a
  * card instead. `meta.mobile` says where a column goes in it: "title",
  * "subtitle", "aside" (bottom right: dates, amounts), "field" (a label and
- * its value, the default) or "hidden". Without a "title", the first
- * "field" is the title. The sort is a select, the filters a drawer.
+ * its value, the default) or "hidden". Only a "title" column is shown
+ * without its label. The sort is a select, the filters a drawer.
  *
  *   col.accessor("name", { header: "Name", meta: { mobile: "title" } }),
  *   col.accessor("id", { header: "Id", meta: { mobile: "subtitle" } }),
@@ -214,13 +214,12 @@ interface MobileColumn {
   columnDef: { meta?: { mobile?: DataTableMobileRole } };
 }
 
-/** The card's title: the "title" column, else the first "field" one. */
+/**
+ * The card's title: the "title" column. None otherwise: every other column
+ * keeps its label.
+ */
 function titleColumnId(columns: MobileColumn[]): string | undefined {
-  const role = (c: MobileColumn) => c.columnDef.meta?.mobile ?? "field";
-  return (
-    columns.find((c) => role(c) === "title") ??
-    columns.find((c) => c.id !== "actions" && role(c) === "field")
-  )?.id;
+  return columns.find((c) => c.columnDef.meta?.mobile === "title")?.id;
 }
 
 /** A field's label in the card: the header when it's text, else the id. */
@@ -265,7 +264,7 @@ function DataTableMobileSort({
         <ArrowUpDownIcon data-icon="inline-start" />
         <SelectValue />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent alignItemWithTrigger={false} align="start">
         {items.map((item) => (
           <SelectItem key={item.value} value={item.value}>
             {item.label}
@@ -521,165 +520,165 @@ export function DataTable<TData extends RowData>({
           />
         ))
       ) : (
-          <>
+        <>
           <div className={cn('hidden @2xl:block overflow-hidden [&_td:first-child]:pl-4 [&_td:last-child]:pr-4 [&_th:first-child]:pl-4 [&_th:last-child]:pr-4', bordered && 'rounded-lg border')}>
-          <Table aria-busy={navigating}>
-            <TableHeader>
-              {table.getHeaderGroups().map((group) => (
-                <TableRow key={group.id}>
-                  {group.headers.map((header) => {
-                    const sorted = header.column.getIsSorted();
-                    return (
-                      <TableHead
-                        key={header.id}
-                        className={header.column.columnDef.meta?.className}
-                        aria-sort={
-                          sorted === "asc"
-                            ? "ascending"
-                            : sorted === "desc"
-                              ? "descending"
-                              : undefined
-                        }
-                      >
-                        {header.isPlaceholder ? null : header.column.getCanSort() ? (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="-mx-2.5 data-[sorted=false]:text-muted-foreground"
-                            data-sorted={Boolean(sorted)}
-                            disabled={navigating}
-                            onClick={header.column.getToggleSortingHandler()}
-                          >
+            <Table aria-busy={navigating}>
+              <TableHeader>
+                {table.getHeaderGroups().map((group) => (
+                  <TableRow key={group.id}>
+                    {group.headers.map((header) => {
+                      const sorted = header.column.getIsSorted();
+                      return (
+                        <TableHead
+                          key={header.id}
+                          className={header.column.columnDef.meta?.className}
+                          aria-sort={
+                            sorted === "asc"
+                              ? "ascending"
+                              : sorted === "desc"
+                                ? "descending"
+                                : undefined
+                          }
+                        >
+                          {header.isPlaceholder ? null : header.column.getCanSort() ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="-mx-2.5 data-[sorted=false]:text-muted-foreground"
+                              data-sorted={Boolean(sorted)}
+                              disabled={navigating}
+                              onClick={header.column.getToggleSortingHandler()}
+                            >
+                              <table.FlexRender header={header} />
+                              {sorted === "asc" ? (
+                                <ArrowUpIcon data-icon="inline-end" />
+                              ) : sorted === "desc" ? (
+                                <ArrowDownIcon data-icon="inline-end" />
+                              ) : (
+                                <ArrowUpDownIcon data-icon="inline-end" />
+                              )}
+                            </Button>
+                          ) : (
                             <table.FlexRender header={header} />
-                            {sorted === "asc" ? (
-                              <ArrowUpIcon data-icon="inline-end" />
-                            ) : sorted === "desc" ? (
-                              <ArrowDownIcon data-icon="inline-end" />
-                            ) : (
-                              <ArrowUpDownIcon data-icon="inline-end" />
-                            )}
-                          </Button>
-                        ) : (
-                          <table.FlexRender header={header} />
-                        )}
-                      </TableHead>
-                    );
-                  })}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody
-              className={
-                navigating ? "opacity-60 transition-opacity" : undefined
-              }
-            >
-              {rows.map((row) => (
-                <TableRow key={row.id}>
-                  {row.getAllCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      className={cell.column.columnDef.meta?.className}
-                    >
-                      <table.FlexRender cell={cell} />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-        <div className="flex flex-col gap-2 @2xl:hidden">
-          {sortable.length > 0 && (
-            <DataTableMobileSort
-              columns={sortable.map((c) => ({
-                id: c.id,
-                label:
-                  typeof c.columnDef.header === "string"
-                    ? c.columnDef.header
-                    : c.id,
-              }))}
-              sort={sorting[0]}
-              disabled={navigating}
-              onChange={(next) => table.setSorting([next])}
-            />
-          )}
-          <ul
-            aria-busy={navigating}
-            className={cn(
-              "flex flex-col gap-2",
-              navigating && "opacity-60 transition-opacity",
+                          )}
+                        </TableHead>
+                      );
+                    })}
+                  </TableRow>
+                ))}
+              </TableHeader>
+              <TableBody
+                className={
+                  navigating ? "opacity-60 transition-opacity" : undefined
+                }
+              >
+                {rows.map((row) => (
+                  <TableRow key={row.id}>
+                    {row.getAllCells().map((cell) => (
+                      <TableCell
+                        key={cell.id}
+                        className={cell.column.columnDef.meta?.className}
+                      >
+                        <table.FlexRender cell={cell} />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+          <div className="flex flex-col gap-2 @2xl:hidden">
+            {sortable.length > 0 && (
+              <DataTableMobileSort
+                columns={sortable.map((c) => ({
+                  id: c.id,
+                  label:
+                    typeof c.columnDef.header === "string"
+                      ? c.columnDef.header
+                      : c.id,
+                }))}
+                sort={sorting[0]}
+                disabled={navigating}
+                onChange={(next) => table.setSorting([next])}
+              />
             )}
-          >
-            {rows.map((row) => {
-              const cells = row.getAllCells();
-              const of = (role: DataTableMobileRole) =>
-                cells.filter(
-                  (c) =>
-                    c.column.id !== "actions" &&
-                    c.column.id !== title &&
-                    (c.column.columnDef.meta?.mobile ?? "field") === role,
-                );
-              const titleCell = cells.find((c) => c.column.id === title);
-              const actions = cells.find((c) => c.column.id === "actions");
-              const subtitles = of("subtitle");
-              const fields = of("field");
-              const asides = of("aside");
-              return (
-                <li
-                  key={row.id}
-                  className="flex flex-col gap-2 rounded-lg border p-3 text-sm"
-                >
-                  <div className="flex items-start gap-2">
-                    <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                      {titleCell && (
-                        <div className="truncate font-medium">
-                          <table.FlexRender cell={titleCell} />
-                        </div>
-                      )}
-                      {subtitles.length > 0 && (
-                        <div className="flex flex-wrap gap-x-2 text-xs text-muted-foreground">
-                          {subtitles.map((cell) => (
-                            <span key={cell.id}>
-                              <table.FlexRender cell={cell} />
-                            </span>
-                          ))}
+            <ul
+              aria-busy={navigating}
+              className={cn(
+                "flex flex-col gap-2",
+                navigating && "opacity-60 transition-opacity",
+              )}
+            >
+              {rows.map((row) => {
+                const cells = row.getAllCells();
+                const of = (role: DataTableMobileRole) =>
+                  cells.filter(
+                    (c) =>
+                      c.column.id !== "actions" &&
+                      c.column.id !== title &&
+                      (c.column.columnDef.meta?.mobile ?? "field") === role,
+                  );
+                const titleCell = cells.find((c) => c.column.id === title);
+                const actions = cells.find((c) => c.column.id === "actions");
+                const subtitles = of("subtitle");
+                const fields = of("field");
+                const asides = of("aside");
+                return (
+                  <li
+                    key={row.id}
+                    className="flex flex-col gap-2 rounded-lg border p-3 text-sm"
+                  >
+                    <div className="flex items-start gap-2">
+                      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                        {titleCell && (
+                          <div className="truncate font-medium">
+                            <table.FlexRender cell={titleCell} />
+                          </div>
+                        )}
+                        {subtitles.length > 0 && (
+                          <div className="flex flex-wrap gap-x-2 text-xs text-muted-foreground">
+                            {subtitles.map((cell) => (
+                              <span key={cell.id}>
+                                <table.FlexRender cell={cell} />
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      {actions && (
+                        <div className="-mt-1 -mr-1 flex shrink-0 gap-1">
+                          <table.FlexRender cell={actions} />
                         </div>
                       )}
                     </div>
-                    {actions && (
-                      <div className="-mt-1 -mr-1 flex shrink-0 gap-1">
-                        <table.FlexRender cell={actions} />
+                    {fields.length > 0 && (
+                      <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
+                        {fields.map((cell) => (
+                          <Fragment key={cell.id}>
+                            <dt className="text-muted-foreground">
+                              {headerLabel(cell.column.columnDef.header, cell.column.id)}
+                            </dt>
+                            <dd className="min-w-0 break-words">
+                              <table.FlexRender cell={cell} />
+                            </dd>
+                          </Fragment>
+                        ))}
+                      </dl>
+                    )}
+                    {asides.length > 0 && (
+                      <div className="flex flex-wrap items-center justify-end gap-x-3 font-medium text-xs">
+                        {asides.map((cell) => (
+                          <span key={cell.id}>
+                            <table.FlexRender cell={cell} />
+                          </span>
+                        ))}
                       </div>
                     )}
-                  </div>
-                  {fields.length > 0 && (
-                    <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
-                      {fields.map((cell) => (
-                        <Fragment key={cell.id}>
-                          <dt className="text-muted-foreground">
-                            {headerLabel(cell.column.columnDef.header, cell.column.id)}
-                          </dt>
-                          <dd className="min-w-0 break-words">
-                            <table.FlexRender cell={cell} />
-                          </dd>
-                        </Fragment>
-                      ))}
-                    </dl>
-                  )}
-                  {asides.length > 0 && (
-                    <div className="flex flex-wrap items-center justify-end gap-x-3 font-medium text-xs">
-                      {asides.map((cell) => (
-                        <span key={cell.id}>
-                          <table.FlexRender cell={cell} />
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
         </>
       )}
 
@@ -693,26 +692,26 @@ export function DataTable<TData extends RowData>({
         <div className="flex items-center gap-2">
           {config.pageSizes.length > 1 && (
             <div className="hidden @2xl:block">
-            <Select
-              items={config.pageSizes.map((size) => ({
-                value: size,
-                label: t("perPage", { size }),
-              }))}
-              value={pagination.pageSize}
-              onValueChange={(size) => size && table.setPageSize(size)}
-              disabled={navigating}
-            >
-              <SelectTrigger size="sm" aria-label={t("rowsPerPage")}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {config.pageSizes.map((size) => (
-                  <SelectItem key={size} value={size}>
-                    {t("perPage", { size })}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              <Select
+                items={config.pageSizes.map((size) => ({
+                  value: size,
+                  label: t("perPage", { size }),
+                }))}
+                value={pagination.pageSize}
+                onValueChange={(size) => size && table.setPageSize(size)}
+                disabled={navigating}
+              >
+                <SelectTrigger size="sm" aria-label={t("rowsPerPage")}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {config.pageSizes.map((size) => (
+                    <SelectItem key={size} value={size}>
+                      {t("perPage", { size })}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
           <Button

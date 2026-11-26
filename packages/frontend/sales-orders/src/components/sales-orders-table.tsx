@@ -70,17 +70,17 @@ export function useSalesOrderColumns({
           ),
           meta: {
             className: "w-20",
-            mobile: "title",
+            mobile: 'title'
           },
         }),
         col.accessor("type", {
           header: t("salesOrders.fields.type"),
-          meta: { mobile: "subtitle" },
           enableSorting: false,
           cell: ({ row }) => row.original.type.description,
         }),
         col.accessor("status", {
           header: t("salesOrders.fields.status"),
+          meta: { mobile: 'aside' },
           cell: (info) => {
             const Icon = SALES_ORDER_STATUS_ICONS[info.getValue()]
             return <Badge variant="outline">

@@ -66,7 +66,7 @@ export function SalesOrderDetailActions({
           >
             <EllipsisVerticalIcon />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-fit max-w-52">
+          <DropdownMenuContent align="end">
             <Can I="update" a="SalesOrder">
               <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
                 <PencilIcon />

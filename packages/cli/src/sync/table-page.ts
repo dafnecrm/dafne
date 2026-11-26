@@ -24,7 +24,7 @@ const NO_COLUMN = new Set(['updatedAt']);
 
 /**
  * The id column: first, and the link to the detail page (no field names the
- * record). On mobile it's the card's subtitle, under the first field.
+ * record). On mobile it's the card's subtitle.
  */
 const idColumn = (names: ResourceNames, key: (k: string) => string, link: string) =>
   `col.accessor("id", {

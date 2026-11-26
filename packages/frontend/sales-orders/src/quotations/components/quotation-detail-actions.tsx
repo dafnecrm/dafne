@@ -137,7 +137,7 @@ export function QuotationDetailActions({
         >
           <EllipsisVerticalIcon />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-fit max-w-52">
+        <DropdownMenuContent align="end">
           <Can I="update" a="Quotation">
             <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
               <PencilIcon />

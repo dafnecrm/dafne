@@ -43,7 +43,7 @@ column's `meta.mobile` says where it goes in the card:
 
 | `mobile`   | In the card                                 |
 | ---------- | ------------------------------------------- |
-| `title`    | The heading (else the first `field` column) |
+| `title`    | The heading, without a label (none if unset) |
 | `subtitle` | Small, muted, under the title               |
 | `field`    | A label and its value (the default)         |
 | `aside`    | Bottom right: dates, amounts                |
