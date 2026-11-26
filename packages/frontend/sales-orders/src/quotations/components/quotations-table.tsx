@@ -47,7 +47,7 @@ function useQuotationColumns(path: string) {
       col.columns([
         col.accessor("id", {
           header: t("quotations.fields.id"),
-          meta: { mobile: "subtitle" },
+          meta: { className: 'w-20', mobile: "subtitle" },
           cell: ({ row }) => (
             <Link
               href={`${path}/${encodeURIComponent(row.original.id)}`}
