@@ -21,7 +21,7 @@ export const it: QuotationsMessages = {
   sections: { details: "Dettagli", items: "Righe" },
   fields: {
     createdAt: "Aggiunta",
-    id: "ID offerta",
+    id: "ID",
     status: "Stato",
     customerId: "Cliente",
     typeId: "Tipo",

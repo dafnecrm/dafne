@@ -43,7 +43,7 @@ function useUomConversionColumns(path: string) {
       col.columns([
         col.accessor("id", {
           header: t("uomConversions.fields.id"),
-          meta: { mobile: "hidden" },
+          meta: { className: "w-20", mobile: "hidden" },
           cell: ({ row }) => (
             <Link
               href={`${path}/${encodeURIComponent(row.original.id)}`}

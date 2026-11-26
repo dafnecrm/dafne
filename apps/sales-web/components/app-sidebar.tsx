@@ -17,6 +17,7 @@ import {
   useSidebar,
 } from "@dafne/frontend-ui/components/sidebar";
 import { isNavGroup, NAV_SECTIONS } from "@/lib/navigation";
+import { useIsMobile } from "@dafne/frontend-ui/hooks/use-mobile";
 
 /**
  * Floating sidebar with sections and their pages, minimizing to an icon
@@ -30,10 +31,13 @@ export function AppSidebar({
   footer: ReactNode;
   adminNav?: ReactNode;
 }) {
+  const isMobile = useIsMobile();
+
   return (
     <NavSidebar rail linkComponent={Link} header={<Brand />} footer={footer}>
       <NavSections />
-      {adminNav}
+      {/** admin nav is visible only on desktop */}
+      {!isMobile && adminNav}
     </NavSidebar>
   );
 }

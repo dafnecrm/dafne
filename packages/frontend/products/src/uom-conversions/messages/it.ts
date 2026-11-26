@@ -21,7 +21,7 @@ export const it: UomConversionsMessages = {
   sections: { details: "Dettagli" },
   fields: {
     createdAt: "Aggiunta",
-    id: "ID conversione",
+    id: "ID",
     fromUomId: "Da",
     toUomId: "A",
     uomId: "Unità",

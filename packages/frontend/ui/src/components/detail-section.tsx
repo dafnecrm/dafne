@@ -25,7 +25,7 @@ import {
  */
 
 /** Card styles per DetailSection variant. */
-const detailSectionVariants = cva("", {
+const detailSectionVariants = cva("@container", {
   variants: {
     variant: {
       /** Looks like a Card: rounded, card background, light ring. */
@@ -44,7 +44,7 @@ const detailSectionVariants = cva("", {
  * (`has-data-[size=sm]:gap-2.5`, and every Detail is sm) would win over
  * these.
  */
-const detailGroupVariants = cva("w-full gap-6 @container", {
+const detailGroupVariants = cva("w-full gap-6", {
   variants: {
     groupVariant: {
       default: "flex flex-col",

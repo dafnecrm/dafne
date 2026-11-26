@@ -23,7 +23,7 @@ export const en = {
   sections: { details: "Details", items: "Items" },
   fields: {
     createdAt: "Added",
-    id: "Quotation ID",
+    id: "ID",
     status: "Status",
     customerId: "Customer",
     typeId: "Type",
