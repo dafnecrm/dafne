@@ -89,10 +89,10 @@ function useSalesOrderItemColumns({ productsPath }: { productsPath?: string }) {
         }),
         col.accessor("price", {
           header: t("salesOrders.items.fields.price"),
-          meta: { className: "flex items-center justify-end gap-2" },
+          meta: { className: "text-right" },
           cell: ({ row }) => row.original.price == null
             ? "—"
-            : <>
+            : <div className="flex items-center justify-end gap-2">
               {/* The kept price differs from today's (the product's price changed). */}
               {row.original.basePrice != null &&
                 row.original.baseQuantity != null &&
@@ -107,7 +107,7 @@ function useSalesOrderItemColumns({ productsPath }: { productsPath?: string }) {
                   </Tooltip>
                 )}
               {formatCurrency(row.original.price, locale)}
-            </>
+            </div>
         }),
       ]),
     [t, locale, productsPath],
@@ -122,13 +122,11 @@ export function SalesOrderItemTable({
   items,
   rowActions,
   emptyContent,
-  bordered = true,
   productsPath
 }: {
   items: SalesOrderItemRow[];
   rowActions?: (row: SalesOrderItemRow, index: number) => ReactNode;
   emptyContent?: ReactNode;
-  bordered?: boolean;
   productsPath?: string
 }) {
   const t = useTranslations();

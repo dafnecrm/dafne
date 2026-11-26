@@ -6,14 +6,15 @@ import { multiplyDecimal } from "@dafne/contracts";
 import { formatCurrency } from "@dafne/frontend-ui/lib/currencies";
 import { useTranslations } from "next-intl";
 import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@dafne/frontend-ui/components/sheet";
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@dafne/frontend-ui/components/drawer";
+import { useIsMobile } from "@dafne/frontend-ui/hooks/use-mobile";
 import {
   salesOrderItem,
   salesOrderItemSchema,
@@ -54,7 +55,7 @@ type OnSave = (
 ) => void;
 
 /**
- * Adds an item (no `item`) or edits `item`, in a sheet. It edits the
+ * Adds an item (no `item`) or edits `item`, in a drawer. It edits the
  * item's values in the sales order form, not the saved ones: saving only
  * changes the form, and the item is stored when the order is.
  */
@@ -76,14 +77,20 @@ export function SalesOrderItemSheet({
   onSave: OnSave;
 }) {
   const t = useTranslations("salesOrders.items");
+  const isMobile = useIsMobile();
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-md">
-        <SheetHeader>
-          <SheetTitle>{item ? t("edit") : t("add")}</SheetTitle>
-          <SheetDescription>{t("savedWith")}</SheetDescription>
-        </SheetHeader>
-        {/* The content unmounts when the sheet closes, so each opening starts from `item`. */}
+    <Drawer
+      open={open}
+      onOpenChange={onOpenChange}
+      showSwipeHandle={isMobile}
+      swipeDirection={isMobile ? "down" : "right"}
+    >
+      <DrawerContent className="data-[swipe-axis=x]:sm:w-md">
+        <DrawerHeader>
+          <DrawerTitle>{item ? t("edit") : t("add")}</DrawerTitle>
+          <DrawerDescription>{t("savedWith")}</DrawerDescription>
+        </DrawerHeader>
+        {/* The content unmounts when the drawer closes, so each opening starts from `item`. */}
         <ItemForm
           item={item ?? undefined}
           product={product}
@@ -93,8 +100,8 @@ export function SalesOrderItemSheet({
             onOpenChange(false);
           }}
         />
-      </SheetContent>
-    </Sheet>
+      </DrawerContent>
+    </Drawer>
   );
 }
 
@@ -177,13 +184,13 @@ function ItemForm({
       className="flex flex-1 flex-col overflow-y-auto"
       onSubmit={(e) => {
         e.preventDefault();
-        // The sheet is portaled, but React still bubbles the event to the customer form.
+        // The drawer is portaled, but React still bubbles the event to the customer form.
         e.stopPropagation();
         form.handleSubmit();
       }}
     >
       <form.AppForm>
-        <FieldGroup className="px-4">
+        <FieldGroup className="p-4">
           <form.AppField
             name="position"
             validators={{
@@ -275,7 +282,7 @@ function ItemForm({
             }}
           </form.Subscribe>
         </FieldGroup>
-        <SheetFooter>
+        <DrawerFooter>
           <form.SubmitButton
             label={t(
               item
@@ -283,10 +290,10 @@ function ItemForm({
                 : "salesOrders.items.add",
             )}
           />
-          <SheetClose render={<Button type="button" variant="outline" />}>
+          <DrawerClose render={<Button type="button" variant="outline" />}>
             {t("common.cancel")}
-          </SheetClose>
-        </SheetFooter>
+          </DrawerClose>
+        </DrawerFooter>
       </form.AppForm>
     </form>
   );

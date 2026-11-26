@@ -123,11 +123,7 @@ export function CustomerDetails({
       </DetailSection>
 
       {/* Addresses */}
-      <DetailSection
-        title={t("customers.sections.addressesCount", {
-          count: customer.addresses.length,
-        })}
-      >
+      <DetailSection title={t("customers.sections.addresses")}>
         <CustomerAddressTable
           addresses={customer.addresses.map((addr) => ({
             city: addr.city,

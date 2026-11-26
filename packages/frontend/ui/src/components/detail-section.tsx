@@ -49,7 +49,7 @@ const detailGroupVariants = cva("w-full gap-6", {
     groupVariant: {
       default: "flex flex-col",
       horizontal: "flex flex-row",
-      grid: "grid grid-cols-1 md:grid-cols-2",
+      grid: "grid grid-cols-2",
     },
   },
   defaultVariants: {

@@ -14,17 +14,12 @@ import {
   TagIcon,
   Trash2Icon,
   LanguagesIcon,
+  EllipsisVerticalIcon,
 } from "lucide-react";
 import { LANGUAGES } from "@dafne/contracts";
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@dafne/frontend-ui/components/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@dafne/frontend-ui/components/card";
 import { FieldGroup } from "@dafne/frontend-ui/components/field";
 import { setServerError } from "@dafne/frontend-forms/client";
 import { useAppForm } from "./form-hook.ts";
@@ -37,6 +32,12 @@ import { customerFormOpts, customerSchema } from "../schema.ts";
 import { CustomerAddressTable } from "./customer-address-table.tsx";
 import { DetailSection } from "@dafne/frontend-ui/components/detail";
 import { InputGroupAddon } from "@dafne/frontend-ui/components/input-group";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@dafne/frontend-ui/components/dropdown-menu";
 
 /**
  * Creates a customer, or edits `customer`. Saving opens the customer's
@@ -237,6 +238,7 @@ export function CustomerForm({
             actions={
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() =>
                   setAddressSheet({
                     open: true,
@@ -256,33 +258,41 @@ export function CustomerForm({
                     addresses={addresses.state.value}
                     rowActions={(address, i) => (
                       <>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon-sm"
-                          aria-label={t("customers.addresses.editN", {
-                            n: i + 1,
-                          })}
-                          onClick={() =>
-                            setAddressSheet({
-                              open: true,
-                              index: i,
-                            })
-                          }
-                        >
-                          <PencilIcon />
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon-sm"
-                          aria-label={t("customers.addresses.removeN", {
-                            n: i + 1,
-                          })}
-                          onClick={() => addresses.removeValue(i)}
-                        >
-                          <Trash2Icon />
-                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger
+                            render={
+                              <Button
+                                variant="ghost"
+                                size="icon-sm"
+                                aria-label={t("customers.addresses.editN", {
+                                  n: i + 1,
+                                })}
+                              />
+                            }
+                          >
+                            <EllipsisVerticalIcon />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                setAddressSheet({
+                                  open: true,
+                                  index: i,
+                                })
+                              }
+                            >
+                              <PencilIcon />
+                              {t("common.edit")}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              variant="destructive"
+                              onClick={() => addresses.removeValue(i)}
+                            >
+                              <Trash2Icon />
+                              {t("common.delete")}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </>
                     )}
                   />
