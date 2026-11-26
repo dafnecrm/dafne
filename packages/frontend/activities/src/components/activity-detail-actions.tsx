@@ -125,12 +125,11 @@ export function ActivityDetailActions({ activity }: { activity: ActivityRef }) {
           <EllipsisVerticalIcon />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuGroup>
+          <DropdownMenuGroup className="sm:hidden">
             <DropdownMenuLabel>{t("common.actions")}</DropdownMenuLabel>
             {steps.map(({ key, label, icon: Icon, can, href, onSelect }) => (
               <Can key={key} I={can} a="Activity">
                 <DropdownMenuItem
-                  className="sm:hidden"
                   {...(href ? { render: <Link href={href} /> } : { onClick: onSelect })}
                 >
                   <Icon />
@@ -138,7 +137,7 @@ export function ActivityDetailActions({ activity }: { activity: ActivityRef }) {
                 </DropdownMenuItem>
               </Can>
             ))}
-            {steps.length > 0 && <DropdownMenuSeparator className="sm:hidden" />}
+            {steps.length > 0 && <DropdownMenuSeparator />}
           </DropdownMenuGroup>
           <DropdownMenuItem onClick={() => setHistory(true)}>
             <HistoryIcon />
