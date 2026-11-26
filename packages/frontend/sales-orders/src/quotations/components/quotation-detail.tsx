@@ -17,11 +17,10 @@ import { useLocale, useTranslations } from "next-intl";
 import CopyButton from "@dafne/frontend-ui/components/copy-button";
 import { Detail, DetailSection } from "@dafne/frontend-ui/components/detail";
 import { LocalDate } from "@dafne/frontend-ui/components/local-date";
-import { useOptionLabel } from "@dafne/frontend-ui/hooks/use-option-labels";
 import { formatCurrency } from "@dafne/frontend-ui/lib/currencies";
 import { SalesOrderItemTable } from "../../components/sales-order-items-table.tsx";
 import type { QuotationDetail } from "../types.ts";
-import { QUOTATION_STATUS_OPTIONS } from "../quotations-table.ts";
+import { QuotationStatusBadge } from "./quotation-status-badge.tsx";
 
 /** @dafne-ignore: customerId, typeId */
 
@@ -43,8 +42,8 @@ export function QuotationDetails({
   salesOrdersPath: string;
 }) {
   const t = useTranslations();
-  const optionLabel = useOptionLabel();
   const locale = useLocale();
+  
   return (
     <>
       <DetailSection
@@ -63,7 +62,7 @@ export function QuotationDetails({
           </Link>
         </Detail>
         <Detail icon={TagIcon} label={t("quotations.fields.status")}>
-          {optionLabel(QUOTATION_STATUS_OPTIONS, quotation.status)}
+          <QuotationStatusBadge status={quotation.status} />
         </Detail>
         <Detail icon={CalendarIcon} label={t("quotations.fields.validUntil")}>
           {quotation.validUntil ? (

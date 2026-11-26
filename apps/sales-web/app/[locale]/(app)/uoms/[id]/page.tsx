@@ -1,4 +1,3 @@
-import { ArrowLeftIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
@@ -9,9 +8,9 @@ import {
   PageContentAction,
   PageContentBody,
   PageContentHeader,
+  PageContentBack,
   PageContentTitle,
 } from "@dafne/frontend-ui/components/page-content";
-import { Button } from "@dafne/frontend-ui/components/button";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { UomDetails } from "@dafne/frontend-products/uoms/components/uom-detail";
 import { UomDetailActions } from "@dafne/frontend-products/uoms/components/uom-detail-actions";
@@ -45,17 +44,17 @@ async function UomProfile({
         label={`${t("uoms.singular")} ${uom.id}`}
       />
       <PageContentHeader>
-        <PageContentTitle>{`${t("uoms.singular")} ${uom.id}`}</PageContentTitle>
+        <PageContentTitle
+          back={
+            <PageContentBack
+              label={t("uoms.all")}
+              render={<Link href={uomsTable.path} />}
+            />
+          }
+        >
+          {`${t("uoms.singular")} ${uom.id}`}
+        </PageContentTitle>
         <PageContentAction className="flex flex-wrap justify-end gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            nativeButton={false}
-            render={<Link href={uomsTable.path} />}
-          >
-            <ArrowLeftIcon data-icon="inline-start" />
-            {t("uoms.all")}
-          </Button>
           <UomDetailActions uom={uom} path={uomsTable.path} />
         </PageContentAction>
       </PageContentHeader>

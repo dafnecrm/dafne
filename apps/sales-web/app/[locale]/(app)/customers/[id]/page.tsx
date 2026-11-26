@@ -1,4 +1,3 @@
-import { ArrowLeftIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
@@ -8,10 +7,10 @@ import {
   PageContentAction,
   PageContentBody,
   PageContentHeader,
+  PageContentBack,
   PageContentTitle,
 } from "@dafne/frontend-ui/components/page-content";
 import { BreadcrumbLabel } from "@/components/page-breadcrumb";
-import { Button } from "@dafne/frontend-ui/components/button";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { CustomerDetails } from "@dafne/frontend-customers/components/customer-detail";
 import { CustomerDetailActions } from "@dafne/frontend-customers/components/customer-detail-actions";
@@ -49,17 +48,17 @@ async function CustomerProfile({
         label={customer.name}
       />
       <PageContentHeader>
-        <PageContentTitle>{customer.name}</PageContentTitle>
+        <PageContentTitle
+          back={
+            <PageContentBack
+              label={t("all")}
+              render={<Link href="/customers" />}
+            />
+          }
+        >
+          {customer.name}
+        </PageContentTitle>
         <PageContentAction className="flex flex-wrap justify-end gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            nativeButton={false}
-            render={<Link href="/customers" />}
-          >
-            <ArrowLeftIcon data-icon="inline-start" />
-            {t("all")}
-          </Button>
           <CustomerDetailActions
             customer={customer}
             path={customersTable.path}

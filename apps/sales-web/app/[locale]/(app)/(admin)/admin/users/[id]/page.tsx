@@ -1,5 +1,4 @@
 import { getTranslations } from "next-intl/server";
-import { ArrowLeftIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -10,11 +9,11 @@ import {
   PageContentBody,
   PageContentDescription,
   PageContentHeader,
+  PageContentBack,
   PageContentTitle,
 } from "@dafne/frontend-ui/components/page-content";
 import { BreadcrumbLabel } from "@/components/page-breadcrumb";
 import { Avatar, AvatarFallback, AvatarImage } from "@dafne/frontend-ui/components/avatar";
-import { Button } from "@dafne/frontend-ui/components/button";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { BackendError } from "@dafne/frontend-api";
 import { isAdmin, requireUser } from "@/lib/session";
@@ -73,28 +72,22 @@ async function UserProfile({
         label={user.name}
       />
       <PageContentHeader>
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <PageContentBack
+            label={t("all")}
+            render={<Link href={usersTable.path} />}
+          />
           <Avatar size="lg">
             {user.image && <AvatarImage src={user.image} alt="" />}
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
-          <div className="flex flex-col gap-1">
-            <PageContentTitle>{user.name}</PageContentTitle>
+          <div className="flex min-w-0 flex-col gap-1">
+            <PageContentTitle className="max-sm:truncate">{user.name}</PageContentTitle>
             <PageContentDescription>{user.email}</PageContentDescription>
           </div>
         </div>
         <PageContentAction className="flex gap-2">
           <UserChangelogButton userId={user.id} />
-          <Button
-            variant="outline"
-            size="sm"
-            // Renders a link, not a <button>.
-            nativeButton={false}
-            render={<Link href={usersTable.path} />}
-          >
-            <ArrowLeftIcon data-icon="inline-start" />
-            {t("all")}
-          </Button>
         </PageContentAction>
       </PageContentHeader>
 

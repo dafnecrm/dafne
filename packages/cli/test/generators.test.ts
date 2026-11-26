@@ -828,9 +828,9 @@ describe('frontend-resource-sync', () => {
     const page = `${PAGES}/[id]/page.tsx`;
     writeFileSync(
       join(root, page),
-      read(page).replace('{`${t("invoices.singular")} ${invoice.id}`}</PageContentTitle>', '{invoice.name}</PageContentTitle>'),
+      read(page).replace('{`${t("invoices.singular")} ${invoice.id}`}\n        </PageContentTitle>', '{invoice.name}\n        </PageContentTitle>'),
     );
-    expect(read(page)).toContain('{invoice.name}</PageContentTitle>');
+    expect(read(page)).toContain('{invoice.name}\n        </PageContentTitle>');
     await generate(removeBackendDbColumnGenerator, { name: 'invoice', columns: ['name'] });
     const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {});
     vi.spyOn(logger, 'info').mockImplementation(() => {});
@@ -842,7 +842,7 @@ describe('frontend-resource-sync', () => {
     await generate(frontendResourceSyncGenerator, { name: 'invoice' });
     expect(read(`${PAGES}/invoice-form.tsx`)).not.toContain('name="name"');
     // Otherwise the record's label takes its place.
-    expect(read(page)).toContain('<PageContentTitle>{`${t("invoices.singular")} ${invoice.id}`}</PageContentTitle>');
+    expect(read(page)).toContain('{`${t("invoices.singular")} ${invoice.id}`}\n        </PageContentTitle>');
     expect(warn.mock.calls.flat().join('\n')).not.toContain('invoice.name');
     vi.restoreAllMocks();
   });

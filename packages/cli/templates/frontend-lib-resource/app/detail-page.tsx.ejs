@@ -1,4 +1,3 @@
-import { ArrowLeftIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
@@ -9,9 +8,9 @@ import {
   PageContentAction,
   PageContentBody,
   PageContentHeader,
+  PageContentBack,
   PageContentTitle,
 } from "@dafne/frontend-ui/components/page-content";
-import { Button } from "@dafne/frontend-ui/components/button";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { <%= s.pascal %>Details } from "<%= pkg %>/components/<%= s.kebab %>-detail";
 import { <%= s.pascal %>DetailActions } from "<%= pkg %>/components/<%= s.kebab %>-detail-actions";
@@ -45,17 +44,17 @@ async function <%= s.pascal %>Profile({
         label={`${t("<%= p.camel %>.singular")} ${<%= s.camel %>.id}`}
       />
       <PageContentHeader>
-        <PageContentTitle>{`${t("<%= p.camel %>.singular")} ${<%= s.camel %>.id}`}</PageContentTitle>
+        <PageContentTitle
+          back={
+            <PageContentBack
+              label={t("<%= p.camel %>.all")}
+              render={<Link href={<%= p.camel %>Table.path} />}
+            />
+          }
+        >
+          {`${t("<%= p.camel %>.singular")} ${<%= s.camel %>.id}`}
+        </PageContentTitle>
         <PageContentAction className="flex flex-wrap justify-end gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            nativeButton={false}
-            render={<Link href={<%= p.camel %>Table.path} />}
-          >
-            <ArrowLeftIcon data-icon="inline-start" />
-            {t("<%= p.camel %>.all")}
-          </Button>
           <<%= s.pascal %>DetailActions <%= s.camel %>={<%= s.camel %>} path={<%= p.camel %>Table.path} />
         </PageContentAction>
       </PageContentHeader>

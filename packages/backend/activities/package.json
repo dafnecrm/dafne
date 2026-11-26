@@ -13,8 +13,10 @@
   },
   "dependencies": {
     "@dafne/backend-common": "workspace:*",
+    "@dafne/backend-changelog": "workspace:*",
     "@dafne/backend-crud": "workspace:*",
     "@dafne/backend-database": "workspace:*",
+    "@dafne/backend-fsm": "workspace:*",
     "@dafne/backend-session": "workspace:*",
     "@dafne/backend-permissions": "workspace:*",
     "@dafne/contracts": "workspace:*",

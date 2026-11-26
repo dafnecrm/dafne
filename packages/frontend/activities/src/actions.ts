@@ -5,6 +5,9 @@ import { redirect } from "next/navigation";
 import { BackendError, backendFetch } from "@dafne/frontend-api/server";
 import { activitySchema, type ActivityFormValues } from "./schema";
 import { ActivityDetail } from "./types";
+import { listActivityChanges } from "./server.ts";
+import type { ChangesPage } from "@dafne/frontend-changelog";
+import type { ActivityStatus, ActivityStatusBody } from "@dafne/contracts";
 
 /*
  * Activity mutations. The backend checks the session (forwarded by
@@ -76,13 +79,18 @@ export async function deleteActivity(id: number): Promise<ActionError | null> {
 }
 
 /**
- * Closes an activity. The
- * caller refreshes or leaves the page. Returns an error message when it fails.
+ * Moves an activity to `status` (POST /activities/:id/status, through its
+ * state machine). The caller refreshes or leaves the page. Returns an
+ * error message when it fails.
  */
-export async function closeActivity(id: number): Promise<ActionError | null> {
+async function changeActivityStatus(
+  id: number,
+  status: ActivityStatus,
+): Promise<ActionError | null> {
   try {
-    await backendFetch(`/activities/${encodeURIComponent(id)}/close`, {
-      method: "PATCH",
+    await backendFetch(`/activities/${encodeURIComponent(id)}/status`, {
+      method: "POST",
+      body: JSON.stringify({ status } satisfies ActivityStatusBody),
     });
     return null;
   } catch (error) {
@@ -90,16 +98,26 @@ export async function closeActivity(id: number): Promise<ActionError | null> {
   }
 }
 
-/**
- * Reopens a closed activity. The
- * caller refreshes or leaves the page. Returns an error message when it fails.
- */
+/** Closes an open activity (see changeActivityStatus). */
+export async function closeActivity(id: number): Promise<ActionError | null> {
+  return changeActivityStatus(id, "closed");
+}
+
+/** Reopens a closed activity (see changeActivityStatus). */
 export async function reopenActivity(id: number): Promise<ActionError | null> {
+  return changeActivityStatus(id, "open");
+}
+
+/**
+ * A page of the activity's change log, for its history sheet (a client
+ * component: backendFetch only runs on the server).
+ */
+export async function getActivityChanges(
+  id: ActivityDetail["id"],
+  query: { limit: number; offset: number },
+): Promise<ChangesPage | ActionError> {
   try {
-    await backendFetch(`/activities/${encodeURIComponent(id)}/reopen`, {
-      method: "PATCH",
-    });
-    return null;
+    return await listActivityChanges(id, query);
   } catch (error) {
     return { error: await errorMessage(error) };
   }

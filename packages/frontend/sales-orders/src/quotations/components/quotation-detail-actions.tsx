@@ -12,6 +12,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import type * as React from "react";
 import { useState, useTransition } from "react";
 import type { QuotationStatus } from "@dafne/contracts";
 import { Can } from "@dafne/frontend-permissions";
@@ -19,7 +20,9 @@ import { Button } from "@dafne/frontend-ui/components/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@dafne/frontend-ui/components/dropdown-menu";
@@ -34,13 +37,16 @@ import { QuotationChangelogSheet } from "./quotation-changelog.tsx";
 import { toast } from "@dafne/frontend-ui/components/toast";
 import { DownloadPdfMenuItems } from "@dafne/frontend-documents/components/document-pdf-menu-items";
 import type { PdfTemplate } from "@dafne/frontend-documents/components/document-pdf-menu";
+import { QUOTATION_EDITABLE_STATUSES } from "../quotations-table.ts";
 
 /**
  * Actions on the quotation's page: its next status (send a draft; accept,
  * which opens the sales order it creates at `<salesOrdersPath>/<id>`, or
  * reject a sent one), then a menu: edit (`<path>/<id>/edit`), its history
  * (in a sheet), its PDF (from `pdfTemplates`, none without them) and
- * delete, then back to the list at `path`.
+ * delete, then back to the list at `path`. Below `sm` only the menu is
+ * shown, with the next status at its top: each step is listed once
+ * (`steps`) and rendered both ways, and each dialog once, outside.
  */
 export function QuotationDetailActions({
   quotation,
@@ -79,49 +85,76 @@ export function QuotationDetailActions({
       router.refresh();
     });
 
+  const steps: {
+    key: string;
+    label: string;
+    icon: React.ComponentType;
+    primary?: boolean;
+    /** Moves the status itself (a spinner while it runs), no dialog. */
+    moves?: boolean;
+    onSelect: () => void;
+  }[] = [];
+  if (quotation.status === "draft") {
+    steps.push({
+      key: "send",
+      label: t("quotations.send"),
+      icon: SendIcon,
+      moves: true,
+      onSelect: () => moveTo("sent"),
+    });
+  }
+  if (quotation.status === "sent") {
+    steps.push(
+      {
+        key: "reject",
+        label: t("quotations.reject"),
+        icon: XIcon,
+        moves: true,
+        onSelect: () => moveTo("rejected"),
+      },
+      {
+        key: "accept",
+        label: t("quotations.accept.action"),
+        icon: CheckIcon,
+        primary: true,
+        onSelect: () => setAccepting(true),
+      },
+    );
+  }
+
   return (
     <>
-      <Can I="changeStatus" a="Quotation">
-        {quotation.status === "draft" && (
+      {QUOTATION_EDITABLE_STATUSES.has(quotation.status) &&
+        <Can I="update" a="Quotation">
           <Button
             variant="outline"
             size="sm"
+            className="hidden sm:inline-flex"
+            nativeButton={false}
+            render={<Link href={`${href}/edit`} />}>
+            <PencilIcon />
+            {t("common.edit")}
+          </Button>
+        </Can>}
+
+      <Can I="changeStatus" a="Quotation">
+        {steps.map(({ key, label, icon: Icon, primary, moves, onSelect }) => (
+          <Button
+            key={key}
+            className="hidden sm:inline-flex"
+            variant={primary ? "default" : "outline"}
+            size="sm"
             disabled={pending}
-            onClick={() => moveTo("sent")}
+            onClick={onSelect}
           >
-            {pending ? (
+            {pending && moves ? (
               <Spinner data-icon="inline-start" />
             ) : (
-              <SendIcon data-icon="inline-start" />
+              <Icon data-icon="inline-start" />
             )}
-            {t("quotations.send")}
+            {label}
           </Button>
-        )}
-        {quotation.status === "sent" && (
-          <>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={pending}
-              onClick={() => moveTo("rejected")}
-            >
-              {pending ? (
-                <Spinner data-icon="inline-start" />
-              ) : (
-                <XIcon data-icon="inline-start" />
-              )}
-              {t("quotations.reject")}
-            </Button>
-            <Button
-              size="sm"
-              disabled={pending}
-              onClick={() => setAccepting(true)}
-            >
-              <CheckIcon data-icon="inline-start" />
-              {t("quotations.accept.action")}
-            </Button>
-          </>
-        )}
+        ))}
       </Can>
       <DropdownMenu>
         <DropdownMenuTrigger
@@ -138,21 +171,43 @@ export function QuotationDetailActions({
           <EllipsisVerticalIcon />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <Can I="update" a="Quotation">
-            <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
-              <PencilIcon />
-              {t("common.edit")}
-            </DropdownMenuItem>
-          </Can>
-          <DropdownMenuItem onClick={() => setHistory(true)}>
-            <HistoryIcon />
-            {t("changelog.open")}
-          </DropdownMenuItem>
-          <DownloadPdfMenuItems
+          {(QUOTATION_EDITABLE_STATUSES.has(quotation.status) || steps.length > 0) && <DropdownMenuGroup className="sm:hidden">
+            <DropdownMenuLabel>{t("common.actions")}</DropdownMenuLabel>
+            {QUOTATION_EDITABLE_STATUSES.has(quotation.status) &&
+              <Can I="update" a="Quotation">
+                <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
+                  <PencilIcon />
+                  {t("common.edit")}
+                </DropdownMenuItem>
+              </Can>}
+            {steps.length > 0 && (
+              <Can I="changeStatus" a="Quotation">
+                {steps.map(({ key, label, icon: Icon, onSelect }) => (
+                  <DropdownMenuItem
+                    key={key}
+                    className="sm:hidden"
+                    disabled={pending}
+                    onClick={onSelect}
+                  >
+                    <Icon />
+                    {label}
+                  </DropdownMenuItem>
+                ))}
+
+              </Can>
+            )}
+            <DropdownMenuSeparator />
+          </DropdownMenuGroup>}
+          < DownloadPdfMenuItems
             resource="quotation"
             id={quotation.id}
             templates={pdfTemplates}
           />
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => setHistory(true)}>
+            <HistoryIcon />
+            {t("changelog.open")}
+          </DropdownMenuItem>
           <Can I="delete" a="Quotation">
             <DropdownMenuSeparator />
             <DropdownMenuItem

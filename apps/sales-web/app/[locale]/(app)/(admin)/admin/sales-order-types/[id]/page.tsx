@@ -1,4 +1,3 @@
-import { ArrowLeftIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
@@ -9,9 +8,9 @@ import {
   PageContentAction,
   PageContentBody,
   PageContentHeader,
+  PageContentBack,
   PageContentTitle,
 } from "@dafne/frontend-ui/components/page-content";
-import { Button } from "@dafne/frontend-ui/components/button";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { SalesOrderTypeDetails } from "@dafne/frontend-sales-orders/sales-order-types/components/sales-order-type-detail";
 import { SalesOrderTypeDetailActions } from "@dafne/frontend-sales-orders/sales-order-types/components/sales-order-type-detail-actions";
@@ -47,17 +46,17 @@ async function SalesOrderTypeProfile({
         label={`${t("salesOrderTypes.singular")} ${salesOrderType.id}`}
       />
       <PageContentHeader>
-        <PageContentTitle>{`${t("salesOrderTypes.singular")} ${salesOrderType.id}`}</PageContentTitle>
+        <PageContentTitle
+          back={
+            <PageContentBack
+              label={t("salesOrderTypes.all")}
+              render={<Link href={salesOrderTypesTable.path} />}
+            />
+          }
+        >
+          {`${t("salesOrderTypes.singular")} ${salesOrderType.id}`}
+        </PageContentTitle>
         <PageContentAction className="flex flex-wrap justify-end gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            nativeButton={false}
-            render={<Link href={salesOrderTypesTable.path} />}
-          >
-            <ArrowLeftIcon data-icon="inline-start" />
-            {t("salesOrderTypes.all")}
-          </Button>
           <SalesOrderTypeDetailActions
             salesOrderType={salesOrderType}
             path={salesOrderTypesTable.path}

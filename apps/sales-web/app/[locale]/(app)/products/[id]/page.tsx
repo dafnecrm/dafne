@@ -1,5 +1,4 @@
 import { getTranslations } from "next-intl/server";
-import { ArrowLeftIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -9,9 +8,9 @@ import {
   PageContentAction,
   PageContentBody,
   PageContentHeader,
+  PageContentBack,
   PageContentTitle,
 } from "@dafne/frontend-ui/components/page-content";
-import { Button } from "@dafne/frontend-ui/components/button";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { ProductDetails } from "@dafne/frontend-products/components/product-detail";
 import { ProductDetailActions } from "@dafne/frontend-products/components/product-detail-actions";
@@ -47,17 +46,17 @@ async function ProductProfile({
         label={product.name}
       />
       <PageContentHeader>
-        <PageContentTitle>{product.name}</PageContentTitle>
+        <PageContentTitle
+          back={
+            <PageContentBack
+              label={t("all")}
+              render={<Link href={productsTable.path} />}
+            />
+          }
+        >
+          {product.name}
+        </PageContentTitle>
         <PageContentAction className="flex flex-wrap justify-end gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            nativeButton={false}
-            render={<Link href={productsTable.path} />}
-          >
-            <ArrowLeftIcon data-icon="inline-start" />
-            {t("all")}
-          </Button>
           <ProductDetailActions product={product} path={productsTable.path} />
         </PageContentAction>
       </PageContentHeader>

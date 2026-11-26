@@ -1107,6 +1107,9 @@ importers:
 
   packages/backend/activities:
     dependencies:
+      '@dafne/backend-changelog':
+        specifier: workspace:*
+        version: link:../changelog
       '@dafne/backend-common':
         specifier: workspace:*
         version: link:../common
@@ -1116,6 +1119,9 @@ importers:
       '@dafne/backend-database':
         specifier: workspace:*
         version: link:../database
+      '@dafne/backend-fsm':
+        specifier: workspace:*
+        version: link:../fsm
       '@dafne/backend-permissions':
         specifier: workspace:*
         version: link:../permissions
@@ -2575,6 +2581,9 @@ importers:
       '@dafne/frontend-api':
         specifier: workspace:*
         version: link:../api
+      '@dafne/frontend-changelog':
+        specifier: workspace:*
+        version: link:../changelog
       '@dafne/frontend-data-table':
         specifier: workspace:*
         version: link:../data-table

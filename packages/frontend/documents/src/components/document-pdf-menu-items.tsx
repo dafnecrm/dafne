@@ -48,7 +48,6 @@ export function DownloadPdfMenuItems({
 
   return (
     <>
-      <DropdownMenuSeparator />
       <DropdownMenuGroup>
         <DropdownMenuLabel>{t("title")}</DropdownMenuLabel>
         <DropdownMenuItem render={link(main)}>
@@ -63,7 +62,11 @@ export function DownloadPdfMenuItems({
             </DropdownMenuSubTrigger>
             <DropdownMenuPortal>
               <DropdownMenuSubContent>
-                {templates.map((template) => (
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel>
+                    <span className="truncate">{t("choose")}</span>
+                  </DropdownMenuLabel>
+                  {templates.map((template) => (
                   <DropdownMenuItem key={template.id} render={link(template)}>
                     {template.name}
                     <span className="text-muted-foreground ml-auto text-xs">
@@ -72,6 +75,7 @@ export function DownloadPdfMenuItems({
                     </span>
                   </DropdownMenuItem>
                 ))}
+                </DropdownMenuGroup>
               </DropdownMenuSubContent>
             </DropdownMenuPortal>
           </DropdownMenuSub>

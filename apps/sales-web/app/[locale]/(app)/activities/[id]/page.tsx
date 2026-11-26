@@ -1,5 +1,4 @@
 import { getTranslations } from "next-intl/server";
-import { ArrowLeftIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -8,10 +7,10 @@ import {
   PageContentAction,
   PageContentBody,
   PageContentHeader,
+  PageContentBack,
   PageContentTitle,
 } from "@dafne/frontend-ui/components/page-content";
 import { BreadcrumbLabel } from "@/components/page-breadcrumb";
-import { Button } from "@dafne/frontend-ui/components/button";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { loadActivity } from "./load-activity";
 import { ActivityDetailActions } from "@dafne/frontend-activities/components/activity-detail-actions";
@@ -46,17 +45,17 @@ async function ActivityProfile({
         label={activity.name}
       />
       <PageContentHeader>
-        <PageContentTitle>{activity.name}</PageContentTitle>
+        <PageContentTitle
+          back={
+            <PageContentBack
+              label={t("all")}
+              render={<Link href="/activities" />}
+            />
+          }
+        >
+          {activity.name}
+        </PageContentTitle>
         <PageContentAction className="flex flex-wrap justify-end gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            nativeButton={false}
-            render={<Link href="/activities" />}
-          >
-            <ArrowLeftIcon data-icon="inline-start" />
-            {t("all")}
-          </Button>
           <ActivityDetailActions activity={activity} />
         </PageContentAction>
       </PageContentHeader>

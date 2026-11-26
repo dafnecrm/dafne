@@ -23,7 +23,7 @@ import type { QuotationDetail } from "../types.ts";
  * (quotation-detail-actions.tsx).
  */
 
-export type QuotationRef = Pick<QuotationDetail, "id">;
+export type QuotationRef = Pick<QuotationDetail, "id"|"status">;
 
 /**
  * Confirms the deletion and runs it, then goes back to the list at `path`

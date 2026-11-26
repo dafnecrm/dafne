@@ -18,10 +18,16 @@
       "path": "../session"
     },
     {
+      "path": "../fsm"
+    },
+    {
       "path": "../database"
     },
     {
       "path": "../crud"
+    },
+    {
+      "path": "../changelog"
     },
     {
       "path": "../common"

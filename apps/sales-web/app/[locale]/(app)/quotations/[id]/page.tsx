@@ -1,4 +1,3 @@
-import { ArrowLeftIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
@@ -10,9 +9,9 @@ import {
   PageContentAction,
   PageContentBody,
   PageContentHeader,
+  PageContentBack,
   PageContentTitle,
 } from "@dafne/frontend-ui/components/page-content";
-import { Button } from "@dafne/frontend-ui/components/button";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { QuotationDetails } from "@dafne/frontend-sales-orders/quotations/components/quotation-detail";
 import { QuotationDetailActions } from "@dafne/frontend-sales-orders/quotations/components/quotation-detail-actions";
@@ -58,17 +57,17 @@ async function QuotationProfile({
         label={`${t("quotations.singular")} ${quotation.id}`}
       />
       <PageContentHeader>
-        <PageContentTitle>{`${t("quotations.singular")} ${quotation.id}`}</PageContentTitle>
+        <PageContentTitle
+          back={
+            <PageContentBack
+              label={t("quotations.all")}
+              render={<Link href={quotationsTable.path} />}
+            />
+          }
+        >
+          {`${t("quotations.singular")} ${quotation.id}`}
+        </PageContentTitle>
         <PageContentAction className="flex flex-wrap justify-end gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            nativeButton={false}
-            render={<Link href={quotationsTable.path} />}
-          >
-            <ArrowLeftIcon data-icon="inline-start" />
-            {t("quotations.all")}
-          </Button>
           <QuotationDetailActions
             quotation={quotation}
             path={quotationsTable.path}

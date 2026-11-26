@@ -1,4 +1,3 @@
-import { ArrowLeftIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
@@ -9,9 +8,9 @@ import {
   PageContentAction,
   PageContentBody,
   PageContentHeader,
+  PageContentBack,
   PageContentTitle,
 } from "@dafne/frontend-ui/components/page-content";
-import { Button } from "@dafne/frontend-ui/components/button";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { AssistantProviderDetails } from "@dafne/frontend-assistant/assistant-providers/components/assistant-provider-detail";
 import { AssistantProviderDetailActions } from "@dafne/frontend-assistant/assistant-providers/components/assistant-provider-detail-actions";
@@ -48,17 +47,17 @@ async function AssistantProviderProfile({
         label={assistantProvider.name}
       />
       <PageContentHeader>
-        <PageContentTitle>{assistantProvider.name}</PageContentTitle>
+        <PageContentTitle
+          back={
+            <PageContentBack
+              label={t("assistantProviders.all")}
+              render={<Link href={assistantProvidersTable.path} />}
+            />
+          }
+        >
+          {assistantProvider.name}
+        </PageContentTitle>
         <PageContentAction className="flex flex-wrap justify-end gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            nativeButton={false}
-            render={<Link href={assistantProvidersTable.path} />}
-          >
-            <ArrowLeftIcon data-icon="inline-start" />
-            {t("assistantProviders.all")}
-          </Button>
           <AssistantProviderDetailActions
             assistantProvider={assistantProvider}
             path={assistantProvidersTable.path}

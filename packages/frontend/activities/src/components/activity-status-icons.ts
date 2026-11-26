@@ -1,5 +1,5 @@
 import type { ActivityStatus } from "@dafne/contracts";
-import { CircleIcon, CircleOffIcon, type LucideIcon } from "lucide-react";
+import { CircleCheckIcon, CircleIcon, type LucideIcon } from "lucide-react";
 
 /**
  * Icon of each status, shown next to its label. Not in the plain-data
@@ -9,5 +9,5 @@ import { CircleIcon, CircleOffIcon, type LucideIcon } from "lucide-react";
  */
 export const ACTIVITY_STATUS_ICONS: Record<ActivityStatus, LucideIcon> = {
   open: CircleIcon,
-  closed: CircleOffIcon,
+  closed: CircleCheckIcon,
 };

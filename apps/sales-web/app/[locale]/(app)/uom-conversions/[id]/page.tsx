@@ -1,4 +1,3 @@
-import { ArrowLeftIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
@@ -9,9 +8,9 @@ import {
   PageContentAction,
   PageContentBody,
   PageContentHeader,
+  PageContentBack,
   PageContentTitle,
 } from "@dafne/frontend-ui/components/page-content";
-import { Button } from "@dafne/frontend-ui/components/button";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { UomConversionDetails } from "@dafne/frontend-products/uom-conversions/components/uom-conversion-detail";
 import { UomConversionDetailActions } from "@dafne/frontend-products/uom-conversions/components/uom-conversion-detail-actions";
@@ -47,17 +46,17 @@ async function UomConversionProfile({
         label={`${t("uomConversions.singular")} ${uomConversion.id}`}
       />
       <PageContentHeader>
-        <PageContentTitle>{`${t("uomConversions.singular")} ${uomConversion.id}`}</PageContentTitle>
+        <PageContentTitle
+          back={
+            <PageContentBack
+              label={t("uomConversions.all")}
+              render={<Link href={uomConversionsTable.path} />}
+            />
+          }
+        >
+          {`${t("uomConversions.singular")} ${uomConversion.id}`}
+        </PageContentTitle>
         <PageContentAction className="flex flex-wrap justify-end gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            nativeButton={false}
-            render={<Link href={uomConversionsTable.path} />}
-          >
-            <ArrowLeftIcon data-icon="inline-start" />
-            {t("uomConversions.all")}
-          </Button>
           <UomConversionDetailActions
             uomConversion={uomConversion}
             path={uomConversionsTable.path}

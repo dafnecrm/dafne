@@ -32,6 +32,9 @@ export const QUOTATION_STATUS_OPTIONS = [
 /** Sort of the list without `?sort=`. */
 export const QUOTATIONS_DEFAULT_SORT = { id: "id", desc: true };
 
+/** Editable states for a quotation */
+export const QUOTATION_EDITABLE_STATUSES: Set<QuotationStatus> = new Set(["draft"])
+
 /** A quotations table's config: its path is always set (detail links use it). */
 export type QuotationsTableConfig = DataTableConfig & { path: string };
 

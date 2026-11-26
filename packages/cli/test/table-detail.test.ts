@@ -141,8 +141,8 @@ describe('syncDetail', () => {
   it("doesn't add what the page shows (the title)", () => {
     // A page whose title is the name (the template's shows the id).
     const page = render('frontend/detail-page.tsx', view).replace(
-      '{`${t("activities.singular")} ${activity.id}`}</PageContentTitle>',
-      '{activity.name}</PageContentTitle>',
+      '{`${t("activities.singular")} ${activity.id}`}\n        </PageContentTitle>',
+      '{activity.name}\n        </PageContentTitle>',
     );
     const { content } = syncDetail('d.tsx', render('frontend/detail.tsx', view), names, info(), [page]);
     expect(content).not.toContain('label={t("activities.fields.name")}');

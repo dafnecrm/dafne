@@ -14,7 +14,9 @@ import { Button } from "@dafne/frontend-ui/components/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@dafne/frontend-ui/components/dropdown-menu";
@@ -46,6 +48,17 @@ export function SalesOrderDetailActions({
 
   return (
     <>
+      <Can I="update" a="SalesOrder">
+        <Button
+          variant="outline"
+          size="sm"
+          className="hidden sm:inline-flex"
+          nativeButton={false}
+          render={<Link href={`${href}/edit`} />}>
+          <PencilIcon />
+          {t("common.edit")}
+        </Button>
+      </Can>
       <DropdownMenu>
         <DropdownMenuTrigger
           render={
@@ -61,21 +74,26 @@ export function SalesOrderDetailActions({
           <EllipsisVerticalIcon />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <Can I="update" a="SalesOrder">
-            <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
-              <PencilIcon />
-              {t("common.edit")}
-            </DropdownMenuItem>
-          </Can>
-          <DropdownMenuItem onClick={() => setHistory(true)}>
-            <HistoryIcon />
-            {t("changelog.open")}
-          </DropdownMenuItem>
+          <DropdownMenuGroup className="sm:hidden">
+            <DropdownMenuLabel>{t("common.actions")}</DropdownMenuLabel>
+            <Can I="update" a="SalesOrder">
+              <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
+                <PencilIcon />
+                {t("common.edit")}
+              </DropdownMenuItem>
+            </Can>
+            <DropdownMenuSeparator />
+          </DropdownMenuGroup>
           <DownloadPdfMenuItems
             resource="salesOrder"
             id={salesOrder.id}
             templates={pdfTemplates}
           />
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => setHistory(true)}>
+            <HistoryIcon />
+            {t("changelog.open")}
+          </DropdownMenuItem>
           <Can I="delete" a="SalesOrder">
             <DropdownMenuSeparator />
             <DropdownMenuItem

@@ -13,7 +13,9 @@ import { Button } from "@dafne/frontend-ui/components/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@dafne/frontend-ui/components/dropdown-menu";
@@ -21,6 +23,7 @@ import {
   DeleteQuotationDialog,
   type QuotationRef,
 } from "./quotation-dialogs.tsx";
+import { QUOTATION_EDITABLE_STATUSES } from "../quotations-table.ts";
 
 /**
  * Actions of a row of the quotations table, in a menu: view (`<path>/<id>`),
@@ -54,14 +57,18 @@ export function QuotationTableActions({
           <EllipsisVerticalIcon />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem render={<Link href={href} />}>
-            <EyeIcon />
-            {t("common.viewDetails")}
-          </DropdownMenuItem>
-          <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
-            <PencilIcon />
-            {t("common.edit")}
-          </DropdownMenuItem>
+          <DropdownMenuGroup>
+            <DropdownMenuLabel>{t("common.actions")}</DropdownMenuLabel>
+            <DropdownMenuItem render={<Link href={href} />}>
+              <EyeIcon />
+              {t("common.viewDetails")}
+            </DropdownMenuItem>
+            {QUOTATION_EDITABLE_STATUSES.has(quotation.status) &&
+              <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
+                <PencilIcon />
+                {t("common.edit")}
+              </DropdownMenuItem>}
+          </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem
             variant="destructive"

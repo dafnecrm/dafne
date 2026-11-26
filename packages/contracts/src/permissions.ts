@@ -12,7 +12,7 @@ import { msg } from './messages/index.ts';
  */
 export const PERMISSIONS = {
   Customer: ['create', 'update', 'delete'],
-  Activity: ['create', 'update', 'delete', 'close'],
+  Activity: ['create', 'update', 'delete', 'changeStatus'],
   Product: ['create', 'update', 'delete'],
   Uom: ['create', 'update', 'delete'],
   UomConversion: ['create', 'update', 'delete'],

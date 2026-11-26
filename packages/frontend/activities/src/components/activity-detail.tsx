@@ -15,15 +15,13 @@ import { LocalDate } from "@dafne/frontend-ui/components/local-date";
 import { TextEditorContent } from "@dafne/frontend-ui/components/text-editor";
 import { ACTIVITY_TYPE_OPTIONS } from "../activity-type-options";
 import { ActivityDetail } from "../types";
-import { ACTIVITY_STATUS_OPTIONS } from "../activity-status-options";
-import { ACTIVITY_STATUS_ICONS } from "./activity-status-icons";
+import { ActivityStatusBadge } from "./activity-status-badge";
 
 /** The details of an activity: its fields, then who created and updated it. */
 export function ActivityDetails({ activity }: { activity: ActivityDetail }) {
   const t = useTranslations();
   const optionLabel = useOptionLabel();
-  // A component, not an element: render it with a capitalized name.
-  const StatusIcon = ACTIVITY_STATUS_ICONS[activity.status];
+
   return (
     <>
       <DetailSection title={t("activities.sections.details")} groupVariant="grid">
@@ -34,10 +32,7 @@ export function ActivityDetails({ activity }: { activity: ActivityDetail }) {
           {optionLabel(ACTIVITY_TYPE_OPTIONS, activity.type)}
         </Detail>
         <Detail icon={TagIcon} label={t("activities.fields.status")}>
-          <span className="inline-flex items-center gap-1.5">
-            <StatusIcon className="size-4 text-muted-foreground" />
-            {optionLabel(ACTIVITY_STATUS_OPTIONS, activity.status)}
-          </span>
+          <ActivityStatusBadge status={activity.status} />
         </Detail>
         <Detail icon={CalendarClockIcon} label={t("activities.fields.dueDate")}>
           {activity.dueDate ? (

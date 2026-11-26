@@ -6,6 +6,8 @@ import { and, asc, desc, eq, isNull, ilike, ne } from 'drizzle-orm';
 import { activityBodySchema, type ActivityBodyInput } from '@dafne/contracts';
 import { ActivitiesService } from './activities.service.js';
 import { CrudHooksRegistry, type Actor } from '@dafne/backend-crud';
+import { getStateMachineToken } from '@dafne/backend-fsm';
+import { ACTIVITY_STATE_MACHINE } from './activity.states.js';
 
 /** A signed-in user, as the services get it; only the id matters here. */
 const actor = (id: string) => ({ id }) as Actor;
@@ -43,6 +45,7 @@ describe('ActivitiesService', () => {
     query: { activity: { findFirst } },
   };
   const found = { id: 1, name: 'Acme' };
+  const stateMachine = { transition: vi.fn() };
 
   beforeEach(async () => {
     vi.resetAllMocks();
@@ -68,6 +71,7 @@ describe('ActivitiesService', () => {
         ActivitiesService,
         { provide: getDrizzleToken(), useValue: db },
         CrudHooksRegistry,
+        { provide: getStateMachineToken(ACTIVITY_STATE_MACHINE), useValue: stateMachine },
       ],
     }).compile();
 
@@ -149,6 +153,16 @@ describe('ActivitiesService', () => {
         updatedById: 'u1',
       });
       expect(findFirst.mock.calls[0][0].where.id).toBe(1);
+      expect(stateMachine.transition).not.toHaveBeenCalled();
+    });
+
+    it('closes it through the state machine, in the same transaction', async () => {
+      const u1 = actor('u1');
+      await service.create(body({ name: 'Acme', type: 'email', status: 'closed' }), u1);
+
+      expect(stateMachine.transition).toHaveBeenCalledWith(1, 'closed', { tx: db, user: u1 });
+      // Never written with the fields: born open.
+      expect(insert.values.mock.calls[0][0]).not.toHaveProperty('status');
     });
   });
 
@@ -167,6 +181,36 @@ describe('ActivitiesService', () => {
       expect(update.where).toHaveBeenCalledWith(
         and(eq(activity.id, 1), notDeleted, notClosed),
       );
+    });
+
+    it('reopens before writing the fields (a closed activity is not edited)', async () => {
+      const u2 = actor('u2');
+      const order: string[] = [];
+      stateMachine.transition.mockImplementation(async () => order.push('transition'));
+      update.where.mockImplementation(async () => {
+        order.push('update');
+        return { rowCount: 1 };
+      });
+
+      await service.update(1, body({ name: 'X', type: 'email', status: 'open' }), u2);
+
+      expect(stateMachine.transition).toHaveBeenCalledWith(1, 'open', { tx: db, user: u2 });
+      expect(order).toEqual(['transition', 'update']);
+    });
+
+    it('closes after writing the fields', async () => {
+      const u2 = actor('u2');
+      const order: string[] = [];
+      stateMachine.transition.mockImplementation(async () => order.push('transition'));
+      update.where.mockImplementation(async () => {
+        order.push('update');
+        return { rowCount: 1 };
+      });
+
+      await service.update(1, body({ name: 'X', type: 'email', status: 'closed' }), u2);
+
+      expect(stateMachine.transition).toHaveBeenCalledWith(1, 'closed', { tx: db, user: u2 });
+      expect(order).toEqual(['update', 'transition']);
     });
 
     it('throws 404 when the activity is missing', async () => {
@@ -195,6 +239,21 @@ describe('ActivitiesService', () => {
       update.where.mockResolvedValue({ rowCount: 0 });
 
       await expect(service.delete(1, actor('u3'))).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+    });
+  });
+
+  describe('changeActivityStatus', () => {
+    it('moves it through the state machine and returns it', async () => {
+      const user = actor('u4');
+      await expect(service.changeActivityStatus(1, 'closed', user)).resolves.toBe(found);
+      expect(stateMachine.transition).toHaveBeenCalledWith(1, 'closed', { user });
+    });
+
+    it('lets the state machine refuse', async () => {
+      stateMachine.transition.mockRejectedValue(new NotFoundException());
+      await expect(service.changeActivityStatus(1, 'open', actor('u4'))).rejects.toBeInstanceOf(
         NotFoundException,
       );
     });
