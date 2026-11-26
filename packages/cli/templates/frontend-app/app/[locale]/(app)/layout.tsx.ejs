@@ -36,7 +36,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       <SidebarInset>
         {/* Pages name their level of the breadcrumb (<BreadcrumbLabel>). */}
         <BreadcrumbProvider>
-          <header className="flex h-16 shrink-0 items-center gap-2 px-4">
+          {/* Stays on top while the page scrolls under it. */}
+          <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center gap-2 rounded-t-[inherit] bg-background px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator
               orientation="vertical"

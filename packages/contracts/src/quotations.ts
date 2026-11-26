@@ -115,6 +115,7 @@ export interface ListedQuotation {
   validUntil: Date | null;
   createdAt: Date;
   updatedAt: Date;
+  itemsCount: number;
 }
 
 /** Response of GET /quotations. */
@@ -133,7 +134,7 @@ export interface QuotationSalesOrder {
 }
 
 /** Response of GET /quotations/:id, POST /quotations and PUT /quotations/:id. */
-export interface QuotationDetail extends ListedQuotation {
+export interface QuotationDetail extends Omit<ListedQuotation, 'itemsCount'> {
   createdBy: QuotationUser | null;
   updatedBy: QuotationUser | null;
   notes: string | null;

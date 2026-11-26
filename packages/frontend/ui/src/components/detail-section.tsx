@@ -44,12 +44,12 @@ const detailSectionVariants = cva("", {
  * (`has-data-[size=sm]:gap-2.5`, and every Detail is sm) would win over
  * these.
  */
-const detailGroupVariants = cva("w-full gap-6", {
+const detailGroupVariants = cva("w-full gap-6 @container", {
   variants: {
     groupVariant: {
       default: "flex flex-col",
-      horizontal: "flex flex-row",
-      grid: "grid grid-cols-1 md:grid-cols-2",
+      horizontal: "flex flex-col @2xl:flex-row @2xl:flex-wrap",
+      grid: "grid grid-cols-1 @2xl:grid-cols-2",
     },
   },
   defaultVariants: {

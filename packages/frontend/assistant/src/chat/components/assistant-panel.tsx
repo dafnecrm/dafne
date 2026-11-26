@@ -38,13 +38,14 @@ import {
   SelectValue,
 } from "@dafne/frontend-ui/components/select";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@dafne/frontend-ui/components/sheet";
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@dafne/frontend-ui/components/drawer";
+import { useIsMobile } from "@dafne/frontend-ui/hooks/use-mobile";
 import { Spinner } from "@dafne/frontend-ui/components/spinner";
 import { Textarea } from "@dafne/frontend-ui/components/textarea";
 import {
@@ -71,13 +72,14 @@ const isError = (value: unknown): value is { error: string } =>
   typeof value === "object" && value !== null && "error" in value;
 
 /**
- * The AI assistant: a button in the header (or ⌘J / Ctrl+J) opens a side
- * panel to talk to an agent. Answers stream in; writes come as cards to
+ * The AI assistant: a button in the header (or ⌘J / Ctrl+J) opens a
+ * drawer to talk to an agent. Answers stream in; writes come as cards to
  * confirm. `streamPath` is the app's route handler that relays a message.
  */
 export function AssistantPanel({ streamPath }: { streamPath: (conversationId: number) => string }) {
   const t = useTranslations("assistantChat");
   const [open, setOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -91,15 +93,20 @@ export function AssistantPanel({ streamPath }: { streamPath: (conversationId: nu
   }, []);
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger render={<Button variant="ghost" size="icon" aria-label={t("open")} title={`${t("open")} (⌘J)`} />}>
+    <Drawer
+      open={open}
+      onOpenChange={setOpen}
+      showSwipeHandle={isMobile}
+      swipeDirection={isMobile ? "down" : "right"}
+    >
+      <DrawerTrigger render={<Button variant="ghost" size="icon" aria-label={t("open")} title={`${t("open")} (⌘J)`} />}>
         <SparklesIcon />
-      </SheetTrigger>
-      <SheetContent side="right" className="w-full gap-0 p-0 data-[side=right]:sm:max-w-xl">
+      </DrawerTrigger>
+      <DrawerContent className="data-[swipe-axis=x]:sm:w-xl data-[swipe-axis=y]:h-[calc(100dvh-6rem)]">
         {/* Mounted while open only: it loads the agents each time. */}
         {open && <AssistantChat streamPath={streamPath} />}
-      </SheetContent>
-    </Sheet>
+      </DrawerContent>
+    </Drawer>
   );
 }
 
@@ -322,13 +329,13 @@ function AssistantChat({ streamPath }: { streamPath: (conversationId: number) =>
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
-      <SheetHeader className="border-b">
-        <SheetTitle className="flex items-center gap-2">
+    <div className="flex min-h-0 flex-1 flex-col">
+      <DrawerHeader className="border-b pb-4">
+        <DrawerTitle className="flex items-center gap-2">
           <SparklesIcon className="size-4" />
           {conversation?.title ?? t("title")}
-        </SheetTitle>
-        <SheetDescription>{t("description")}</SheetDescription>
+        </DrawerTitle>
+        <DrawerDescription>{t("description")}</DrawerDescription>
         <div className="flex flex-wrap items-center gap-2 pt-2">
           {agents.length > 0 && (
             <Select
@@ -341,7 +348,7 @@ function AssistantChat({ streamPath }: { streamPath: (conversationId: number) =>
                 <SelectValue />
               </SelectTrigger>
               {/* Below the trigger, as wide as its items (labels, "local" badge). */}
-              <SelectContent alignItemWithTrigger={false} align="start" className="w-auto min-w-(--anchor-width)">
+              <SelectContent alignItemWithTrigger={false} align="start">
                 {agents.map((a) => (
                   <SelectItem key={a.id} value={a.id}>
                     {a.name}
@@ -361,7 +368,7 @@ function AssistantChat({ streamPath }: { streamPath: (conversationId: number) =>
                 <SelectValue />
               </SelectTrigger>
               {/* Below the trigger, as wide as its items (labels, "local" badge). */}
-              <SelectContent alignItemWithTrigger={false} align="start" className="w-auto min-w-(--anchor-width)">
+              <SelectContent alignItemWithTrigger={false} align="start">
                 {agent.models.map((m) => (
                   <SelectItem key={m.id} value={m.id}>
                     {m.label}
@@ -412,7 +419,7 @@ function AssistantChat({ streamPath }: { streamPath: (conversationId: number) =>
             </Button>
           </div>
         </div>
-      </SheetHeader>
+      </DrawerHeader>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
         {agents.length === 0 ? (

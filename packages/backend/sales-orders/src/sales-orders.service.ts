@@ -157,7 +157,8 @@ export class SalesOrdersService
           type: {
             id: salesOrderType.id,
             description: salesOrderType.description,
-          }
+          },
+          itemsCount: db.$count(salesOrderItem, eq(salesOrderItem.orderId, salesOrder.id))
         })
         .from(salesOrder)
         .innerJoin(customer, eq(customer.id, salesOrder.customerId))

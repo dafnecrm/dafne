@@ -71,7 +71,7 @@ describe('syncColumns', () => {
   it('adds the id first, as the link to the detail page', () => {
     const { content, report } = syncColumns('c.tsx', render('frontend/table.tsx', view), names, info());
     expect(content.indexOf('col.accessor("id"')).toBeLessThan(content.indexOf('col.accessor("name"'));
-    expect(content).toMatch(/col\.accessor\("id", \{\s*header: t\("activities\.fields\.id"\),\s*cell: \(\{ row \}\) => \(\s*<Link\s+href=\{`\/activities\/\$\{encodeURIComponent\(row\.original\.id\)\}`\}/);
+    expect(content).toMatch(/col\.accessor\("id", \{\s*header: t\("activities\.fields\.id"\),\s*meta: \{ mobile: "subtitle" \},\s*cell: \(\{ row \}\) => \(\s*<Link\s+href=\{`\/activities\/\$\{encodeURIComponent\(row\.original\.id\)\}`\}/);
     expect(content).toContain('import Link from "next/link";');
     expect(report.added[0]).toBe('column id');
     expect(syncColumns('c.tsx', content, names, info()).report.added).toEqual([]);

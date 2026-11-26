@@ -11,9 +11,102 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from "@dafne/frontend-ui/components/input-group"
-import { ChevronDownIcon, XIcon, CheckIcon } from "lucide-react"
+import {
+  Drawer,
+  DrawerContent,
+  DrawerTitle,
+} from "@dafne/frontend-ui/components/drawer"
+import { useIsMobile } from "@dafne/frontend-ui/hooks/use-mobile"
+import { ChevronDownIcon, XIcon, CheckIcon, SearchIcon } from "lucide-react"
 
-const Combobox = ComboboxPrimitive.Root
+// The field the popup lines up with: the whole input group (addons
+// included), not just the <input> Base UI anchors to by default.
+const ComboboxFieldContext = React.createContext<{
+  field: HTMLDivElement | null
+  setField: (field: HTMLDivElement | null) => void
+} | null>(null)
+
+// On mobile the list opens in a drawer from the bottom: the field becomes
+// a button showing the value, and the search box moves into the drawer
+// (the keyboard would cover a popup under the field). The drawer's open
+// state is the combobox's.
+type ComboboxDrawer = {
+  setOpen: (open: boolean) => void
+  // The field's placeholder and label, for the drawer's search box.
+  label: string | undefined
+  setLabel: (label: string | undefined) => void
+}
+
+const ComboboxDrawerContext = React.createContext<ComboboxDrawer | null>(null)
+
+/**
+ * A combobox; below the mobile breakpoint (single value, `ComboboxInput`),
+ * its list opens in a drawer from the bottom with a search box on top.
+ * `drawer={false}` keeps the popup on mobile too (e.g. a custom input).
+ */
+function Combobox<
+  Value,
+  Multiple extends boolean | undefined = false,
+  Item = Value,
+>({
+  drawer = true,
+  ...props
+}: ComboboxPrimitive.Root.Props<Value, Multiple, Item> & {
+  drawer?: boolean
+}) {
+  const isMobile = useIsMobile()
+  const [field, setField] = React.useState<HTMLDivElement | null>(null)
+  const context = React.useMemo(() => ({ field, setField }), [field])
+  const [open, setOpenState] = React.useState(false)
+  const [label, setLabel] = React.useState<string>()
+  const { onOpenChange, onValueChange } = props
+  const setOpen = React.useCallback(
+    (next: boolean) => {
+      setOpenState(next)
+      ;(onOpenChange as ((open: boolean) => void) | undefined)?.(next)
+    },
+    [onOpenChange]
+  )
+  const sheet = React.useMemo(
+    () => ({ setOpen, label, setLabel }),
+    [setOpen, label]
+  )
+  if (drawer && isMobile && !props.multiple) {
+    return (
+      <ComboboxFieldContext.Provider value={context}>
+        <ComboboxDrawerContext.Provider value={sheet}>
+          <ComboboxPrimitive.Root
+            {...props}
+            // The list is in the drawer, not in Base UI's popup: the
+            // drawer opens and closes it (a pick closes it too).
+            inline
+            open={open}
+            onOpenChange={() => {}}
+            onValueChange={(value, details) => {
+              ;(
+                onValueChange as
+                  | ((value: unknown, details: unknown) => void)
+                  | undefined
+              )?.(value, details)
+              setOpen(false)
+            }}
+          >
+            <Drawer open={open} onOpenChange={setOpen}>
+              {props.children}
+            </Drawer>
+          </ComboboxPrimitive.Root>
+        </ComboboxDrawerContext.Provider>
+      </ComboboxFieldContext.Provider>
+    )
+  }
+  return (
+    <ComboboxFieldContext.Provider value={context}>
+      <ComboboxDrawerContext.Provider value={null}>
+        <ComboboxPrimitive.Root {...props} />
+      </ComboboxDrawerContext.Provider>
+    </ComboboxFieldContext.Provider>
+  )
+}
 
 function ComboboxValue({ ...props }: ComboboxPrimitive.Value.Props) {
   return <ComboboxPrimitive.Value data-slot="combobox-value" {...props} />
@@ -60,8 +153,63 @@ function ComboboxInput({
   showTrigger?: boolean
   showClear?: boolean
 }) {
+  const setField = React.useContext(ComboboxFieldContext)?.setField
+  const sheet = React.useContext(ComboboxDrawerContext)
+  const label =
+    (props["aria-label"] as string | undefined) ??
+    (typeof props.placeholder === "string" ? props.placeholder : undefined)
+  const setLabel = sheet?.setLabel
+  React.useEffect(() => {
+    setLabel?.(label)
+  }, [setLabel, label])
+  if (sheet) {
+    // A button showing the value; the search box is in the drawer.
+    return (
+      <InputGroup ref={setField} className={cn("w-auto", className)}>
+        <button
+          type="button"
+          id={props.id}
+          data-slot="input-group-control"
+          aria-label={props["aria-label"]}
+          aria-invalid={props["aria-invalid"]}
+          aria-haspopup="dialog"
+          disabled={disabled}
+          onBlur={props.onBlur as unknown as React.FocusEventHandler<HTMLButtonElement>}
+          onClick={() => sheet.setOpen(true)}
+          className="flex h-full min-w-0 flex-1 cursor-default items-center truncate px-2.5 text-left text-sm outline-none disabled:cursor-not-allowed group-has-[>[data-align=inline-start]]/input-group:pl-1.5"
+        >
+          <span className="truncate">
+            <ComboboxPrimitive.Value
+              placeholder={
+                <span className="text-muted-foreground">
+                  {props.placeholder}
+                </span>
+              }
+            />
+          </span>
+        </button>
+        <InputGroupAddon align="inline-end">
+          {showTrigger && (
+            <InputGroupButton
+              size="icon-xs"
+              variant="ghost"
+              tabIndex={-1}
+              aria-hidden
+              className="group-has-data-[slot=combobox-clear]/input-group:hidden"
+              disabled={disabled}
+              onClick={() => sheet.setOpen(true)}
+            >
+              <ChevronDownIcon className="pointer-events-none text-muted-foreground" />
+            </InputGroupButton>
+          )}
+          {showClear && <ComboboxClear disabled={disabled} />}
+        </InputGroupAddon>
+        {children}
+      </InputGroup>
+    )
+  }
   return (
-    <InputGroup className={cn("w-auto", className)}>
+    <InputGroup ref={setField} className={cn("w-auto", className)}>
       <ComboboxPrimitive.Input
         render={<InputGroupInput disabled={disabled} />}
         {...props}
@@ -97,6 +245,47 @@ function ComboboxContent({
     ComboboxPrimitive.Positioner.Props,
     "side" | "align" | "sideOffset" | "alignOffset" | "anchor"
   >) {
+  // Set by ComboboxInput; a custom input keeps Base UI's default.
+  const field = React.useContext(ComboboxFieldContext)?.field
+  const sheet = React.useContext(ComboboxDrawerContext)
+  const top = React.useRef<HTMLDivElement>(null)
+  if (sheet) {
+    // `className` sizes the popup: not the drawer's. The focus goes to the
+    // drawer, not the search box: no keyboard until it's tapped.
+    return (
+      <DrawerContent
+        data-slot="combobox-content"
+        initialFocus={top}
+        className="group/combobox-content"
+      >
+        <DrawerTitle className="sr-only">{sheet.label}</DrawerTitle>
+        <div ref={top} tabIndex={-1} className="p-2 pb-0 outline-none">
+          <InputGroup>
+            <InputGroupAddon>
+              <SearchIcon />
+            </InputGroupAddon>
+            <ComboboxPrimitive.Input
+              aria-label={sheet.label}
+              placeholder={sheet.label}
+              render={<InputGroupInput />}
+            />
+          </InputGroup>
+        </div>
+        <div
+          className={cn(
+            "flex min-h-0 flex-col overflow-y-auto p-2 pb-[max(--spacing(2),env(safe-area-inset-bottom))]",
+            // The list's own height cap is a popup's.
+            "**:data-[slot=combobox-list]:max-h-none **:data-[slot=combobox-list]:overflow-visible **:data-[slot=combobox-list]:p-0",
+            "**:data-[slot=combobox-item]:min-h-10 **:data-[slot=combobox-item]:rounded-lg **:data-[slot=combobox-item]:pl-3 **:data-[slot=combobox-item]:pr-10",
+            // Popup-only: it shows through the popup's data-empty.
+            "**:data-[slot=combobox-empty]:not-empty:flex"
+          )}
+        >
+          {props.children as React.ReactNode}
+        </div>
+      </DrawerContent>
+    )
+  }
   return (
     <ComboboxPrimitive.Portal>
       <ComboboxPrimitive.Positioner
@@ -104,13 +293,13 @@ function ComboboxContent({
         sideOffset={sideOffset}
         align={align}
         alignOffset={alignOffset}
-        anchor={anchor}
+        anchor={anchor ?? field ?? undefined}
         className="isolate z-50"
       >
         <ComboboxPrimitive.Popup
           data-slot="combobox-content"
           data-chips={!!anchor}
-          className={cn("group/combobox-content relative max-h-(--available-height) w-(--anchor-width) max-w-(--available-width) min-w-[calc(var(--anchor-width)+--spacing(7))] origin-(--transform-origin) overflow-hidden rounded-lg bg-popover text-popover-foreground shadow-md ring-1 ring-foreground/10 duration-100 data-[chips=true]:min-w-(--anchor-width) data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 *:data-[slot=input-group]:m-1 *:data-[slot=input-group]:mb-0 *:data-[slot=input-group]:h-8 *:data-[slot=input-group]:border-input/30 *:data-[slot=input-group]:bg-input/30 *:data-[slot=input-group]:shadow-none data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95", className )}
+          className={cn("group/combobox-content relative max-h-(--available-height) w-(--anchor-width) max-w-(--available-width) min-w-(--anchor-width) origin-(--transform-origin) overflow-hidden rounded-lg bg-popover text-popover-foreground shadow-md ring-1 ring-foreground/10 duration-100 data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 *:data-[slot=input-group]:m-1 *:data-[slot=input-group]:mb-0 *:data-[slot=input-group]:h-8 *:data-[slot=input-group]:border-input/30 *:data-[slot=input-group]:bg-input/30 *:data-[slot=input-group]:shadow-none data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95", className )}
           {...props}
         />
       </ComboboxPrimitive.Positioner>

@@ -141,6 +141,7 @@ export class QuotationsService
           updatedAt: quotation.updatedAt,
           customer: { id: customer.id, name: customer.name },
           type: { id: salesOrderType.id, description: salesOrderType.description },
+          itemsCount: db.$count(quotationItem, eq(quotationItem.quotationId, quotation.id))
         })
         .from(quotation)
         .innerJoin(customer, eq(customer.id, quotation.customerId))

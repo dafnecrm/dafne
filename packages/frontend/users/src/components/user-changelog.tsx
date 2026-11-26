@@ -6,7 +6,7 @@ import { useState } from "react";
 import {
   ChangelogSheet,
   type ChangeFieldConfig,
-} from "@dafne/frontend-changelog/components/changelog-sheet";
+} from "@dafne/frontend-changelog/components/changelog-drawer";
 import { Button } from "@dafne/frontend-ui/components/button";
 import { getUserChanges } from "../actions.ts";
 

@@ -22,10 +22,14 @@ const newReport = (): Report => ({ added: [], removed: [], stale: [], warnings: 
 /** Never added as columns: the update date is on the detail page. */
 const NO_COLUMN = new Set(['updatedAt']);
 
-/** The id column: first, and the link to the detail page (no field names the record). */
+/**
+ * The id column: first, and the link to the detail page (no field names the
+ * record). On mobile it's the card's subtitle.
+ */
 const idColumn = (names: ResourceNames, key: (k: string) => string, link: string) =>
   `col.accessor("id", {
     header: t("${key(`${names.p.camel}.fields.id`)}"),
+    meta: { mobile: "subtitle" },
     cell: ({ row }) => (
       <Link
         href={\`${link}/\${encodeURIComponent(row.original.id)}\`}

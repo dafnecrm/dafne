@@ -1,6 +1,11 @@
 "use client";
 
-import { EllipsisVerticalIcon, HistoryIcon, PencilIcon, Trash2Icon } from "lucide-react";
+import {
+  EllipsisVerticalIcon,
+  HistoryIcon,
+  PencilIcon,
+  Trash2Icon,
+} from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Can } from "@dafne/frontend-permissions";
@@ -22,17 +27,17 @@ import { DownloadPdfMenuItems } from "@dafne/frontend-documents/components/docum
 import { PdfTemplate } from "@dafne/frontend-documents/components/document-pdf-menu";
 
 /**
- * Actions on the sales order's page, in a menu: edit (`<path>/<id>/edit`),
+ * Actions on the sales order's page, in a menu (a drawer on mobile): edit (`<path>/<id>/edit`),
  * its history (in a sheet) and delete, then back to the list at `path`.
  */
 export function SalesOrderDetailActions({
   salesOrder,
   path,
-  pdfTemplates
+  pdfTemplates,
 }: {
   salesOrder: SalesOrderRef;
-    path: string;
-    pdfTemplates: PdfTemplate[]
+  path: string;
+  pdfTemplates: PdfTemplate[];
 }) {
   const [deleting, setDeleting] = useState(false);
   const [history, setHistory] = useState(false);
@@ -55,7 +60,7 @@ export function SalesOrderDetailActions({
         >
           <EllipsisVerticalIcon />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-fit max-w-52">
+        <DropdownMenuContent align="end">
           <Can I="update" a="SalesOrder">
             <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
               <PencilIcon />

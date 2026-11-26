@@ -12,14 +12,15 @@ import {
   FieldLabel,
 } from "@dafne/frontend-ui/components/field";
 import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@dafne/frontend-ui/components/sheet";
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@dafne/frontend-ui/components/drawer";
+import { useIsMobile } from "@dafne/frontend-ui/hooks/use-mobile";
 import { useAppForm } from "./form-hook.ts";
 import type { GeoPlace } from "@dafne/frontend-geo";
 import {
@@ -31,7 +32,7 @@ import {
 import type { CustomerAddressType, CustomerType } from "@dafne/contracts";
 
 /**
- * Adds an address (no `address`) or edits one, in a sheet. Saving only
+ * Adds an address (no `address`) or edits one, in a drawer. Saving only
  * changes the customer form: the address is stored when the customer is.
  */
 export function CustomerAddressSheet({
@@ -52,14 +53,20 @@ export function CustomerAddressSheet({
   onSave: (address: AddressFormValues) => void;
 }) {
   const t = useTranslations("customers.addresses");
+  const isMobile = useIsMobile();
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-md">
-        <SheetHeader>
-          <SheetTitle>{address ? t("edit") : t("add")}</SheetTitle>
-          <SheetDescription>{t("savedWith")}</SheetDescription>
-        </SheetHeader>
-        {/* The content unmounts when the sheet closes, so each opening starts from `address`. */}
+    <Drawer
+      open={open}
+      onOpenChange={onOpenChange}
+      showSwipeHandle={isMobile}
+      swipeDirection={isMobile ? "down" : "right"}
+    >
+      <DrawerContent className="data-[swipe-axis=x]:sm:w-md">
+        <DrawerHeader>
+          <DrawerTitle>{address ? t("edit") : t("add")}</DrawerTitle>
+          <DrawerDescription>{t("savedWith")}</DrawerDescription>
+        </DrawerHeader>
+        {/* The content unmounts when the drawer closes, so each opening starts from `address`. */}
         <AddressForm
           customerType={customerType}
           usedTypes={usedTypes}
@@ -69,8 +76,8 @@ export function CustomerAddressSheet({
             onOpenChange(false);
           }}
         />
-      </SheetContent>
-    </Sheet>
+      </DrawerContent>
+    </Drawer>
   );
 }
 
@@ -113,16 +120,16 @@ function AddressForm({
   return (
     <form
       noValidate
-      className="flex flex-1 flex-col overflow-y-auto"
+      className="flex flex-1 flex-col overflow-y-auto p-4"
       onSubmit={(e) => {
         e.preventDefault();
-        // The sheet is portaled, but React still bubbles the event to the customer form.
+        // The drawer is portaled, but React still bubbles the event to the customer form.
         e.stopPropagation();
         form.handleSubmit();
       }}
     >
       <form.AppForm>
-        <FieldGroup className="px-4">
+        <FieldGroup>
           <form.AppField name="type">
             {(field) => (
               <field.SelectField
@@ -186,16 +193,16 @@ function AddressForm({
             )}
           </form.AppField>
         </FieldGroup>
-        <SheetFooter>
+        <DrawerFooter>
           <form.SubmitButton
             label={t(
               address ? "customers.addresses.save" : "customers.addresses.add",
             )}
           />
-          <SheetClose render={<Button type="button" variant="outline" />}>
+          <DrawerClose render={<Button type="button" variant="outline" />}>
             {t("common.cancel")}
-          </SheetClose>
-        </SheetFooter>
+          </DrawerClose>
+        </DrawerFooter>
       </form.AppForm>
     </form>
   );

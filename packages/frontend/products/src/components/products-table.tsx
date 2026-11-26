@@ -42,7 +42,8 @@ function useProductColumns(path: string) {
       col.columns([
         col.accessor("id", {
           meta: {
-            className: 'w-20'
+            className: 'w-20',
+            mobile: "subtitle",
           },
           header: t("id"),
           cell: ({ row }) => (
@@ -56,6 +57,7 @@ function useProductColumns(path: string) {
         }),
         col.accessor("name", {
           header: t("name"),
+          meta: { mobile: "title" },
           cell: ({ row }) => (
             <Link
               href={`${path}/${encodeURIComponent(row.original.id)}`}
@@ -74,7 +76,7 @@ function useProductColumns(path: string) {
         }),
         col.accessor("createdAt", {
           header: t("createdAt"),
-          meta: { className: "text-right" },
+          meta: { className: "text-right", mobile: "hidden" },
           cell: (info) => (
             <LocalDate
               value={info.getValue()}

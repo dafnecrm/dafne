@@ -1,13 +1,9 @@
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@dafne/frontend-ui/components/card";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { requireUser } from "@/lib/session";
+import { PageContent, PageContentDescription, PageContentHeader, PageContentTitle } from "@dafne/frontend-ui/components/page-content";
+
 export default function Home() {
   return (
     <Suspense fallback={<Skeleton className="h-24 w-full rounded-xl" />}>
@@ -21,15 +17,15 @@ async function Welcome() {
   const t = await getTranslations("dashboard");
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-2xl">
+    <PageContent>
+      <PageContentHeader>
+        <PageContentTitle>
           {t("welcome", { name: user.firstname })}
-        </CardTitle>
-        <CardDescription>
+        </PageContentTitle>
+        <PageContentDescription>
           {t("signedInAs", { email: user.email })}
-        </CardDescription>
-      </CardHeader>
-    </Card>
+        </PageContentDescription>
+      </PageContentHeader>
+    </PageContent>
   );
 }

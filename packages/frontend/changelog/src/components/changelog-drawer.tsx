@@ -4,11 +4,24 @@ import type { ChangedField, ChangeOperation } from "@dafne/contracts";
 import {
   CircleCheckIcon,
   CirclePlusIcon,
-  CircleXIcon, HistoryIcon, RefreshCcwIcon, type LucideIcon
+  CircleXIcon,
+  HistoryIcon,
+  RefreshCcwIcon,
+  type LucideIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useRef, useState, useTransition, type ReactNode } from "react";
-import { Alert, AlertAction, AlertDescription } from "@dafne/frontend-ui/components/alert";
+import {
+  useEffect,
+  useRef,
+  useState,
+  useTransition,
+  type ReactNode,
+} from "react";
+import {
+  Alert,
+  AlertAction,
+  AlertDescription,
+} from "@dafne/frontend-ui/components/alert";
 import { Button } from "@dafne/frontend-ui/components/button";
 import {
   Empty,
@@ -18,13 +31,6 @@ import {
   EmptyTitle,
 } from "@dafne/frontend-ui/components/empty";
 import { LocalDate } from "@dafne/frontend-ui/components/local-date";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@dafne/frontend-ui/components/sheet";
 import { Spinner } from "@dafne/frontend-ui/components/spinner";
 import {
   Trace,
@@ -38,6 +44,14 @@ import {
 } from "@dafne/frontend-ui/components/trace";
 import type { ChangeEntryJson, LoadChanges } from "../types.ts";
 import { formatChangeValue } from "../values.ts";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from "@dafne/frontend-ui/components/drawer";
+import { useIsMobile } from "@dafne/frontend-ui/hooks/use-mobile";
 
 /** How the sheet shows one of the resource's fields. */
 export interface ChangeFieldConfig {
@@ -79,17 +93,25 @@ export function ChangelogSheet({
   description?: string;
 }) {
   const t = useTranslations("changelog");
+  const isMobile = useIsMobile();
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-md">
-        <SheetHeader>
-          <SheetTitle>{t("title")}</SheetTitle>
-          <SheetDescription>{description ?? t("description")}</SheetDescription>
-        </SheetHeader>
+    <Drawer
+      open={open}
+      onOpenChange={onOpenChange}
+      showSwipeHandle={isMobile}
+      swipeDirection={isMobile ? "down" : "right"}
+    >
+      <DrawerContent>
+        <DrawerHeader>
+          <DrawerTitle>{t("title")}</DrawerTitle>
+          <DrawerDescription>
+            {description ?? t("description")}
+          </DrawerDescription>
+        </DrawerHeader>
         {/* The content unmounts when the sheet closes: each opening reloads. */}
         <ChangelogEntries load={load} fields={fields} />
-      </SheetContent>
-    </Sheet>
+      </DrawerContent>
+    </Drawer>
   );
 }
 
@@ -102,7 +124,10 @@ function ChangelogEntries({
   fields: Record<string, ChangeFieldConfig>;
 }) {
   const t = useTranslations("changelog");
-  const [page, setPage] = useState<{ items: ChangeEntryJson[]; total: number } | null>(null);
+  const [page, setPage] = useState<{
+    items: ChangeEntryJson[];
+    total: number;
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   // The parent may pass a new function on every render: load the latest.
@@ -114,14 +139,20 @@ function ChangelogEntries({
   const fetchPage = (offset: number) => {
     startTransition(async () => {
       try {
-        const result = await loadRef.current({ limit: CHANGES_PAGE_SIZE, offset });
+        const result = await loadRef.current({
+          limit: CHANGES_PAGE_SIZE,
+          offset,
+        });
         if ("error" in result) {
           setError(result.error);
           return;
         }
         setError(null);
         setPage((previous) => ({
-          items: offset === 0 ? result.items : [...(previous?.items ?? []), ...result.items],
+          items:
+            offset === 0
+              ? result.items
+              : [...(previous?.items ?? []), ...result.items],
           total: result.total,
         }));
       } catch {
@@ -136,12 +167,16 @@ function ChangelogEntries({
 
   const items = page?.items ?? [];
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-4">
+    <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4">
       {error && (
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
           <AlertAction>
-            <Button variant="outline" size="xs" onClick={() => fetchPage(items.length)}>
+            <Button
+              variant="outline"
+              size="xs"
+              onClick={() => fetchPage(items.length)}
+            >
               {t("retry")}
             </Button>
           </AlertAction>
@@ -161,19 +196,32 @@ function ChangelogEntries({
       {items.length > 0 && (
         <Trace className="gap-3">
           {items.map((entry, index) => (
-            <ChangeTrace key={entry.id} entry={entry} fields={fields} defaultOpen={index === 0} />
+            <ChangeTrace
+              key={entry.id}
+              entry={entry}
+              fields={fields}
+              defaultOpen={index === 0}
+            />
           ))}
         </Trace>
       )}
       {pending ? (
-        <p className="flex items-center gap-2 text-sm text-muted-foreground" role="status">
+        <p
+          className="flex items-center gap-2 text-sm text-muted-foreground"
+          role="status"
+        >
           <Spinner />
           {t("loading")}
         </p>
       ) : (
         page &&
         items.length < page.total && (
-          <Button variant="outline" size="sm" className="self-center" onClick={() => fetchPage(items.length)}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="self-center"
+            onClick={() => fetchPage(items.length)}
+          >
             {t("loadMore")}
           </Button>
         )
@@ -204,7 +252,9 @@ function ChangeTrace({
             <Icon />
           </TraceIcon>
           <TraceTitle>
-            <span className="font-medium text-foreground">{entry.actor?.name ?? t("someone")}</span>{" "}
+            <span className="font-medium text-foreground">
+              {entry.actor?.name ?? t("someone")}
+            </span>{" "}
             {t(`operations.${entry.operation}`)}
           </TraceTitle>
           <TraceDescription className="text-xs proportional-nums tracking-tight">
@@ -218,9 +268,15 @@ function ChangeTrace({
         ) : (
           names.map((name) => (
             <p key={name}>
-              <span className="font-medium text-foreground">{fields[name]?.label ?? name}</span>
+              <span className="font-medium text-foreground">
+                {fields[name]?.label ?? name}
+              </span>
               {": "}
-              <FieldChange change={entry.changes[name]} operation={entry.operation} config={fields[name]} />
+              <FieldChange
+                change={entry.changes[name]}
+                operation={entry.operation}
+                config={fields[name]}
+              />
             </p>
           ))
         )}
@@ -248,7 +304,9 @@ function FieldChange({
   }
   return (
     <>
-      <span className="decoration-muted-foreground/50">{value(change.from)}</span>
+      <span className="decoration-muted-foreground/50">
+        {value(change.from)}
+      </span>
       {" → "}
       <span className="text-foreground">{value(change.to)}</span>
     </>
@@ -256,7 +314,10 @@ function FieldChange({
 }
 
 /** The changed fields: those of `fields` first, in its order, then the rest. */
-function changedFields(changes: Record<string, ChangedField>, fields: Record<string, ChangeFieldConfig>) {
+function changedFields(
+  changes: Record<string, ChangedField>,
+  fields: Record<string, ChangeFieldConfig>,
+) {
   const known = Object.keys(fields).filter((name) => name in changes);
   const others = Object.keys(changes)
     .filter((name) => !(name in fields))

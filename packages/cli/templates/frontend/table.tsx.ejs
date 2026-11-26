@@ -40,7 +40,7 @@ function use<%= s.pascal %>Columns() {
       col.columns([
   col.accessor("createdAt", {
     header: t("<%= p.camel %>.fields.createdAt"),
-    meta: { className: "text-right" },
+    meta: { className: "text-right", mobile: "aside" },
     cell: (info) => (
       <LocalDate value={info.getValue()} className="text-muted-foreground" />
     ),

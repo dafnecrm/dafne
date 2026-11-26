@@ -22,8 +22,7 @@ import {
 } from "@dafne/frontend-ui/components/empty";
 import type { TableParams } from "@dafne/frontend-data-table";
 import {
-  type SalesOrdersTableConfig,
-  SALES_ORDER_STATUS_OPTIONS,
+  type SalesOrdersTableConfig
 } from "../sales-orders-table.ts";
 import type { ListedSalesOrder } from "../types.ts";
 import { SalesOrderTableActions } from "./sales-order-table-actions.tsx";
@@ -31,8 +30,7 @@ import Link from "next/link";
 import { Button } from "@dafne/frontend-ui/components/button";
 import { SalesOrderTypeSelect } from "../sales-order-types/components/sales-order-type-select.tsx";
 import { useOptionLabel } from "@dafne/frontend-ui/hooks/use-option-labels";
-import { SALES_ORDER_STATUS_ICONS } from "./sales-order-status-icons.ts";
-import { Badge } from "@dafne/frontend-ui/components/badge";
+import { SalesOrderStatusBadge } from "./sales-order-status-badge.tsx";
 
 /*
  * Columns of the sales orders table. Column ids double as the backend's
@@ -70,6 +68,7 @@ export function useSalesOrderColumns({
           ),
           meta: {
             className: "w-20",
+            mobile: "subtitle"
           },
         }),
         col.accessor("type", {
@@ -79,12 +78,9 @@ export function useSalesOrderColumns({
         }),
         col.accessor("status", {
           header: t("salesOrders.fields.status"),
+          meta: { mobile: 'aside' },
           cell: (info) => {
-            const Icon = SALES_ORDER_STATUS_ICONS[info.getValue()]
-            return <Badge variant="outline">
-              <Icon />
-              {optionLabel(SALES_ORDER_STATUS_OPTIONS, info.getValue())}
-            </Badge>
+            return <SalesOrderStatusBadge status={info.getValue()} />
           }
         }),
         ...(customersPath
@@ -92,6 +88,7 @@ export function useSalesOrderColumns({
             col.accessor("customer", {
               header: t("salesOrders.fields.customer"),
               enableSorting: false,
+              meta: { mobile: "title" },
               cell: ({ row }) => (
                 <Link
                   href={`${customersPath}/${encodeURIComponent(row.original.customer.id)}`}
@@ -105,7 +102,7 @@ export function useSalesOrderColumns({
           : []),
         col.accessor("createdAt", {
           header: t("salesOrders.fields.createdAt"),
-          meta: { className: "text-right" },
+          meta: { className: "text-right", mobile: "hidden" },
           cell: (info) => (
             <LocalDate
               value={info.getValue()}
@@ -114,6 +111,11 @@ export function useSalesOrderColumns({
             />
           ),
         }),
+        col.accessor("itemsCount", {
+          header: t("salesOrders.fields.itemsCount"),
+          meta: { className: "text-right @2xl:hidden" },
+          cell: ({ row }) => row.original.itemsCount ?? 0
+        })
       ]),
     [t, path, customersPath, optionLabel],
   );

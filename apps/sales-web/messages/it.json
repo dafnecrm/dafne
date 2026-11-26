@@ -132,7 +132,12 @@
     "nothingYet": "Non c'è ancora niente qui.",
     "filterIs": "{label} è “{value}”",
     "filterContains": "{label} contiene “{value}”",
-    "and": " e "
+    "and": " e ",
+    "filters": "Filtri",
+    "filtersActive": "Filtri ({count})",
+    "sortBy": "Ordina per",
+    "sortAsc": "{label}, crescente",
+    "sortDesc": "{label}, decrescente"
   },
   "sidebar": {
     "title": "Barra laterale",

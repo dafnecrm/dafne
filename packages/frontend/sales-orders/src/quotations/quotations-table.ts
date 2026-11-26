@@ -8,6 +8,17 @@ import {
   type DataTableConfig,
 } from "@dafne/frontend-data-table";
 import { type QuotationsMessageKey } from "./messages/index.ts";
+import { AlarmClockOffIcon, CircleCheckIcon, CircleIcon, CircleXIcon, LucideIcon, SendIcon } from "lucide-react";
+
+/** Quotation status icons */
+export const QUOTATION_STATUS_ICONS: Record<QuotationStatus, LucideIcon> = {
+  draft: CircleIcon,
+  sent: SendIcon,
+  accepted: CircleCheckIcon,
+  expired: AlarmClockOffIcon,
+  rejected: CircleXIcon,
+};
+
 
 /** Labels (message keys) of the status values. */
 export const QUOTATION_STATUS_OPTIONS = [

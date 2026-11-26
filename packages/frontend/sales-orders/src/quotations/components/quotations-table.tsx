@@ -25,6 +25,7 @@ import {
 import type { ListedQuotation } from "../types.ts";
 import { QuotationTableActions } from "./quotation-table-actions.tsx";
 import Link from "next/link";
+import { QuotationStatusBadge } from "./quotation-status-badge.tsx";
 
 /*
  * Columns of the quotations table. Column ids double as the backend's
@@ -46,6 +47,7 @@ function useQuotationColumns(path: string) {
       col.columns([
         col.accessor("id", {
           header: t("quotations.fields.id"),
+          meta: { mobile: "subtitle" },
           cell: ({ row }) => (
             <Link
               href={`${path}/${encodeURIComponent(row.original.id)}`}
@@ -64,11 +66,12 @@ function useQuotationColumns(path: string) {
           header: t("quotations.fields.customerId"),
           enableSorting: false,
           cell: ({ row }) => row.original.customer.name,
+          meta: { mobile: "title" },
         }),
         col.accessor("status", {
           header: t("quotations.fields.status"),
-          cell: (info) =>
-            optionLabel(QUOTATION_STATUS_OPTIONS, info.getValue()),
+          meta: { mobile: 'aside' },
+          cell: (info) => <QuotationStatusBadge status={info.getValue()} />
         }),
         col.accessor("validUntil", {
           header: t("quotations.fields.validUntil"),
@@ -79,7 +82,7 @@ function useQuotationColumns(path: string) {
         }),
         col.accessor("createdAt", {
           header: t("quotations.fields.createdAt"),
-          meta: { className: "text-right" },
+          meta: { className: "text-right", mobile: 'hidden' },
           cell: (info) => (
             <LocalDate
               value={info.getValue()}
@@ -87,6 +90,11 @@ function useQuotationColumns(path: string) {
             />
           ),
         }),
+        col.accessor("itemsCount", {
+          header: t("quotations.fields.itemsCount"),
+          meta: { className: "text-right @2xl:hidden" },
+          cell: ({ row }) => row.original.itemsCount ?? 0
+        })
       ]),
     [t, optionLabel, path],
   );

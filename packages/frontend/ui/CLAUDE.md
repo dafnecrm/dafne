@@ -21,6 +21,18 @@ Next (`transpilePackages`).
   minimizes to icons: top-level groups stay (collapsible), the groups
   inside them don't (their pages are listed directly). No `next` here: the app passes
   `linkComponent` (Next's `Link`) and the `pathname`.
+- `components/dropdown-menu`: below the mobile breakpoint (`useIsMobile`)
+  a menu opens as a drawer from the bottom, with the same parts: a
+  submenu is a second drawer on top (an item closes both), the content's
+  `className` (a popover width) is ignored. `<DropdownMenu drawer={false}>` keeps the
+  dropdown. So action menus need no drawer of their own.
+- `components/select` and `components/combobox` do the same below the
+  mobile breakpoint (single value only; `drawer={false}` opts out). A
+  select's options open in a drawer: pass `items` to the `Select` so the
+  trigger names the value without the options mounted. A combobox's
+  `ComboboxInput` becomes a button showing the value (`ComboboxPrimitive.Value`),
+  and the drawer holds a search box and the list (Base UI's `inline`
+  mode); a custom input (not `ComboboxInput`) needs `drawer={false}`.
 - New shadcn components: `pnpm --filter @dafne/frontend-ui shadcn:add
   <name>` (`components.json` here). It writes the CSS variables into
   `src/styles/globals.css`.
