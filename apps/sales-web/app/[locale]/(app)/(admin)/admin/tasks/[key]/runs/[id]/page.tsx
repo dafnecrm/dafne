@@ -1,15 +1,13 @@
-import { ArrowLeftIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import { BreadcrumbLabel } from "@/components/page-breadcrumb";
-import { Button } from "@dafne/frontend-ui/components/button";
 import {
   PageContent,
-  PageContentAction,
   PageContentBody,
   PageContentHeader,
+  PageContentBack,
   PageContentTitle,
 } from "@dafne/frontend-ui/components/page-content";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
@@ -45,13 +43,16 @@ async function TaskRun({ params }: Pick<PageProps<"/[locale]/admin/tasks/[key]/r
       <BreadcrumbLabel href={taskPath} label={name} />
       <BreadcrumbLabel href={`${taskPath}/runs/${run.id}`} label={title} />
       <PageContentHeader>
-        <PageContentTitle>{`${name} · ${title}`}</PageContentTitle>
-        <PageContentAction>
-          <Button variant="outline" size="sm" nativeButton={false} render={<Link href={taskPath} />}>
-            <ArrowLeftIcon data-icon="inline-start" />
-            {name}
-          </Button>
-        </PageContentAction>
+        <PageContentTitle
+          back={
+            <PageContentBack
+              label={name}
+              render={<Link href={taskPath} />}
+            />
+          }
+        >
+          {`${name} · ${title}`}
+        </PageContentTitle>
       </PageContentHeader>
       <PageContentBody>
         <TaskRunDetails run={run} />

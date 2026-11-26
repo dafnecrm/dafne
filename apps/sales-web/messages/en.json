@@ -90,6 +90,7 @@
     "delete": "Delete",
     "cancel": "Cancel",
     "viewDetails": "View details",
+    "actions": "Actions",
     "actionsFor": "Actions for {name}",
     "deleteTitle": "Delete {name}?",
     "saveChanges": "Save changes",

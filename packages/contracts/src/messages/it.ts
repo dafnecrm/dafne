@@ -39,6 +39,7 @@ export const it: ContractMessages = {
     notClosed: 'Attività non trovata o non chiusa',
     name: { required: 'Inserisci il nome' },
     type: { required: 'Scegli il tipo' },
+    status: { required: 'Scegli lo stato' },
   },
   products: {
     notFound: 'Prodotto non trovato',

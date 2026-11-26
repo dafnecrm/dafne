@@ -42,6 +42,7 @@ export const en = {
     notClosed: 'Activity not found or not closed',
     name: { required: 'Enter the name' },
     type: { required: 'Choose the type' },
+    status: { required: 'Choose the status' },
   },
   products: {
     notFound: 'Product not found',

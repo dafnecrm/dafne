@@ -1,4 +1,3 @@
-import { ArrowLeftIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
@@ -9,9 +8,9 @@ import {
   PageContentAction,
   PageContentBody,
   PageContentHeader,
+  PageContentBack,
   PageContentTitle,
 } from "@dafne/frontend-ui/components/page-content";
-import { Button } from "@dafne/frontend-ui/components/button";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { AssistantModelDetails } from "@dafne/frontend-assistant/assistant-models/components/assistant-model-detail";
 import { AssistantModelDetailActions } from "@dafne/frontend-assistant/assistant-models/components/assistant-model-detail-actions";
@@ -47,17 +46,17 @@ async function AssistantModelProfile({
         label={`${t("assistantModels.singular")} ${assistantModel.id}`}
       />
       <PageContentHeader>
-        <PageContentTitle>{`${t("assistantModels.singular")} ${assistantModel.id}`}</PageContentTitle>
+        <PageContentTitle
+          back={
+            <PageContentBack
+              label={t("assistantModels.all")}
+              render={<Link href={assistantModelsTable.path} />}
+            />
+          }
+        >
+          {`${t("assistantModels.singular")} ${assistantModel.id}`}
+        </PageContentTitle>
         <PageContentAction className="flex flex-wrap justify-end gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            nativeButton={false}
-            render={<Link href={assistantModelsTable.path} />}
-          >
-            <ArrowLeftIcon data-icon="inline-start" />
-            {t("assistantModels.all")}
-          </Button>
           <AssistantModelDetailActions
             assistantModel={assistantModel}
             path={assistantModelsTable.path}

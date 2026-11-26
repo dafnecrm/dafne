@@ -1,4 +1,3 @@
-import { ArrowLeftIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
@@ -9,9 +8,9 @@ import {
   PageContentAction,
   PageContentBody,
   PageContentHeader,
+  PageContentBack,
   PageContentTitle,
 } from "@dafne/frontend-ui/components/page-content";
-import { Button } from "@dafne/frontend-ui/components/button";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { SalesOrderDetails } from "@dafne/frontend-sales-orders/components/sales-order-detail";
 import { SalesOrderDetailActions } from "@dafne/frontend-sales-orders/components/sales-order-detail-actions";
@@ -54,17 +53,17 @@ async function SalesOrderProfile({
         label={`${t("salesOrders.singular")} ${salesOrder.id}`}
       />
       <PageContentHeader>
-        <PageContentTitle>{`${t("salesOrders.singular")} ${salesOrder.id}`}</PageContentTitle>
+        <PageContentTitle
+          back={
+            <PageContentBack
+              label={t("salesOrders.all")}
+              render={<Link href={salesOrdersTable.path} />}
+            />
+          }
+        >
+          {`${t("salesOrders.singular")} ${salesOrder.id}`}
+        </PageContentTitle>
         <PageContentAction className="flex flex-wrap justify-end gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            nativeButton={false}
-            render={<Link href={salesOrdersTable.path} />}
-          >
-            <ArrowLeftIcon data-icon="inline-start" />
-            {t("salesOrders.all")}
-          </Button>
           <SalesOrderDetailActions
             salesOrder={salesOrder}
             path={salesOrdersTable.path}

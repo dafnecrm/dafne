@@ -14,7 +14,7 @@ const run = (tool: Tool | undefined, input: unknown) => tool!.execute!(input as 
 function setup() {
   const customers = { list: vi.fn(), get: vi.fn(), create: vi.fn(), update: vi.fn() };
   const salesOrders = { list: vi.fn(), get: vi.fn(), changeSalesOrderStatus: vi.fn() };
-  const activities = { list: vi.fn(), get: vi.fn(), create: vi.fn(), closeActivity: vi.fn() };
+  const activities = { list: vi.fn(), get: vi.fn(), create: vi.fn(), changeActivityStatus: vi.fn() };
   const products = { list: vi.fn(), get: vi.fn() };
   const salesOrderTypes = { list: vi.fn() };
   const quotations = { list: vi.fn(), get: vi.fn(), create: vi.fn(), update: vi.fn() };
@@ -275,6 +275,6 @@ describe('WRITE_TOOLS.run', () => {
   it('closes an activity as the user', async () => {
     const { tools, activities } = setup();
     await WRITE_TOOLS.propose_close_activity.run({ id: 3 }, tools.services, { id: 'u1' } as Actor);
-    expect(activities.closeActivity).toHaveBeenCalledWith(3, 'u1');
+    expect(activities.changeActivityStatus).toHaveBeenCalledWith(3, 'closed', { id: 'u1' });
   });
 });

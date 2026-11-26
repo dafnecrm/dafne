@@ -14,7 +14,10 @@ export const activity = salesSchema.table(
     name: varchar('name', { length: 255 }).notNull(),
     type: text({ enum: ['call', 'email', 'meeting', 'task'] }).notNull(),
     dueDate: timestamp('due_date', { precision: 3, withTimezone: true }),
-    /** @api readonly */
+    /**
+     * Sent by the form, but moved by the state machine, never written
+     * by the insert or update. @api nosave
+     */
     status: text('status', { enum: ['open', 'closed'] })
       .notNull()
       .default('open'),

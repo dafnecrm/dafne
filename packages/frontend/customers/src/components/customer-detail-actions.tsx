@@ -15,7 +15,9 @@ import { Button } from "@dafne/frontend-ui/components/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@dafne/frontend-ui/components/dropdown-menu";
@@ -41,6 +43,17 @@ export function CustomerDetailActions({
 
   return (
     <>
+      <Can I="update" a="Customer">
+        <Button
+          variant="outline"
+          size="sm"
+          className="hidden sm:inline-flex"
+          nativeButton={false}
+          render={<Link href={`${href}/edit`} />}>
+          <PencilIcon />
+          {t("common.edit")}
+        </Button>
+      </Can>
       <DropdownMenu>
         <DropdownMenuTrigger
           render={
@@ -54,12 +67,16 @@ export function CustomerDetailActions({
           <EllipsisVerticalIcon />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <Can I="update" a="Customer">
-            <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
-              <PencilIcon />
-              {t("common.edit")}
-            </DropdownMenuItem>
-          </Can>
+          <DropdownMenuGroup className="sm:hidden">
+            <DropdownMenuLabel>{t("common.actions")}</DropdownMenuLabel>
+            <Can I="update" a="Customer">
+              <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
+                <PencilIcon />
+                {t("common.edit")}
+              </DropdownMenuItem>
+            </Can>
+            <DropdownMenuSeparator />
+          </DropdownMenuGroup>
           <DropdownMenuItem onClick={() => setHistory(true)}>
             <HistoryIcon />
             {t("changelog.open")}

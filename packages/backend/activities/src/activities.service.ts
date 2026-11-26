@@ -19,6 +19,7 @@ import {
   type ActivityDetail,
   type ActivitiesList,
   type ListActivitiesQuery,
+  type ActivityStatus,
   msg,
 } from '@dafne/contracts';
 import {
@@ -28,6 +29,10 @@ import {
   type CrudService,
   type Executor,
 } from '@dafne/backend-crud';
+import { InjectStateMachine, type StateMachine } from '@dafne/backend-fsm';
+import type { SessionUser } from '@dafne/backend-session';
+import { ACTIVITIES_RESOURCE } from './activity.changelog.js';
+import { ACTIVITY_STATE_MACHINE } from './activity.states.js';
 
 export const ACTIVITIES_DEFAULT_PAGE_SIZE = 20;
 
@@ -71,8 +76,10 @@ export class ActivitiesService
   constructor(
     @InjectDrizzle() private readonly db: Database,
     registry: CrudHooksRegistry,
+    @InjectStateMachine(ACTIVITY_STATE_MACHINE)
+    private readonly stateMachine: StateMachine<ActivityStatus, number>,
   ) {
-    this.hooks = registry.for('activities', { db, load: (id, tx) => this.get(id, tx) });
+    this.hooks = registry.for(ACTIVITIES_RESOURCE, { db, load: (id, tx) => this.get(id, tx) });
   }
 
   /**
@@ -148,7 +155,10 @@ export class ActivitiesService
     return found;
   }
 
-  /** Creates a activity; `actor` is the creator. */
+  /**
+   * Creates an activity; `actor` is the creator. It's born open: another
+   * `status` goes through the state machine, in the same transaction.
+   */
   async create(
     body: ActivityBody,
     actor: Actor,
@@ -169,13 +179,19 @@ export class ActivitiesService
           updatedById: actor.id,
         })
         .returning({ id: activity.id });
+      if (body.status) {
+        await this.stateMachine.transition(id, body.status, { tx, user: actor });
+      }
       return id;
     });
   }
 
   /**
-   * Replaces a activity's fields; `actor` is the editor.
-   * Throws 404 if the activity doesn't exist, is deleted or is closed.
+   * Replaces an activity's fields; `actor` is the editor. A closed
+   * activity isn't edited, so a `status` that reopens it moves first and
+   * one that closes it moves last, both through the state machine in the
+   * same transaction. Throws 404 if the activity doesn't exist, is
+   * deleted or stays closed.
    */
   async update(
     id: number,
@@ -183,6 +199,9 @@ export class ActivitiesService
     actor: Actor,
   ): Promise<ActivityDetail> {
     return this.hooks.update({ id, body, actor }, async ({ tx, body }) => {
+      if (body.status === 'open') {
+        await this.stateMachine.transition(id, 'open', { tx, user: actor });
+      }
       const result = await tx
         .update(activity)
         .set({
@@ -197,6 +216,9 @@ export class ActivitiesService
         .where(and(eq(activity.id, id), notDeleted, notClosed));
       if (result.rowCount === 0) {
         throw new NotFoundException(msg('activities.notFound'));
+      }
+      if (body.status === 'closed') {
+        await this.stateMachine.transition(id, 'closed', { tx, user: actor });
       }
     });
   }
@@ -218,31 +240,17 @@ export class ActivitiesService
     });
   }
 
-  /** Completes an activity */
-  async closeActivity(id: number, userId: string) {
-    const now = new Date();
-    const result = await this.db
-      .update(activity)
-      .set({ status: 'closed', completedAt: now, completedById: userId })
-      .where(and(eq(activity.id, id), notDeleted, notClosed));
-    if (result.rowCount === 0) {
-      throw new NotFoundException(msg('activities.notOpen'));
-    }
-  }
-
   /**
-   * Reopens a closed activity: open again, and no longer completed. Throws
-   * 404 if the activity doesn't exist, is deleted or isn't closed.
+   * Moves an activity to `status` through its state machine; `user` is
+   * the editor. Throws 404 if it doesn't exist or is deleted, 400 if the
+   * status can't follow the current one, 403 if a guard says no.
    */
-  async reopenActivity(id: number) {
-    const result = await this.db
-      .update(activity)
-      .set({ status: 'open', completedAt: null, completedById: null })
-      .where(
-        and(eq(activity.id, id), notDeleted, eq(activity.status, 'closed')),
-      );
-    if (result.rowCount === 0) {
-      throw new NotFoundException(msg('activities.notClosed'));
-    }
+  async changeActivityStatus(
+    id: number,
+    status: ActivityStatus,
+    user: SessionUser,
+  ): Promise<ActivityDetail> {
+    await this.stateMachine.transition(id, status, { user });
+    return this.get(id);
   }
 }

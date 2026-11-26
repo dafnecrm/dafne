@@ -1,4 +1,3 @@
-import { ArrowLeftIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
@@ -9,9 +8,9 @@ import {
   PageContentAction,
   PageContentBody,
   PageContentHeader,
+  PageContentBack,
   PageContentTitle,
 } from "@dafne/frontend-ui/components/page-content";
-import { Button } from "@dafne/frontend-ui/components/button";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { DocumentTemplateDetailActions } from "@dafne/frontend-documents/components/document-template-detail-actions";
 import { DocumentTemplateDetails } from "@dafne/frontend-documents/components/document-template-detail";
@@ -52,17 +51,17 @@ async function DocumentTemplateProfile({
         label={`${t("documentTemplates.singular")} ${documentTemplate.id}`}
       />
       <PageContentHeader>
-        <PageContentTitle>{documentTemplate.name}</PageContentTitle>
+        <PageContentTitle
+          back={
+            <PageContentBack
+              label={t("documentTemplates.all")}
+              render={<Link href={documentTemplatesTable.path} />}
+            />
+          }
+        >
+          {documentTemplate.name}
+        </PageContentTitle>
         <PageContentAction className="flex flex-wrap justify-end gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            nativeButton={false}
-            render={<Link href={documentTemplatesTable.path} />}
-          >
-            <ArrowLeftIcon data-icon="inline-start" />
-            {t("documentTemplates.all")}
-          </Button>
           <DocumentTemplateDetailActions documentTemplate={documentTemplate} path={documentTemplatesTable.path} />
         </PageContentAction>
       </PageContentHeader>

@@ -19,6 +19,12 @@ export type ActivityType = (typeof ACTIVITY_TYPES)[number];
 export const ACTIVITY_STATUSES = ['open', 'closed'] as const;
 export type ActivityStatus = (typeof ACTIVITY_STATUSES)[number];
 
+/** Body of POST /activities/:id/status: the status to move the activity to. */
+export const activityStatusBodySchema = z.strictObject({
+  status: z.enum(ACTIVITY_STATUSES, { error: msg('activities.status.required') }),
+});
+export type ActivityStatusBody = z.output<typeof activityStatusBodySchema>;
+
 /**
  * Body of POST /activities and PUT /activities/:id. PUT replaces the
  * whole activity: omitted optional fields are cleared.
@@ -28,6 +34,11 @@ export const activityBodySchema = z.strictObject({
   type: z.enum(ACTIVITY_TYPES, { error: msg('activities.type.required') }),
   dueDate: optionalDate(msg('common.date.invalid')),
   notes: optionalText(z.string().max(65535)),
+  /**
+   * Moved by the state machine (ACTIVITY_STATES), not written with the
+   * fields: a new activity is open, and another status is a status change.
+   */
+  status: z.enum(ACTIVITY_STATUSES, { error: msg('activities.status.required') }).optional(),
 });
 
 /** What a client sends: blank optional fields may be "", null or missing. */

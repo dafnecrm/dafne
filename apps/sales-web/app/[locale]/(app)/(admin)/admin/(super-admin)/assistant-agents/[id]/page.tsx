@@ -1,4 +1,3 @@
-import { ArrowLeftIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
@@ -9,9 +8,9 @@ import {
   PageContentAction,
   PageContentBody,
   PageContentHeader,
+  PageContentBack,
   PageContentTitle,
 } from "@dafne/frontend-ui/components/page-content";
-import { Button } from "@dafne/frontend-ui/components/button";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { AssistantAgentDetails } from "@dafne/frontend-assistant/assistant-agents/components/assistant-agent-detail";
 import { AssistantAgentDetailActions } from "@dafne/frontend-assistant/assistant-agents/components/assistant-agent-detail-actions";
@@ -47,17 +46,17 @@ async function AssistantAgentProfile({
         label={`${t("assistantAgents.singular")} ${assistantAgent.id}`}
       />
       <PageContentHeader>
-        <PageContentTitle>{`${t("assistantAgents.singular")} ${assistantAgent.id}`}</PageContentTitle>
+        <PageContentTitle
+          back={
+            <PageContentBack
+              label={t("assistantAgents.all")}
+              render={<Link href={assistantAgentsTable.path} />}
+            />
+          }
+        >
+          {`${t("assistantAgents.singular")} ${assistantAgent.id}`}
+        </PageContentTitle>
         <PageContentAction className="flex flex-wrap justify-end gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            nativeButton={false}
-            render={<Link href={assistantAgentsTable.path} />}
-          >
-            <ArrowLeftIcon data-icon="inline-start" />
-            {t("assistantAgents.all")}
-          </Button>
           <AssistantAgentDetailActions
             assistantAgent={assistantAgent}
             path={assistantAgentsTable.path}

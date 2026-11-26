@@ -1,4 +1,3 @@
-import { ArrowLeftIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
@@ -9,9 +8,9 @@ import {
   PageContentAction,
   PageContentBody,
   PageContentHeader,
+  PageContentBack,
   PageContentTitle,
 } from "@dafne/frontend-ui/components/page-content";
-import { Button } from "@dafne/frontend-ui/components/button";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { UserGroupDetails } from "@dafne/frontend-user-groups/components/user-group-detail";
 import { UserGroupDetailActions } from "@dafne/frontend-user-groups/components/user-group-detail-actions";
@@ -47,17 +46,17 @@ async function UserGroupProfile({
         label={`${userGroup.name}`}
       />
       <PageContentHeader>
-        <PageContentTitle>{`${t("userGroups.singular")}: ${userGroup.name}`}</PageContentTitle>
+        <PageContentTitle
+          back={
+            <PageContentBack
+              label={t("userGroups.all")}
+              render={<Link href={userGroupsTable.path} />}
+            />
+          }
+        >
+          {`${t("userGroups.singular")}: ${userGroup.name}`}
+        </PageContentTitle>
         <PageContentAction className="flex flex-wrap justify-end gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            nativeButton={false}
-            render={<Link href={userGroupsTable.path} />}
-          >
-            <ArrowLeftIcon data-icon="inline-start" />
-            {t("userGroups.all")}
-          </Button>
           <UserGroupDetailActions
             userGroup={userGroup}
             path={userGroupsTable.path}

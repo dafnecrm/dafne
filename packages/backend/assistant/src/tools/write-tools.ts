@@ -199,7 +199,7 @@ const createActivity: WriteTool<z.infer<typeof createActivityInput>> = {
 
 const closeActivityInput = z.object({ id: z.int().positive() });
 const closeActivity: WriteTool<z.infer<typeof closeActivityInput>> = {
-  needs: { action: 'close', subject: 'Activity' },
+  needs: { action: 'changeStatus', subject: 'Activity' },
   description:
     'Propose marking an open activity (a call, email, meeting or task; never a sales order) as done. The user confirms it in the UI.',
   inputSchema: closeActivityInput,
@@ -209,7 +209,7 @@ const closeActivity: WriteTool<z.infer<typeof closeActivityInput>> = {
   },
   run: async (payload, deps, actor) => {
     const id = Number(payload.id);
-    await deps.activities.closeActivity(id, actor.id);
+    await deps.activities.changeActivityStatus(id, 'closed', actor);
     return { resource: 'activities', id };
   },
 };
