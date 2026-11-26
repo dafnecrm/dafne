@@ -70,10 +70,12 @@ export function useSalesOrderColumns({
           ),
           meta: {
             className: "w-20",
+            mobile: "title",
           },
         }),
         col.accessor("type", {
           header: t("salesOrders.fields.type"),
+          meta: { mobile: "subtitle" },
           enableSorting: false,
           cell: ({ row }) => row.original.type.description,
         }),
@@ -105,7 +107,7 @@ export function useSalesOrderColumns({
           : []),
         col.accessor("createdAt", {
           header: t("salesOrders.fields.createdAt"),
-          meta: { className: "text-right" },
+          meta: { className: "text-right", mobile: "aside" },
           cell: (info) => (
             <LocalDate
               value={info.getValue()}

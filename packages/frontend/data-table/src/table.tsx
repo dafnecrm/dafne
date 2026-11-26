@@ -22,11 +22,13 @@ import {
   ArrowUpIcon,
   FilterIcon,
   InboxIcon,
+  ListFilterIcon,
   XIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import {
+  Fragment,
   useMemo,
   useState,
   useTransition,
@@ -34,6 +36,13 @@ import {
   type ReactNode,
 } from "react";
 import { Button } from "@dafne/frontend-ui/components/button";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from "@dafne/frontend-ui/components/drawer";
 import {
   Empty,
   EmptyDescription,
@@ -95,6 +104,15 @@ import { cn } from "@dafne/frontend-ui/lib/utils";
  *     }),
  *   ]);
  *
+ * In a narrow container (below 42rem: a phone, or a sheet) each row is a
+ * card instead. `meta.mobile` says where a column goes in it: "title",
+ * "subtitle", "aside" (bottom right: dates, amounts), "field" (a label and
+ * its value, the default) or "hidden". Without a "title", the first
+ * "field" is the title. The sort is a select, the filters a drawer.
+ *
+ *   col.accessor("name", { header: "Name", meta: { mobile: "title" } }),
+ *   col.accessor("id", { header: "Id", meta: { mobile: "subtitle" } }),
+ *
  * Row actions (a button, a dropdown…) go in a last column via `rowActions`:
  *
  *   const userActions = (user: User) => (
@@ -122,8 +140,18 @@ export const dataTableFeatures = tableFeatures({
   columnMeta: {} as {
     /** Classes for the header and the cells, e.g. "text-right". */
     className?: string;
+    /** Where the column goes in the mobile card; "field" by default. */
+    mobile?: DataTableMobileRole;
   },
 });
+
+/** Where a column goes in the mobile card (see DataTable). */
+export type DataTableMobileRole =
+  | "title"
+  | "subtitle"
+  | "aside"
+  | "field"
+  | "hidden";
 
 export type DataTableFeatures = typeof dataTableFeatures;
 /** A column of any value type (what `columnHelper.columns()` returns). */
@@ -178,6 +206,74 @@ function actionsColumn<TData extends RowData>(
       </div>
     ),
   });
+}
+
+/** A column, as far as the mobile card cares. */
+interface MobileColumn {
+  id: string;
+  columnDef: { meta?: { mobile?: DataTableMobileRole } };
+}
+
+/** The card's title: the "title" column, else the first "field" one. */
+function titleColumnId(columns: MobileColumn[]): string | undefined {
+  const role = (c: MobileColumn) => c.columnDef.meta?.mobile ?? "field";
+  return (
+    columns.find((c) => role(c) === "title") ??
+    columns.find((c) => c.id !== "actions" && role(c) === "field")
+  )?.id;
+}
+
+/** A field's label in the card: the header when it's text, else the id. */
+function headerLabel(header: unknown, id: string): string {
+  return typeof header === "string" ? header : id;
+}
+
+/**
+ * The sort on mobile, where there are no headers to click: one select with
+ * each sortable column, ascending and descending.
+ */
+function DataTableMobileSort({
+  columns,
+  sort,
+  disabled,
+  onChange,
+}: {
+  columns: { id: string; label: string }[];
+  sort: { id: string; desc: boolean } | undefined;
+  disabled?: boolean;
+  onChange: (sort: { id: string; desc: boolean }) => void;
+}) {
+  const t = useTranslations("dataTable");
+  const items = columns.flatMap(({ id, label }) => [
+    { value: `${id}:asc`, label: t("sortAsc", { label }) },
+    { value: `${id}:desc`, label: t("sortDesc", { label }) },
+  ]);
+  return (
+    <Select
+      items={items}
+      value={sort ? `${sort.id}:${sort.desc ? "desc" : "asc"}` : null}
+      onValueChange={(value) => {
+        if (!value) {
+          return;
+        }
+        const at = value.lastIndexOf(":");
+        onChange({ id: value.slice(0, at), desc: value.slice(at + 1) === "desc" });
+      }}
+      disabled={disabled}
+    >
+      <SelectTrigger size="sm" className="self-start" aria-label={t("sortBy")}>
+        <ArrowUpDownIcon data-icon="inline-start" />
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {items.map((item) => (
+          <SelectItem key={item.value} value={item.value}>
+            {item.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
 }
 
 /** Props of a custom filter control (see `DataTableFilterControls`). */
@@ -343,22 +439,77 @@ export function DataTable<TData extends RowData>({
   const first = count ? pagination.pageIndex * pagination.pageSize + 1 : 0;
   const last = Math.min(first + rows.length - 1, count);
   const unit = noun ?? t("results");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const activeFilters = Object.keys(params.filters).length;
+  const filterBar = (stacked: boolean) => (
+    <DataTableFilters
+      // Reset the inputs when the URL's filters change (e.g. Back).
+      key={JSON.stringify(params.filters)}
+      filters={config.filters}
+      controls={filterControls}
+      active={params.filters}
+      disabled={navigating}
+      stacked={stacked}
+      onChange={(next) => {
+        setFiltersOpen(false);
+        // New filters start again from page 1.
+        navigate(tableHref(config, { ...params, filters: next, page: 1 }));
+      }}
+    />
+  );
+  const sortable = table.getAllLeafColumns().filter((c) => c.getCanSort());
+  const title = titleColumnId(table.getAllLeafColumns());
 
+  /*
+   * The table and the cards are both rendered, and a container query shows
+   * one: no flash on phones (the server can't know the width), and cards in
+   * narrow containers on desktop too (a sheet, a detail section).
+   */
   return (
-    <div className="flex flex-col gap-4">
+    <div className="@container flex flex-col gap-4">
       {config.filters.length > 0 && rows.length > 0 && (
-        <DataTableFilters
-          // Reset the inputs when the URL's filters change (e.g. Back).
-          key={JSON.stringify(params.filters)}
-          filters={config.filters}
-          controls={filterControls}
-          active={params.filters}
-          disabled={navigating}
-          onChange={(next) =>
-            // New filters start again from page 1.
-            navigate(tableHref(config, { ...params, filters: next, page: 1 }))
-          }
-        />
+        <>
+          <div className="hidden @2xl:block">{filterBar(false)}</div>
+          <Drawer open={filtersOpen} onOpenChange={setFiltersOpen}>
+            <div className="flex items-center gap-2 @2xl:hidden">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={navigating}
+                onClick={() => setFiltersOpen(true)}
+              >
+                <ListFilterIcon data-icon="inline-start" />
+                {activeFilters
+                  ? t("filtersActive", { count: activeFilters })
+                  : t("filters")}
+              </Button>
+              {activeFilters > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={navigating}
+                  onClick={() =>
+                    navigate(
+                      tableHref(config, { ...params, filters: {}, page: 1 }),
+                    )
+                  }
+                >
+                  <XIcon data-icon="inline-start" />
+                  {t("clear")}
+                </Button>
+              )}
+            </div>
+            <DrawerContent>
+              <DrawerHeader>
+                <DrawerTitle>{t("filters")}</DrawerTitle>
+                <DrawerDescription className="sr-only">
+                  {t("filters")}
+                </DrawerDescription>
+              </DrawerHeader>
+              <div className="overflow-y-auto p-4">{filterBar(true)}</div>
+            </DrawerContent>
+          </Drawer>
+        </>
       )}
 
       {rows.length === 0 ? (
@@ -370,7 +521,8 @@ export function DataTable<TData extends RowData>({
           />
         ))
       ) : (
-          <div className={cn('overflow-hidden [&_td:first-child]:pl-4 [&_td:last-child]:pr-4 [&_th:first-child]:pl-4 [&_th:last-child]:pr-4', bordered && 'rounded-lg border')}>
+          <>
+          <div className={cn('hidden @2xl:block overflow-hidden [&_td:first-child]:pl-4 [&_td:last-child]:pr-4 [&_th:first-child]:pl-4 [&_th:last-child]:pr-4', bordered && 'rounded-lg border')}>
           <Table aria-busy={navigating}>
             <TableHeader>
               {table.getHeaderGroups().map((group) => (
@@ -436,9 +588,102 @@ export function DataTable<TData extends RowData>({
             </TableBody>
           </Table>
         </div>
+        <div className="flex flex-col gap-2 @2xl:hidden">
+          {sortable.length > 0 && (
+            <DataTableMobileSort
+              columns={sortable.map((c) => ({
+                id: c.id,
+                label:
+                  typeof c.columnDef.header === "string"
+                    ? c.columnDef.header
+                    : c.id,
+              }))}
+              sort={sorting[0]}
+              disabled={navigating}
+              onChange={(next) => table.setSorting([next])}
+            />
+          )}
+          <ul
+            aria-busy={navigating}
+            className={cn(
+              "flex flex-col gap-2",
+              navigating && "opacity-60 transition-opacity",
+            )}
+          >
+            {rows.map((row) => {
+              const cells = row.getAllCells();
+              const of = (role: DataTableMobileRole) =>
+                cells.filter(
+                  (c) =>
+                    c.column.id !== "actions" &&
+                    c.column.id !== title &&
+                    (c.column.columnDef.meta?.mobile ?? "field") === role,
+                );
+              const titleCell = cells.find((c) => c.column.id === title);
+              const actions = cells.find((c) => c.column.id === "actions");
+              const subtitles = of("subtitle");
+              const fields = of("field");
+              const asides = of("aside");
+              return (
+                <li
+                  key={row.id}
+                  className="flex flex-col gap-2 rounded-lg border p-3 text-sm"
+                >
+                  <div className="flex items-start gap-2">
+                    <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                      {titleCell && (
+                        <div className="truncate font-medium">
+                          <table.FlexRender cell={titleCell} />
+                        </div>
+                      )}
+                      {subtitles.length > 0 && (
+                        <div className="flex flex-wrap gap-x-2 text-xs text-muted-foreground">
+                          {subtitles.map((cell) => (
+                            <span key={cell.id}>
+                              <table.FlexRender cell={cell} />
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    {actions && (
+                      <div className="-mt-1 -mr-1 flex shrink-0 gap-1">
+                        <table.FlexRender cell={actions} />
+                      </div>
+                    )}
+                  </div>
+                  {fields.length > 0 && (
+                    <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
+                      {fields.map((cell) => (
+                        <Fragment key={cell.id}>
+                          <dt className="text-muted-foreground">
+                            {headerLabel(cell.column.columnDef.header, cell.column.id)}
+                          </dt>
+                          <dd className="min-w-0 break-words">
+                            <table.FlexRender cell={cell} />
+                          </dd>
+                        </Fragment>
+                      ))}
+                    </dl>
+                  )}
+                  {asides.length > 0 && (
+                    <div className="flex flex-wrap items-center justify-end gap-x-3 font-medium text-xs">
+                      {asides.map((cell) => (
+                        <span key={cell.id}>
+                          <table.FlexRender cell={cell} />
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+        </>
       )}
 
-      {rows.length > 0 && <div className="flex items-center justify-between gap-2 text-sm text-muted-foreground">
+      {rows.length > 0 && <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground">
         <span className="flex items-center gap-2">
           {count
             ? t("range", { first, last, total: count, unit })
@@ -447,6 +692,7 @@ export function DataTable<TData extends RowData>({
         </span>
         <div className="flex items-center gap-2">
           {config.pageSizes.length > 1 && (
+            <div className="hidden @2xl:block">
             <Select
               items={config.pageSizes.map((size) => ({
                 value: size,
@@ -467,6 +713,7 @@ export function DataTable<TData extends RowData>({
                 ))}
               </SelectContent>
             </Select>
+            </div>
           )}
           <Button
             variant="outline"
@@ -509,12 +756,15 @@ export function DataTableFilters({
   controls,
   active,
   disabled,
+  stacked = false,
   onChange,
 }: {
   filters: readonly TableFilterDef[];
   controls?: DataTableFilterControls;
   active: TableFilters;
   disabled?: boolean;
+  /** One control per line, full width (the mobile drawer). */
+  stacked?: boolean;
   onChange: (filters: TableFilters) => void;
 }) {
   const [values, setValues] = useState<TableFilters>(active);
@@ -532,7 +782,12 @@ export function DataTableFilters({
 
   return (
     <form
-      className="flex flex-wrap items-center gap-2"
+      className={cn(
+        "flex gap-2",
+        stacked
+          ? "flex-col items-stretch *:w-full [&_input]:w-full"
+          : "flex-wrap items-center",
+      )}
       onSubmit={(event) => {
         event.preventDefault();
         onChange(values);
@@ -562,7 +817,7 @@ export function DataTableFilters({
             onValueChange={(option) => set(def.field, option?.value ?? "")}
           >
             <ComboboxInput
-              className="w-40"
+              className={stacked ? "w-full" : "w-40"}
               placeholder={pickPlaceholder(def)}
               aria-label={t(def.label)}
               showClear={Boolean(values[def.field])}
@@ -582,7 +837,7 @@ export function DataTableFilters({
           <Input
             key={def.field}
             type="search"
-            className="w-52"
+            className={stacked ? "w-full" : "w-52"}
             value={values[def.field] ?? ""}
             onChange={(event) => set(def.field, event.target.value)}
             placeholder={t(def.placeholder ?? def.label)}

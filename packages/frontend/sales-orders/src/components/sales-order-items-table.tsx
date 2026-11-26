@@ -50,11 +50,13 @@ function useSalesOrderItemColumns({ productsPath }: { productsPath?: string }) {
       col.columns([
         col.accessor("position", {
           header: t("salesOrders.items.fields.position"),
+          meta: { mobile: "subtitle" },
           cell: ({ row }) => row.original.position,
         }),
         col.accessor((item) => item.product?.name ?? item.productId, {
           id: "products",
           header: t("salesOrders.items.fields.productId"),
+          meta: { mobile: "title" },
           cell: ({ row, getValue }) =>
             productsPath && row.original.productId != null ? (
               <Link
@@ -89,7 +91,7 @@ function useSalesOrderItemColumns({ productsPath }: { productsPath?: string }) {
         }),
         col.accessor("price", {
           header: t("salesOrders.items.fields.price"),
-          meta: { className: "text-right" },
+          meta: { className: "text-right", mobile: "aside" },
           cell: ({ row }) => row.original.price == null
             ? "—"
             : <div className="flex items-center justify-end gap-2">

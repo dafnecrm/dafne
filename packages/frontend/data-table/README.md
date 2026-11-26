@@ -35,6 +35,27 @@ picker, the client table passes `filterControls` to `DataTable`, keyed by
 filter field (e.g. `{ customerId: CustomerFilter }`): components can't go
 in the config, which the server page passes to the client as plain data.
 
+### Mobile
+
+In a container narrower than 42rem (a phone, or a sheet on desktop), each
+row is a card, sorting is a select and the filters open in a drawer. Each
+column's `meta.mobile` says where it goes in the card:
+
+| `mobile`   | In the card                                 |
+| ---------- | ------------------------------------------- |
+| `title`    | The heading (else the first `field` column) |
+| `subtitle` | Small, muted, under the title               |
+| `field`    | A label and its value (the default)         |
+| `aside`    | Bottom right: dates, amounts                |
+| `hidden`   | Not shown                                   |
+
+```ts
+col.accessor("name", { header: t("name"), meta: { mobile: "title" } }),
+col.accessor("createdAt", { header: t("createdAt"), meta: { className: "text-right", mobile: "aside" } }),
+```
+
+Row actions go in the card's top right corner.
+
 ## Tasks
 
 From the monorepo root:

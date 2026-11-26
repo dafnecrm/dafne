@@ -48,7 +48,8 @@ function useCustomerColumns(path: string) {
     return col.columns([
       col.accessor("id", {
         meta: {
-          className: 'w-20'
+          className: 'w-20',
+          mobile: "subtitle",
         },
         header: t("id"),
         cell: ({ row }) => (
@@ -62,6 +63,7 @@ function useCustomerColumns(path: string) {
       }),
       col.accessor("name", {
         header: t("name"),
+        meta: { mobile: "title" },
         cell: ({ row }) => (
           <Link
             href={href(row.original.id)}
@@ -105,11 +107,12 @@ function useCustomerColumns(path: string) {
       }),
       col.accessor("type", {
         header: t("type"),
+        meta: { mobile: "subtitle" },
         cell: (info) => typeLabel(info.getValue()),
       }),
       col.accessor("createdAt", {
         header: t("createdAt"),
-        meta: { className: "text-right" },
+        meta: { className: "text-right", mobile: "aside" },
         cell: (info) => (
           <LocalDate
             value={info.getValue()}
