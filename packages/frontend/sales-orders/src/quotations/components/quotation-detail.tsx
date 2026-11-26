@@ -11,6 +11,7 @@ import {
   TextIcon,
   UserPenIcon,
   UserPlusIcon,
+  HashIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
@@ -43,7 +44,7 @@ export function QuotationDetails({
 }) {
   const t = useTranslations();
   const locale = useLocale();
-  
+
   return (
     <>
       <DetailSection
@@ -89,10 +90,15 @@ export function QuotationDetails({
         )}
         <Detail icon={TextIcon} label={t("quotations.fields.notes")} wide>
           {quotation.notes ? (
-            <span className="font-normal whitespace-pre-wrap">{quotation.notes}</span>
+            <span className="font-normal whitespace-pre-wrap">
+              {quotation.notes}
+            </span>
           ) : (
             "—"
           )}
+        </Detail>
+        <Detail icon={HashIcon} label={t("quotations.fields.itemsCount")}>
+          {quotation.itemsCount}
         </Detail>
       </DetailSection>
       <DetailSection title={t("quotations.sections.items")}>

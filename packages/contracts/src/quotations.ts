@@ -40,7 +40,7 @@ export const quotationBodySchema = z.strictObject({
   notes: optionalText(z.string().max(65535)),
   customerId: requiredId(msg('quotations.customerId.required')),
   typeId: requiredText(5, msg('quotations.typeId.required')),
-  validUntil: optionalDate(msg('common.date.invalid')),
+  validUntil: z.coerce.date({ error: msg('common.date.invalid') }),
   items: documentItemsSchema,
 });
 
@@ -112,7 +112,7 @@ export interface ListedQuotation {
   typeId: string;
   customer: SalesOrderCustomer;
   type: SalesOrderTypeSummary;
-  validUntil: Date | null;
+  validUntil: Date;
   createdAt: Date;
   updatedAt: Date;
   itemsCount: number;
