@@ -17,7 +17,7 @@ import {
 import type { SalesOrderItemFormValues } from "../schema.ts";
 import type { SalesOrderDetailItem } from "../types.ts";
 import { SalesOrderItemTable } from "./sales-order-items-table.tsx";
-import { SalesOrderItemSheet, type SalesOrderItemUnit } from "./sales-order-item-sheet.tsx";
+import { SalesOrderItemSheet, type SalesOrderItemUnit } from "./sales-order-item-drawer.tsx";
 
 /**
  * The items of a document's form (a sales order, a quotation): their

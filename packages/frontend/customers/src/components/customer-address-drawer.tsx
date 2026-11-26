@@ -120,7 +120,7 @@ function AddressForm({
   return (
     <form
       noValidate
-      className="flex flex-1 flex-col overflow-y-auto"
+      className="flex flex-1 flex-col overflow-y-auto p-4"
       onSubmit={(e) => {
         e.preventDefault();
         // The drawer is portaled, but React still bubbles the event to the customer form.
@@ -129,7 +129,7 @@ function AddressForm({
       }}
     >
       <form.AppForm>
-        <FieldGroup className="p-4">
+        <FieldGroup>
           <form.AppField name="type">
             {(field) => (
               <field.SelectField

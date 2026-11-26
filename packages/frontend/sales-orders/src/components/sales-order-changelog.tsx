@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { ChangelogSheet, type ChangeFieldConfig } from "@dafne/frontend-changelog/components/changelog-sheet";
+import { ChangelogSheet, type ChangeFieldConfig } from "@dafne/frontend-changelog/components/changelog-drawer";
 import {
   EditedSummary,
   ListChangeDetails,

@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import {
   ChangelogSheet,
   type ChangeFieldConfig,
-} from "@dafne/frontend-changelog/components/changelog-sheet";
+} from "@dafne/frontend-changelog/components/changelog-drawer";
 import type { QuotationDetail } from "../types.ts";
 import { getQuotationChanges } from "../actions.ts";
 

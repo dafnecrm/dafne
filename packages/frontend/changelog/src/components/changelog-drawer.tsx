@@ -167,7 +167,7 @@ function ChangelogEntries({
 
   const items = page?.items ?? [];
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-4">
+    <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4">
       {error && (
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>

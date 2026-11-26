@@ -8,7 +8,7 @@ Relative imports end in `.ts`/`.tsx`.
   the apps under `changelog`), `formatChangeValue`, `diffListElements` (a list's elements added,
   removed, or changed with their fields) and `diffList` (their counts), the types
   (`ChangesPage`, `LoadChanges`: what a resource's server action gives).
-- `./components/changelog-sheet`: `ChangelogSheet`, opened by the page
+- `./components/changelog-drawer`: `ChangelogSheet`, opened by the page
   (`open`, `onOpenChange`, e.g. a History item of the detail actions);
   loads with `load` when opened, 20 changes at a time, each a `Trace` of
   `@dafne/frontend-ui`. `fields` names the resource's fields

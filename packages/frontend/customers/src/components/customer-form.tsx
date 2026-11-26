@@ -27,7 +27,7 @@ import { useResetOnLeave } from "@dafne/frontend-forms/client";
 import type { CustomerDetail } from "../types.ts";
 import { CUSTOMER_TYPE_OPTIONS } from "../customers-table.ts";
 import { saveCustomer } from "../actions.ts";
-import { CustomerAddressSheet } from "./customer-address-sheet.tsx";
+import { CustomerAddressSheet } from "./customer-address-drawer.tsx";
 import { customerFormOpts, customerSchema } from "../schema.ts";
 import { CustomerAddressTable } from "./customer-address-table.tsx";
 import { DetailSection } from "@dafne/frontend-ui/components/detail";

@@ -4,7 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import {
   ChangelogSheet,
   type ChangeFieldConfig,
-} from "@dafne/frontend-changelog/components/changelog-sheet";
+} from "@dafne/frontend-changelog/components/changelog-drawer";
 import { ListChangeDetails } from "@dafne/frontend-changelog/components/change-values";
 import { LANGUAGES } from "@dafne/contracts";
 import { countryName } from "@dafne/frontend-ui/lib/country-name";
