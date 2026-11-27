@@ -4,32 +4,32 @@
  * `uomConversions`.
  */
 export const en = {
-  title: "Conversions",
-  singular: "Conversion",
-  new: "New conversion",
   all: "All conversions",
-  noun: "conversions",
   create: "Create conversion",
-  editMeta: "Edit conversion",
-  newDescription: "How many of a unit make one of another unit of the same kind: 1 kg = 1000 g. The same for every product.",
+  deleteDescription: "Products will no longer be sold in one of these units by the other.",
   editDescription: "Saving replaces the conversion: products sold in these units use the new factor from now on.",
+  editMeta: "Edit conversion",
   empty: {
-    title: "No conversions found",
     filtered: "No conversion where {filter}.",
     none: "Add your first conversion to get started.",
+    title: "No conversions found",
   },
-  deleteDescription: "Products will no longer be sold in one of these units by the other.",
-  notFound: "This conversion no longer exists.",
-  sections: { details: "Details" },
   fields: {
     createdAt: "Added",
-    id: "ID",
+    equals: "1 {to} = {factor} {from}",
+    factor: "Factor",
     fromUomId: "From",
+    id: "ID",
     toUomId: "To",
     uomId: "Unit",
-    factor: "Factor",
-    equals: "1 {to} = {factor} {from}",
   },
+  new: "New conversion",
+  newDescription: "How many of a unit make one of another unit of the same kind: 1 kg = 1000 g. The same for every product.",
+  notFound: "This conversion no longer exists.",
+  noun: "conversions",
+  sections: { details: "Details" },
+  singular: "Conversion",
+  title: "Conversions",
 };
 
 /** The shape every language must have: same keys, any text. */

@@ -14,12 +14,12 @@ function failedFields(body: unknown) {
 describe("quotationBodySchema", () => {
   it("parses a body", () => {
     expect(
-      quotationBodySchema.parse({ customerId: 1, typeId: "STD" }),
+      quotationBodySchema.parse({ customerId: 1, typeId: "STD", validUntil: '2026-01-01' }),
     ).toEqual({
       customerId: 1,
       typeId: "STD",
       notes: null,
-      validUntil: null,
+      validUntil: new Date("2026-01-01T00:00:00.000Z"),
       items: [],
     });
   });
@@ -27,10 +27,10 @@ describe("quotationBodySchema", () => {
   it("takes the items of a sales order and rejects two with the same position", () => {
     const item = { productId: 10, quantity: 2, position: 1 };
     expect(
-      quotationBodySchema.parse({ customerId: 1, typeId: "STD", items: [item] }).items,
+      quotationBodySchema.parse({ customerId: 1, typeId: "STD", items: [item], validUntil: '2026-01-01' }).items,
     ).toEqual([{ ...item, uomId: null }]);
     expect(
-      failedFields({ customerId: 1, typeId: "STD", items: [item, item] }),
+      failedFields({ customerId: 1, typeId: "STD", items: [item, item], validUntil: '2026-01-01' }),
     ).toEqual(["items"]);
   });
 
@@ -40,6 +40,7 @@ describe("quotationBodySchema", () => {
         deletedAt: "2026-01-01",
         customerId: 1,
         typeId: "STD",
+        validUntil: '2026-01-01',
       }),
     ).toEqual(["unrecognized_keys"]);
   });

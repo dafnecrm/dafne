@@ -4,14 +4,14 @@
  * `geo`.
  */
 export const en = {
-  searchFailed: "The search failed.",
-  searching: "Searching…",
-  tooShort: "Type at least {min} characters.",
-  noPlaces: "No places found.",
-  searchPlaceholder: "Search an address…",
   countryPlaceholder: "Choose a country…",
   loadingCountries: "Loading countries…",
   noCountries: "No countries found.",
+  noPlaces: "No places found.",
+  searchFailed: "The search failed.",
+  searchPlaceholder: "Search an address…",
+  searching: "Searching…",
+  tooShort: "Type at least {min} characters.",
 };
 
 /** The shape every language must have: same keys, any text. */

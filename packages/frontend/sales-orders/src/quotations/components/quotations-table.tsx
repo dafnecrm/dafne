@@ -18,10 +18,7 @@ import {
 } from "@dafne/frontend-ui/components/empty";
 import { useOptionLabel } from "@dafne/frontend-ui/hooks/use-option-labels";
 import type { TableParams } from "@dafne/frontend-data-table";
-import {
-  type QuotationsTableConfig,
-  QUOTATION_STATUS_OPTIONS,
-} from "../quotations-table.ts";
+import { type QuotationsTableConfig } from "../quotations-table.ts";
 import type { ListedQuotation } from "../types.ts";
 import { QuotationTableActions } from "./quotation-table-actions.tsx";
 import Link from "next/link";
@@ -47,7 +44,7 @@ function useQuotationColumns(path: string) {
       col.columns([
         col.accessor("id", {
           header: t("quotations.fields.id"),
-          meta: { className: 'w-20', mobile: "subtitle" },
+          meta: { className: "w-20", mobile: "subtitle" },
           cell: ({ row }) => (
             <Link
               href={`${path}/${encodeURIComponent(row.original.id)}`}
@@ -70,8 +67,8 @@ function useQuotationColumns(path: string) {
         }),
         col.accessor("status", {
           header: t("quotations.fields.status"),
-          meta: { mobile: 'aside' },
-          cell: (info) => <QuotationStatusBadge status={info.getValue()} />
+          meta: { mobile: "aside" },
+          cell: (info) => <QuotationStatusBadge status={info.getValue()} />,
         }),
         col.accessor("validUntil", {
           header: t("quotations.fields.validUntil"),
@@ -82,7 +79,7 @@ function useQuotationColumns(path: string) {
         }),
         col.accessor("createdAt", {
           header: t("quotations.fields.createdAt"),
-          meta: { className: "text-right", mobile: 'hidden' },
+          meta: { className: "text-right", mobile: "hidden" },
           cell: (info) => (
             <LocalDate
               value={info.getValue()}
@@ -93,8 +90,8 @@ function useQuotationColumns(path: string) {
         col.accessor("itemsCount", {
           header: t("quotations.fields.itemsCount"),
           meta: { className: "text-right @2xl:hidden" },
-          cell: ({ row }) => row.original.itemsCount ?? 0
-        })
+          cell: ({ row }) => row.original.itemsCount ?? 0,
+        }),
       ]),
     [t, optionLabel, path],
   );

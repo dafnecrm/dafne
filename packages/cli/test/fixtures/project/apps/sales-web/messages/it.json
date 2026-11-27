@@ -1,15 +1,15 @@
 {
+  "common": {
+    "no": "No",
+    "yes": "Sì"
+  },
   "nav": {
-    "home": "Home",
-    "dashboard": "Dashboard",
+    "account": "Account",
+    "admin": "Amministrazione",
     "crm": "CRM",
     "customers": "Clienti",
-    "admin": "Amministrazione",
-    "users": "Utenti",
-    "account": "Account"
-  },
-  "common": {
-    "yes": "Sì",
-    "no": "No"
+    "dashboard": "Dashboard",
+    "home": "Home",
+    "users": "Utenti"
   }
 }

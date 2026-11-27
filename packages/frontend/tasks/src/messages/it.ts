@@ -2,84 +2,84 @@ import type { TasksMessages } from "./en.ts";
 
 /** Testi delle attività pianificate in italiano: le stesse chiavi di en.ts. */
 export const it: TasksMessages = {
-  title: "Attività pianificate",
-  description: "Lavori che l'app esegue secondo una pianificazione, o quando vengono avviati. Una sola esecuzione per attività alla volta.",
   all: "Tutte le attività",
+  description: "Lavori che l'app esegue secondo una pianificazione, o quando vengono avviati. Una sola esecuzione per attività alla volta.",
   empty: "Ancora nessuna attività.",
-  names: {
-    tasks: {
-      cleanup: {
-        name: "Pulizia delle esecuzioni",
-        description: "Elimina le esecuzioni vecchie e chiude come fallite quelle interrotte quando l'app delle attività si è fermata.",
-      },
-    },
-    quotations: {
-      expiry: {
-        name: "Scadenza offerte",
-        description: "Assegna lo stato expired alle offerte non più valide."
-      }
-    }
-  },
   fields: {
-    task: "Attività",
-    schedule: "Pianificazione",
     cron: "Espressione cron",
-    timezone: "Fuso orario",
-    enabled: "Attiva",
-    timeoutSeconds: "Tempo massimo (secondi)",
-    nextRunAt: "Prossima esecuzione",
-    lastRun: "Ultima esecuzione",
     defaultCron: "Pianificazione predefinita",
+    enabled: "Attiva",
+    lastRun: "Ultima esecuzione",
+    nextRunAt: "Prossima esecuzione",
+    schedule: "Pianificazione",
+    task: "Attività",
+    timeoutSeconds: "Tempo massimo (secondi)",
+    timezone: "Fuso orario",
   },
   hints: {
     cron: "minuto ora giorno mese giorno-settimana, es. 0 3 * * * (ogni giorno alle 3:00), */15 * * * * (ogni 15 minuti). Vuota: parte solo quando viene avviata.",
+    customized: "Modificata da un amministratore: i valori predefiniti del codice non valgono più.",
     enabled: "Disattivata: niente esecuzioni pianificate, e le altre app non possono avviarla. Gli amministratori sì.",
     timeoutSeconds: "Un'esecuzione che dura di più fallisce. Vuoto: nessun limite.",
-    customized: "Modificata da un amministratore: i valori predefiniti del codice non valgono più.",
   },
   manualOnly: "Solo se avviata",
-  off: "Disattivata",
+  names: {
+    quotations: {
+      expiry: {
+        description: "Assegna lo stato expired alle offerte non più valide.",
+        name: "Scadenza offerte"
+      }
+    },
+    tasks: {
+      cleanup: {
+        description: "Elimina le esecuzioni vecchie e chiude come fallite quelle interrotte quando l'app delle attività si è fermata.",
+        name: "Pulizia delle esecuzioni",
+      },
+    }
+  },
   never: "Mai eseguita",
-  settings: "Impostazioni",
-  save: "Salva impostazioni",
-  saved: "Impostazioni salvate.",
+  off: "Disattivata",
   reset: "Ripristina predefiniti",
   runNow: "Esegui ora",
   runs: {
-    title: "Esecuzioni",
-    empty: "Nessuna esecuzione.",
     all: "Tutte",
-    previous: "Precedenti",
-    next: "Successive",
-    page: "{from}–{to} di {total}",
-    run: "Esecuzione {id}",
+    empty: "Nessuna esecuzione.",
     fields: {
-      id: "Esecuzione",
-      status: "Stato",
-      trigger: "Avviata da",
-      queuedAt: "In coda dal",
-      startedAt: "Iniziata",
-      finishedAt: "Terminata",
       duration: "Durata",
       error: "Errore",
       errorStack: "Stack trace",
+      finishedAt: "Terminata",
+      id: "Esecuzione",
       payload: "Input",
+      queuedAt: "In coda dal",
       result: "Risultato",
       source: "App",
+      startedAt: "Iniziata",
+      status: "Stato",
+      trigger: "Avviata da",
     },
     logs: "Log",
+    next: "Successive",
     noLogs: "Nessun messaggio.",
+    page: "{from}–{to} di {total}",
+    previous: "Precedenti",
+    run: "Esecuzione {id}",
+    title: "Esecuzioni",
   },
+  save: "Salva impostazioni",
+  saved: "Impostazioni salvate.",
+  settings: "Impostazioni",
   status: {
+    failed: "Fallita",
     queued: "In coda",
     running: "In esecuzione",
-    succeeded: "Riuscita",
-    failed: "Fallita",
     skipped: "Saltata",
+    succeeded: "Riuscita",
   },
+  title: "Attività pianificate",
   trigger: {
-    schedule: "Pianificazione",
-    manual: "Amministratore",
     api: "Un'altra app",
+    manual: "Amministratore",
+    schedule: "Pianificazione",
   },
 };

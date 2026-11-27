@@ -9,11 +9,10 @@ import {
   GroceriesIcon,
   PackageIcon,
   BoxesLinkedIcon,
-  BriefcaseBusinessIcon,
-  ShieldIcon,
-  KeyRoundIcon,
+  BriefcaseBusinessIcon, KeyRoundIcon,
   LayoutDashboardIcon,
   SparklesIcon,
+  BoxDashedIcon, SettingsIcon
 } from "lucide-react";
 
 /**
@@ -87,8 +86,8 @@ export const NAV_SECTIONS: NavSection[] = [
           { title: "uomConversions", href: "/uom-conversions", icon: ArrowRightLeftIcon },
         ],
       },
-      { title: "quotations", href: "/quotations", icon: FileTextIcon },
-      { title: "orders", href: "/sales-orders", icon: PackageIcon },
+      { title: "quotations", href: "/quotations", icon: BoxDashedIcon },
+      { title: "salesOrders", href: "/sales-orders", icon: PackageIcon },
     ],
   },
   {
@@ -103,9 +102,9 @@ export const NAV_SECTIONS: NavSection[] = [
   },
   // Admin
   {
-    title: "admin",
+    title: "settings",
     href: ".",
-    icon: ShieldIcon,
+    icon: SettingsIcon,
     adminOnly: true,
     items: [
       {

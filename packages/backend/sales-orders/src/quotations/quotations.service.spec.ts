@@ -16,7 +16,7 @@ const actor = (id: string) => ({ id }) as Actor;
 
 /** A body as the validation pipe hands it to the service. */
 const body = (input: Partial<QuotationBodyInput> = {}) =>
-  quotationBodySchema.parse({ customerId: 1, typeId: 'STD', ...input });
+  quotationBodySchema.parse({ customerId: 1, typeId: 'STD', validUntil: '2026-01-01', ...input });
 
 const { quotation, quotationItem } = schema;
 const notDeleted = isNull(quotation.deletedAt);
@@ -178,7 +178,7 @@ describe('QuotationsService', () => {
 
     it('prices the items as a sales order does', async () => {
       await service.create(
-        body({ items: [{ productId: 10, quantity: 2, uomId: 'box', position: 1 }] }),
+        body({ items: [{ productId: 10, quantity: 2, uomId: 'box', position: 1 }], validUntil: '2026-01-01' }),
         actor('u1'),
       );
 
@@ -189,14 +189,14 @@ describe('QuotationsService', () => {
     });
 
     it('moves a quotation created with another status through the state machine', async () => {
-      await service.create(body({ status: 'sent' }), actor('u1'));
+      await service.create(body({ status: 'sent', validUntil: '2026-01-01' }), actor('u1'));
 
       expect(stateMachine.transition).toHaveBeenCalledWith(1, 'sent', { tx: db, user: actor('u1') });
     });
 
     it('rejects a unit the product is not sold in', async () => {
       await expect(
-        service.create(body({ items: [{ productId: 10, quantity: 1, uomId: 'kg', position: 1 }] }), actor('u1')),
+        service.create(body({ items: [{ productId: 10, quantity: 1, uomId: 'kg', position: 1 }], validUntil: '2026-01-01' }), actor('u1')),
       ).rejects.toThrow(BadRequestException);
     });
   });
@@ -208,7 +208,7 @@ describe('QuotationsService', () => {
     it('updates the quotation, keeping the price of unchanged items', async () => {
       select.where.mockResolvedValueOnce(previousItems);
 
-      await service.update(1, body({ items }), actor('u2'));
+      await service.update(1, body({ items, validUntil: '2026-01-01' }), actor('u2'));
 
       expect(db.update).toHaveBeenCalledWith(quotation);
       expect(update.set).toHaveBeenCalledWith(expect.objectContaining({ customerId: 1, updatedById: 'u2' }));
@@ -217,7 +217,7 @@ describe('QuotationsService', () => {
     });
 
     it('prices every item anew with reprice', async () => {
-      await service.update(1, body({ items }), actor('u2'), { reprice: true });
+      await service.update(1, body({ items, validUntil: '2026-01-01' }), actor('u2'), { reprice: true });
 
       expect(insert.values).toHaveBeenLastCalledWith([expect.objectContaining({ price: 5 })]);
     });

@@ -44,7 +44,11 @@ export const quotation = salesSchema.table(
     typeId: varchar('type_id', { length: 5 })
       .notNull()
       .references(() => salesOrderType.id, { onDelete: 'restrict' }),
-    validUntil: date('valid_until', { mode: 'date' }),
+    validUntil: date('valid_until', { mode: 'date' }).notNull(),
+    /** @api readonly, detail */
+    acceptedAt: date('accepted_at', { mode: 'date' }),
+    /** @api readonly, detail */
+    rejectedAt: date('rejected_at', { mode: 'date' }),
     createdAt: timestamp('created_at', { precision: 3, withTimezone: true })
       .defaultNow()
       .notNull(),

@@ -3,86 +3,86 @@
  * the same keys (TasksMessages), and the apps merge them under `tasks`.
  */
 export const en = {
-  title: "Scheduled tasks",
-  description: "Jobs the app runs on a schedule, or when started. Only one run of a task at a time.",
   all: "All tasks",
+  description: "Jobs the app runs on a schedule, or when started. Only one run of a task at a time.",
   empty: "No tasks yet.",
-  /** Names and descriptions, by task key (`tasks.cleanup` → tasks.cleanup). */
-  names: {
-    tasks: {
-      cleanup: {
-        name: "Clean up task runs",
-        description: "Deletes old runs and fails those interrupted when the tasks app stopped.",
-      },
-    },
-    quotations: {
-      expiry: {
-        name: "Quotation expiry task",
-        description: "Set expired status for quotations not valid anymore."
-      }
-    }
-  },
   fields: {
-    task: "Task",
-    schedule: "Schedule",
     cron: "Cron pattern",
-    timezone: "Time zone",
-    enabled: "On",
-    timeoutSeconds: "Timeout (seconds)",
-    nextRunAt: "Next run",
-    lastRun: "Last run",
     defaultCron: "Default schedule",
+    enabled: "On",
+    lastRun: "Last run",
+    nextRunAt: "Next run",
+    schedule: "Schedule",
+    task: "Task",
+    timeoutSeconds: "Timeout (seconds)",
+    timezone: "Time zone",
   },
   hints: {
     cron: "minute hour day month weekday, e.g. 0 3 * * * (every day at 3:00), */15 * * * * (every 15 minutes). Blank: it runs only when started.",
+    customized: "Changed by an admin: the code's defaults no longer apply.",
     enabled: "Off: no scheduled runs, and other apps can't start it. Admins still can.",
     timeoutSeconds: "A run that takes longer fails. Blank: no limit.",
-    customized: "Changed by an admin: the code's defaults no longer apply.",
   },
   manualOnly: "Only when started",
-  off: "Off",
+  /** Names and descriptions, by task key (`tasks.cleanup` → tasks.cleanup). */
+  names: {
+    quotations: {
+      expiry: {
+        description: "Set expired status for quotations not valid anymore.",
+        name: "Quotation expiry task"
+      }
+    },
+    tasks: {
+      cleanup: {
+        description: "Deletes old runs and fails those interrupted when the tasks app stopped.",
+        name: "Clean up task runs",
+      },
+    }
+  },
   never: "Never run",
-  settings: "Settings",
-  save: "Save settings",
-  saved: "Settings saved.",
+  off: "Off",
   reset: "Restore defaults",
   runNow: "Run now",
   runs: {
-    title: "Runs",
-    empty: "No runs.",
     all: "All",
-    previous: "Previous",
-    next: "Next",
-    page: "{from}–{to} of {total}",
-    run: "Run {id}",
+    empty: "No runs.",
     fields: {
-      id: "Run",
-      status: "Status",
-      trigger: "Started by",
-      queuedAt: "Queued",
-      startedAt: "Started",
-      finishedAt: "Finished",
       duration: "Duration",
       error: "Error",
       errorStack: "Stack trace",
+      finishedAt: "Finished",
+      id: "Run",
       payload: "Input",
+      queuedAt: "Queued",
       result: "Result",
       source: "App",
+      startedAt: "Started",
+      status: "Status",
+      trigger: "Started by",
     },
     logs: "Log",
+    next: "Next",
     noLogs: "Nothing logged.",
+    page: "{from}–{to} of {total}",
+    previous: "Previous",
+    run: "Run {id}",
+    title: "Runs",
   },
+  save: "Save settings",
+  saved: "Settings saved.",
+  settings: "Settings",
   status: {
+    failed: "Failed",
     queued: "Queued",
     running: "Running",
-    succeeded: "Succeeded",
-    failed: "Failed",
     skipped: "Skipped",
+    succeeded: "Succeeded",
   },
+  title: "Scheduled tasks",
   trigger: {
-    schedule: "Schedule",
-    manual: "Admin",
     api: "Another app",
+    manual: "Admin",
+    schedule: "Schedule",
   },
 };
 
