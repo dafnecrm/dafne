@@ -15,7 +15,7 @@
     "access": "Access",
     "users": "Users",
     "account": "Account",
-    "orders": "Sales orders",
+    "salesOrders": "Sales orders",
     "crm": "CRM",
     "salesOrderTypes": "Sales order types",
     "assistantProviders": "AI providers",

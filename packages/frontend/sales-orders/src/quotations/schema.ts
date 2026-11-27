@@ -56,7 +56,6 @@ export function quotationFormOpts(
           quantity: item.quantity,
           uomId: item.uomId,
         })) ?? [],
-      rejectedAt: quotation?.rejectedAt?.slice(0, 10) ?? "",
     } satisfies QuotationFormValues as QuotationFormValues,
   });
 }

@@ -23,7 +23,7 @@ import { SalesOrderItemTable } from "../../components/sales-order-items-table.ts
 import type { QuotationDetail } from "../types.ts";
 import { QuotationStatusBadge } from "./quotation-status-badge.tsx";
 
-/** @dafne-ignore: customerId, typeId */
+/** @dafne-ignore: customerId, typeId, itemsCount */
 
 /**
  * The details of a quotation: its fields, its items, then who created and
@@ -65,13 +65,6 @@ export function QuotationDetails({
         <Detail icon={TagIcon} label={t("quotations.fields.status")}>
           <QuotationStatusBadge status={quotation.status} />
         </Detail>
-        <Detail icon={CalendarIcon} label={t("quotations.fields.validUntil")}>
-          {quotation.validUntil ? (
-            <LocalDate value={quotation.validUntil} format="longDate" />
-          ) : (
-            "—"
-          )}
-        </Detail>
         <Detail icon={EuroIcon} label={t("quotations.fields.total")}>
           {formatCurrency(
             quotation.items.reduce((total, item) => total + item.price, 0),
@@ -97,8 +90,15 @@ export function QuotationDetails({
             "—"
           )}
         </Detail>
-        <Detail icon={HashIcon} label={t("quotations.fields.itemsCount")}>
-          {quotation.itemsCount}
+      </DetailSection>
+
+      <DetailSection title={t("quotations.sections.dates")} groupVariant="grid">
+        <Detail icon={CalendarIcon} label={t("quotations.fields.validUntil")} wide>
+          {quotation.validUntil ? (
+            <LocalDate value={quotation.validUntil} format="longDate" />
+          ) : (
+            "—"
+          )}
         </Detail>
         <Detail icon={CalendarIcon} label={t("quotations.fields.acceptedAt")}>
           {quotation.acceptedAt ? (
@@ -115,6 +115,7 @@ export function QuotationDetails({
           )}
         </Detail>
       </DetailSection>
+
       <DetailSection title={t("quotations.sections.items")}>
         <SalesOrderItemTable
           items={quotation.items.map((item) => ({

@@ -18,10 +18,7 @@ import {
 } from "@dafne/frontend-ui/components/empty";
 import { useOptionLabel } from "@dafne/frontend-ui/hooks/use-option-labels";
 import type { TableParams } from "@dafne/frontend-data-table";
-import {
-  type QuotationsTableConfig,
-  QUOTATION_STATUS_OPTIONS,
-} from "../quotations-table.ts";
+import { type QuotationsTableConfig } from "../quotations-table.ts";
 import type { ListedQuotation } from "../types.ts";
 import { QuotationTableActions } from "./quotation-table-actions.tsx";
 import Link from "next/link";
@@ -75,20 +72,6 @@ function useQuotationColumns(path: string) {
         }),
         col.accessor("validUntil", {
           header: t("quotations.fields.validUntil"),
-          cell: (info) => {
-            const value = info.getValue();
-            return value ? <LocalDate value={value} format="date" /> : "—";
-          },
-        }),
-        col.accessor("acceptedAt", {
-          header: t("quotations.fields.acceptedAt"),
-          cell: (info) => {
-            const value = info.getValue();
-            return value ? <LocalDate value={value} format="date" /> : "—";
-          },
-        }),
-        col.accessor("rejectedAt", {
-          header: t("quotations.fields.rejectedAt"),
           cell: (info) => {
             const value = info.getValue();
             return value ? <LocalDate value={value} format="date" /> : "—";

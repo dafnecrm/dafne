@@ -18,7 +18,11 @@ export const it: QuotationsMessages = {
   },
   deleteDescription: "L'offerta non sarà più elencata né modificabile.",
   notFound: "Questa offerta non esiste più.",
-  sections: { details: "Dettagli", items: "Righe" },
+  sections: { 
+    details: "Dettagli",
+    items: "Righe",
+    dates: "Date",
+  },
   fields: {
     createdAt: "Aggiunta",
     id: "ID",

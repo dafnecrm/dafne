@@ -70,8 +70,6 @@ export function defineQuotationsTable({
       "id",
       "status",
       "validUntil",
-      "acceptedAt",
-      "rejectedAt",
       "createdAt",
       "updatedAt",
     ] satisfies QuotationSortField[],

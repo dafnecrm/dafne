@@ -88,7 +88,7 @@ export const NAV_SECTIONS: NavSection[] = [
         ],
       },
       { title: "quotations", href: "/quotations", icon: FileTextIcon },
-      { title: "orders", href: "/sales-orders", icon: PackageIcon },
+      { title: "salesOrders", href: "/sales-orders", icon: PackageIcon },
     ],
   },
   {

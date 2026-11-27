@@ -157,13 +157,6 @@ export function QuotationForm({
                 />
               )}
             </form.AppField>
-            <form.AppField name="rejectedAt">
-              {(field) => (
-                <field.DatePickerField
-                  label={t("quotations.fields.rejectedAt")}
-                />
-              )}
-            </form.AppField>
           </fieldset>
 
           <div className="flex justify-end gap-2">

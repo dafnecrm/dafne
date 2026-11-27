@@ -20,7 +20,11 @@ export const en = {
   },
   deleteDescription: "The quotation will no longer be listed or editable.",
   notFound: "This quotation no longer exists.",
-  sections: { details: "Details", items: "Items" },
+  sections: { 
+    details: "Details", 
+    items: "Items",
+    dates: "Dates",
+  },
   fields: {
     createdAt: "Added",
     id: "ID",
