@@ -45,7 +45,7 @@ describe('ActivitiesService', () => {
     query: { activity: { findFirst } },
   };
   const found = { id: 1, name: 'Acme' };
-  const stateMachine = { transition: vi.fn() };
+  const stateMachine = { transition: vi.fn(), nextStatuses: vi.fn() };
 
   beforeEach(async () => {
     vi.resetAllMocks();
@@ -256,6 +256,14 @@ describe('ActivitiesService', () => {
       await expect(service.changeActivityStatus(1, 'open', actor('u4'))).rejects.toBeInstanceOf(
         NotFoundException,
       );
+    });
+  });
+
+  describe('nextStatuses', () => {
+    it('answers the statuses the state machine allows after the given one', () => {
+      stateMachine.nextStatuses.mockReturnValue(['closed']);
+      expect(service.nextStatuses('open')).toEqual(['closed']);
+      expect(stateMachine.nextStatuses).toHaveBeenCalledWith('open');
     });
   });
 });

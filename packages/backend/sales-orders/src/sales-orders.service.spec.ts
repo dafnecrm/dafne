@@ -52,7 +52,7 @@ describe('SalesOrdersService', () => {
     },
   };
   const found = { id: 1, name: 'Acme' };
-  const stateMachine = { transition: vi.fn() };
+  const stateMachine = { transition: vi.fn(), nextStatuses: vi.fn() };
   const products = { units: vi.fn() };
 
   beforeEach(async () => {
@@ -396,6 +396,14 @@ describe('SalesOrdersService', () => {
       stateMachine.transition.mockRejectedValue(new NotFoundException());
       await expect(service.changeSalesOrderStatus(1, 'open', {} as never)).rejects.toThrow(NotFoundException);
       expect(findFirst).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('nextStatuses', () => {
+    it('answers the statuses the state machine allows after the given one', () => {
+      stateMachine.nextStatuses.mockReturnValue(['open', 'cancelled']);
+      expect(service.nextStatuses('draft')).toEqual(['open', 'cancelled']);
+      expect(stateMachine.nextStatuses).toHaveBeenCalledWith('draft');
     });
   });
 });

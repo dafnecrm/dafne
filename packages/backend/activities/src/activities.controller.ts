@@ -28,6 +28,7 @@ import {
   msg,
   activityStatusBodySchema,
   type ActivityStatusBody,
+  type ActivityStatus,
 } from '@dafne/contracts';
 import { ActivitiesService } from './activities.service.js';
 import type { CrudController } from '@dafne/backend-crud';
@@ -130,5 +131,14 @@ export class ActivitiesController
     @Session() session: UserSession,
   ): Promise<ActivityDetail> {
     return this.activitiesService.changeActivityStatus(id, body.status, session.user);
+  }
+
+  /** The statuses an activity in the body's `status` can move to (see ACTIVITY_STATES). */
+  @Post('next-statuses')
+  @HttpCode(HttpStatus.OK)
+  nextStatuses(
+    @Body(new ZodValidationPipe(activityStatusBodySchema)) body: ActivityStatusBody,
+  ): ActivityStatus[] {
+    return this.activitiesService.nextStatuses(body.status);
   }
 }

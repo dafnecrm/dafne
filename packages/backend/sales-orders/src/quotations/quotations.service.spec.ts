@@ -53,7 +53,7 @@ describe('QuotationsService', () => {
     },
   };
   const found = { id: 1, status: 'draft', items: [], salesOrder: null };
-  const stateMachine = { transition: vi.fn() };
+  const stateMachine = { transition: vi.fn(), nextStatuses: vi.fn() };
   const products = { units: vi.fn() };
 
   beforeEach(async () => {
@@ -250,6 +250,14 @@ describe('QuotationsService', () => {
 
       await expect(service.changeQuotationStatus(1, 'accepted', user)).resolves.toEqual(found);
       expect(stateMachine.transition).toHaveBeenCalledWith(1, 'accepted', { user });
+    });
+  });
+
+  describe('nextStatuses', () => {
+    it('answers the statuses the state machine allows after the given one', () => {
+      stateMachine.nextStatuses.mockReturnValue(['sent']);
+      expect(service.nextStatuses('draft')).toEqual(['sent']);
+      expect(stateMachine.nextStatuses).toHaveBeenCalledWith('draft');
     });
   });
 });

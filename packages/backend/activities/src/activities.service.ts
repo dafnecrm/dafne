@@ -253,4 +253,9 @@ export class ActivitiesService
     await this.stateMachine.transition(id, status, { user });
     return this.get(id);
   }
+
+  /** The statuses an activity in `status` can move to (see ACTIVITY_STATES). */
+  nextStatuses(status: ActivityStatus): ActivityStatus[] {
+    return this.stateMachine.nextStatuses(status);
+  }
 }

@@ -344,6 +344,11 @@ export class SalesOrdersService
     return this.get(id);
   }
 
+  /** The statuses an order in `status` can move to (see SALES_ORDER_STATES). */
+  nextStatuses(status: SalesOrderStatus): SalesOrderStatus[] {
+    return this.stateMachine.nextStatuses(status);
+  }
+
   /**
    * Inserts the items of an order, priced by `priceItems` (an item of
    * `previous` that comes back unchanged keeps its price). 400 when the

@@ -313,6 +313,11 @@ export class QuotationsService
     return this.get(id);
   }
 
+  /** The statuses a quotation in `status` can move to (see QUOTATION_STATES). */
+  nextStatuses(status: QuotationStatus): QuotationStatus[] {
+    return this.stateMachine.nextStatuses(status);
+  }
+
   /** Inserts the items of a quotation, priced as a sales order's (`priceItems`). */
   async insertQuotationItems(
     tx: Transaction,

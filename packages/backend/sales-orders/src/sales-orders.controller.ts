@@ -24,6 +24,7 @@ import {
   salesOrderBodySchema,
   salesOrderStatusBodySchema,
   type SalesOrderStatusBody,
+  type SalesOrderStatus,
   listSalesOrdersQuerySchema,
   type SalesOrderBody,
   updateSalesOrderQuerySchema,
@@ -133,6 +134,15 @@ export class SalesOrdersController
     @Session() session: UserSession,
   ): Promise<SalesOrderDetail> {
     return this.salesOrdersService.changeSalesOrderStatus(id, body.status, session.user);
+  }
+
+  /** The statuses an order in the body's `status` can move to (see SALES_ORDER_STATES). */
+  @Post('next-statuses')
+  @HttpCode(HttpStatus.OK)
+  nextStatuses(
+    @Body(new ZodValidationPipe(salesOrderStatusBodySchema)) body: SalesOrderStatusBody,
+  ): SalesOrderStatus[] {
+    return this.salesOrdersService.nextStatuses(body.status);
   }
 
   /** Logical delete. */
