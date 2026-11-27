@@ -16,7 +16,7 @@ const actor = (id: string) => ({ id }) as Actor;
 
 /** A body as the validation pipe hands it to the service. */
 const body = (input: Partial<QuotationBodyInput> = {}) =>
-  quotationBodySchema.parse({ customerId: 1, typeId: 'STD', ...input });
+  quotationBodySchema.parse({ customerId: 1, typeId: 'STD', validUntil: '2026-01-01', ...input });
 
 const { quotation, quotationItem } = schema;
 const notDeleted = isNull(quotation.deletedAt);
