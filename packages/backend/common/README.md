@@ -9,7 +9,9 @@ Shared pieces of the backend libs: validation and translated errors.
   one `path: message` per issue.
 - `I18nExceptionFilter`: translates HTTP errors into the request's language
   (`Accept-Language`): contract message keys (`customers.notFound`) and
-  Zod's own messages.
+  Zod's own messages. A single key message also keeps its key, as
+  `messageKey`: the frontend's forms show it under the field it names
+  (`<resource>.<field>.<rule>`).
 - `i18n.ts`: `localeFrom(acceptLanguage)`, `translate`, `zodErrorMap`,
   `LOCALES`, `DEFAULT_LOCALE` (`it`). The texts are the contracts'
   (`CONTRACT_MESSAGES`).

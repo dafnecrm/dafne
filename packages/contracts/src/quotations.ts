@@ -145,4 +145,9 @@ export interface QuotationDetail extends Omit<ListedQuotation, 'itemsCount'> {
   salesOrder: QuotationSalesOrder | null;
   /** Always null: deleted quotations aren't returned. */
   deletedAt: Date | null;
+  /**
+   * The statuses it can move to from `status`, as the state machine allows
+   * (its guards may still refuse one). Empty when `status` is final.
+   */
+  nextStatuses: QuotationStatus[];
 }

@@ -144,6 +144,7 @@ export const en = {
   },
   quotations: {
     customerId: {
+      noAddress: 'Customer has no address',
       notFound: 'Choose a customer from the list',
       required: 'Enter the customer id',
     },
@@ -172,11 +173,9 @@ export const en = {
     notFound: 'Sales order type not found',
   },
   salesOrders: {
-    customer: {
+    customerId: {
       noBillingAddress: 'Customer has no billing address',
       noShippingAddress: 'Customer has no shipping address',
-    },
-    customerId: {
       notFound: 'Choose a customer from the list',
       required: 'Enter the customer id'
     },

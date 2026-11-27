@@ -175,7 +175,7 @@ export class SalesOrdersService
 
   /**
    * One sales order that isn't deleted, with who created and last
-   * updated it. Throws 404 otherwise.
+   * updated it and the statuses it can move to. Throws 404 otherwise.
    */
   async get(id: number, db: Executor = this.db): Promise<SalesOrderDetail> {
     const found = await db.query.salesOrder.findFirst({
@@ -200,7 +200,7 @@ export class SalesOrdersService
       throw new NotFoundException(msg('salesOrders.notFound'));
     }
 
-    return found;
+    return { ...found, nextStatuses: this.nextStatuses(found.status) };
   }
 
   /**
@@ -342,6 +342,11 @@ export class SalesOrdersService
   async changeSalesOrderStatus(id: number, status: SalesOrderStatus, user: SessionUser): Promise<SalesOrderDetail> {
     await this.stateMachine.transition(id, status, { user });
     return this.get(id);
+  }
+
+  /** The statuses an order in `status` can move to (see SALES_ORDER_STATES). */
+  nextStatuses(status: SalesOrderStatus): SalesOrderStatus[] {
+    return this.stateMachine.nextStatuses(status);
   }
 
   /**

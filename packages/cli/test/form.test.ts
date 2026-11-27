@@ -74,7 +74,7 @@ describe('syncFormSchema', () => {
     expect(content).toContain('priority: activity?.priority ?? 1');
     expect(content).toContain('budget: activity?.budget ?? null');
     expect(content).toContain('dueDate: activity?.dueDate?.slice(0, 10) ?? ""');
-    expect(content).toContain('startsAt: activity?.startsAt?.slice(0, 16) ?? ""');
+    expect(content).toContain('startsAt: activity?.startsAt ?? ""');
   });
 
   it('adds to an existing Exclude and type literal (users style)', () => {

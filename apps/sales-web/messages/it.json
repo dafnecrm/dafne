@@ -25,6 +25,7 @@
     "password": {
       "changed": "La password è stata cambiata.",
       "description": "Scegli una nuova password per il tuo account.",
+      "failed": "Cambio password non riuscito",
       "fields": {
         "confirm": "Conferma nuova password",
         "current": "Password attuale",
@@ -62,6 +63,7 @@
     },
     "signIn": {
       "description": "Inserisci email e password per continuare.",
+      "failed": "Accesso non riuscito",
       "meta": "Accedi",
       "noAccount": "Non hai ancora un account?",
       "signUp": "Registrati",
@@ -70,6 +72,7 @@
     },
     "signUp": {
       "description": "Ci vuole solo un minuto.",
+      "failed": "Registrazione non riuscita",
       "haveAccount": "Hai già un account?",
       "meta": "Registrati",
       "signIn": "Accedi",
@@ -110,9 +113,11 @@
     "close": "Chiudi",
     "closeToast": "Chiudi notifica",
     "copied": "Copiato!",
+    "copy": "Copia",
     "copyEmail": "Copia email",
     "delete": "Elimina",
     "deleteTitle": "Eliminare {name}?",
+    "duplicate": "Duplica",
     "edit": "Modifica",
     "editTitle": "Modifica {name}",
     "emailPlaceholder": "nome@esempio.it",
@@ -192,6 +197,7 @@
     },
     "pickDate": "Scegli una data",
     "serverError": "Qualcosa è andato storto",
+    "serverRejected": "Salvataggio non riuscito",
     "showPassword": "Mostra password",
     "timeOf": "{label} (ora)"
   },

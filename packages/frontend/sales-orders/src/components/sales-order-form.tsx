@@ -16,6 +16,7 @@ import {
   STATUS_OPTIONS,
 } from "../schema.ts";
 import type { SalesOrderDetail } from "../types.ts";
+import type { SalesOrderStatus } from "@dafne/contracts";
 import { DetailSection } from "@dafne/frontend-ui/components/detail";
 import { TagIcon } from "lucide-react";
 import {
@@ -25,23 +26,36 @@ import {
 import { useOptionLabels } from "@dafne/frontend-ui/hooks/use-option-labels";
 import { InputGroupAddon } from "@dafne/frontend-ui/components/input-group";
 import { useSearchParams } from "next/navigation";
+import { useMemo } from "react";
 
 /**
  * Creates a sales order, or edits `salesOrder`. Saving opens the sales order's page
- * (`<path>/<id>`, `path` being the app's sales orders list).
+ * (`<path>/<id>`, `path` being the app's sales orders list). The status
+ * select offers the current status and those it can move to: the order's
+ * `nextStatuses`, or, for a new order (born in draft), `nextStatuses`.
  */
 export function SalesOrderForm({
   salesOrder,
   path,
+  nextStatuses,
 }: {
   salesOrder?: SalesOrderDetail;
   path: string;
+  /** For a new order: the statuses a draft can move to. */
+  nextStatuses?: SalesOrderStatus[];
 }) {
   const t = useTranslations();
   const searchParams = useSearchParams();
   const customerIdFromParams = searchParams.get("customerId");
 
-  const statusOptions = useOptionLabels(STATUS_OPTIONS);
+  const currentStatus = salesOrder?.status ?? "draft";
+  const next = salesOrder?.nextStatuses ?? nextStatuses;
+  // Memoized: useOptionLabels recomputes when its array changes.
+  const allowedOptions = useMemo(() => {
+    const allowed = new Set<SalesOrderStatus>([currentStatus, ...(next ?? [])]);
+    return STATUS_OPTIONS.filter((option) => allowed.has(option.value));
+  }, [currentStatus, next]);
+  const statusOptions = useOptionLabels(allowedOptions);
 
   const form = useAppForm({
     ...salesOrderFormOpts(salesOrder, { customerId: customerIdFromParams }),
@@ -59,7 +73,7 @@ export function SalesOrderForm({
         meta,
       );
       if (result?.error) {
-        setServerError(formApi, result.error);
+        setServerError(formApi, result);
       }
     },
   });

@@ -20,6 +20,13 @@ compiled by Next. Relative imports end in `.ts`/`.tsx`.
   `@dafne/frontend-geo`, which calls the backend). Fields that call the
   backend live in their feature lib, not here: this lib can't depend on
   them (they depend on its contexts).
+- `setServerError(formApi, error)` shows a server error in `FormErrors`:
+  a string, or a `ServerError` (`{ error, status?, messageKey? }`, what a
+  server action builds from `BackendError`). A 4xx `status` titles the
+  alert "Couldn't save" (`form.serverRejected`), not "Something went
+  wrong"; a `messageKey` (`<resource>.<field>.<rule>`) also puts the
+  message under that field, until its value changes or the form validates.
+  `FormErrors` scrolls to the alert and focuses it once per submit attempt.
 - Error texts: contract keys (`contracts.*`) and the app's keys, translated
   by `useErrorText`.
 - Layout: `src/fields/`, one file per field (`text-field.tsx`,

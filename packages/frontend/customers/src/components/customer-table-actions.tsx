@@ -15,7 +15,9 @@ import { Button } from "@dafne/frontend-ui/components/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@dafne/frontend-ui/components/dropdown-menu";
@@ -34,9 +36,8 @@ export function CustomerTableActions({
   path: string;
 }) {
   const [deleting, setDeleting] = useState(false);
-  const t = useTranslations("common");
+  const t = useTranslations();
   const href = `${path}/${encodeURIComponent(customer.id)}`;
-  const { email } = customer;
 
   return (
     <>
@@ -46,34 +47,26 @@ export function CustomerTableActions({
             <Button
               variant="ghost"
               size="icon-sm"
-              aria-label={t("actionsFor", { name: customer.name })}
+              aria-label={t("common.actionsFor", { name: customer.name })}
             />
           }
         >
           <EllipsisVerticalIcon />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem render={<Link href={href} />}>
-            <UserRoundIcon />
-            {t("viewDetails")}
-          </DropdownMenuItem>
-          <Can I="update" a="Customer">
-            <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
-              <PencilIcon />
-              {t("edit")}
+          <DropdownMenuGroup>
+            <DropdownMenuLabel>{t("common.actions")}</DropdownMenuLabel>
+            <DropdownMenuItem render={<Link href={href} />}>
+              <UserRoundIcon />
+              {t("common.viewDetails")}
             </DropdownMenuItem>
-          </Can>
-          {email && (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(email)}
-              >
-                <CopyIcon />
-                {t("copyEmail")}
+            <Can I="update" a="Customer">
+              <DropdownMenuItem render={<Link href={`${href}/edit`} />}>
+                <PencilIcon />
+                {t("common.edit")}
               </DropdownMenuItem>
-            </>
-          )}
+            </Can>
+          </DropdownMenuGroup>
           <Can I="delete" a="Customer">
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -81,7 +74,7 @@ export function CustomerTableActions({
               onClick={() => setDeleting(true)}
             >
               <Trash2Icon />
-              {t("delete")}
+              {t("common.delete")}
             </DropdownMenuItem>
           </Can>
         </DropdownMenuContent>

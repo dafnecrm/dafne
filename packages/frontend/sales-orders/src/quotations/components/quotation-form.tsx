@@ -25,24 +25,38 @@ import {
   STATUS_OPTIONS,
 } from "../schema.ts";
 import type { QuotationDetail } from "../types.ts";
+import type { QuotationStatus } from "@dafne/contracts";
+import { useMemo } from "react";
 
 /**
  * Creates a quotation, or edits `quotation`. Saving opens the quotation's page
  * (`<path>/<id>`, `path` being the app's quotations list). Its items are
  * edited as a sales order's. A quotation whose status isn't in
  * QUOTATION_EDITABLE_STATUSES is only shown: every field is disabled and
- * there's nothing to save.
+ * there's nothing to save. The status select offers the current status
+ * and those it can move to: the quotation's `nextStatuses`, or, for a new
+ * quotation (born in draft), `nextStatuses`.
  */
 export function QuotationForm({
   quotation,
   path,
+  nextStatuses,
 }: {
   quotation?: QuotationDetail;
   path: string;
+  /** For a new quotation: the statuses a draft can move to. */
+  nextStatuses?: QuotationStatus[];
 }) {
   const t = useTranslations();
   const searchParams = useSearchParams();
-  const statusOptions = useOptionLabels(STATUS_OPTIONS);
+  const currentStatus = quotation?.status ?? "draft";
+  const next = quotation?.nextStatuses ?? nextStatuses;
+  // Memoized: useOptionLabels recomputes when its array changes.
+  const allowedOptions = useMemo(() => {
+    const allowed = new Set<QuotationStatus>([currentStatus, ...(next ?? [])]);
+    return STATUS_OPTIONS.filter((option) => allowed.has(option.value));
+  }, [currentStatus, next]);
+  const statusOptions = useOptionLabels(allowedOptions);
   const form = useAppForm({
     ...quotationFormOpts(quotation, {
       customerId: searchParams.get("customerId"),
@@ -61,7 +75,7 @@ export function QuotationForm({
         meta,
       );
       if (result?.error) {
-        setServerError(formApi, result.error);
+        setServerError(formApi, result);
       }
     },
   });

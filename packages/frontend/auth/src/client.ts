@@ -1,6 +1,6 @@
 import { createAuthClient } from "better-auth/react";
 import { useTranslations } from "next-intl";
-import { authErrorKey, type AuthError } from "./errors.ts";
+import { authErrorField, authErrorKey, type AuthError } from "./errors.ts";
 import { authPlugins } from "./plugins.ts";
 
 /**
@@ -26,4 +26,18 @@ export function useAuthErrorMessage() {
     }
     return error.message || t("common.errors.generic");
   };
+}
+
+/**
+ * A Better Auth error as a form shows it (`setServerError` of
+ * `@dafne/frontend-forms`): the message, the status (4xx titles the alert
+ * as a rejection) and the field it's about, when known.
+ */
+export function useAuthServerError() {
+  const message = useAuthErrorMessage();
+  return (error: AuthError) => ({
+    error: message(error),
+    status: error.status,
+    field: authErrorField(error),
+  });
 }

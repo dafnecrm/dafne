@@ -18,21 +18,29 @@ import { QUOTATION_STATUSES, type QuotationStatus } from "@dafne/contracts";
 
 export interface ActionError {
   error: string;
+  /** The backend's HTTP status, when it answered with an error. */
+  status?: number;
+  /** The contract key of the backend's message (see setServerError). */
+  messageKey?: string;
 }
 
 /** The error to show; the backend's own message is already translated. */
-async function errorMessage(error: unknown) {
+async function actionError(error: unknown): Promise<ActionError> {
   if (!(error instanceof BackendError)) {
     throw error;
   }
   const t = await getTranslations();
   if (error.status === 401) {
-    return t("common.errors.sessionExpired");
+    return { error: t("common.errors.sessionExpired"), status: error.status };
   }
   if (error.status === 404) {
-    return t("quotations.notFound");
+    return { error: t("quotations.notFound"), status: error.status };
   }
-  return error.message || t("common.errors.generic");
+  return {
+    error: error.message || t("common.errors.generic"),
+    status: error.status,
+    messageKey: error.body.messageKey,
+  };
 }
 
 /**
@@ -54,7 +62,7 @@ export async function saveQuotation(
   }
   const parsed = quotationSchema.safeParse(values);
   if (!parsed.success) {
-    return { error: (await getTranslations())("common.errors.invalid") };
+    return { error: (await getTranslations())("common.errors.invalid"), status: 400 };
   }
 
   let savedId: QuotationDetail["id"];
@@ -71,7 +79,7 @@ export async function saveQuotation(
     );
     savedId = ((await res.json()) as QuotationDetail).id;
   } catch (error) {
-    return { error: await errorMessage(error) };
+    return await actionError(error);
   }
   const href = `${path}/${encodeURIComponent(savedId)}`;
   // The browser keeps visited pages (the edit page among them) in its
@@ -92,7 +100,7 @@ export async function changeQuotationStatus(
 ): Promise<QuotationDetail | ActionError> {
   // Any POST can call this: only a known status (the backend checks it too).
   if (!(QUOTATION_STATUSES as readonly string[]).includes(status)) {
-    return { error: (await getTranslations())("common.errors.invalid") };
+    return { error: (await getTranslations())("common.errors.invalid"), status: 400 };
   }
   try {
     const res = await backendFetch(`/quotations/${encodeURIComponent(id)}/status`, {
@@ -101,7 +109,7 @@ export async function changeQuotationStatus(
     });
     return (await res.json()) as QuotationDetail;
   } catch (error) {
-    return { error: await errorMessage(error) };
+    return await actionError(error);
   }
 }
 
@@ -118,7 +126,7 @@ export async function deleteQuotation(
     });
     return null;
   } catch (error) {
-    return { error: await errorMessage(error) };
+    return await actionError(error);
   }
 }
 
@@ -133,6 +141,6 @@ export async function getQuotationChanges(
   try {
     return await listQuotationChanges(id, query);
   } catch (error) {
-    return { error: await errorMessage(error) };
+    return await actionError(error);
   }
 }

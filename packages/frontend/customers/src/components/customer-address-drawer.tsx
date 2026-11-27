@@ -32,8 +32,9 @@ import {
 import type { CustomerAddressType, CustomerType } from "@dafne/contracts";
 
 /**
- * Adds an address (no `address`) or edits one, in a drawer. Saving only
- * changes the customer form: the address is stored when the customer is.
+ * Adds an address (no `address`, optionally prefilled from `copyFrom`) or
+ * edits one, in a drawer. Saving only changes the customer form: the
+ * address is stored when the customer is.
  */
 export function CustomerAddressSheet({
   open,
@@ -41,6 +42,7 @@ export function CustomerAddressSheet({
   customerType,
   usedTypes,
   address,
+  copyFrom,
   onSave,
 }: {
   open: boolean;
@@ -50,10 +52,13 @@ export function CustomerAddressSheet({
   /** The types of the customer's other addresses: not offered (one of each). */
   usedTypes: CustomerAddressType[];
   address?: AddressFormValues;
+  /** A new address starts from this one's fields, with a type still free. */
+  copyFrom?: AddressFormValues;
   onSave: (address: AddressFormValues) => void;
 }) {
   const t = useTranslations("customers.addresses");
   const isMobile = useIsMobile();
+
   return (
     <Drawer
       open={open}
@@ -71,6 +76,7 @@ export function CustomerAddressSheet({
           customerType={customerType}
           usedTypes={usedTypes}
           address={address}
+          copyFrom={copyFrom}
           onSave={(value) => {
             onSave(value);
             onOpenChange(false);
@@ -85,6 +91,7 @@ function AddressForm({
   customerType,
   usedTypes,
   address,
+  copyFrom,
   onSave,
 }: {
   /** The type chosen in the customer form: it decides the address types offered. */
@@ -92,14 +99,20 @@ function AddressForm({
   /** The types of the customer's other addresses: not offered (one of each). */
   usedTypes: CustomerAddressType[];
   address?: AddressFormValues;
+  copyFrom?: AddressFormValues;
   onSave: (address: AddressFormValues) => void;
 }) {
   const t = useTranslations();
   const typeOptions = useOptionLabels(
     addressTypeOptions(customerType, usedTypes),
   );
+
   const form = useAppForm({
-    defaultValues: address ?? emptyAddress(customerType, usedTypes),
+    defaultValues:
+      address ??
+      (copyFrom
+        ? { ...copyFrom, type: emptyAddress(customerType, usedTypes).type }
+        : emptyAddress(customerType, usedTypes)),
     // Validate on submit, then on every change.
     validationLogic: revalidateLogic(),
     validators: { onDynamic: addressSchema },

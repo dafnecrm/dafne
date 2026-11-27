@@ -15,6 +15,7 @@ import {
   Trash2Icon,
   LanguagesIcon,
   EllipsisVerticalIcon,
+  CopyIcon,
 } from "lucide-react";
 import { LANGUAGES } from "@dafne/contracts";
 import { useState } from "react";
@@ -28,14 +29,21 @@ import type { CustomerDetail } from "../types.ts";
 import { CUSTOMER_TYPE_OPTIONS } from "../customers-table.ts";
 import { saveCustomer } from "../actions.ts";
 import { CustomerAddressSheet } from "./customer-address-drawer.tsx";
-import { customerFormOpts, customerSchema } from "../schema.ts";
-import { CustomerAddressTable } from "./customer-address-table.tsx";
+import {
+  addressTypeOptions,
+  customerFormOpts,
+  customerSchema,
+} from "../schema.ts";
+import { CustomerAddressRow, CustomerAddressTable } from "./customer-address-table.tsx";
 import { DetailSection } from "@dafne/frontend-ui/components/detail";
 import { InputGroupAddon } from "@dafne/frontend-ui/components/input-group";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@dafne/frontend-ui/components/dropdown-menu";
 
@@ -62,18 +70,21 @@ export function CustomerForm({
       // Redirects on success, so only an error comes back.
       const result = await saveCustomer(customer?.id ?? null, value, path);
       if (result?.error) {
-        setServerError(formApi, result.error);
+        setServerError(formApi, result);
       }
     },
   });
   // The page stays mounted (hidden) after leaving it: start fresh next time.
   useResetOnLeave(form);
+
   // The sheet that adds an address (index null) or edits addresses[index].
   // The index stays while it closes, so the content doesn't change mid-animation.
   const [addressSheet, setAddressSheet] = useState<{
     open: boolean;
     index: number | null;
-  }>({ open: false, index: null });
+    copyFromIndex?: number | null
+  }>({ open: false, index: null, copyFromIndex: null });
+
   const cancelHref = customer
     ? `${path}/${encodeURIComponent(customer.id)}`
     : path;
@@ -273,24 +284,53 @@ export function CustomerForm({
                             <EllipsisVerticalIcon />
                           </DropdownMenuTrigger>
                           <DropdownMenuContent>
-                            <DropdownMenuItem
-                              onClick={() =>
-                                setAddressSheet({
-                                  open: true,
-                                  index: i,
-                                })
-                              }
-                            >
-                              <PencilIcon />
-                              {t("common.edit")}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              variant="destructive"
-                              onClick={() => addresses.removeValue(i)}
-                            >
-                              <Trash2Icon />
-                              {t("common.delete")}
-                            </DropdownMenuItem>
+                            <DropdownMenuGroup>
+                              <DropdownMenuLabel>{t("common.actions")}</DropdownMenuLabel>
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  setAddressSheet({
+                                    open: true,
+                                    index: i,
+                                  })
+                                }
+                              >
+                                <PencilIcon />
+                                {t("common.edit")}
+                              </DropdownMenuItem>
+                              <form.Subscribe
+                                selector={(state) => state.values.type}
+                              >
+                                {(customerType) => (
+                                  <DropdownMenuItem
+                                    // A copy needs a type still free (one of each).
+                                    disabled={
+                                      addressTypeOptions(
+                                        customerType,
+                                        addresses.state.value.map((a) => a.type),
+                                      ).length === 0
+                                    }
+                                    onClick={() =>
+                                      setAddressSheet({
+                                        open: true,
+                                        index: null,
+                                        copyFromIndex: i,
+                                      })
+                                    }
+                                  >
+                                    <CopyIcon />
+                                    {t("common.copy")}
+                                  </DropdownMenuItem>
+                                )}
+                              </form.Subscribe>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                variant="destructive"
+                                onClick={() => addresses.removeValue(i)}
+                              >
+                                <Trash2Icon />
+                                {t("common.delete")}
+                              </DropdownMenuItem>
+                            </DropdownMenuGroup>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </>
@@ -312,13 +352,18 @@ export function CustomerForm({
                             ? undefined
                             : addresses.state.value[addressSheet.index]
                         }
+                        copyFrom={
+                          addressSheet.copyFromIndex != null
+                            ? addresses.state.value[addressSheet.copyFromIndex]
+                            : undefined
+                        }
                         onSave={(address) =>
                           addressSheet.index === null
                             ? addresses.pushValue(address)
                             : addresses.replaceValue(
-                                addressSheet.index,
-                                address,
-                              )
+                              addressSheet.index,
+                              address,
+                            )
                         }
                       />
                     )}

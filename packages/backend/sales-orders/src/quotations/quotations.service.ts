@@ -158,7 +158,8 @@ export class QuotationsService
 
   /**
    * One quotation that isn't deleted, with its items, who created and last
-   * updated it, and its sales order once accepted. Throws 404 otherwise.
+   * updated it, its sales order once accepted, and the statuses it can
+   * move to. Throws 404 otherwise.
    */
   async get(id: number, db: Executor = this.db): Promise<QuotationDetail> {
     const found = await db.query.quotation.findFirst({
@@ -178,7 +179,7 @@ export class QuotationsService
       throw new NotFoundException(msg('quotations.notFound'));
     }
 
-    return { ...found, salesOrder: found.salesOrder ?? null };
+    return { ...found, salesOrder: found.salesOrder ?? null, nextStatuses: this.nextStatuses(found.status) };
   }
 
   /**
@@ -311,6 +312,11 @@ export class QuotationsService
   async changeQuotationStatus(id: number, status: QuotationStatus, user: SessionUser): Promise<QuotationDetail> {
     await this.stateMachine.transition(id, status, { user });
     return this.get(id);
+  }
+
+  /** The statuses a quotation in `status` can move to (see QUOTATION_STATES). */
+  nextStatuses(status: QuotationStatus): QuotationStatus[] {
+    return this.stateMachine.nextStatuses(status);
   }
 
   /** Inserts the items of a quotation, priced as a sales order's (`priceItems`). */

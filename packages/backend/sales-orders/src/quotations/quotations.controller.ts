@@ -28,6 +28,7 @@ import {
   type QuotationDetail,
   type QuotationDetailItem,
   type QuotationStatusBody,
+  type QuotationStatus,
   type QuotationsList,
   type ListQuotationsQuery,
   type UpdateQuotationQuery,
@@ -129,6 +130,15 @@ export class QuotationsController
     @Session() session: UserSession,
   ): Promise<QuotationDetail> {
     return this.quotationsService.changeQuotationStatus(id, body.status, session.user);
+  }
+
+  /** The statuses a quotation in the body's `status` can move to (see QUOTATION_STATES). */
+  @Post('next-statuses')
+  @HttpCode(HttpStatus.OK)
+  nextStatuses(
+    @Body(new ZodValidationPipe(quotationStatusBodySchema)) body: QuotationStatusBody,
+  ): QuotationStatus[] {
+    return this.quotationsService.nextStatuses(body.status);
   }
 
   /** Logical delete. */

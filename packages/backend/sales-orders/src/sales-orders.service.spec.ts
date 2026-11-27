@@ -51,8 +51,10 @@ describe('SalesOrdersService', () => {
       salesOrderItem: { findFirst: findFirstItem },
     },
   };
-  const found = { id: 1, name: 'Acme' };
-  const stateMachine = { transition: vi.fn() };
+  const found = { id: 1, name: 'Acme', status: 'draft' };
+  /** What get answers for `found`: with the statuses a draft can move to. */
+  const detail = { ...found, nextStatuses: ['open'] };
+  const stateMachine = { transition: vi.fn(), nextStatuses: vi.fn() };
   const products = { units: vi.fn() };
 
   beforeEach(async () => {
@@ -75,6 +77,7 @@ describe('SalesOrdersService', () => {
     remove.where.mockResolvedValue({ rowCount: 0 });
     db.transaction.mockImplementation((callback: (tx: typeof db) => unknown) => callback(db));
     findFirst.mockResolvedValue(found);
+    stateMachine.nextStatuses.mockReturnValue(['open']);
     // Every product is sold by the piece, and by the box of 12.
     products.units.mockResolvedValue([
       { uomId: 'pc', uom: { id: 'pc', name: 'piece' }, factor: 1, source: 'base', price: 2.5 },
@@ -138,8 +141,9 @@ describe('SalesOrdersService', () => {
   });
 
   describe('get', () => {
-    it('returns a sales order that is not deleted, with its users', async () => {
-      await expect(service.get(1)).resolves.toBe(found);
+    it('returns a sales order that is not deleted, with its users and next statuses', async () => {
+      await expect(service.get(1)).resolves.toEqual(detail);
+      expect(stateMachine.nextStatuses).toHaveBeenCalledWith('draft');
 
       const options = findFirst.mock.calls[0][0];
       expect(options.where).toEqual({ id: 1, deletedAt: { isNull: true } });
@@ -186,7 +190,7 @@ describe('SalesOrdersService', () => {
     it('inserts the sales order with its creator', async () => {
       await expect(
         service.create(body({ customerId: 1, typeId: 'T1' }), u1),
-      ).resolves.toBe(found);
+      ).resolves.toEqual(detail);
 
       const [row] = insert.values.mock.calls[0];
       expect(row).toMatchObject({
@@ -388,7 +392,7 @@ describe('SalesOrdersService', () => {
     it('moves the order through its state machine, then returns it', async () => {
       const user = { id: 'u1' } as never;
       stateMachine.transition.mockResolvedValue(undefined);
-      await expect(service.changeSalesOrderStatus(1, 'open', user)).resolves.toBe(found);
+      await expect(service.changeSalesOrderStatus(1, 'open', user)).resolves.toEqual(detail);
       expect(stateMachine.transition).toHaveBeenCalledWith(1, 'open', { user });
     });
 
@@ -396,6 +400,14 @@ describe('SalesOrdersService', () => {
       stateMachine.transition.mockRejectedValue(new NotFoundException());
       await expect(service.changeSalesOrderStatus(1, 'open', {} as never)).rejects.toThrow(NotFoundException);
       expect(findFirst).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('nextStatuses', () => {
+    it('answers the statuses the state machine allows after the given one', () => {
+      stateMachine.nextStatuses.mockReturnValue(['open', 'cancelled']);
+      expect(service.nextStatuses('draft')).toEqual(['open', 'cancelled']);
+      expect(stateMachine.nextStatuses).toHaveBeenCalledWith('draft');
     });
   });
 });

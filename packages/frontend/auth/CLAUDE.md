@@ -4,8 +4,10 @@ Better Auth for the frontend (`apps/sales-web`). Ships TypeScript sources:
 Next compiles them (`transpilePackages`). Relative imports end in `.ts`.
 
 - `.`: shared by browser and server: `SESSION_COOKIES`, `isAdmin`,
-  `authErrorKey`, types `Session` / `User`.
-- `./client`: `authClient` (browser) and `useAuthErrorMessage`. Never import
+  `authErrorKey`, `authErrorField`, types `Session` / `User`.
+- `./client`: `authClient` (browser), `useAuthErrorMessage` and
+  `useAuthServerError` (a form's `setServerError` argument: message,
+  status, field). Never import
   `./server` from client code.
 - `./server`: `createSessionHelpers({ backendUrl, appUrl })` →
   `getCurrentUser` / `requireUser` (uses `next/headers`). The app creates

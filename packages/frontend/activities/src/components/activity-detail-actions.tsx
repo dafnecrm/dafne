@@ -31,11 +31,8 @@ import {
   type ActivityRef,
 } from "./activity-dialogs";
 import { ActivityChangelogSheet } from "./activity-changelog.tsx";
-import {
-  ACTIVITY_STATUSES_ALLOW_CLOSE,
-  ACTIVITY_STATUSES_ALLOW_EDIT,
-  ACTIVITY_STATUSES_ALLOW_REOPEN,
-} from "../activity-status-options";
+import { ACTIVITY_STATUSES_ALLOW_EDIT } from "../activity-status-options";
+import type { ActivityStatus } from "@dafne/contracts";
 
 /** An action of the page: a button from `sm`, an item of the menu below. */
 interface Step {
@@ -52,12 +49,17 @@ interface Step {
 
 /**
  * Actions on the activity's page: edit (open only), close or reopen (in
- * a dialog, through the state machine), then a menu with its history and
+ * a dialog, through the state machine; offered when its `nextStatuses`
+ * have them), then a menu with its history and
  * delete. Below `sm` only the menu is shown, with those actions at its
  * top: each is listed once (`steps`) and rendered both ways, and each
  * dialog once, outside.
  */
-export function ActivityDetailActions({ activity }: { activity: ActivityRef }) {
+export function ActivityDetailActions({
+  activity,
+}: {
+  activity: ActivityRef & { nextStatuses: ActivityStatus[] };
+}) {
   const [dialog, setDialog] = useState<"reopen" | "close" | "delete">();
   const [history, setHistory] = useState(false);
   const t = useTranslations();
@@ -74,7 +76,7 @@ export function ActivityDetailActions({ activity }: { activity: ActivityRef }) {
       href: `${href}/edit`,
     });
   }
-  if (ACTIVITY_STATUSES_ALLOW_REOPEN.includes(activity.status)) {
+  if (activity.nextStatuses.includes("open")) {
     steps.push({
       key: "reopen",
       label: t("activities.reopen"),
@@ -84,7 +86,7 @@ export function ActivityDetailActions({ activity }: { activity: ActivityRef }) {
       onSelect: () => setDialog("reopen"),
     });
   }
-  if (ACTIVITY_STATUSES_ALLOW_CLOSE.includes(activity.status)) {
+  if (activity.nextStatuses.includes("closed")) {
     steps.push({
       key: "close",
       label: t("activities.close"),

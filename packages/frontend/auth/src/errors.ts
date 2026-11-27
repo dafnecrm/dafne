@@ -7,6 +7,22 @@ const AUTH_ERROR_CODES = {
   INVALID_PASSWORD: "wrongPassword",
 } as const;
 
+/**
+ * The form field a Better Auth error code is about. Invalid credentials
+ * name none: telling which of email and password is wrong would leak
+ * whether the account exists.
+ */
+const AUTH_ERROR_FIELDS: Record<string, string> = {
+  USER_ALREADY_EXISTS: "email",
+  USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL: "email",
+  INVALID_PASSWORD: "currentPassword",
+};
+
+/** The form field `error` is about, or undefined when it names none. */
+export function authErrorField(error: AuthError): string | undefined {
+  return error.code ? AUTH_ERROR_FIELDS[error.code] : undefined;
+}
+
 export interface AuthError {
   status: number;
   code?: string;

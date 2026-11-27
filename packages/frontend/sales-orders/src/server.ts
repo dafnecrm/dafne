@@ -1,7 +1,7 @@
 import { backendFetch } from "@dafne/frontend-api/server";
 import type { TableFilters, TableSort } from "@dafne/frontend-data-table";
 import { SALES_ORDERS_DEFAULT_SORT } from "./sales-orders-table.ts";
-import type { SalesOrderTypesList } from "@dafne/contracts";
+import type { SalesOrderStatus, SalesOrderTypesList } from "@dafne/contracts";
 import type { ChangesPage } from "@dafne/frontend-changelog";
 import type {
   SalesOrderDetail,
@@ -20,6 +20,20 @@ import type {
  */
 export async function getSalesOrder(id: string): Promise<SalesOrderDetail> {
   const res = await backendFetch(`/sales-orders/${encodeURIComponent(id)}`);
+  return res.json();
+}
+
+/**
+ * Calls the backend's POST /sales-orders/next-statuses: the statuses an
+ * order in `status` can move to (e.g. a new order, born in draft).
+ */
+export async function getSalesOrderNextStatuses(
+  status: SalesOrderStatus,
+): Promise<SalesOrderStatus[]> {
+  const res = await backendFetch("/sales-orders/next-statuses", {
+    method: "POST",
+    body: JSON.stringify({ status }),
+  });
   return res.json();
 }
 

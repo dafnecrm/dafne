@@ -37,7 +37,7 @@ export function UserGroupForm({
       // Redirects on success, so only an error comes back.
       const result = await saveUserGroup(userGroup?.id ?? null, value, path);
       if (result?.error) {
-        setServerError(formApi, result.error);
+        setServerError(formApi, result);
       }
     },
   });

@@ -7,7 +7,7 @@ import { useTransition } from "react";
 import { FieldGroup } from "@dafne/frontend-ui/components/field";
 import { setServerError, useAppForm } from "@dafne/frontend-forms/client";
 import { useResetOnLeave } from "@dafne/frontend-forms/client";
-import { authClient, useAuthErrorMessage } from "@dafne/frontend-auth/client";
+import { authClient, useAuthServerError } from "@dafne/frontend-auth/client";
 import { signInFormOpts, signInSchema } from "../schemas";
 import { VERIFY_EMAIL_PATH } from "../verify-email/verify-email";
 
@@ -15,7 +15,7 @@ export function SignInForm() {
   const router = useRouter();
   const [navigating, startTransition] = useTransition();
   const t = useTranslations("auth");
-  const authErrorMessage = useAuthErrorMessage();
+  const authServerError = useAuthServerError();
 
   const form = useAppForm({
     ...signInFormOpts,
@@ -40,7 +40,7 @@ export function SignInForm() {
         return;
       }
       if (error) {
-        setServerError(formApi, authErrorMessage(error));
+        setServerError(formApi, authServerError(error));
         return;
       }
       // Better Auth set the session cookie; load the app with it.
@@ -63,7 +63,7 @@ export function SignInForm() {
     >
       <form.AppForm>
         <FieldGroup>
-          <form.FormErrors />
+          <form.FormErrors rejectedTitle={t("signIn.failed")} />
           <form.AppField name="email">
             {(field) => (
               <field.TextField

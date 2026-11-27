@@ -25,6 +25,7 @@
     "password": {
       "changed": "Your password has been changed.",
       "description": "Pick a new password for your account.",
+      "failed": "Couldn't change the password",
       "fields": {
         "confirm": "Confirm new password",
         "current": "Current password",
@@ -62,6 +63,7 @@
     },
     "signIn": {
       "description": "Enter your email and password to continue.",
+      "failed": "Couldn't sign in",
       "meta": "Sign in",
       "noAccount": "No account yet?",
       "signUp": "Sign up",
@@ -70,6 +72,7 @@
     },
     "signUp": {
       "description": "It only takes a minute.",
+      "failed": "Couldn't create the account",
       "haveAccount": "Already have an account?",
       "meta": "Sign up",
       "signIn": "Sign in",
@@ -110,9 +113,11 @@
     "close": "Close",
     "closeToast": "Close toast",
     "copied": "Copied!",
+    "copy": "Copy",
     "copyEmail": "Copy email",
     "delete": "Delete",
     "deleteTitle": "Delete {name}?",
+    "duplicate": "Duplicate",
     "edit": "Edit",
     "editTitle": "Edit {name}",
     "emailPlaceholder": "name@example.com",
@@ -192,6 +197,7 @@
     },
     "pickDate": "Pick a date",
     "serverError": "Something went wrong",
+    "serverRejected": "Couldn't save",
     "showPassword": "Show password",
     "timeOf": "{label} (time)"
   },

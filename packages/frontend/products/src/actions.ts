@@ -15,21 +15,29 @@ import type { ChangesPage } from "@dafne/frontend-changelog";
 
 export interface ActionError {
   error: string;
+  /** The backend's HTTP status, when it answered with an error. */
+  status?: number;
+  /** The contract key of the backend's message (see setServerError). */
+  messageKey?: string;
 }
 
 /** The error to show; the backend's own message is already translated. */
-async function errorMessage(error: unknown) {
+async function actionError(error: unknown): Promise<ActionError> {
   if (!(error instanceof BackendError)) {
     throw error;
   }
   const t = await getTranslations();
   if (error.status === 401) {
-    return t("common.errors.sessionExpired");
+    return { error: t("common.errors.sessionExpired"), status: error.status };
   }
   if (error.status === 404) {
-    return t("products.notFound");
+    return { error: t("products.notFound"), status: error.status };
   }
-  return error.message || t("common.errors.generic");
+  return {
+    error: error.message || t("common.errors.generic"),
+    status: error.status,
+    messageKey: error.body.messageKey,
+  };
 }
 
 /**
@@ -48,7 +56,7 @@ export async function saveProduct(
   }
   const parsed = productSchema.safeParse(values);
   if (!parsed.success) {
-    return { error: (await getTranslations())("common.errors.invalid") };
+    return { error: (await getTranslations())("common.errors.invalid"), status: 400 };
   }
 
   let savedId: number;
@@ -62,7 +70,7 @@ export async function saveProduct(
     );
     savedId = ((await res.json()) as ProductDetail).id;
   } catch (error) {
-    return { error: await errorMessage(error) };
+    return await actionError(error);
   }
   // Outside the try: redirect works by throwing.
   redirect(`${path}/${encodeURIComponent(savedId)}`);
@@ -79,7 +87,7 @@ export async function deleteProduct(id: number): Promise<ActionError | null> {
     });
     return null;
   } catch (error) {
-    return { error: await errorMessage(error) };
+    return await actionError(error);
   }
 }
 
@@ -156,6 +164,6 @@ export async function getProductChanges(
   try {
     return await listProductChanges(id, query);
   } catch (error) {
-    return { error: await errorMessage(error) };
+    return await actionError(error);
   }
 }

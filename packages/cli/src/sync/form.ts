@@ -63,14 +63,13 @@ function defaultValue(f: FormField, param?: string): string {
     return literal;
   }
   const from = `${param}?.${f.key}`;
-  // Dates arrive as ISO strings; the pickers want "2026-10-29" / "2026-10-29T10:30".
+  // Dates arrive as ISO strings; the date picker wants "2026-10-29". The
+  // date-time picker takes the ISO instant as is (it shows it in the
+  // viewer's time zone).
   if (f.kind === 'date') {
     return `${from}?.slice(0, 10) ?? ${literal}`;
   }
-  if (f.kind === 'datetime') {
-    return `${from}?.slice(0, 16) ?? ${literal}`;
-  }
-  if (f.kind === 'decimal') {
+  if (f.kind === 'decimal' || f.kind === 'datetime') {
     return `${from} ?? ${literal}`;
   }
   // Ids are numbers; the input holds text.

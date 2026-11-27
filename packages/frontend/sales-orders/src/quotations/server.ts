@@ -2,6 +2,7 @@ import { backendFetch } from "@dafne/frontend-api/server";
 import type { ChangesPage } from "@dafne/frontend-changelog";
 import type { TableFilters, TableSort } from "@dafne/frontend-data-table";
 import { QUOTATIONS_DEFAULT_SORT } from "./quotations-table.ts";
+import type { QuotationStatus } from "@dafne/contracts";
 import type { QuotationDetail, QuotationsList } from "./types.ts";
 
 /*
@@ -15,6 +16,20 @@ import type { QuotationDetail, QuotationsList } from "./types.ts";
  */
 export async function getQuotation(id: string): Promise<QuotationDetail> {
   const res = await backendFetch(`/quotations/${encodeURIComponent(id)}`);
+  return res.json();
+}
+
+/**
+ * Calls the backend's POST /quotations/next-statuses: the statuses a
+ * quotation in `status` can move to (e.g. a new one, born in draft).
+ */
+export async function getQuotationNextStatuses(
+  status: QuotationStatus,
+): Promise<QuotationStatus[]> {
+  const res = await backendFetch("/quotations/next-statuses", {
+    method: "POST",
+    body: JSON.stringify({ status }),
+  });
   return res.json();
 }
 

@@ -38,7 +38,7 @@ export class SalesOrderCustomerHasShippingAddress implements TransitionGuard<Sal
       eq(schema.customerAddress.type, 'shipping')
     ));
 
-    return count > 0 || msg('salesOrders.customer.noShippingAddress');
+    return count > 0 || msg('salesOrders.customerId.noShippingAddress');
   }
 }
 
@@ -67,6 +67,6 @@ export class SalesOrderCustomerHasBillingAddress implements TransitionGuard<Sale
       eq(schema.customerAddress.type, 'billing')
     ));
 
-    return count > 0 || msg('salesOrders.customer.noBillingAddress');
+    return count > 0 || msg('salesOrders.customerId.noBillingAddress');
   }
 }
