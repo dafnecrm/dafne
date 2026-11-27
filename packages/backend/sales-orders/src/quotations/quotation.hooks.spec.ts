@@ -6,7 +6,7 @@ import type { SessionUser } from '@dafne/backend-session';
 import type { SalesOrdersService } from '../sales-orders.service.js';
 import { CreateSalesOrderFromQuotation, QuotationIsDraftHook } from './quotation.hooks.js';
 import { QUOTATION_STATES } from './quotation.states.js';
-import { QuotationHasItemsGuard } from './quotation.guards.js';
+import { CustomerHasAddressGuard, QuotationHasItemsGuard } from './quotation.guards.js';
 
 describe('CreateSalesOrderFromQuotation', () => {
   const user = { id: 'u1' } as SessionUser;
@@ -71,8 +71,12 @@ describe('QUOTATION_STATES', () => {
   });
 
   it('needs items to send or accept', () => {
-    expect(QUOTATION_STATES.draft?.sent?.guards).toEqual([QuotationHasItemsGuard]);
-    expect(QUOTATION_STATES.sent?.accepted?.guards).toEqual([QuotationHasItemsGuard]);
+    expect(QUOTATION_STATES.draft?.sent?.guards).contains(QuotationHasItemsGuard);
+    expect(QUOTATION_STATES.sent?.accepted?.guards).contains(QuotationHasItemsGuard);
+  });
+
+  it('needs customer address to send', () => {
+    expect(QUOTATION_STATES.draft?.sent?.guards).contains(CustomerHasAddressGuard);
   });
 });
 
