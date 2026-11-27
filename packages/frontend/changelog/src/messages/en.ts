@@ -3,31 +3,31 @@
  * same keys (ChangelogMessages), and the apps merge them under `changelog`.
  */
 export const en = {
-  open: "History",
-  title: "History",
+  added: "{count} added",
+  changed: "{count} changed",
   description: "Changes to this record, newest first.",
-  someone: "Someone",
-  operations: {
-    create: "created it",
-    update: "updated it",
-    delete: "deleted it",
-    transition: "changed its status",
-  },
-  noFields: "No field changed.",
   edited: "edited",
   element: { added: "added", removed: "removed" },
-  set: "added",
-  added: "{count} added",
-  removed: "{count} removed",
-  changed: "{count} changed",
-  loadMore: "Load more",
-  loading: "Loading the history…",
   empty: {
-    title: "No changes yet",
     description: "Changes appear here once the record is edited.",
+    title: "No changes yet",
   },
   loadError: "Couldn't load the history. Try again.",
+  loadMore: "Load more",
+  loading: "Loading the history…",
+  noFields: "No field changed.",
+  open: "History",
+  operations: {
+    create: "created it",
+    delete: "deleted it",
+    transition: "changed its status",
+    update: "updated it",
+  },
+  removed: "{count} removed",
   retry: "Try again",
+  set: "added",
+  someone: "Someone",
+  title: "History",
 };
 
 /** The shape every language must have: same keys, any text. */

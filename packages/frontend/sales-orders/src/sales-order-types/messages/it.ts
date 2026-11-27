@@ -2,36 +2,36 @@ import type { SalesOrderTypesMessages } from "./en.ts";
 
 /** Sales order type texts in Italian: same keys as en.ts, checked by the type. */
 export const it: SalesOrderTypesMessages = {
-  title: "Tipi ordine",
-  singular: "Tipo ordine",
-  new: "Nuovo tipo ordine",
   all: "Tutti i tipi ordine",
-  noun: "tipi ordine",
   create: "Crea tipo ordine",
-  editMeta: "Modifica tipo ordine",
-  newDescription: "The sales order type's details.",
-  editDescription: "Saving replaces the sales order type's details.",
-  empty: {
-    title: "No sales order types found",
-    filtered: "No sales order type where {filter}.",
-    none: "Add your first sales order type to get started.",
-  },
   deleteDescription:
     "The sales order type will no longer be listed or editable.",
-  notFound: "This sales order type no longer exists.",
-  sections: { details: "Details" },
+  editDescription: "Saving replaces the sales order type's details.",
+  editMeta: "Modifica tipo ordine",
+  empty: {
+    filtered: "No sales order type where {filter}.",
+    none: "Add your first sales order type to get started.",
+    title: "No sales order types found",
+  },
   fields: {
-    createdAt: "Creato il",
-    id: "ID",
-    description: "Descrizione",
     active: "Attivo",
+    createdAt: "Creato il",
+    description: "Descrizione",
+    id: "ID",
     inactive: "Inattivo",
   },
   inactiveAlert: {
-    title: "Il tipo ordine è disattivato. ",
-    description: "Non può essere utilizzato negli ordini di vendita."
+    description: "Non può essere utilizzato negli ordini di vendita.",
+    title: "Il tipo ordine è disattivato. "
   },
-  placeholder: 'Scegli un tipo ordine...',
   loading: 'Sto caricando i tipi ordine...',
+  new: "Nuovo tipo ordine",
+  newDescription: "The sales order type's details.",
   none: 'Nessun tipo ordine trovato',
+  notFound: "This sales order type no longer exists.",
+  noun: "tipi ordine",
+  placeholder: 'Scegli un tipo ordine...',
+  sections: { details: "Details" },
+  singular: "Tipo ordine",
+  title: "Tipi ordine",
 };

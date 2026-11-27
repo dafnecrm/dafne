@@ -5,74 +5,74 @@
  * (a record's PDF button).
  */
 export const documentTemplates = {
-  title: "Document templates",
-  singular: "Document template",
-  new: "New document template",
   all: "All document templates",
-  noun: "document templates",
   create: "Create document template",
-  editMeta: "Edit document template",
-  newDescription: "Name the template and pick what it is for. You upload the Word file on its page.",
+  deleteDescription: "The document template will no longer be listed or editable.",
   editDescription: "Saving replaces the template's details; its Word file stays.",
+  editMeta: "Edit document template",
   empty: {
-    title: "No document templates found",
     filtered: "No document template where {filter}.",
     none: "Add your first document template to get started.",
+    title: "No document templates found",
   },
-  deleteDescription: "The document template will no longer be listed or editable.",
-  notFound: "This document template no longer exists.",
-  sections: {
-    details: "Details",
+  errors: {
+    tag: "Tag {tag}: {explanation}",
   },
   fields: {
     createdAt: "Added",
+    fileName: "Word file",
     id: "Template ID",
+    isDefault: "Default for this document and language",
+    language: "Language",
     name: "Name",
     resource: "Document",
-    language: "Language",
-    isDefault: "Default for this document and language",
-    fileName: "Word file",
     size: "Size",
   },
+  file: {
+    download: "Download .docx",
+    hint: "Up to 5 MB. It is checked with sample data before it is saved.",
+    none: "No file yet: upload the .docx made in Word.",
+    preview: "Preview PDF",
+    replace: "Replace .docx",
+    title: "Word file",
+    upload: "Upload .docx",
+    uploaded: "Template uploaded.",
+    uploading: "Uploading…",
+  },
   languages: {
-    it: "Italian",
     en: "English",
+    it: "Italian",
+  },
+  new: "New document template",
+  newDescription: "Name the template and pick what it is for. You upload the Word file on its page.",
+  notFound: "This document template no longer exists.",
+  noun: "document templates",
+  placeholders: {
+    description: "Write them in the Word file. <value></value> puts a value, <loop></loop> repeats a table row for each element, and filters format values, e.g. <filter></filter>.",
+    loop: "Repeat for each element",
+    none: "Pick a document to see its tags.",
+    title: "Tags you can use",
   },
   resources: {
     quotation: "Quotation",
     salesOrder: "Sales order"
   },
-  file: {
-    title: "Word file",
-    none: "No file yet: upload the .docx made in Word.",
-    upload: "Upload .docx",
-    replace: "Replace .docx",
-    download: "Download .docx",
-    preview: "Preview PDF",
-    uploading: "Uploading…",
-    uploaded: "Template uploaded.",
-    hint: "Up to 5 MB. It is checked with sample data before it is saved.",
+  sections: {
+    details: "Details",
   },
-  placeholders: {
-    title: "Tags you can use",
-    description: "Write them in the Word file. <value></value> puts a value, <loop></loop> repeats a table row for each element, and filters format values, e.g. <filter></filter>.",
-    loop: "Repeat for each element",
-    none: "Pick a document to see its tags.",
-  },
-  errors: {
-    tag: "Tag {tag}: {explanation}",
-  },
+  singular: "Document template",
+  title: "Document templates",
 };
 
 export const documents = {
-  title: "Documents",
-  pdf: "PDF",
   choose: "PDF other templates",
   defaultTemplate: "Default",
   languages: {
-    it: "Italian",
     en: "English",
+    it: "Italian",
   },
+  pdf: "PDF",
+  title: "Documents",
 };
 
 /** The shape every language must have: same keys, any text. */
