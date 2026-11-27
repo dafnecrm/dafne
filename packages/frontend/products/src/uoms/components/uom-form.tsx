@@ -32,7 +32,7 @@ export function UomForm({ uom, path }: { uom?: UomDetail; path: string }) {
       // Redirects on success, so only an error comes back.
       const result = await saveUom(uom?.id ?? null, value, path);
       if (result?.error) {
-        setServerError(formApi, result.error);
+        setServerError(formApi, result);
       }
     },
   });

@@ -158,7 +158,8 @@ export class QuotationsService
 
   /**
    * One quotation that isn't deleted, with its items, who created and last
-   * updated it, and its sales order once accepted. Throws 404 otherwise.
+   * updated it, its sales order once accepted, and the statuses it can
+   * move to. Throws 404 otherwise.
    */
   async get(id: number, db: Executor = this.db): Promise<QuotationDetail> {
     const found = await db.query.quotation.findFirst({
@@ -178,7 +179,7 @@ export class QuotationsService
       throw new NotFoundException(msg('quotations.notFound'));
     }
 
-    return { ...found, salesOrder: found.salesOrder ?? null };
+    return { ...found, salesOrder: found.salesOrder ?? null, nextStatuses: this.nextStatuses(found.status) };
   }
 
   /**

@@ -62,7 +62,7 @@ export function CustomerForm({
       // Redirects on success, so only an error comes back.
       const result = await saveCustomer(customer?.id ?? null, value, path);
       if (result?.error) {
-        setServerError(formApi, result.error);
+        setServerError(formApi, result);
       }
     },
   });

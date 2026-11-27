@@ -71,8 +71,8 @@ export function addHistory(changes: Changes, names: ResourceNames, target: Front
   const action = `get${s.pascal}Changes`;
   const actionsSource = changes.read(actions) ?? '';
   if (actionsSource && !actionsSource.includes(action)) {
-    if (!/\bfunction errorMessage\b/.test(actionsSource) || !/\bActionError\b/.test(actionsSource)) {
-      changes.warn(`${actions}: no errorMessage or ActionError (as the generated actions have): add ${action} by hand.`);
+    if (!/\bfunction actionError\b/.test(actionsSource) || !/\bActionError\b/.test(actionsSource)) {
+      changes.warn(`${actions}: no actionError or ActionError (as the generated actions have): add ${action} by hand.`);
     } else {
       changes.update(actions, (source) =>
         editSource(actions, source, (file) => {

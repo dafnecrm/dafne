@@ -9,7 +9,7 @@ the apps; the frontend proxies `/api/auth/*` to it (`AUTH_URL`).
 | Import                        | What                                                                             |
 | ----------------------------- | -------------------------------------------------------------------------------- |
 | `@dafne/frontend-auth`        | `SESSION_COOKIES`, `isAdmin`, `authErrorKey`, types `Session` / `User`           |
-| `@dafne/frontend-auth/client` | `authClient` (sign in/up/out, update user…), `useAuthErrorMessage`               |
+| `@dafne/frontend-auth/client` | `authClient` (sign in/up/out, update user…), `useAuthErrorMessage`, `useAuthServerError` |
 | `@dafne/frontend-auth/server` | `createSessionHelpers({ backendUrl, appUrl })` → `getCurrentUser`, `requireUser` |
 
 The user's fields and plugins are inferred from the backend's options

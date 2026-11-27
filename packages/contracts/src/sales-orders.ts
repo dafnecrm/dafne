@@ -187,6 +187,11 @@ export interface SalesOrderDetail extends Omit<ListedSalesOrder, 'itemsCount'> {
   typeId: string;
   /** The quotation it was made from (when accepted); null if entered on its own. */
   quotationId: number | null;
+  /**
+   * The statuses it can move to from `status`, as the state machine allows
+   * (its guards may still refuse one). Empty when `status` is final.
+   */
+  nextStatuses: SalesOrderStatus[];
 }
 
 /** The sales order items */

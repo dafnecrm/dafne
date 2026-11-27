@@ -8,7 +8,7 @@ export {
   useFormContext,
 } from "./form-context.ts";
 export { useResetOnLeave } from "./reset-on-leave.ts";
-export { setServerError } from "./server-error.ts";
+export { setServerError, type ServerError } from "./server-error.ts";
 export { FIELD_COMPONENTS, FORM_COMPONENTS } from "./components.ts";
 export { createAppFormHook, useAppForm } from "./app-form.ts";
 export * from "./fields/index.ts";

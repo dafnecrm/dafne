@@ -43,7 +43,7 @@ export function UserForm({
       // Redirects on success, so only an error comes back.
       const result = await createUser(value, path);
       if (result?.error) {
-        setServerError(formApi, result.error);
+        setServerError(formApi, result);
       }
     },
   });

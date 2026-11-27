@@ -16,21 +16,29 @@ import type { UserDetail } from "./types.ts";
 
 export interface ActionError {
   error: string;
+  /** The backend's HTTP status, when it answered with an error. */
+  status?: number;
+  /** The contract key of the backend's message (see setServerError). */
+  messageKey?: string;
 }
 
-async function errorMessage(error: unknown) {
+async function actionError(error: unknown): Promise<ActionError> {
   if (!(error instanceof BackendError)) {
     throw error;
   }
   const t = await getTranslations();
   if (error.status === 401) {
-    return t("common.errors.sessionExpired");
+    return { error: t("common.errors.sessionExpired"), status: error.status };
   }
   if (error.status === 403) {
-    return t("users.adminsOnly");
+    return { error: t("users.adminsOnly"), status: error.status };
   }
   // 409 (email taken) and 400 carry a message meant for the user, translated by the backend.
-  return error.message || t("common.errors.generic");
+  return {
+    error: error.message || t("common.errors.generic"),
+    status: error.status,
+    messageKey: error.body.messageKey,
+  };
 }
 
 /**
@@ -45,7 +53,7 @@ export async function createUser(values: UserFormValues, path: string): Promise<
   }
   const parsed = userSchema.safeParse(values);
   if (!parsed.success) {
-    return { error: (await getTranslations())("common.errors.invalid") };
+    return { error: (await getTranslations())("common.errors.invalid"), status: 400 };
   }
 
   let id: string;
@@ -56,7 +64,7 @@ export async function createUser(values: UserFormValues, path: string): Promise<
     });
     id = ((await res.json()) as UserDetail).id;
   } catch (error) {
-    return { error: await errorMessage(error) };
+    return await actionError(error);
   }
   // Outside the try: redirect works by throwing.
   redirect(`${path}/${encodeURIComponent(id)}`);
@@ -73,6 +81,6 @@ export async function getUserChanges(
   try {
     return await listUserChanges(id, query);
   } catch (error) {
-    return { error: await errorMessage(error) };
+    return await actionError(error);
   }
 }

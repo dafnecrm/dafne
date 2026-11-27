@@ -2,6 +2,11 @@
 export interface BackendErrorBody {
   message?: string | string[];
   code?: string;
+  /**
+   * The contract key of `message`, when it is one
+   * (`<resource>.<field>.<rule>`): tells what the error is about.
+   */
+  messageKey?: string;
   /** Details some errors carry, e.g. the tags at fault of a document template. */
   errors?: unknown;
 }

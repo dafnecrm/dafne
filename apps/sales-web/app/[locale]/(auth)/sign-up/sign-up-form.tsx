@@ -7,7 +7,7 @@ import { useTransition } from "react";
 import { FieldGroup } from "@dafne/frontend-ui/components/field";
 import { setServerError, useAppForm } from "@dafne/frontend-forms/client";
 import { useResetOnLeave } from "@dafne/frontend-forms/client";
-import { authClient, useAuthErrorMessage } from "@dafne/frontend-auth/client";
+import { authClient, useAuthServerError } from "@dafne/frontend-auth/client";
 import { signUpFormOpts, signUpSchema } from "../schemas";
 import { VERIFY_EMAIL_PATH } from "../verify-email/verify-email";
 
@@ -15,7 +15,7 @@ export function SignUpForm() {
   const router = useRouter();
   const [navigating, startTransition] = useTransition();
   const t = useTranslations("auth");
-  const authErrorMessage = useAuthErrorMessage();
+  const authServerError = useAuthServerError();
 
   const form = useAppForm({
     ...signUpFormOpts,
@@ -35,7 +35,7 @@ export function SignUpForm() {
         callbackURL: VERIFY_EMAIL_PATH,
       });
       if (error) {
-        setServerError(formApi, authErrorMessage(error));
+        setServerError(formApi, authServerError(error));
         return;
       }
       // No session until the email is verified: ask the user to check their inbox.
@@ -60,7 +60,7 @@ export function SignUpForm() {
     >
       <form.AppForm>
         <FieldGroup>
-          <form.FormErrors />
+          <form.FormErrors rejectedTitle={t("signUp.failed")} />
           <div className="grid grid-cols-2 gap-3">
             <form.AppField name="firstname">
               {(field) => (

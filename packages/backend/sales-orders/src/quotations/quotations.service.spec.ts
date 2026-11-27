@@ -53,6 +53,8 @@ describe('QuotationsService', () => {
     },
   };
   const found = { id: 1, status: 'draft', items: [], salesOrder: null };
+  /** What get answers for `found`: with the statuses a draft can move to. */
+  const detail = { ...found, nextStatuses: ['sent'] };
   const stateMachine = { transition: vi.fn(), nextStatuses: vi.fn() };
   const products = { units: vi.fn() };
 
@@ -76,6 +78,7 @@ describe('QuotationsService', () => {
     remove.where.mockResolvedValue({ rowCount: 0 });
     db.transaction.mockImplementation((callback: (tx: typeof db) => unknown) => callback(db));
     findFirst.mockResolvedValue(found);
+    stateMachine.nextStatuses.mockReturnValue(['sent']);
     // Every product is sold by the piece, and by the box of 12.
     products.units.mockResolvedValue([
       { uomId: 'pc', uom: { id: 'pc', name: 'piece' }, factor: 1, source: 'base', price: 2.5 },
@@ -123,10 +126,11 @@ describe('QuotationsService', () => {
   });
 
   describe('get', () => {
-    it('returns a quotation that is not deleted, with its items and sales order', async () => {
+    it('returns a quotation that is not deleted, with its items, sales order and next statuses', async () => {
       findFirst.mockResolvedValue({ ...found, salesOrder: { id: 9, status: 'draft' } });
 
-      await expect(service.get(1)).resolves.toMatchObject({ id: 1, salesOrder: { id: 9 } });
+      await expect(service.get(1)).resolves.toMatchObject({ id: 1, salesOrder: { id: 9 }, nextStatuses: ['sent'] });
+      expect(stateMachine.nextStatuses).toHaveBeenCalledWith('draft');
       expect(findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { id: 1, deletedAt: { isNull: true } },
@@ -160,7 +164,7 @@ describe('QuotationsService', () => {
     it('inserts the quotation with its creator, born in draft', async () => {
       await expect(
         service.create(body({ notes: 'n', validUntil: '2026-12-31' }), actor('u1')),
-      ).resolves.toEqual(found);
+      ).resolves.toEqual(detail);
 
       expect(db.insert).toHaveBeenCalledWith(quotation);
       expect(insert.values).toHaveBeenCalledWith(
@@ -248,7 +252,7 @@ describe('QuotationsService', () => {
     it('moves the quotation through its state machine and returns it', async () => {
       const user = { id: 'u1' } as SessionUser;
 
-      await expect(service.changeQuotationStatus(1, 'accepted', user)).resolves.toEqual(found);
+      await expect(service.changeQuotationStatus(1, 'accepted', user)).resolves.toEqual(detail);
       expect(stateMachine.transition).toHaveBeenCalledWith(1, 'accepted', { user });
     });
   });

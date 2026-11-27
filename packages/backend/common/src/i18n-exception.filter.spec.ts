@@ -23,7 +23,10 @@ function handle(exception: unknown, language: string) {
   new I18nExceptionFilter().catch(exception, host);
   const [error] = sent.mock.calls[0];
   sent.mockRestore();
-  return (error as HttpException).getResponse() as { message: unknown };
+  return (error as HttpException).getResponse() as {
+    message: unknown;
+    messageKey?: string;
+  };
 }
 
 describe('I18nExceptionFilter', () => {
@@ -31,6 +34,15 @@ describe('I18nExceptionFilter', () => {
     expect(
       handle(new NotFoundException(msg('customers.notFound')), 'it-IT').message,
     ).toBe('Cliente non trovato');
+  });
+
+  it('keeps the key of a single key message', () => {
+    expect(
+      handle(new NotFoundException(msg('customers.notFound')), 'en').messageKey,
+    ).toBe('customers.notFound');
+    expect(
+      handle(new NotFoundException('Plain text'), 'en').messageKey,
+    ).toBeUndefined();
   });
 
   it('translates validation errors, Zod messages included', () => {
@@ -50,5 +62,6 @@ describe('I18nExceptionFilter', () => {
     expect(handle(fail(' '), 'en').message).toEqual(['name: Enter the name']);
     const [tooLong] = handle(fail('far too long'), 'it').message as string[];
     expect(tooLong).toMatch(/^name: Troppo/);
+    expect(handle(fail(' '), 'en').messageKey).toBeUndefined();
   });
 });

@@ -11,13 +11,13 @@ import {
   useAppForm,
   useResetOnLeave,
 } from "@dafne/frontend-forms/client";
-import { authClient, useAuthErrorMessage } from "@dafne/frontend-auth/client";
+import { authClient, useAuthServerError } from "@dafne/frontend-auth/client";
 import { changePasswordFormOpts, changePasswordSchema } from "./schema";
 
 /** Changes the signed-in user's password, given the current one. */
 export function ChangePasswordForm() {
   const t = useTranslations("account.password");
-  const authErrorMessage = useAuthErrorMessage();
+  const authServerError = useAuthServerError();
   const [changed, setChanged] = useState(false);
 
   const form = useAppForm({
@@ -33,7 +33,7 @@ export function ChangePasswordForm() {
         revokeOtherSessions: value.revokeOtherSessions,
       });
       if (error) {
-        setServerError(formApi, authErrorMessage(error));
+        setServerError(formApi, authServerError(error));
         return;
       }
       formApi.reset();
@@ -61,7 +61,7 @@ export function ChangePasswordForm() {
               <AlertTitle>{t("changed")}</AlertTitle>
             </Alert>
           )}
-          <form.FormErrors />
+          <form.FormErrors rejectedTitle={t("failed")} />
           <form.AppField name="currentPassword">
             {(field) => (
               <field.PasswordField

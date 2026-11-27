@@ -138,7 +138,7 @@ export class ActivitiesService
 
   /**
    * One activity that isn't deleted, with who created and last updated
-   * it. Throws 404 otherwise.
+   * it and the statuses it can move to. Throws 404 otherwise.
    */
   async get(id: number, db: Executor = this.db): Promise<ActivityDetail> {
     const found = await db.query.activity.findFirst({
@@ -152,7 +152,7 @@ export class ActivitiesService
     if (!found) {
       throw new NotFoundException(msg('activities.notFound'));
     }
-    return found;
+    return { ...found, nextStatuses: this.nextStatuses(found.status) };
   }
 
   /**

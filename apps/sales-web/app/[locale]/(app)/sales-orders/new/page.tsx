@@ -11,6 +11,7 @@ import {
 } from "@dafne/frontend-ui/components/page-content";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { SalesOrderForm } from "@dafne/frontend-sales-orders/components/sales-order-form";
+import { getSalesOrderNextStatuses } from "@dafne/frontend-sales-orders/server";
 import { salesOrdersTable } from "@/lib/sales-orders-table";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -39,7 +40,10 @@ export default function NewSalesOrderPage() {
   );
 }
 
-/** Loads the sales order types (the type select's options), then the form. */
+/** Loads the statuses a draft can move to (the status select's options), then the form. */
 async function NewSalesOrderForm() {
-  return <SalesOrderForm path={salesOrdersTable.path} />;
+  const nextStatuses = await getSalesOrderNextStatuses("draft");
+  return (
+    <SalesOrderForm path={salesOrdersTable.path} nextStatuses={nextStatuses} />
+  );
 }

@@ -18,24 +18,33 @@ import { getConversation, listAvailableAgents, listConversations } from "./serve
 
 export interface ActionError {
   error: string;
+  /** The backend's HTTP status, when it answered with an error. */
+  status?: number;
+  /** The contract key of the backend's message, when it is one. */
+  messageKey?: string;
 }
 
-async function errorMessage(error: unknown): Promise<ActionError> {
+/** The error to show; the backend's own message is already translated. */
+async function actionError(error: unknown): Promise<ActionError> {
   if (!(error instanceof BackendError)) {
     throw error;
   }
   const t = await getTranslations();
   if (error.status === 401) {
-    return { error: t("common.errors.sessionExpired") };
+    return { error: t("common.errors.sessionExpired"), status: error.status };
   }
-  return { error: error.message || t("common.errors.generic") };
+  return {
+    error: error.message || t("common.errors.generic"),
+    status: error.status,
+    messageKey: error.body.messageKey,
+  };
 }
 
 async function attempt<T>(run: () => Promise<T>): Promise<T | ActionError> {
   try {
     return await run();
   } catch (error) {
-    return errorMessage(error);
+    return actionError(error);
   }
 }
 

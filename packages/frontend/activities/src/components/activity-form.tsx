@@ -29,7 +29,7 @@ export function ActivityForm({ activity }: { activity?: ActivityDetail }) {
       // Redirects on success, so only an error comes back.
       const result = await saveActivity(activity?.id ?? null, value);
       if (result?.error) {
-        setServerError(formApi, result.error);
+        setServerError(formApi, result);
       }
     },
   });

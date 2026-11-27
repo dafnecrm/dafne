@@ -12,7 +12,8 @@ export const ACTIVITY_STATUS_OPTIONS = [
   { value: "closed", label: "activities.status.closed" },
 ] satisfies { value: ActivityStatus; label: ActivitiesMessageKey }[];
 
-/** Statuses an activity can be edited, closed or reopened from. */
+/**
+ * Statuses an activity can be edited from. Whether it can be closed or
+ * reopened comes from its `nextStatuses` (the state machine).
+ */
 export const ACTIVITY_STATUSES_ALLOW_EDIT: ActivityStatus[] = ["open"];
-export const ACTIVITY_STATUSES_ALLOW_CLOSE: ActivityStatus[] = ["open"];
-export const ACTIVITY_STATUSES_ALLOW_REOPEN: ActivityStatus[] = ["closed"];

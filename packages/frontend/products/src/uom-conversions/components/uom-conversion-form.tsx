@@ -49,7 +49,7 @@ export function UomConversionForm({
         path,
       );
       if (result?.error) {
-        setServerError(formApi, result.error);
+        setServerError(formApi, result);
       }
     },
   });

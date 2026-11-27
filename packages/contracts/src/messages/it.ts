@@ -141,6 +141,7 @@ export const it: ContractMessages = {
   },
   quotations: {
     customerId: {
+      noAddress: 'Il cliente non ha indirizzi',
       notFound: "Scegli un cliente dall'elenco",
       required: "Inserisci l'id del cliente",
     },
@@ -169,11 +170,9 @@ export const it: ContractMessages = {
     notFound: 'Tipo ordine non trovato',
   },
   salesOrders: {
-    customer: {
+    customerId: {
       noBillingAddress: 'Il cliente non ha indirizzo di fatturazione',
       noShippingAddress: 'Il cliente non ha indirizzo di spedizione',
-    },
-    customerId: {
       notFound: 'Scegli un cliente dall\'elenco',
       required: 'Inserisci il cliente',
     },

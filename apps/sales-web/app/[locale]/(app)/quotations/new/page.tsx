@@ -11,6 +11,7 @@ import {
 import { Suspense } from "react";
 import { Skeleton } from "@dafne/frontend-ui/components/skeleton";
 import { QuotationForm } from "@dafne/frontend-sales-orders/quotations/components/quotation-form";
+import { getQuotationNextStatuses } from "@dafne/frontend-sales-orders/quotations/server";
 import { quotationsTable } from "@/lib/quotations-table";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -29,11 +30,19 @@ export default function NewQuotationPage() {
         </PageContentDescription>
       </PageContentHeader>
       <PageContentBody>
-        {/* The form reads ?customerId= (useSearchParams). */}
+        {/* The statuses are read per request; the form reads ?customerId= (useSearchParams). */}
         <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-          <QuotationForm path={quotationsTable.path} />
+          <NewQuotationForm />
         </Suspense>
       </PageContentBody>
     </PageContent>
+  );
+}
+
+/** Loads the statuses a draft can move to (the status select's options), then the form. */
+async function NewQuotationForm() {
+  const nextStatuses = await getQuotationNextStatuses("draft");
+  return (
+    <QuotationForm path={quotationsTable.path} nextStatuses={nextStatuses} />
   );
 }

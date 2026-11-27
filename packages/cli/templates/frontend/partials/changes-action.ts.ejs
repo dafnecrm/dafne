@@ -9,6 +9,6 @@ export async function get<%= s.pascal %>Changes(
   try {
     return await list<%= s.pascal %>Changes(id, query);
   } catch (error) {
-    return { error: await errorMessage(error) };
+    return await actionError(error);
   }
 }

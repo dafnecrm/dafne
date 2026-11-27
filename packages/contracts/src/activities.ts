@@ -106,5 +106,10 @@ export interface ActivityDetail extends ListedActivity {
   updatedBy: ActivityUser | null;
   notes: string | null;
   /** Always null: deleted activities aren't returned. */
-    deletedAt: Date | null;
+  deletedAt: Date | null;
+  /**
+   * The statuses it can move to from `status`, as the state machine allows
+   * (its guards may still refuse one). Empty when `status` is final.
+   */
+  nextStatuses: ActivityStatus[];
 }

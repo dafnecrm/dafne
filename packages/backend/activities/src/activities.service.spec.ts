@@ -44,7 +44,9 @@ describe('ActivitiesService', () => {
     delete: vi.fn(),
     query: { activity: { findFirst } },
   };
-  const found = { id: 1, name: 'Acme' };
+  const found = { id: 1, name: 'Acme', status: 'open' };
+  /** What get answers for `found`: with the statuses an open activity can move to. */
+  const detail = { ...found, nextStatuses: ['closed'] };
   const stateMachine = { transition: vi.fn(), nextStatuses: vi.fn() };
 
   beforeEach(async () => {
@@ -65,6 +67,7 @@ describe('ActivitiesService', () => {
     update.set.mockReturnValue(update);
     update.where.mockResolvedValue({ rowCount: 1 });
     findFirst.mockResolvedValue(found);
+    stateMachine.nextStatuses.mockReturnValue(['closed']);
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -122,8 +125,9 @@ describe('ActivitiesService', () => {
   });
 
   describe('get', () => {
-    it('returns a activity that is not deleted, with its users', async () => {
-      await expect(service.get(1)).resolves.toBe(found);
+    it('returns a activity that is not deleted, with its users and next statuses', async () => {
+      await expect(service.get(1)).resolves.toEqual(detail);
+      expect(stateMachine.nextStatuses).toHaveBeenCalledWith('open');
 
       const options = findFirst.mock.calls[0][0];
       expect(options.where).toEqual({ id: 1, deletedAt: { isNull: true } });
@@ -144,7 +148,7 @@ describe('ActivitiesService', () => {
     it('inserts the activity with its creator', async () => {
       await expect(
         service.create(body({ name: 'Acme', type: 'email' }), actor('u1')),
-      ).resolves.toBe(found);
+      ).resolves.toEqual(detail);
 
       const [row] = insert.values.mock.calls[0];
       expect(row).toMatchObject({
@@ -247,7 +251,7 @@ describe('ActivitiesService', () => {
   describe('changeActivityStatus', () => {
     it('moves it through the state machine and returns it', async () => {
       const user = actor('u4');
-      await expect(service.changeActivityStatus(1, 'closed', user)).resolves.toBe(found);
+      await expect(service.changeActivityStatus(1, 'closed', user)).resolves.toEqual(detail);
       expect(stateMachine.transition).toHaveBeenCalledWith(1, 'closed', { user });
     });
 
