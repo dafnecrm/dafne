@@ -4,22 +4,20 @@ import { cn } from 'cn'
 import { DatePicker, type DatePickerProps } from '@dafne/frontend-ui/components/date-picker'
 import { Field, FieldError, FieldLabel } from '@dafne/frontend-ui/components/field'
 import { Input } from '@dafne/frontend-ui/components/input'
+import { useTimeZone } from '@dafne/frontend-ui/components/local-date'
 import { useTranslations } from 'next-intl'
 import { useFieldContext } from '../form-context.ts'
 import type { BaseFieldProps, OwnProps } from './base.ts'
 import { useErrorText } from './error-text.ts'
-import { parseDateValue, toDateValue } from './date-value.ts'
-
-/** "YYYY-MM-DDTHH:mm" split into its date and time ("" when missing). */
-function splitDateTimeValue(value: string | null | undefined) {
-  const [date = '', time = ''] = (value ?? '').split('T')
-  return { date: parseDateValue(date), time: time.slice(0, 5) }
-}
+import { toLocalDateTime, toUtcInstant } from './date-value.ts'
 
 /**
- * A date picked from a calendar plus a time input; the field's value is
- * "YYYY-MM-DDTHH:mm" ("" when blank), the same format as an
- * `<input type="datetime-local">`. Picking a date first sets the time to 00:00.
+ * A date picked from a calendar plus a time input, shown in the viewer's
+ * time zone. The field's value is the instant as a UTC ISO string
+ * ("2026-12-03T23:00:00.000Z", "" when blank), what the backend sends and
+ * expects, so it means the same moment on the server. Picking a date first
+ * sets the time to 00:00. Blank on the server and during hydration, which
+ * can't know the viewer's zone.
  */
 export function DateTimePickerField({
   label,
@@ -31,7 +29,10 @@ export function DateTimePickerField({
   const field = useFieldContext<string>()
   const errorText = useErrorText()
   const t = useTranslations('form')
-  const { date, time } = splitDateTimeValue(field.state.value)
+  const hydrated = useTimeZone() !== null
+  const { date, time } = hydrated
+    ? toLocalDateTime(field.state.value)
+    : { date: undefined, time: '' }
   const invalid = !field.state.meta.isValid
 
   return (
@@ -51,9 +52,7 @@ export function DateTimePickerField({
           value={date}
           aria-invalid={invalid}
           onChange={(picked) =>
-            field.handleChange(
-              picked ? `${toDateValue(picked)}T${time || '00:00'}` : ''
-            )
+            field.handleChange(picked ? toUtcInstant(picked, time) : '')
           }
           onBlur={field.handleBlur}
           {...props}
@@ -68,9 +67,7 @@ export function DateTimePickerField({
           onBlur={field.handleBlur}
           onChange={(e) =>
             date &&
-            field.handleChange(
-              `${toDateValue(date)}T${e.target.value || '00:00'}`
-            )
+            field.handleChange(toUtcInstant(date, e.target.value))
           }
         />
       </div>

@@ -35,7 +35,7 @@ export function activityFormOpts(activity?: ActivityDetail) {
       name: activity?.name ?? "",
       type: activity?.type ?? "email",
       notes: activity?.notes ?? "",
-      dueDate: activity?.dueDate?.slice(0, 16) ?? "",
+      dueDate: activity?.dueDate ?? "",
       status: activity?.status ?? "open",
     } satisfies ActivityFormValues as ActivityFormValues,
   });
