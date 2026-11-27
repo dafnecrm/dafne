@@ -5,13 +5,10 @@ import {
   ContactIcon,
   EuroIcon,
   FingerprintIcon,
-  HistoryIcon,
-  ReceiptIcon,
-  TagIcon,
+  HistoryIcon, TagIcon,
   TextIcon,
   UserPenIcon,
-  UserPlusIcon,
-  HashIcon,
+  UserPlusIcon, PackageIcon
 } from "lucide-react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
@@ -72,7 +69,7 @@ export function QuotationDetails({
           )}
         </Detail>
         {quotation.salesOrder && (
-          <Detail icon={ReceiptIcon} label={t("quotations.fields.salesOrder")}>
+          <Detail icon={PackageIcon} label={t("quotations.fields.salesOrder")}>
             <Link
               href={`${salesOrdersPath}/${encodeURIComponent(quotation.salesOrder.id)}`}
               className="hover:underline"

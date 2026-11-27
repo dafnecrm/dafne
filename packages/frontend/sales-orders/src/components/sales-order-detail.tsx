@@ -8,8 +8,7 @@ import {
   ContactIcon,
   BoxesLinkedIcon,
   TagIcon,
-  EuroIcon,
-  FileTextIcon,
+  EuroIcon, BoxDashedIcon
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Detail, DetailSection } from "@dafne/frontend-ui/components/detail";
@@ -70,7 +69,7 @@ export function SalesOrderDetails({
           }, 0), locale)}
         </Detail>
         {salesOrder.quotationId != null && (
-          <Detail icon={FileTextIcon} label={t("quotations.singular")}>
+          <Detail icon={BoxDashedIcon} label={t("quotations.singular")}>
             {quotationsPath ? (
               <Link
                 href={`${quotationsPath}/${encodeURIComponent(salesOrder.quotationId)}`}
